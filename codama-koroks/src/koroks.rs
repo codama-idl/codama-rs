@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use cargo_toml::Manifest;
 
@@ -7,31 +8,63 @@ use crate::internals::{ParsingError, ParsingResult};
 use crate::nodes::NumberTypeNode;
 use crate::{attributes::Attribute, nodes::TypeNode};
 
+pub struct KorokContext {
+    pub crates: Vec<KorokContextCrate>,
+    pub modules: HashMap<PathBuf, syn::File>,
+}
+
+pub struct KorokContextCrate {
+    pub path: PathBuf,
+    pub file: syn::File,
+    pub manifest: Manifest,
+}
+
+impl KorokContext {
+    pub fn new() -> Self {
+        Self {
+            crates: Vec::new(),
+            modules: HashMap::new(),
+        }
+    }
+}
+
 pub struct RootKorok<'a> {
     pub crates: Vec<CrateKorok<'a>>,
 }
 
+impl<'a> RootKorok<'a> {
+    pub fn parse(context: &'a mut KorokContext, paths: &Vec<&Path>) -> ParsingResult<Self> {
+        let crates = paths
+            .iter()
+            .map(|path| CrateKorok::parse(context, path))
+            .collect()?;
+        Ok(Self { crates })
+    }
+}
+
 pub struct CrateKorok<'a> {
-    pub file: syn::File,
+    pub file: &'a syn::File,
     pub path: &'a Path,
     pub items: Vec<ItemKorok<'a>>,
-    pub manifest: Manifest,
+    pub manifest: &'a Manifest,
 }
 
 impl<'a> CrateKorok<'a> {
-    pub fn parse(path: &'a Path) -> ParsingResult<Self> {
+    pub fn parse(context: &'a mut KorokContext, path: &'a Path) -> ParsingResult<Self> {
         let content = fs::read_to_string(path)?;
-        let file = syn::parse_file(&content)?;
-        let manifest = Manifest::from_path(path)?;
-        let mut korok = Self {
-            file,
-            path,
-            items: vec![],
-            manifest,
-        };
-        korok.items = ItemKorok::parse_all(&korok.file.items)?;
-
-        Ok(korok)
+        context.crates.push(KorokContextCrate {
+            file: syn::parse_file(&content)?,
+            path: path.to_path_buf(),
+            manifest: Manifest::from_path(path)?,
+        });
+        let borrowed_crate = &context.crates[context.crates.len() - 1];
+        let items = ItemKorok::parse_all(context, &borrowed_crate.file.items)?;
+        Ok(Self {
+            file: &borrowed_crate.file,
+            path: &borrowed_crate.path,
+            items,
+            manifest: &borrowed_crate.manifest,
+        })
     }
 }
 
@@ -43,32 +76,57 @@ pub enum ItemKorok<'a> {
     Unsupported(UnsupportedItemKorok<'a>),
 }
 
-impl<'a> ItemKorok<'a> {
-    pub fn parse_all(items: &'a Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
-        items.iter().map(Self::try_from).collect()
-    }
-}
-
-impl<'a> TryFrom<&'a syn::Item> for ItemKorok<'a> {
-    type Error = ParsingError;
-
-    fn try_from(ast: &'a syn::Item) -> ParsingResult<Self> {
-        // TODO: implement.
-        match *ast {
+impl<'a, 'b> ItemKorok<'a> {
+    pub fn parse(context: &'b mut KorokContext, item: &'a syn::Item) -> ParsingResult<Self> {
+        match item {
             // syn::Item::Mod(item) if item.content.is_some() => {}
             // syn::Item::Mod(item) if item.content.is_none() => {}
-            syn::Item::Struct(item) => Ok(ItemKorok::Struct(item.try_into()?)),
-            syn::Item::Enum(item) => Ok(ItemKorok::Enum(item.try_into()?)),
-            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok { ast: ast })),
+            syn::Item::Struct(item) => Ok(ItemKorok::Struct(StructKorok::parse(context, item)?)),
+            syn::Item::Enum(item) => Ok(ItemKorok::Enum(EnumKorok::parse(context, item)?)),
+            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok { ast: item })),
         }
+    }
+
+    pub fn parse_all(
+        context: &'b mut KorokContext,
+        items: &'a Vec<syn::Item>,
+    ) -> ParsingResult<Vec<Self>> {
+        items
+            .iter()
+            .map(|item| Self::parse(context, item))
+            .collect()
     }
 }
 
-pub struct FileModuleKorok<'a> {
-    pub file: syn::File,
+pub struct FileModuleKorok<'a, 'b> {
+    pub file: &'a syn::File,
     pub ast: &'a syn::ItemMod,
-    pub path: &'a Path,
+    pub path: &'b Path,
     pub items: Vec<ItemKorok<'a>>,
+}
+
+impl<'a> FileModuleKorok<'a> {
+    pub fn read(parent_path: &Path, ast: &'a syn::ItemMod) -> ParsingResult<Self> {
+        let module_name = ast.ident.to_string();
+        let path = parent_path
+            .to_path_buf()
+            .join(format!("{}.rs", module_name)); // TODO: Search other places like `name/mod.rs`.
+
+        let content = fs::read_to_string(path)?;
+        let file = syn::parse_file(&content)?;
+        let manifest = Manifest::from_path(path)?;
+        Ok(Self {
+            file,
+            path,
+            items: vec![],
+            manifest,
+        })
+    }
+
+    pub fn parse(&'a mut self) -> ParsingResult<()> {
+        self.items = ItemKorok::parse_all(&self.file.items)?;
+        Ok(())
+    }
 }
 
 pub struct ModuleKorok<'a> {
