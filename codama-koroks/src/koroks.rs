@@ -1,44 +1,25 @@
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use cargo_toml::Manifest;
 
 use crate::internals::{ParsingError, ParsingResult};
+use crate::modules::{UnparsedCrate, UnparsedRoot};
 use crate::nodes::NumberTypeNode;
 use crate::{attributes::Attribute, nodes::TypeNode};
-
-pub struct KorokContext {
-    pub crates: Vec<KorokContextCrate>,
-    pub modules: HashMap<PathBuf, syn::File>,
-}
-
-pub struct KorokContextCrate {
-    pub path: PathBuf,
-    pub file: syn::File,
-    pub manifest: Manifest,
-}
-
-impl KorokContext {
-    pub fn new() -> Self {
-        Self {
-            crates: Vec::new(),
-            modules: HashMap::new(),
-        }
-    }
-}
 
 pub struct RootKorok<'a> {
     pub crates: Vec<CrateKorok<'a>>,
 }
 
 impl<'a> RootKorok<'a> {
-    pub fn parse(context: &'a mut KorokContext, paths: &Vec<&Path>) -> ParsingResult<Self> {
-        let crates = paths
-            .iter()
-            .map(|path| CrateKorok::parse(context, path))
-            .collect()?;
-        Ok(Self { crates })
+    pub fn parse(unparsed_root: &'a UnparsedRoot) -> ParsingResult<Self> {
+        Ok(Self {
+            crates: unparsed_root
+                .crates
+                .iter()
+                .map(CrateKorok::parse)
+                .collect::<ParsingResult<_>>()?,
+        })
     }
 }
 
@@ -50,20 +31,12 @@ pub struct CrateKorok<'a> {
 }
 
 impl<'a> CrateKorok<'a> {
-    pub fn parse(context: &'a mut KorokContext, path: &'a Path) -> ParsingResult<Self> {
-        let content = fs::read_to_string(path)?;
-        context.crates.push(KorokContextCrate {
-            file: syn::parse_file(&content)?,
-            path: path.to_path_buf(),
-            manifest: Manifest::from_path(path)?,
-        });
-        let borrowed_crate = &context.crates[context.crates.len() - 1];
-        let items = ItemKorok::parse_all(context, &borrowed_crate.file.items)?;
+    pub fn parse(unparsed_crate: &'a UnparsedCrate) -> ParsingResult<Self> {
         Ok(Self {
-            file: &borrowed_crate.file,
-            path: &borrowed_crate.path,
-            items,
-            manifest: &borrowed_crate.manifest,
+            file: &unparsed_crate.file,
+            path: &unparsed_crate.path,
+            items: Vec::new(),
+            manifest: &unparsed_crate.manifest,
         })
     }
 }
@@ -76,56 +49,32 @@ pub enum ItemKorok<'a> {
     Unsupported(UnsupportedItemKorok<'a>),
 }
 
-impl<'a, 'b> ItemKorok<'a> {
-    pub fn parse(context: &'b mut KorokContext, item: &'a syn::Item) -> ParsingResult<Self> {
+impl<'a> ItemKorok<'a> {
+    pub fn parse(item: &'a syn::Item) -> ParsingResult<Self> {
         match item {
             // syn::Item::Mod(item) if item.content.is_some() => {}
             // syn::Item::Mod(item) if item.content.is_none() => {}
-            syn::Item::Struct(item) => Ok(ItemKorok::Struct(StructKorok::parse(context, item)?)),
-            syn::Item::Enum(item) => Ok(ItemKorok::Enum(EnumKorok::parse(context, item)?)),
+            syn::Item::Struct(item) => Ok(ItemKorok::Struct(StructKorok::parse(item)?)),
+            syn::Item::Enum(item) => Ok(ItemKorok::Enum(EnumKorok::parse(item)?)),
             _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok { ast: item })),
         }
     }
 
-    pub fn parse_all(
-        context: &'b mut KorokContext,
-        items: &'a Vec<syn::Item>,
-    ) -> ParsingResult<Vec<Self>> {
-        items
-            .iter()
-            .map(|item| Self::parse(context, item))
-            .collect()
+    pub fn parse_all(items: &'a Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
+        items.iter().map(|item| Self::parse(item)).collect()
     }
 }
 
-pub struct FileModuleKorok<'a, 'b> {
+pub struct FileModuleKorok<'a> {
     pub file: &'a syn::File,
     pub ast: &'a syn::ItemMod,
-    pub path: &'b Path,
+    pub path: &'a Path,
     pub items: Vec<ItemKorok<'a>>,
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn read(parent_path: &Path, ast: &'a syn::ItemMod) -> ParsingResult<Self> {
-        let module_name = ast.ident.to_string();
-        let path = parent_path
-            .to_path_buf()
-            .join(format!("{}.rs", module_name)); // TODO: Search other places like `name/mod.rs`.
-
-        let content = fs::read_to_string(path)?;
-        let file = syn::parse_file(&content)?;
-        let manifest = Manifest::from_path(path)?;
-        Ok(Self {
-            file,
-            path,
-            items: vec![],
-            manifest,
-        })
-    }
-
-    pub fn parse(&'a mut self) -> ParsingResult<()> {
-        self.items = ItemKorok::parse_all(&self.file.items)?;
-        Ok(())
+    pub fn parse(_ast: &'a syn::ItemMod) -> ParsingResult<Self> {
+        unimplemented!()
     }
 }
 
@@ -141,16 +90,12 @@ pub struct StructKorok<'a> {
     pub fields: Vec<FieldKorok<'a>>,
 }
 
-impl<'a> TryFrom<&'a syn::ItemStruct> for StructKorok<'a> {
-    type Error = ParsingError;
-
-    fn try_from(ast: &'a syn::ItemStruct) -> ParsingResult<Self> {
-        let attributes = Attribute::parse_all(&ast.attrs)?;
-        let fields = FieldKorok::parse_all(&ast.fields)?;
+impl<'a> StructKorok<'a> {
+    fn parse(ast: &'a syn::ItemStruct) -> ParsingResult<Self> {
         Ok(Self {
             ast,
-            attributes,
-            fields,
+            attributes: Attribute::parse_all(&ast.attrs)?,
+            fields: FieldKorok::parse_all(&ast.fields)?,
         })
     }
 }
@@ -194,16 +139,12 @@ pub struct EnumKorok<'a> {
     pub variants: Vec<EnumVariantKorok<'a>>,
 }
 
-impl<'a> TryFrom<&'a syn::ItemEnum> for EnumKorok<'a> {
-    type Error = ParsingError;
-
-    fn try_from(ast: &'a syn::ItemEnum) -> ParsingResult<Self> {
-        let attributes = Attribute::parse_all(&ast.attrs)?;
-        let variants = EnumVariantKorok::parse_all(&ast.variants)?;
+impl<'a> EnumKorok<'a> {
+    fn parse(ast: &'a syn::ItemEnum) -> ParsingResult<Self> {
         Ok(Self {
             ast,
-            attributes,
-            variants,
+            attributes: Attribute::parse_all(&ast.attrs)?,
+            variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
     }
 }
@@ -215,24 +156,18 @@ pub struct EnumVariantKorok<'a> {
 }
 
 impl<'a> EnumVariantKorok<'a> {
+    fn parse(ast: &'a syn::Variant) -> ParsingResult<Self> {
+        Ok(Self {
+            ast,
+            attributes: Attribute::parse_all(&ast.attrs)?,
+            fields: FieldKorok::parse_all(&ast.fields)?,
+        })
+    }
+
     pub fn parse_all(
         variants: &'a syn::punctuated::Punctuated<syn::Variant, syn::Token![,]>,
     ) -> ParsingResult<Vec<Self>> {
-        variants.iter().map(Self::try_from).collect()
-    }
-}
-
-impl<'a> TryFrom<&'a syn::Variant> for EnumVariantKorok<'a> {
-    type Error = ParsingError;
-
-    fn try_from(ast: &'a syn::Variant) -> ParsingResult<Self> {
-        let attributes = Attribute::parse_all(&ast.attrs)?;
-        let fields = FieldKorok::parse_all(&ast.fields)?;
-        Ok(Self {
-            ast,
-            attributes,
-            fields,
-        })
+        variants.iter().map(Self::parse).collect()
     }
 }
 
