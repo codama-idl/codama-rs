@@ -47,6 +47,7 @@ impl UnparsedCrate {
 
 pub struct UnparsedModule {
     pub file: syn::File,
+    pub item_index: usize,
     pub modules: Vec<UnparsedModule>,
     pub path: PathBuf,
 }
@@ -63,11 +64,12 @@ impl UnparsedModule {
 
         items
             .iter()
-            .map(|item| UnparsedModule::read(&path, item))
+            .enumerate()
+            .map(|(item_index, &item)| UnparsedModule::read(&path, item, item_index))
             .collect::<ParsingResult<Vec<_>>>()
     }
 
-    pub fn read(path: &Path, item: &syn::ItemMod) -> ParsingResult<Self> {
+    pub fn read(path: &Path, item: &syn::ItemMod, item_index: usize) -> ParsingResult<Self> {
         let parent_directory = path.parent().unwrap();
         let filename = path.file_stem().unwrap().to_str().unwrap();
         let current_directory = parent_directory.join(filename);
@@ -91,6 +93,7 @@ impl UnparsedModule {
 
         Ok(Self {
             file,
+            item_index,
             modules,
             path,
         })

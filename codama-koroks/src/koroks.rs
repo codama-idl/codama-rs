@@ -2,8 +2,8 @@ use std::path::Path;
 
 use cargo_toml::Manifest;
 
-use crate::internals::{ParsingError, ParsingResult};
-use crate::modules::{UnparsedCrate, UnparsedRoot};
+use crate::internals::ParsingResult;
+use crate::modules::{UnparsedCrate, UnparsedModule, UnparsedRoot};
 use crate::nodes::NumberTypeNode;
 use crate::{attributes::Attribute, nodes::TypeNode};
 
@@ -25,9 +25,9 @@ impl<'a> RootKorok<'a> {
 
 pub struct CrateKorok<'a> {
     pub file: &'a syn::File,
-    pub path: &'a Path,
     pub items: Vec<ItemKorok<'a>>,
     pub manifest: &'a Manifest,
+    pub path: &'a Path,
 }
 
 impl<'a> CrateKorok<'a> {
@@ -35,7 +35,7 @@ impl<'a> CrateKorok<'a> {
         Ok(Self {
             file: &unparsed_crate.file,
             path: &unparsed_crate.path,
-            items: Vec::new(),
+            items: ItemKorok::parse_all(&unparsed_crate.file.items, &unparsed_crate.modules)?,
             manifest: &unparsed_crate.manifest,
         })
     }
@@ -50,38 +50,89 @@ pub enum ItemKorok<'a> {
 }
 
 impl<'a> ItemKorok<'a> {
-    pub fn parse(item: &'a syn::Item) -> ParsingResult<Self> {
+    pub fn parse(
+        item: &'a syn::Item,
+        modules: &'a Vec<UnparsedModule>,
+        item_index: usize,
+    ) -> ParsingResult<Self> {
         match item {
-            // syn::Item::Mod(item) if item.content.is_some() => {}
-            // syn::Item::Mod(item) if item.content.is_none() => {}
-            syn::Item::Struct(item) => Ok(ItemKorok::Struct(StructKorok::parse(item)?)),
-            syn::Item::Enum(item) => Ok(ItemKorok::Enum(EnumKorok::parse(item)?)),
+            syn::Item::Mod(ast) if ast.content.is_none() => {
+                let module = modules.iter().nth(item_index);
+                match module {
+                    Some(module) => Ok(ItemKorok::FileModule(FileModuleKorok::parse(ast, module)?)),
+                    None => Err(syn::Error::new_spanned(
+                        ast,
+                        "Associated UnparsedModule not found",
+                    )
+                    .into()),
+                }
+            }
+            syn::Item::Mod(ast) if ast.content.is_some() => {
+                Ok(ItemKorok::Module(ModuleKorok::parse(ast, modules)?))
+            }
+            syn::Item::Struct(ast) => Ok(ItemKorok::Struct(StructKorok::parse(ast)?)),
+            syn::Item::Enum(ast) => Ok(ItemKorok::Enum(EnumKorok::parse(ast)?)),
             _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok { ast: item })),
         }
     }
 
-    pub fn parse_all(items: &'a Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
-        items.iter().map(|item| Self::parse(item)).collect()
+    pub fn parse_all(
+        items: &'a Vec<syn::Item>,
+        modules: &'a Vec<UnparsedModule>,
+    ) -> ParsingResult<Vec<Self>> {
+        items
+            .iter()
+            .enumerate()
+            .map(|(item_index, item)| Self::parse(item, modules, item_index))
+            .collect()
     }
 }
 
 pub struct FileModuleKorok<'a> {
-    pub file: &'a syn::File,
     pub ast: &'a syn::ItemMod,
-    pub path: &'a Path,
+    pub file: &'a syn::File,
     pub items: Vec<ItemKorok<'a>>,
+    pub path: &'a Path,
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(_ast: &'a syn::ItemMod) -> ParsingResult<Self> {
-        unimplemented!()
+    pub fn parse(ast: &'a syn::ItemMod, module: &'a UnparsedModule) -> ParsingResult<Self> {
+        if let Some(_) = ast.content {
+            return Err(syn::Error::new_spanned(
+                ast,
+                "Module has content, it should be parsed with ModuleKorok",
+            )
+            .into());
+        }
+
+        Ok(Self {
+            ast,
+            file: &module.file,
+            items: ItemKorok::parse_all(&module.file.items, &module.modules)?,
+            path: &module.path,
+        })
     }
 }
 
 pub struct ModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
-    pub path: &'a Path,
     pub items: Vec<ItemKorok<'a>>,
+}
+
+impl<'a> ModuleKorok<'a> {
+    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<UnparsedModule>) -> ParsingResult<Self> {
+        match &ast.content {
+            Some(content) => Ok(Self {
+                ast,
+                items: ItemKorok::parse_all(&content.1, modules)?,
+            }),
+            None => Err(syn::Error::new_spanned(
+                ast,
+                "Module has no content, it should be parsed with FileModuleKorok",
+            )
+            .into()),
+        }
+    }
 }
 
 pub struct StructKorok<'a> {
@@ -91,7 +142,7 @@ pub struct StructKorok<'a> {
 }
 
 impl<'a> StructKorok<'a> {
-    fn parse(ast: &'a syn::ItemStruct) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemStruct) -> ParsingResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
@@ -102,24 +153,22 @@ impl<'a> StructKorok<'a> {
 
 pub struct FieldKorok<'a> {
     pub ast: &'a syn::Field,
-    pub base_type: TypeNode,
     pub attributes: Vec<Attribute<'a>>,
+    pub base_type: TypeNode,
 }
 
 impl<'a> FieldKorok<'a> {
     pub fn parse_all(fields: &'a syn::Fields) -> ParsingResult<Vec<Self>> {
         match fields {
-            syn::Fields::Named(f) => f.named.iter().map(Self::try_from).collect(),
-            syn::Fields::Unnamed(f) => f.unnamed.iter().map(Self::try_from).collect(),
+            syn::Fields::Named(f) => f.named.iter().map(Self::parse).collect(),
+            syn::Fields::Unnamed(f) => f.unnamed.iter().map(Self::parse).collect(),
             syn::Fields::Unit => Ok(vec![]),
         }
     }
 }
 
-impl<'a> TryFrom<&'a syn::Field> for FieldKorok<'a> {
-    type Error = ParsingError;
-
-    fn try_from(ast: &'a syn::Field) -> ParsingResult<Self> {
+impl<'a> FieldKorok<'a> {
+    pub fn parse(ast: &'a syn::Field) -> ParsingResult<Self> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         // TODO: implement.
         let base_type = TypeNode::Number(NumberTypeNode {
@@ -140,7 +189,7 @@ pub struct EnumKorok<'a> {
 }
 
 impl<'a> EnumKorok<'a> {
-    fn parse(ast: &'a syn::ItemEnum) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemEnum) -> ParsingResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
@@ -156,7 +205,7 @@ pub struct EnumVariantKorok<'a> {
 }
 
 impl<'a> EnumVariantKorok<'a> {
-    fn parse(ast: &'a syn::Variant) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::Variant) -> ParsingResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
