@@ -1,3 +1,7 @@
+use crate::Node;
+
+pub use NumberFormat::*;
+
 #[derive(Debug)]
 pub struct NumberTypeNode {
     pub format: NumberFormat,
@@ -8,6 +12,10 @@ impl NumberTypeNode {
     pub fn new(format: NumberFormat, endian: Endian) -> Self {
         Self { format, endian }
     }
+}
+
+impl Node for NumberTypeNode {
+    const KIND: &'static str = "numberTypeNode";
 }
 
 #[derive(Debug)]
@@ -26,8 +34,6 @@ pub enum NumberFormat {
     F64,
     ShortU16,
 }
-
-pub use NumberFormat::*;
 
 #[derive(Debug)]
 pub enum Endian {

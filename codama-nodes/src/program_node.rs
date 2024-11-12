@@ -1,7 +1,4 @@
-use crate::{
-    account_node::AccountNode, defined_type_node::DefinedTypeNode,
-    instruction_node::InstructionNode, pda_node::PdaNode,
-};
+use crate::{AccountNode, DefinedTypeNode, InstructionNode, Node, PdaNode};
 
 #[derive(Debug)]
 pub struct ProgramNode {
@@ -11,4 +8,8 @@ pub struct ProgramNode {
     pub instructions: Vec<InstructionNode>,
     pub defined_types: Vec<DefinedTypeNode>,
     pub pdas: Vec<PdaNode>,
+}
+
+impl Node for ProgramNode {
+    const KIND: &'static str = "programNode";
 }
