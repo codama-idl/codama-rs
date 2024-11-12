@@ -1,8 +1,10 @@
-use crate::{NestedTypeNodeTrait, PostOffsetTypeNode, TypeNodeEnumTrait, TypeNodeTrait};
+use codama_nodes_derive::IntoEnum;
 
-use super::PreOffsetTypeNode;
+use crate::{
+    NestedTypeNodeTrait, PostOffsetTypeNode, PreOffsetTypeNode, TypeNodeEnumTrait, TypeNodeTrait,
+};
 
-#[derive(Debug)]
+#[derive(Debug, IntoEnum)]
 pub enum NestedTypeNode<T: TypeNodeTrait> {
     PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
     PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
@@ -20,23 +22,5 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
             NestedTypeNode::PostOffset(node) => node.get_nested_type_node(),
             NestedTypeNode::PreOffset(node) => node.get_nested_type_node(),
         }
-    }
-}
-
-impl<T: TypeNodeTrait> From<T> for NestedTypeNode<T> {
-    fn from(node: T) -> Self {
-        NestedTypeNode::Value(node)
-    }
-}
-
-impl<T: TypeNodeTrait> From<PostOffsetTypeNode<NestedTypeNode<T>>> for NestedTypeNode<T> {
-    fn from(node: PostOffsetTypeNode<NestedTypeNode<T>>) -> Self {
-        NestedTypeNode::PostOffset(node.into())
-    }
-}
-
-impl<T: TypeNodeTrait> From<PreOffsetTypeNode<NestedTypeNode<T>>> for NestedTypeNode<T> {
-    fn from(node: PreOffsetTypeNode<NestedTypeNode<T>>) -> Self {
-        NestedTypeNode::PreOffset(node.into())
     }
 }

@@ -27,6 +27,19 @@ dependencies = [
 [[package]]
 name = "codama-nodes"
 version = "0.1.0"
+dependencies = [
+ "codama-nodes-derive",
+]
+
+[[package]]
+name = "codama-nodes-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "trybuild",
+]
 
 [[package]]
 name = "dissimilar"

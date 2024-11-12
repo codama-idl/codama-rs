@@ -1,9 +1,11 @@
+use codama_nodes_derive::IntoEnum;
+
 use crate::{
     NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, SolAmountTypeNode, StringTypeNode,
     TypeNodeEnumTrait,
 };
 
-#[derive(Debug)]
+#[derive(Debug, IntoEnum)]
 pub enum TypeNode {
     Number(NumberTypeNode),
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
@@ -13,27 +15,3 @@ pub enum TypeNode {
 }
 
 impl TypeNodeEnumTrait for TypeNode {}
-
-impl From<NumberTypeNode> for TypeNode {
-    fn from(node: NumberTypeNode) -> Self {
-        TypeNode::Number(node)
-    }
-}
-
-impl From<StringTypeNode> for TypeNode {
-    fn from(node: StringTypeNode) -> Self {
-        TypeNode::String(node)
-    }
-}
-
-impl From<PostOffsetTypeNode<TypeNode>> for TypeNode {
-    fn from(node: PostOffsetTypeNode<TypeNode>) -> Self {
-        TypeNode::PostOffset(node.into())
-    }
-}
-
-impl From<PreOffsetTypeNode<TypeNode>> for TypeNode {
-    fn from(node: PreOffsetTypeNode<TypeNode>) -> Self {
-        TypeNode::PreOffset(node.into())
-    }
-}
