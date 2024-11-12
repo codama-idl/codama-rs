@@ -20,6 +20,22 @@ impl<T: TypeNodeEnumFlag> PostOffsetTypeNode<T> {
             offset,
         }
     }
+
+    pub fn absolute(r#type: T, offset: usize) -> Self {
+        Self::new(r#type, PostOffsetStrategy::Absolute, offset)
+    }
+
+    pub fn padded(r#type: T, offset: usize) -> Self {
+        Self::new(r#type, PostOffsetStrategy::Padded, offset)
+    }
+
+    pub fn pre_offset(r#type: T, offset: usize) -> Self {
+        Self::new(r#type, PostOffsetStrategy::PreOffset, offset)
+    }
+
+    pub fn relative(r#type: T, offset: usize) -> Self {
+        Self::new(r#type, PostOffsetStrategy::Relative, offset)
+    }
 }
 
 impl<T: TypeNodeEnumFlag> Node for PostOffsetTypeNode<T> {
