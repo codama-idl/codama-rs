@@ -16,11 +16,13 @@ pub fn derive_node(input: TokenStream) -> TokenStream {
     };
 
     let item_name = &input.ident;
+    let item_generics = input.generics;
+    let item_type_params = get_type_params(&item_generics);
     let kind = lowercase_first_letter(&item_name.to_string());
 
     // Render the macro output.
     quote! {
-        impl crate::NodeTrait for #item_name {
+        impl #item_generics crate::NodeTrait for #item_name #item_type_params{
             const KIND: &'static str = #kind;
         }
     }
@@ -38,10 +40,12 @@ pub fn derive_type_node(input: TokenStream) -> TokenStream {
     };
 
     let item_name = &input.ident;
+    let item_generics = input.generics;
+    let item_type_params = get_type_params(&item_generics);
 
     // Render the macro output.
     quote! {
-        impl crate::TypeNodeTrait for #item_name {}
+        impl #item_generics crate::TypeNodeTrait for #item_name #item_type_params{}
     }
     .into()
 }
@@ -69,29 +73,7 @@ pub fn derive_into_enum(input: TokenStream) -> TokenStream {
     let enum_generics = input.generics;
 
     // Extract only the type parameters of the enum — e.g. `<T, U>`.
-    let enum_type_params = enum_generics
-        .params
-        .iter()
-        .map(|param| match param {
-            syn::GenericParam::Type(type_param) => {
-                let ident = &type_param.ident;
-                quote! { #ident }
-            }
-            syn::GenericParam::Lifetime(lifetime) => {
-                let lifetime = &lifetime.lifetime;
-                quote! { #lifetime }
-            }
-            syn::GenericParam::Const(const_param) => {
-                let ident = &const_param.ident;
-                quote! { #ident }
-            }
-        })
-        .collect::<Vec<_>>();
-    let enum_type_params = if enum_type_params.is_empty() {
-        quote! {}
-    } else {
-        quote! { <#(#enum_type_params),*> }
-    };
+    let enum_type_params = get_type_params(&enum_generics);
 
     // Generate an implementation block for each variant.
     let impl_blocks = variants.iter().map(|variant| {

@@ -1,3 +1,5 @@
+use quote::quote;
+
 // Identify the inner type of a type — e.g. `Box<T>` -> `T`.
 pub fn unwrap_inner_type<'a>(ty: &'a syn::Type, ident: &'a str) -> Option<&'a syn::Type> {
     // Get the path of the type. — e.g. `a::b::c::Option`.
@@ -36,6 +38,33 @@ pub fn unwrap_inner_type<'a>(ty: &'a syn::Type, ident: &'a str) -> Option<&'a sy
 
 pub fn is_single_path(path: &syn::Path, ident: &str) -> bool {
     path.segments.len() == 1 && path.segments[0].ident == ident
+}
+
+pub fn get_type_params(generics: &syn::Generics) -> proc_macro2::TokenStream {
+    let type_params = generics
+        .params
+        .iter()
+        .map(|param| match param {
+            syn::GenericParam::Type(type_param) => {
+                let ident = &type_param.ident;
+                quote! { #ident }
+            }
+            syn::GenericParam::Lifetime(lifetime) => {
+                let lifetime = &lifetime.lifetime;
+                quote! { #lifetime }
+            }
+            syn::GenericParam::Const(const_param) => {
+                let ident = &const_param.ident;
+                quote! { #ident }
+            }
+        })
+        .collect::<Vec<_>>();
+    let enum_type_params = if type_params.is_empty() {
+        quote! {}
+    } else {
+        quote! { <#(#type_params),*> }
+    };
+    enum_type_params
 }
 
 pub fn lowercase_first_letter(s: &str) -> String {
