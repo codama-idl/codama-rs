@@ -37,3 +37,11 @@ pub fn unwrap_inner_type<'a>(ty: &'a syn::Type, ident: &'a str) -> Option<&'a sy
 pub fn is_single_path(path: &syn::Path, ident: &str) -> bool {
     path.segments.len() == 1 && path.segments[0].ident == ident
 }
+
+pub fn lowercase_first_letter(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(first) => first.to_lowercase().collect::<String>() + c.as_str(),
+    }
+}

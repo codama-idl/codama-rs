@@ -98,3 +98,29 @@ pub fn derive_into_enum(input: TokenStream) -> TokenStream {
     }
     .into()
 }
+
+#[proc_macro_attribute]
+pub fn node(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let item = parse_macro_input!(item as syn::Item);
+    let item_struct = match &item {
+        syn::Item::Struct(item_struct) => item_struct,
+        _ => {
+            // Return a compile error if the attribute is not on a struct.
+            return syn::Error::new_spanned(item, "expected a struct")
+                .to_compile_error()
+                .into();
+        }
+    };
+    let item_name = &item_struct.ident;
+    let kind = lowercase_first_letter(&item_name.to_string());
+
+    // Render the macro output.
+    quote! {
+        #item
+
+        impl crate::NodeTrait for #item_name {
+            const KIND: &'static str = #kind;
+        }
+    }
+    .into()
+}
