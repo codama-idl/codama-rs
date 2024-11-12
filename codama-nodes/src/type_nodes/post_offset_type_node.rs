@@ -1,9 +1,9 @@
 use crate::Node;
 
-use super::{NumberTypeNode, NumberTypeNodeFlag, TypeNodeFlag};
+use super::{NumberTypeNode, NumberTypeNodeFlag, TypeNodeEnumFlag};
 
 #[derive(Debug)]
-pub struct PostOffsetTypeNode<T: TypeNodeFlag> {
+pub struct PostOffsetTypeNode<T: TypeNodeEnumFlag> {
     // Data.
     pub offset: usize,
     pub strategy: PostOffsetStrategy,
@@ -12,7 +12,7 @@ pub struct PostOffsetTypeNode<T: TypeNodeFlag> {
     pub r#type: T,
 }
 
-impl<T: TypeNodeFlag> PostOffsetTypeNode<T> {
+impl<T: TypeNodeEnumFlag> PostOffsetTypeNode<T> {
     pub fn new(r#type: T, strategy: PostOffsetStrategy, offset: usize) -> Self {
         Self {
             r#type,
@@ -22,11 +22,11 @@ impl<T: TypeNodeFlag> PostOffsetTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeFlag> Node for PostOffsetTypeNode<T> {
+impl<T: TypeNodeEnumFlag> Node for PostOffsetTypeNode<T> {
     const KIND: &'static str = "postOffsetTypeNode";
 }
 
-impl<T: TypeNodeFlag> NumberTypeNodeFlag for PostOffsetTypeNode<T>
+impl<T: TypeNodeEnumFlag> NumberTypeNodeFlag for PostOffsetTypeNode<T>
 where
     T: NumberTypeNodeFlag,
 {

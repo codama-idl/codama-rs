@@ -1,19 +1,19 @@
 use crate::Node;
 
-use super::NumberTypeNodeFlag;
+use super::{NestedTypeNode, NumberTypeNode};
 
 #[derive(Debug)]
-pub struct SolAmountTypeNode<T: NumberTypeNodeFlag> {
+pub struct SolAmountTypeNode {
     // Children.
-    pub number: T,
+    pub number: NestedTypeNode<NumberTypeNode>,
 }
 
-impl<T: NumberTypeNodeFlag> SolAmountTypeNode<T> {
-    pub fn new(number: T) -> Self {
+impl SolAmountTypeNode {
+    pub fn new(number: NestedTypeNode<NumberTypeNode>) -> Self {
         Self { number }
     }
 }
 
-impl<T: NumberTypeNodeFlag> Node for SolAmountTypeNode<T> {
+impl Node for SolAmountTypeNode {
     const KIND: &'static str = "solAmountTypeNode";
 }

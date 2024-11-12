@@ -7,21 +7,25 @@ pub trait TypeNodeFlag {}
 impl TypeNodeFlag for TypeNode {}
 impl TypeNodeFlag for NumberTypeNode {}
 impl TypeNodeFlag for StringTypeNode {}
-impl<T: NumberTypeNodeFlag> TypeNodeFlag for SolAmountTypeNode<T> {}
-impl<T: TypeNodeFlag> TypeNodeFlag for PostOffsetTypeNode<T> {}
+impl TypeNodeFlag for SolAmountTypeNode {}
+impl<T: TypeNodeEnumFlag> TypeNodeFlag for PostOffsetTypeNode<T> {}
+
+pub trait TypeNodeEnumFlag {}
+impl TypeNodeEnumFlag for TypeNode {}
+impl<T: TypeNodeFlag> TypeNodeEnumFlag for NestedTypeNode<T> {}
 
 #[derive(Debug)]
 pub enum TypeNode {
     Number(NumberTypeNode),
     String(StringTypeNode),
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
-    SolAmount(SolAmountTypeNode<NestedTypeNode<NumberTypeNode>>),
+    SolAmount(SolAmountTypeNode),
 }
 
 #[derive(Debug)]
 pub enum NestedTypeNode<T: TypeNodeFlag> {
     Value(T),
-    PostOffset(Box<PostOffsetTypeNode<T>>),
+    PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
     // PreOffset(Box<PreOffsetTypeNode<T>>),
     // Sentinel(Box<SentinelTypeNode<T>>),
     // ...
