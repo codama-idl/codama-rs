@@ -1,13 +1,15 @@
 use crate::{
-    NumberTypeNode, PostOffsetTypeNode, SolAmountTypeNode, StringTypeNode, TypeNodeEnumTrait,
+    NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, SolAmountTypeNode, StringTypeNode,
+    TypeNodeEnumTrait,
 };
 
 #[derive(Debug)]
 pub enum TypeNode {
     Number(NumberTypeNode),
-    String(StringTypeNode),
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
+    PreOffset(Box<PreOffsetTypeNode<TypeNode>>),
     SolAmount(SolAmountTypeNode),
+    String(StringTypeNode),
 }
 
 impl TypeNodeEnumTrait for TypeNode {}

@@ -4,9 +4,9 @@ use super::PreOffsetTypeNode;
 
 #[derive(Debug)]
 pub enum NestedTypeNode<T: TypeNodeTrait> {
-    Value(T),
     PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
     PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
+    Value(T),
     // Sentinel(Box<SentinelTypeNode<NestedTypeNode<T>>>),
     // ...
 }
