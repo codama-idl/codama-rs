@@ -2,6 +2,7 @@ pub struct RootNode {
     pub program: ProgramNode,
     pub additional_programs: Vec<ProgramNode>,
 }
+
 pub struct ProgramNode {
     pub name: String,
     pub version: String,

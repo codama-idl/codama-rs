@@ -7,53 +7,68 @@ use cargo_toml::Manifest;
 
 use crate::internals::ParsingResult;
 
-pub struct UnparsedRoot {
-    pub crates: Vec<UnparsedCrate>,
+pub struct RootStore {
+    pub crates: Vec<CrateStore>,
 }
 
-impl UnparsedRoot {
-    pub fn read(paths: &Vec<&Path>) -> ParsingResult<Self> {
+impl RootStore {
+    pub fn load_from(paths: &Vec<&Path>) -> ParsingResult<Self> {
         Ok(Self {
             crates: paths
                 .iter()
-                .map(|path| UnparsedCrate::read(path))
+                .map(|path| CrateStore::load_from(path))
                 .collect::<ParsingResult<_>>()?,
+        })
+    }
+
+    pub fn populate_from(tt: proc_macro2::TokenStream) -> ParsingResult<Self> {
+        Ok(Self {
+            crates: vec![CrateStore::populate_from(tt)?],
         })
     }
 }
 
-pub struct UnparsedCrate {
+pub struct CrateStore {
     pub file: syn::File,
-    pub manifest: Manifest,
-    pub modules: Vec<UnparsedModule>,
+    pub manifest: Option<Manifest>,
+    pub modules: Vec<ModuleStore>,
     pub path: PathBuf,
 }
 
-impl UnparsedCrate {
-    pub fn read(path: &Path) -> ParsingResult<Self> {
+impl CrateStore {
+    pub fn load_from(path: &Path) -> ParsingResult<Self> {
         let content = fs::read_to_string(path)?;
         let file = syn::parse_file(&content)?;
         let manifest = Manifest::from_path(path)?;
-        let modules = UnparsedModule::read_all(path, &file.items)?;
+        let modules = ModuleStore::load_all_from(path, &file.items)?;
 
         Ok(Self {
             file,
-            manifest,
+            manifest: Some(manifest),
             modules,
             path: path.to_path_buf(),
         })
     }
+
+    pub fn populate_from(tt: proc_macro2::TokenStream) -> ParsingResult<Self> {
+        Ok(Self {
+            file: syn::parse2::<syn::File>(tt)?,
+            manifest: None,
+            modules: Vec::new(),
+            path: PathBuf::new(),
+        })
+    }
 }
 
-pub struct UnparsedModule {
+pub struct ModuleStore {
     pub file: syn::File,
     pub item_index: usize,
-    pub modules: Vec<UnparsedModule>,
+    pub modules: Vec<ModuleStore>,
     pub path: PathBuf,
 }
 
-impl UnparsedModule {
-    pub fn read_all(path: &Path, items: &Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
+impl ModuleStore {
+    pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
         let items = &items
             .iter()
             .filter_map(|item| match item {
@@ -65,11 +80,11 @@ impl UnparsedModule {
         items
             .iter()
             .enumerate()
-            .map(|(item_index, &item)| UnparsedModule::read(&path, item, item_index))
+            .map(|(item_index, &item)| ModuleStore::load_from(&path, item, item_index))
             .collect::<ParsingResult<Vec<_>>>()
     }
 
-    pub fn read(path: &Path, item: &syn::ItemMod, item_index: usize) -> ParsingResult<Self> {
+    pub fn load_from(path: &Path, item: &syn::ItemMod, item_index: usize) -> ParsingResult<Self> {
         let parent_directory = path.parent().unwrap();
         let filename = path.file_stem().unwrap().to_str().unwrap();
         let current_directory = parent_directory.join(filename);
@@ -89,7 +104,7 @@ impl UnparsedModule {
             .ok_or_else(|| syn::Error::new_spanned(&item, "could not read file"))?;
         let content = std::fs::read_to_string(&path)?;
         let file = syn::parse_file(&content)?;
-        let modules = Self::read_all(&path, &file.items)?;
+        let modules = Self::load_all_from(&path, &file.items)?;
 
         Ok(Self {
             file,

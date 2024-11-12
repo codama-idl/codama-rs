@@ -3,8 +3,8 @@ use std::path::Path;
 use cargo_toml::Manifest;
 
 use crate::internals::ParsingResult;
-use crate::modules::{UnparsedCrate, UnparsedModule, UnparsedRoot};
 use crate::nodes::NumberTypeNode;
+use crate::stores::{CrateStore, ModuleStore, RootStore};
 use crate::{attributes::Attribute, nodes::TypeNode};
 
 pub struct RootKorok<'a> {
@@ -12,7 +12,7 @@ pub struct RootKorok<'a> {
 }
 
 impl<'a> RootKorok<'a> {
-    pub fn parse(unparsed_root: &'a UnparsedRoot) -> ParsingResult<Self> {
+    pub fn parse(unparsed_root: &'a RootStore) -> ParsingResult<Self> {
         Ok(Self {
             crates: unparsed_root
                 .crates
@@ -26,17 +26,17 @@ impl<'a> RootKorok<'a> {
 pub struct CrateKorok<'a> {
     pub file: &'a syn::File,
     pub items: Vec<ItemKorok<'a>>,
-    pub manifest: &'a Manifest,
+    pub manifest: &'a Option<Manifest>,
     pub path: &'a Path,
 }
 
 impl<'a> CrateKorok<'a> {
-    pub fn parse(unparsed_crate: &'a UnparsedCrate) -> ParsingResult<Self> {
+    pub fn parse(unparsed_crate: &'a CrateStore) -> ParsingResult<Self> {
         Ok(Self {
             file: &unparsed_crate.file,
-            path: &unparsed_crate.path,
             items: ItemKorok::parse_all(&unparsed_crate.file.items, &unparsed_crate.modules)?,
             manifest: &unparsed_crate.manifest,
+            path: &unparsed_crate.path,
         })
     }
 }
@@ -52,7 +52,7 @@ pub enum ItemKorok<'a> {
 impl<'a> ItemKorok<'a> {
     pub fn parse(
         item: &'a syn::Item,
-        modules: &'a Vec<UnparsedModule>,
+        modules: &'a Vec<ModuleStore>,
         item_index: usize,
     ) -> ParsingResult<Self> {
         match item {
@@ -78,7 +78,7 @@ impl<'a> ItemKorok<'a> {
 
     pub fn parse_all(
         items: &'a Vec<syn::Item>,
-        modules: &'a Vec<UnparsedModule>,
+        modules: &'a Vec<ModuleStore>,
     ) -> ParsingResult<Vec<Self>> {
         items
             .iter()
@@ -96,7 +96,7 @@ pub struct FileModuleKorok<'a> {
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, module: &'a UnparsedModule) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, module: &'a ModuleStore) -> ParsingResult<Self> {
         if let Some(_) = ast.content {
             return Err(syn::Error::new_spanned(
                 ast,
@@ -120,7 +120,7 @@ pub struct ModuleKorok<'a> {
 }
 
 impl<'a> ModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<UnparsedModule>) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<ModuleStore>) -> ParsingResult<Self> {
         match &ast.content {
             Some(content) => Ok(Self {
                 ast,
