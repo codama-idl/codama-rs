@@ -1,5 +1,4 @@
-use super::TypeNodeTrait;
-use crate::NodeTrait;
+use crate::{NodeTrait, TypeNodeTrait};
 
 pub use BytesEncoding::*;
 

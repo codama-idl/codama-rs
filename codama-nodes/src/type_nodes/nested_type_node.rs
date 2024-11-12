@@ -1,4 +1,4 @@
-use super::{NestedTypeNodeTrait, PostOffsetTypeNode, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{NestedTypeNodeTrait, PostOffsetTypeNode, TypeNodeEnumTrait, TypeNodeTrait};
 
 #[derive(Debug)]
 pub enum NestedTypeNode<T: TypeNodeTrait> {

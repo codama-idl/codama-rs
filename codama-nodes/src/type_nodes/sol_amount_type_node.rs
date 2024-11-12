@@ -1,6 +1,4 @@
-use crate::NodeTrait;
-
-use super::{NestedTypeNode, NumberTypeNode, TypeNodeTrait};
+use crate::{NestedTypeNode, NodeTrait, NumberTypeNode, TypeNodeTrait};
 
 #[derive(Debug)]
 pub struct SolAmountTypeNode {

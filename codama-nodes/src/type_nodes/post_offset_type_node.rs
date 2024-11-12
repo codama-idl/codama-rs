@@ -1,6 +1,4 @@
-use crate::NodeTrait;
-
-use super::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{NestedTypeNodeTrait, NodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 
 #[derive(Debug)]
 pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {

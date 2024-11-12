@@ -1,4 +1,4 @@
-use super::{
+use crate::{
     NumberTypeNode, PostOffsetTypeNode, SolAmountTypeNode, StringTypeNode, TypeNodeEnumTrait,
 };
 
