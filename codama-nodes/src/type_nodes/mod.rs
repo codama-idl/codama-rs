@@ -21,5 +21,5 @@ pub fn main() {
         NumberTypeNode::new(U16, Endian::Little),
         42,
     ));
-    amount.number.get_number_type_node();
+    amount.number.get_nested_type_node();
 }
