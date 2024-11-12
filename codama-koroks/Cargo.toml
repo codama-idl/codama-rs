@@ -12,6 +12,7 @@ trybuild = { version = "1.0", features = ["diff"] }
 
 [dependencies]
 cargo_toml = "0.20"
+codama-nodes = { path = "../codama-nodes" }
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }

@@ -1,7 +1,6 @@
-use crate::{
-    internals::{ParsingError, ParsingResult},
-    nodes::TypeNode,
-};
+use codama_nodes::type_nodes::type_node::TypeNode;
+
+use crate::internals::{ParsingError, ParsingResult};
 
 #[derive(Debug)]
 pub enum Attribute<'a> {

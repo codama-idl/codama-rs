@@ -1,11 +1,12 @@
 use std::path::Path;
 
 use cargo_toml::Manifest;
+use codama_nodes::type_nodes::number_type_node::{Endian, NumberFormat, NumberTypeNode};
+use codama_nodes::type_nodes::type_node::TypeNode;
 
+use crate::attributes::Attribute;
 use crate::internals::ParsingResult;
-use crate::nodes::NumberTypeNode;
 use crate::stores::{CrateStore, ModuleStore, RootStore};
-use crate::{attributes::Attribute, nodes::TypeNode};
 
 #[derive(Debug)]
 pub struct RootKorok<'a> {
@@ -177,7 +178,8 @@ impl<'a> FieldKorok<'a> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         // TODO: implement.
         let base_type = TypeNode::Number(NumberTypeNode {
-            format: "u16".to_string(),
+            format: NumberFormat::U16,
+            endian: Endian::Big,
         });
         Ok(Self {
             ast,

@@ -17,11 +17,16 @@ name = "codama-koroks"
 version = "0.1.0"
 dependencies = [
  "cargo_toml",
+ "codama-nodes",
  "proc-macro2",
  "quote",
  "syn",
  "trybuild",
 ]
+
+[[package]]
+name = "codama-nodes"
+version = "0.1.0"
 
 [[package]]
 name = "dissimilar"
