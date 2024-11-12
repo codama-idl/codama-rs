@@ -28,6 +28,12 @@ impl From<StringTypeNode> for TypeNode {
 
 impl From<PostOffsetTypeNode<TypeNode>> for TypeNode {
     fn from(node: PostOffsetTypeNode<TypeNode>) -> Self {
-        TypeNode::PostOffset(Box::new(node))
+        TypeNode::PostOffset(node.into())
+    }
+}
+
+impl From<PreOffsetTypeNode<TypeNode>> for TypeNode {
+    fn from(node: PreOffsetTypeNode<TypeNode>) -> Self {
+        TypeNode::PreOffset(node.into())
     }
 }
