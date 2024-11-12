@@ -2,6 +2,7 @@ use crate::{Node, ProgramNode};
 
 #[derive(Debug)]
 pub struct RootNode {
+    // Children.
     pub program: ProgramNode,
     pub additional_programs: Vec<ProgramNode>,
 }

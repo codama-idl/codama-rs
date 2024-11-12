@@ -2,6 +2,7 @@ use crate::Node;
 
 #[derive(Debug)]
 pub struct DefinedTypeNode {
+    // Data.
     pub name: String,
 }
 

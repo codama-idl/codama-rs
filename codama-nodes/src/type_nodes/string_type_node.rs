@@ -4,6 +4,7 @@ pub use BytesEncoding::*;
 
 #[derive(Debug)]
 pub struct StringTypeNode {
+    // Data.
     pub encoding: BytesEncoding,
 }
 

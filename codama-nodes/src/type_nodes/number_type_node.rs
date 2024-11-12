@@ -4,6 +4,7 @@ pub use NumberFormat::*;
 
 #[derive(Debug)]
 pub struct NumberTypeNode {
+    // Data.
     pub format: NumberFormat,
     pub endian: Endian,
 }

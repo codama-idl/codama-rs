@@ -2,6 +2,7 @@ use crate::Node;
 
 #[derive(Debug)]
 pub struct PdaNode {
+    // Data.
     pub name: String,
 }
 
