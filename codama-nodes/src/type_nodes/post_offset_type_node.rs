@@ -3,7 +3,7 @@ use crate::{NestedTypeNodeTrait, NodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 #[derive(Debug)]
 pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
-    pub offset: usize,
+    pub offset: i32,
     pub strategy: PostOffsetStrategy,
 
     // Children.
@@ -11,7 +11,7 @@ pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
 }
 
 impl<T: TypeNodeEnumTrait> PostOffsetTypeNode<T> {
-    pub fn new<U>(r#type: U, strategy: PostOffsetStrategy, offset: usize) -> Self
+    pub fn new<U>(r#type: U, strategy: PostOffsetStrategy, offset: i32) -> Self
     where
         U: Into<T>,
     {
@@ -22,28 +22,28 @@ impl<T: TypeNodeEnumTrait> PostOffsetTypeNode<T> {
         }
     }
 
-    pub fn absolute<U>(r#type: U, offset: usize) -> Self
+    pub fn absolute<U>(r#type: U, offset: i32) -> Self
     where
         U: Into<T>,
     {
         Self::new(r#type, PostOffsetStrategy::Absolute, offset)
     }
 
-    pub fn padded<U>(r#type: U, offset: usize) -> Self
+    pub fn padded<U>(r#type: U, offset: i32) -> Self
     where
         U: Into<T>,
     {
         Self::new(r#type, PostOffsetStrategy::Padded, offset)
     }
 
-    pub fn pre_offset<U>(r#type: U, offset: usize) -> Self
+    pub fn pre_offset<U>(r#type: U, offset: i32) -> Self
     where
         U: Into<T>,
     {
         Self::new(r#type, PostOffsetStrategy::PreOffset, offset)
     }
 
-    pub fn relative<U>(r#type: U, offset: usize) -> Self
+    pub fn relative<U>(r#type: U, offset: i32) -> Self
     where
         U: Into<T>,
     {
