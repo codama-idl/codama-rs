@@ -9,8 +9,13 @@ pub struct SolAmountTypeNode {
 }
 
 impl SolAmountTypeNode {
-    pub fn new(number: NestedTypeNode<NumberTypeNode>) -> Self {
-        Self { number }
+    pub fn new<T>(number: T) -> Self
+    where
+        T: Into<NestedTypeNode<NumberTypeNode>>,
+    {
+        Self {
+            number: number.into(),
+        }
     }
 }
 
