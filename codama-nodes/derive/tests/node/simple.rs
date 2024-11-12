@@ -1,10 +1,10 @@
-use codama_nodes_derive::node;
+use codama_nodes_derive::Node;
 
 pub trait NodeTrait {
     const KIND: &'static str;
 }
 
-#[node]
+#[derive(Node)]
 pub struct NumberTypeNode {}
 
 fn main() {
