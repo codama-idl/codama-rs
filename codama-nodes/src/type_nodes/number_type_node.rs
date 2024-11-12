@@ -2,6 +2,16 @@ use crate::Node;
 
 pub use NumberFormat::*;
 
+pub trait NumberTypeNodeFlag {
+    fn get_number_type_node(&self) -> &NumberTypeNode;
+}
+
+impl NumberTypeNodeFlag for NumberTypeNode {
+    fn get_number_type_node(&self) -> &NumberTypeNode {
+        self
+    }
+}
+
 #[derive(Debug)]
 pub struct NumberTypeNode {
     // Data.

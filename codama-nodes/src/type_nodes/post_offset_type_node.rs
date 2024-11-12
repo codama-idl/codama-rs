@@ -1,6 +1,6 @@
 use crate::Node;
 
-use super::TypeNodeFlag;
+use super::{NumberTypeNode, NumberTypeNodeFlag, TypeNodeFlag};
 
 #[derive(Debug)]
 pub struct PostOffsetTypeNode<T: TypeNodeFlag> {
@@ -24,6 +24,15 @@ impl<T: TypeNodeFlag> PostOffsetTypeNode<T> {
 
 impl<T: TypeNodeFlag> Node for PostOffsetTypeNode<T> {
     const KIND: &'static str = "postOffsetTypeNode";
+}
+
+impl<T: TypeNodeFlag> NumberTypeNodeFlag for PostOffsetTypeNode<T>
+where
+    T: NumberTypeNodeFlag,
+{
+    fn get_number_type_node(&self) -> &NumberTypeNode {
+        self.r#type.get_number_type_node()
+    }
 }
 
 #[derive(Debug)]
