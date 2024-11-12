@@ -1,14 +1,6 @@
-use super::{NumberTypeNode, PostOffsetTypeNode, SolAmountTypeNode, StringTypeNode};
-
-pub trait TypeNodeFlag {}
-impl TypeNodeFlag for TypeNode {}
-impl TypeNodeFlag for NumberTypeNode {}
-impl TypeNodeFlag for StringTypeNode {}
-impl TypeNodeFlag for SolAmountTypeNode {}
-impl<T: TypeNodeEnumFlag> TypeNodeFlag for PostOffsetTypeNode<T> {}
-
-pub trait TypeNodeEnumFlag {}
-impl TypeNodeEnumFlag for TypeNode {}
+use super::{
+    NumberTypeNode, PostOffsetTypeNode, SolAmountTypeNode, StringTypeNode, TypeNodeEnumTrait,
+};
 
 #[derive(Debug)]
 pub enum TypeNode {
@@ -17,6 +9,8 @@ pub enum TypeNode {
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
     SolAmount(SolAmountTypeNode),
 }
+
+impl TypeNodeEnumTrait for TypeNode {}
 
 impl From<NumberTypeNode> for TypeNode {
     fn from(node: NumberTypeNode) -> Self {

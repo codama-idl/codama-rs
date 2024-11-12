@@ -1,3 +1,3 @@
-pub trait Node {
+pub trait NodeTrait {
     const KIND: &'static str;
 }

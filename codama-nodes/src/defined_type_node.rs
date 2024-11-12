@@ -1,4 +1,4 @@
-use crate::Node;
+use crate::NodeTrait;
 
 #[derive(Debug)]
 pub struct DefinedTypeNode {
@@ -6,6 +6,6 @@ pub struct DefinedTypeNode {
     pub name: String,
 }
 
-impl Node for DefinedTypeNode {
+impl NodeTrait for DefinedTypeNode {
     const KIND: &'static str = "definedTypeNode";
 }

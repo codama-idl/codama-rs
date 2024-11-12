@@ -1,4 +1,5 @@
-use crate::Node;
+use super::TypeNodeTrait;
+use crate::NodeTrait;
 
 pub use BytesEncoding::*;
 
@@ -14,7 +15,8 @@ impl StringTypeNode {
     }
 }
 
-impl Node for StringTypeNode {
+impl TypeNodeTrait for StringTypeNode {}
+impl NodeTrait for StringTypeNode {
     const KIND: &'static str = "stringTypeNode";
 }
 

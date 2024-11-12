@@ -1,6 +1,6 @@
-use crate::Node;
+use crate::NodeTrait;
 
-use super::{NestedTypeNode, NumberTypeNode};
+use super::{NestedTypeNode, NumberTypeNode, TypeNodeTrait};
 
 #[derive(Debug)]
 pub struct SolAmountTypeNode {
@@ -19,6 +19,7 @@ impl SolAmountTypeNode {
     }
 }
 
-impl Node for SolAmountTypeNode {
+impl TypeNodeTrait for SolAmountTypeNode {}
+impl NodeTrait for SolAmountTypeNode {
     const KIND: &'static str = "solAmountTypeNode";
 }

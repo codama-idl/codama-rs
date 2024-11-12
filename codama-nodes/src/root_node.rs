@@ -1,4 +1,4 @@
-use crate::{Node, ProgramNode};
+use crate::{NodeTrait, ProgramNode};
 
 #[derive(Debug)]
 pub struct RootNode {
@@ -7,6 +7,6 @@ pub struct RootNode {
     pub additional_programs: Vec<ProgramNode>,
 }
 
-impl Node for RootNode {
+impl NodeTrait for RootNode {
     const KIND: &'static str = "rootNode";
 }

@@ -1,4 +1,4 @@
-use crate::Node;
+use crate::NodeTrait;
 
 #[derive(Debug)]
 pub struct AccountNode {
@@ -6,6 +6,6 @@ pub struct AccountNode {
     pub name: String,
 }
 
-impl Node for AccountNode {
+impl NodeTrait for AccountNode {
     const KIND: &'static str = "accountNode";
 }

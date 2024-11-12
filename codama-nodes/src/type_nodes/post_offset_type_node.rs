@@ -1,9 +1,9 @@
-use crate::Node;
+use crate::NodeTrait;
 
-use super::{NestedTypeNodeFlag, TypeNodeEnumFlag, TypeNodeFlag};
+use super::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 
 #[derive(Debug)]
-pub struct PostOffsetTypeNode<T: TypeNodeEnumFlag> {
+pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: usize,
     pub strategy: PostOffsetStrategy,
@@ -12,7 +12,7 @@ pub struct PostOffsetTypeNode<T: TypeNodeEnumFlag> {
     pub r#type: T,
 }
 
-impl<T: TypeNodeEnumFlag> PostOffsetTypeNode<T> {
+impl<T: TypeNodeEnumTrait> PostOffsetTypeNode<T> {
     pub fn new<U>(r#type: U, strategy: PostOffsetStrategy, offset: usize) -> Self
     where
         U: Into<T>,
@@ -53,13 +53,14 @@ impl<T: TypeNodeEnumFlag> PostOffsetTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeEnumFlag> Node for PostOffsetTypeNode<T> {
+impl<T: TypeNodeEnumTrait> TypeNodeTrait for PostOffsetTypeNode<T> {}
+impl<T: TypeNodeEnumTrait> NodeTrait for PostOffsetTypeNode<T> {
     const KIND: &'static str = "postOffsetTypeNode";
 }
 
-impl<T: TypeNodeEnumFlag, U: TypeNodeFlag> NestedTypeNodeFlag<U> for PostOffsetTypeNode<T>
+impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for PostOffsetTypeNode<T>
 where
-    T: NestedTypeNodeFlag<U>,
+    T: NestedTypeNodeTrait<U>,
 {
     fn get_nested_type_node(&self) -> &U {
         self.r#type.get_nested_type_node()

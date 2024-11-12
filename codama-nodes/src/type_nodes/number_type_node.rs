@@ -1,4 +1,5 @@
-use crate::Node;
+use super::TypeNodeTrait;
+use crate::NodeTrait;
 
 pub use NumberFormat::*;
 
@@ -15,7 +16,8 @@ impl NumberTypeNode {
     }
 }
 
-impl Node for NumberTypeNode {
+impl TypeNodeTrait for NumberTypeNode {}
+impl NodeTrait for NumberTypeNode {
     const KIND: &'static str = "numberTypeNode";
 }
 
