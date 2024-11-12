@@ -10,3 +10,5 @@ pub enum BytesEncoding {
     Base64,
     Utf8,
 }
+
+pub use BytesEncoding::*;

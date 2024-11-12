@@ -4,6 +4,12 @@ pub struct NumberTypeNode {
     pub endian: Endian,
 }
 
+impl NumberTypeNode {
+    pub fn new(format: NumberFormat, endian: Endian) -> Self {
+        Self { format, endian }
+    }
+}
+
 #[derive(Debug)]
 pub enum NumberFormat {
     U8,
@@ -20,6 +26,8 @@ pub enum NumberFormat {
     F64,
     ShortU16,
 }
+
+pub use NumberFormat::*;
 
 #[derive(Debug)]
 pub enum Endian {

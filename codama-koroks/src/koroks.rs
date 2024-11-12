@@ -1,7 +1,8 @@
 use std::path::Path;
 
 use cargo_toml::Manifest;
-use codama_nodes::{Endian, NumberFormat, NumberTypeNode, TypeNode};
+use codama_nodes::NumberFormat::U16;
+use codama_nodes::{Endian, NumberTypeNode, TypeNode};
 
 use crate::attributes::Attribute;
 use crate::internals::ParsingResult;
@@ -175,14 +176,10 @@ impl<'a> FieldKorok<'a> {
 
     pub fn parse(ast: &'a syn::Field) -> ParsingResult<Self> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
-        // TODO: implement.
-        let base_type = TypeNode::Number(NumberTypeNode {
-            format: NumberFormat::U16,
-            endian: Endian::Big,
-        });
         Ok(Self {
             ast,
-            base_type,
+            // TODO: implement.
+            base_type: NumberTypeNode::new(U16, Endian::Little).into(),
             attributes,
         })
     }
