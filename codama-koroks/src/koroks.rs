@@ -7,6 +7,7 @@ use crate::nodes::NumberTypeNode;
 use crate::stores::{CrateStore, ModuleStore, RootStore};
 use crate::{attributes::Attribute, nodes::TypeNode};
 
+#[derive(Debug)]
 pub struct RootKorok<'a> {
     pub crates: Vec<CrateKorok<'a>>,
 }
@@ -23,6 +24,7 @@ impl<'a> RootKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct CrateKorok<'a> {
     pub file: &'a syn::File,
     pub items: Vec<ItemKorok<'a>>,
@@ -41,6 +43,7 @@ impl<'a> CrateKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub enum ItemKorok<'a> {
     FileModule(FileModuleKorok<'a>),
     Module(ModuleKorok<'a>),
@@ -88,6 +91,7 @@ impl<'a> ItemKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct FileModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub file: &'a syn::File,
@@ -114,6 +118,7 @@ impl<'a> FileModuleKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct ModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub items: Vec<ItemKorok<'a>>,
@@ -135,6 +140,7 @@ impl<'a> ModuleKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
     pub attributes: Vec<Attribute<'a>>,
@@ -151,6 +157,7 @@ impl<'a> StructKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct FieldKorok<'a> {
     pub ast: &'a syn::Field,
     pub attributes: Vec<Attribute<'a>>,
@@ -165,9 +172,7 @@ impl<'a> FieldKorok<'a> {
             syn::Fields::Unit => Ok(vec![]),
         }
     }
-}
 
-impl<'a> FieldKorok<'a> {
     pub fn parse(ast: &'a syn::Field) -> ParsingResult<Self> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         // TODO: implement.
@@ -182,6 +187,7 @@ impl<'a> FieldKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct EnumKorok<'a> {
     pub ast: &'a syn::ItemEnum,
     pub attributes: Vec<Attribute<'a>>,
@@ -198,6 +204,7 @@ impl<'a> EnumKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct EnumVariantKorok<'a> {
     pub ast: &'a syn::Variant,
     pub attributes: Vec<Attribute<'a>>,
@@ -220,6 +227,7 @@ impl<'a> EnumVariantKorok<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct UnsupportedItemKorok<'a> {
     pub ast: &'a syn::Item,
 }

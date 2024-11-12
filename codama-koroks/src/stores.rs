@@ -7,6 +7,7 @@ use cargo_toml::Manifest;
 
 use crate::internals::ParsingResult;
 
+#[derive(Debug)]
 pub struct RootStore {
     pub crates: Vec<CrateStore>,
 }
@@ -28,6 +29,7 @@ impl RootStore {
     }
 }
 
+#[derive(Debug)]
 pub struct CrateStore {
     pub file: syn::File,
     pub manifest: Option<Manifest>,
@@ -60,6 +62,7 @@ impl CrateStore {
     }
 }
 
+#[derive(Debug)]
 pub struct ModuleStore {
     pub file: syn::File,
     pub item_index: usize,

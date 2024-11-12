@@ -1,14 +1,18 @@
+use codama_koroks::{koroks::RootKorok, stores::RootStore};
 use quote::quote;
-use syn::File;
 
 fn main() {
-    let foo = syn::parse2::<File>(quote! {
+    let tt = quote! {
         pub struct Command {
             pub executable: String,
             pub args: Vec<String>,
             pub env: Vec<String>,
             pub current_dir: String,
         }
-    });
-    eprintln!("{:#?}", foo);
+    };
+
+    let store = RootStore::populate_from(tt).unwrap();
+    let korok = RootKorok::parse(&store).unwrap();
+
+    eprintln!("{:#?}", korok);
 }

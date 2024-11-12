@@ -3,6 +3,7 @@ use crate::{
     nodes::TypeNode,
 };
 
+#[derive(Debug)]
 pub enum Attribute<'a> {
     Type(TypeAttribute<'a>),
     StringModifier(StringModifierAttribute<'a>),
@@ -25,19 +26,23 @@ impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct TypeAttribute<'a> {
     pub ast: &'a syn::Attribute,
     pub node: TypeNode,
 }
 
+#[derive(Debug)]
 pub struct StringModifierAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }
 
+#[derive(Debug)]
 pub struct NumberModifierAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }
 
+#[derive(Debug)]
 pub struct UnsupportedAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }
