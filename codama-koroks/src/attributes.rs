@@ -1,4 +1,4 @@
-use codama_nodes::type_nodes::type_node::TypeNode;
+use codama_nodes::TypeNode;
 
 use crate::internals::{ParsingError, ParsingResult};
 

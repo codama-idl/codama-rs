@@ -1,8 +1,7 @@
 use std::path::Path;
 
 use cargo_toml::Manifest;
-use codama_nodes::type_nodes::number_type_node::{Endian, NumberFormat, NumberTypeNode};
-use codama_nodes::type_nodes::type_node::TypeNode;
+use codama_nodes::{Endian, NumberFormat, NumberTypeNode, TypeNode};
 
 use crate::attributes::Attribute;
 use crate::internals::ParsingResult;

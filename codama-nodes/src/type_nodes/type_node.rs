@@ -1,4 +1,4 @@
-use super::{number_type_node::NumberTypeNode, string_type_node::StringTypeNode};
+use super::{NumberTypeNode, StringTypeNode};
 
 #[derive(Debug)]
 pub enum TypeNode {
