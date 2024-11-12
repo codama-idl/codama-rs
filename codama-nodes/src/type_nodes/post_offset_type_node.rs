@@ -1,6 +1,6 @@
 use crate::Node;
 
-pub trait TypeNodeFlag {}
+use super::TypeNodeFlag;
 
 #[derive(Debug)]
 pub struct PostOffsetTypeNode<T: TypeNodeFlag> {
