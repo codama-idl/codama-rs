@@ -1,7 +1,7 @@
 use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug)]
+#[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct PreOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: i32,
@@ -54,7 +54,7 @@ where
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PreOffsetStrategy {
     Absolute,
     Padded,

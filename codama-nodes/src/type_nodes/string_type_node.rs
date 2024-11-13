@@ -2,7 +2,7 @@ use codama_nodes_derive::{Node, TypeNode};
 
 pub use BytesEncoding::*;
 
-#[derive(Node, TypeNode, Debug)]
+#[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct StringTypeNode {
     // Data.
     pub encoding: BytesEncoding,
@@ -20,4 +20,15 @@ pub enum BytesEncoding {
     Base58,
     Base64,
     Utf8,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new() {
+        let node = StringTypeNode::new(Utf8);
+        assert_eq!(node.encoding, BytesEncoding::Utf8);
+    }
 }

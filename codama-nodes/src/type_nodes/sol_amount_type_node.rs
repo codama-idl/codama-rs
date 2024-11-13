@@ -1,7 +1,7 @@
 use crate::{NestedTypeNode, NumberTypeNode};
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug)]
+#[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct SolAmountTypeNode {
     // Children.
     pub number: NestedTypeNode<NumberTypeNode>,

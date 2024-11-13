@@ -1,7 +1,7 @@
 use crate::ProgramNode;
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug)]
+#[derive(Node, Debug, PartialEq)]
 pub struct RootNode {
     // Children.
     pub program: ProgramNode,

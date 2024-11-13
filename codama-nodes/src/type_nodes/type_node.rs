@@ -5,7 +5,7 @@ use crate::{
     TypeNodeEnumTrait,
 };
 
-#[derive(Debug, IntoEnum)]
+#[derive(IntoEnum, Debug, PartialEq)]
 pub enum TypeNode {
     Number(NumberTypeNode),
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),

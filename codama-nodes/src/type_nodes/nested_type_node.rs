@@ -4,7 +4,7 @@ use crate::{
     NestedTypeNodeTrait, PostOffsetTypeNode, PreOffsetTypeNode, TypeNodeEnumTrait, TypeNodeTrait,
 };
 
-#[derive(Debug, IntoEnum)]
+#[derive(IntoEnum, Debug, PartialEq)]
 pub enum NestedTypeNode<T: TypeNodeTrait> {
     PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
     PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
