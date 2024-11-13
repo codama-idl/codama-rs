@@ -17,15 +17,3 @@ pub use sol_amount_type_node::*;
 pub use string_type_node::*;
 pub use traits::*;
 pub use type_node::*;
-
-pub fn main() {
-    // Passing a direct NumberTypeNode to a SolAmountTypeNode.
-    AmountTypeNode::new(NumberTypeNode::new(U16, Endian::Little), 2, None);
-
-    // Passing a nested NumberTypeNode to a SolAmountTypeNode.
-    let amount = SolAmountTypeNode::new(PostOffsetTypeNode::absolute(
-        PreOffsetTypeNode::relative(NumberTypeNode::new(U16, Endian::Little), -10),
-        42,
-    ));
-    amount.number.get_nested_type_node();
-}
