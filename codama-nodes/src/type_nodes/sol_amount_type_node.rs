@@ -1,6 +1,7 @@
-use crate::{NestedTypeNode, NodeTrait, NumberTypeNode, TypeNodeTrait};
+use crate::{NestedTypeNode, NumberTypeNode};
+use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Debug)]
+#[derive(Debug, Node, TypeNode)]
 pub struct SolAmountTypeNode {
     // Children.
     pub number: NestedTypeNode<NumberTypeNode>,
@@ -15,9 +16,4 @@ impl SolAmountTypeNode {
             number: number.into(),
         }
     }
-}
-
-impl TypeNodeTrait for SolAmountTypeNode {}
-impl NodeTrait for SolAmountTypeNode {
-    const KIND: &'static str = "solAmountTypeNode";
 }

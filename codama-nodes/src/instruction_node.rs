@@ -1,11 +1,7 @@
-use crate::NodeTrait;
+use codama_nodes_derive::Node;
 
-#[derive(Debug)]
+#[derive(Debug, Node)]
 pub struct InstructionNode {
     // Data.
     pub name: String,
-}
-
-impl NodeTrait for InstructionNode {
-    const KIND: &'static str = "instructionNode";
 }

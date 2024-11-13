@@ -1,8 +1,8 @@
-use crate::{NodeTrait, TypeNodeTrait};
+use codama_nodes_derive::{Node, TypeNode};
 
 pub use BytesEncoding::*;
 
-#[derive(Debug)]
+#[derive(Debug, Node, TypeNode)]
 pub struct StringTypeNode {
     // Data.
     pub encoding: BytesEncoding,
@@ -12,11 +12,6 @@ impl StringTypeNode {
     pub fn new(encoding: BytesEncoding) -> Self {
         Self { encoding }
     }
-}
-
-impl TypeNodeTrait for StringTypeNode {}
-impl NodeTrait for StringTypeNode {
-    const KIND: &'static str = "stringTypeNode";
 }
 
 #[derive(Debug)]

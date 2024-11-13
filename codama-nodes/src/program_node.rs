@@ -1,6 +1,7 @@
-use crate::{AccountNode, DefinedTypeNode, InstructionNode, NodeTrait, PdaNode};
+use crate::{AccountNode, DefinedTypeNode, InstructionNode, PdaNode};
+use codama_nodes_derive::Node;
 
-#[derive(Debug)]
+#[derive(Debug, Node)]
 pub struct ProgramNode {
     // Data.
     pub name: String,
@@ -11,8 +12,4 @@ pub struct ProgramNode {
     pub defined_types: Vec<DefinedTypeNode>,
     pub instructions: Vec<InstructionNode>,
     pub pdas: Vec<PdaNode>,
-}
-
-impl NodeTrait for ProgramNode {
-    const KIND: &'static str = "programNode";
 }

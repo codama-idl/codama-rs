@@ -1,8 +1,8 @@
-use crate::{NodeTrait, TypeNodeTrait};
+use codama_nodes_derive::{Node, TypeNode};
 
 pub use NumberFormat::*;
 
-#[derive(Debug)]
+#[derive(Debug, Node, TypeNode)]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,
@@ -13,11 +13,6 @@ impl NumberTypeNode {
     pub fn new(format: NumberFormat, endian: Endian) -> Self {
         Self { format, endian }
     }
-}
-
-impl TypeNodeTrait for NumberTypeNode {}
-impl NodeTrait for NumberTypeNode {
-    const KIND: &'static str = "numberTypeNode";
 }
 
 #[derive(Debug)]

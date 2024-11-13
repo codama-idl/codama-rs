@@ -1,6 +1,7 @@
-use crate::{NestedTypeNodeTrait, NodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Debug)]
+#[derive(Debug, Node, TypeNode)]
 pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: i32,
@@ -49,11 +50,6 @@ impl<T: TypeNodeEnumTrait> PostOffsetTypeNode<T> {
     {
         Self::new(r#type, PostOffsetStrategy::Relative, offset)
     }
-}
-
-impl<T: TypeNodeEnumTrait> TypeNodeTrait for PostOffsetTypeNode<T> {}
-impl<T: TypeNodeEnumTrait> NodeTrait for PostOffsetTypeNode<T> {
-    const KIND: &'static str = "postOffsetTypeNode";
 }
 
 impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for PostOffsetTypeNode<T>

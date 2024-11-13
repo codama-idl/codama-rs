@@ -1,12 +1,9 @@
-use crate::{NodeTrait, ProgramNode};
+use crate::ProgramNode;
+use codama_nodes_derive::Node;
 
-#[derive(Debug)]
+#[derive(Debug, Node)]
 pub struct RootNode {
     // Children.
     pub program: ProgramNode,
     pub additional_programs: Vec<ProgramNode>,
-}
-
-impl NodeTrait for RootNode {
-    const KIND: &'static str = "rootNode";
 }
