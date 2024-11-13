@@ -10,6 +10,9 @@ pub struct NumberTypeNode<T: SomeTrait> {
     pub value: T,
 }
 
+fn assert_implements_type_node_trait<T: TypeNodeTrait>() {}
+
 fn main() {
-    // TODO: Assert that NumberTypeNode implements TypeNodeTrait.
+    // This line will only compile if NumberTypeNode<u32> implements TypeNodeTrait.
+    assert_implements_type_node_trait::<NumberTypeNode<u32>>();
 }
