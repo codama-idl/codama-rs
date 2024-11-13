@@ -13,6 +13,14 @@ impl NumberTypeNode {
     pub fn new(format: NumberFormat, endian: Endian) -> Self {
         Self { format, endian }
     }
+
+    pub fn le(format: NumberFormat) -> Self {
+        Self::new(format, Endian::Little)
+    }
+
+    pub fn be(format: NumberFormat) -> Self {
+        Self::new(format, Endian::Big)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -46,6 +54,20 @@ mod tests {
     fn new() {
         let node = NumberTypeNode::new(U8, Endian::Big);
         assert_eq!(node.format, NumberFormat::U8);
+        assert_eq!(node.endian, Endian::Big);
+    }
+
+    #[test]
+    fn le() {
+        let node = NumberTypeNode::le(U32);
+        assert_eq!(node.format, NumberFormat::U32);
+        assert_eq!(node.endian, Endian::Little);
+    }
+
+    #[test]
+    fn be() {
+        let node = NumberTypeNode::be(U32);
+        assert_eq!(node.format, NumberFormat::U32);
         assert_eq!(node.endian, Endian::Big);
     }
 }
