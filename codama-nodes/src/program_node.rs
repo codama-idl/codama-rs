@@ -1,7 +1,7 @@
 use crate::{AccountNode, DefinedTypeNode, InstructionNode, PdaNode};
 use codama_nodes_derive::Node;
 
-#[derive(Debug, Node)]
+#[derive(Node, Debug)]
 pub struct ProgramNode {
     // Data.
     pub name: String,

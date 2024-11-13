@@ -2,7 +2,7 @@ use codama_nodes_derive::{Node, TypeNode};
 
 pub use BytesEncoding::*;
 
-#[derive(Debug, Node, TypeNode)]
+#[derive(Node, TypeNode, Debug)]
 pub struct StringTypeNode {
     // Data.
     pub encoding: BytesEncoding,
@@ -14,7 +14,7 @@ impl StringTypeNode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum BytesEncoding {
     Base16,
     Base58,

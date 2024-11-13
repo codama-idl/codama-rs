@@ -2,7 +2,7 @@ use codama_nodes_derive::{Node, TypeNode};
 
 pub use NumberFormat::*;
 
-#[derive(Debug, PartialEq, Node, TypeNode)]
+#[derive(Node, TypeNode, Debug)]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,
@@ -15,7 +15,7 @@ impl NumberTypeNode {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum NumberFormat {
     U8,
     U16,
@@ -32,7 +32,7 @@ pub enum NumberFormat {
     ShortU16,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Endian {
     Big,
     Little,

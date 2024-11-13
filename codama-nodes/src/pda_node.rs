@@ -1,6 +1,6 @@
 use codama_nodes_derive::Node;
 
-#[derive(Debug, Node)]
+#[derive(Node, Debug)]
 pub struct PdaNode {
     // Data.
     pub name: String,
