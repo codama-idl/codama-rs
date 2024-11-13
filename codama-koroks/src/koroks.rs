@@ -14,9 +14,9 @@ pub struct RootKorok<'a> {
 }
 
 impl<'a> RootKorok<'a> {
-    pub fn parse(unparsed_root: &'a RootStore) -> ParsingResult<Self> {
+    pub fn parse(root_store: &'a RootStore) -> ParsingResult<Self> {
         Ok(Self {
-            crates: unparsed_root
+            crates: root_store
                 .crates
                 .iter()
                 .map(CrateKorok::parse)
@@ -34,12 +34,12 @@ pub struct CrateKorok<'a> {
 }
 
 impl<'a> CrateKorok<'a> {
-    pub fn parse(unparsed_crate: &'a CrateStore) -> ParsingResult<Self> {
+    pub fn parse(crate_store: &'a CrateStore) -> ParsingResult<Self> {
         Ok(Self {
-            file: &unparsed_crate.file,
-            items: ItemKorok::parse_all(&unparsed_crate.file.items, &unparsed_crate.modules)?,
-            manifest: &unparsed_crate.manifest,
-            path: &unparsed_crate.path,
+            file: &crate_store.file,
+            items: ItemKorok::parse_all(&crate_store.file.items, &crate_store.modules)?,
+            manifest: &crate_store.manifest,
+            path: &crate_store.path,
         })
     }
 }
@@ -64,11 +64,9 @@ impl<'a> ItemKorok<'a> {
                 let module = modules.iter().nth(item_index);
                 match module {
                     Some(module) => Ok(ItemKorok::FileModule(FileModuleKorok::parse(ast, module)?)),
-                    None => Err(syn::Error::new_spanned(
-                        ast,
-                        "Associated UnparsedModule not found",
-                    )
-                    .into()),
+                    None => {
+                        Err(syn::Error::new_spanned(ast, "Associated ModuleStore not found").into())
+                    }
                 }
             }
             syn::Item::Mod(ast) if ast.content.is_some() => {
