@@ -68,3 +68,70 @@ pub enum PostOffsetStrategy {
     PreOffset,
     Relative,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{NestedTypeNode, StringTypeNode, TypeNode, Utf8};
+
+    use super::*;
+
+    #[test]
+    fn new_type_node() {
+        let node = PostOffsetTypeNode::<TypeNode>::new(
+            StringTypeNode::new(Utf8),
+            PostOffsetStrategy::Absolute,
+            -42,
+        );
+        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(node.strategy, PostOffsetStrategy::Absolute);
+        assert_eq!(node.offset, -42);
+    }
+
+    #[test]
+    fn new_nested_type_node() {
+        let node = PostOffsetTypeNode::<NestedTypeNode<StringTypeNode>>::new(
+            StringTypeNode::new(Utf8),
+            PostOffsetStrategy::Absolute,
+            -42,
+        );
+        assert_eq!(
+            node.r#type,
+            NestedTypeNode::Value(StringTypeNode::new(Utf8))
+        );
+        assert_eq!(node.get_nested_type_node(), &StringTypeNode::new(Utf8));
+        assert_eq!(node.strategy, PostOffsetStrategy::Absolute);
+        assert_eq!(node.offset, -42);
+    }
+
+    #[test]
+    fn absolute() {
+        let node = PostOffsetTypeNode::<TypeNode>::absolute(StringTypeNode::new(Utf8), 0);
+        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(node.strategy, PostOffsetStrategy::Absolute);
+        assert_eq!(node.offset, 0);
+    }
+
+    #[test]
+    fn relative() {
+        let node = PostOffsetTypeNode::<TypeNode>::relative(StringTypeNode::new(Utf8), -4);
+        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(node.strategy, PostOffsetStrategy::Relative);
+        assert_eq!(node.offset, -4);
+    }
+
+    #[test]
+    fn pre_offset() {
+        let node = PostOffsetTypeNode::<TypeNode>::pre_offset(StringTypeNode::new(Utf8), 0);
+        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(node.strategy, PostOffsetStrategy::PreOffset);
+        assert_eq!(node.offset, 0);
+    }
+
+    #[test]
+    fn padded() {
+        let node = PostOffsetTypeNode::<TypeNode>::padded(StringTypeNode::new(Utf8), 8);
+        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(node.strategy, PostOffsetStrategy::Padded);
+        assert_eq!(node.offset, 8);
+    }
+}
