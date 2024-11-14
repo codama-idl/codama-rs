@@ -46,23 +46,37 @@ impl AsRef<str> for CamelCaseString {
 
 fn to_camel_case(input: &str) -> String {
     let mut result = String::new();
+    let mut new_word = true;
 
-    for word in input.split(|c: char| !c.is_alphanumeric()) {
-        if word.is_empty() {
-            continue;
-        }
+    let chars: Vec<char> = input.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        let c = chars[i];
 
-        if result.is_empty() {
-            // Keep the first word in lowercase
-            result.push_str(&word.to_lowercase());
-        } else {
-            // Capitalize the first letter and lowercase the rest
-            let mut chars = word.chars();
-            if let Some(first) = chars.next() {
-                result.push(first.to_ascii_uppercase());
-                result.extend(chars.flat_map(|c| c.to_lowercase()));
+        if c.is_alphanumeric() {
+            if new_word && !result.is_empty() {
+                // Capitalize the first letter of each new word (except the first word)
+                result.extend(c.to_uppercase());
+            } else {
+                // Lowercase the first letter of the first word and other letters
+                result.extend(c.to_lowercase());
             }
+            new_word = false;
+        } else {
+            new_word = true;
         }
+
+        // Treat numbers as their own "words" to start a new word afterward
+        if c.is_numeric() {
+            new_word = true;
+        }
+
+        // Handle transitions from lowercase to uppercase (e.g., PascalCase)
+        if i + 1 < chars.len() && c.is_lowercase() && chars[i + 1].is_uppercase() {
+            new_word = true;
+        }
+
+        i += 1;
     }
 
     result
@@ -81,7 +95,7 @@ mod tests {
     #[test]
     fn parse_from_numbers() {
         let value = CamelCaseString::new(String::from("This123 str1ng has 456n numbers"));
-        assert_eq!(value.0, "this123Str1ngHas456nNumbers");
+        assert_eq!(value.0, "this123Str1NgHas456NNumbers");
     }
 
     #[test]
