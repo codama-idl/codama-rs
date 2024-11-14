@@ -14,6 +14,7 @@ mod string_type_node;
 mod struct_field_type_node;
 mod struct_type_node;
 mod traits;
+mod tuple_type_node;
 mod type_node;
 
 pub use amount_type_node::*;
@@ -32,4 +33,5 @@ pub use string_type_node::*;
 pub use struct_field_type_node::*;
 pub use struct_type_node::*;
 pub use traits::*;
+pub use tuple_type_node::*;
 pub use type_node::*;
