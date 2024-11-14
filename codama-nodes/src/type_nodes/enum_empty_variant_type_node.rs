@@ -1,7 +1,7 @@
 use crate::CamelCaseString;
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::Node;
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq)]
 pub struct EnumEmptyVariantTypeNode {
     // Data.
     pub name: CamelCaseString,

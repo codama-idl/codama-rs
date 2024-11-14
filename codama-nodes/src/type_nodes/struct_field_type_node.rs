@@ -1,9 +1,9 @@
 use crate::{CamelCaseString, Docs};
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::Node;
 
 use super::TypeNode;
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq)]
 pub struct StructFieldTypeNode {
     // Data.
     pub name: CamelCaseString,
