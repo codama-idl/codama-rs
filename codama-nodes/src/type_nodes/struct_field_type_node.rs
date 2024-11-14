@@ -1,4 +1,4 @@
-use crate::CamelCaseString;
+use crate::{CamelCaseString, Docs};
 use codama_nodes_derive::{Node, TypeNode};
 
 use super::TypeNode;
@@ -8,7 +8,7 @@ pub struct StructFieldTypeNode {
     // Data.
     pub name: CamelCaseString,
     pub default_value_strategy: Option<DefaultValueStrategy>,
-    pub docs: Vec<String>, // TODO Docs
+    pub docs: Docs,
 
     // Children.
     pub r#type: TypeNode,
@@ -24,7 +24,7 @@ impl StructFieldTypeNode {
         Self {
             name: name.into(),
             default_value_strategy: None,
-            docs: vec![],
+            docs: Docs::new(),
             r#type: r#type.into(),
             default_value: None,
         }
@@ -54,7 +54,7 @@ mod tests {
         let node = StructFieldTypeNode {
             name: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
-            docs: vec!["Hello".to_string()],
+            docs: vec!["Hello".to_string()].into(),
             r#type: NumberTypeNode::le(U32).into(),
             default_value: None,
         };
@@ -64,7 +64,7 @@ mod tests {
             node.default_value_strategy,
             Some(DefaultValueStrategy::Optional)
         );
-        assert_eq!(node.docs, vec!["Hello".to_string()]);
+        assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
         assert_eq!(node.default_value, None);
     }
