@@ -4,11 +4,11 @@ use std::ops::Deref;
 pub struct CamelCaseString(String);
 
 impl CamelCaseString {
-    pub fn new<T>(s: T) -> Self
+    pub fn new<T>(string: T) -> Self
     where
         T: Into<String>,
     {
-        let string: String = s.into();
+        let string: String = string.into();
         Self(to_camel_case(&string))
     }
 }
@@ -17,8 +17,8 @@ impl<T> From<T> for CamelCaseString
 where
     T: Into<String>,
 {
-    fn from(s: T) -> Self {
-        Self::new(s)
+    fn from(string: T) -> Self {
+        Self::new(string)
     }
 }
 
@@ -73,6 +73,24 @@ mod tests {
     #[test]
     fn new_from_character() {
         let value = CamelCaseString::new('a');
+        assert_eq!(value.0, "a");
+    }
+
+    #[test]
+    fn from_string() {
+        let value: CamelCaseString = String::from("my_value").into();
+        assert_eq!(value.0, "myValue");
+    }
+
+    #[test]
+    fn from_str() {
+        let value: CamelCaseString = "my_value".into();
+        assert_eq!(value.0, "myValue");
+    }
+
+    #[test]
+    fn from_character() {
+        let value: CamelCaseString = 'a'.into();
         assert_eq!(value.0, "a");
     }
 
