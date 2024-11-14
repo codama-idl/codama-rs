@@ -7,8 +7,8 @@ use super::TypeNode;
 pub struct StructFieldTypeNode {
     // Data.
     pub name: CamelCaseString,
-    pub default_value_strategy: Option<()>, // TODO: 'omitted' | 'optional'
-    pub docs: Vec<String>,
+    pub default_value_strategy: Option<DefaultValueStrategy>,
+    pub docs: Vec<String>, // TODO Docs
 
     // Children.
     pub r#type: TypeNode,
@@ -31,6 +31,12 @@ impl StructFieldTypeNode {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum DefaultValueStrategy {
+    Omitted,
+    Optional,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -47,14 +53,17 @@ mod tests {
     fn direct_instanciation() {
         let node = StructFieldTypeNode {
             name: "myField".into(),
-            default_value_strategy: None,
+            default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()],
             r#type: NumberTypeNode::le(U32).into(),
             default_value: None,
         };
 
         assert_eq!(node.name, CamelCaseString::new("myField"));
-        assert_eq!(node.default_value_strategy, None);
+        assert_eq!(
+            node.default_value_strategy,
+            Some(DefaultValueStrategy::Optional)
+        );
         assert_eq!(node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
         assert_eq!(node.default_value, None);
