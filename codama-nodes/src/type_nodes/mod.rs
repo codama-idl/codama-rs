@@ -1,6 +1,8 @@
 mod amount_type_node;
 mod array_type_node;
 mod boolean_type_node;
+mod bytes_type_node;
+mod date_time_type_node;
 mod nested_type_node;
 mod number_type_node;
 mod post_offset_type_node;
@@ -13,6 +15,8 @@ mod type_node;
 pub use amount_type_node::*;
 pub use array_type_node::*;
 pub use boolean_type_node::*;
+pub use bytes_type_node::*;
+pub use date_time_type_node::*;
 pub use nested_type_node::*;
 pub use number_type_node::*;
 pub use post_offset_type_node::*;
