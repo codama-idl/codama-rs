@@ -9,13 +9,8 @@ pub struct TupleTypeNode {
 }
 
 impl TupleTypeNode {
-    pub fn new<T>(items: T) -> Self
-    where
-        T: IntoIterator<Item = TypeNode>,
-    {
-        Self {
-            items: items.into_iter().collect(),
-        }
+    pub fn new(items: Vec<TypeNode>) -> Self {
+        Self { items }
     }
 }
 
@@ -27,7 +22,7 @@ mod tests {
     #[test]
     fn new() {
         let node = TupleTypeNode::new(vec![
-            NumberTypeNode::le(U32).into(), // TODO: try to improve the API here.
+            NumberTypeNode::le(U32).into(),
             StringTypeNode::utf8().into(),
         ]);
         assert_eq!(

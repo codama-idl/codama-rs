@@ -12,7 +12,7 @@ pub struct EnumTypeNode {
 impl EnumTypeNode {
     pub fn new(variants: Vec<EnumVariantTypeNode>) -> Self {
         Self {
-            variants: variants.into(),
+            variants,
             size: NestedTypeNode::Value(NumberTypeNode::le(U8)),
         }
     }
@@ -22,7 +22,7 @@ impl EnumTypeNode {
 mod tests {
     use crate::{
         EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-        NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+        NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32,
     };
 
     use super::*;
@@ -30,7 +30,7 @@ mod tests {
     #[test]
     fn new() {
         let r#enum = EnumTypeNode::new(vec![
-            EnumEmptyVariantTypeNode::new("quit", None).into(), // TODO: Try to remove the `.into()`.
+            EnumEmptyVariantTypeNode::new("quit", None).into(),
             EnumTupleVariantTypeNode::new(
                 "move",
                 TupleTypeNode::new(vec![
@@ -51,5 +51,14 @@ mod tests {
             .into(),
         ]);
         assert_eq!(r#enum.size, NestedTypeNode::Value(NumberTypeNode::le(U8)));
+    }
+
+    #[test]
+    fn direct_instanciation() {
+        let r#enum = EnumTypeNode {
+            variants: vec![],
+            size: NumberTypeNode::le(U32).into(),
+        };
+        assert_eq!(r#enum.size, NestedTypeNode::Value(NumberTypeNode::le(U32)));
     }
 }
