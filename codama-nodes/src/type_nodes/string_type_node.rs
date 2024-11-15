@@ -1,6 +1,5 @@
+use crate::BytesEncoding;
 use codama_nodes_derive::{Node, TypeNode};
-
-pub use BytesEncoding::*;
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct StringTypeNode {
@@ -30,17 +29,10 @@ impl StringTypeNode {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum BytesEncoding {
-    Base16,
-    Base58,
-    Base64,
-    Utf8,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Utf8;
 
     #[test]
     fn new() {
