@@ -2,7 +2,7 @@ use codama_nodes_derive::{IntoEnum, Node};
 
 #[derive(Node, Debug, PartialEq)]
 pub struct NumberValueNode {
-    // Children.
+    // Data.
     pub number: NumberValue,
 }
 

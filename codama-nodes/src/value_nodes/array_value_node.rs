@@ -15,11 +15,24 @@ impl ArrayValueNode {
 
 #[cfg(test)]
 mod tests {
+    use crate::NumberValueNode;
+
     use super::*;
 
     #[test]
     fn new() {
-        let node = ArrayValueNode::new(vec![]); // TODO: Add items.
-        assert_eq!(node.items, vec![]);
+        let node = ArrayValueNode::new(vec![
+            NumberValueNode::new(1).into(),
+            NumberValueNode::new(2).into(),
+            NumberValueNode::new(3).into(),
+        ]);
+        assert_eq!(
+            node.items,
+            vec![
+                ValueNode::Number(NumberValueNode::new(1)),
+                ValueNode::Number(NumberValueNode::new(2)),
+                ValueNode::Number(NumberValueNode::new(3)),
+            ]
+        );
     }
 }
