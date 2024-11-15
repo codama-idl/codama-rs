@@ -5,9 +5,9 @@ mod instruction_node;
 mod pda_node;
 mod program_node;
 mod root_node;
+mod shared;
 mod traits;
 mod type_nodes;
-mod utils;
 
 pub use account_node::*;
 pub use count_nodes::*;
@@ -16,6 +16,6 @@ pub use instruction_node::*;
 pub use pda_node::*;
 pub use program_node::*;
 pub use root_node::*;
+pub use shared::*;
 pub use traits::*;
 pub use type_nodes::*;
-pub use utils::*;
