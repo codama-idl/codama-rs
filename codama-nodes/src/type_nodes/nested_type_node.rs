@@ -2,7 +2,8 @@ use codama_nodes_derive::IntoEnum;
 
 use crate::{
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, NestedTypeNodeTrait,
-    PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode, TypeNodeEnumTrait, TypeNodeTrait,
+    PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode, SizePrefixTypeNode, TypeNodeEnumTrait,
+    TypeNodeTrait,
 };
 
 #[derive(IntoEnum, Debug, PartialEq)]
@@ -13,6 +14,7 @@ pub enum NestedTypeNode<T: TypeNodeTrait> {
     PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
     PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
     Sentinel(Box<SentinelTypeNode<NestedTypeNode<T>>>),
+    SizePrefix(Box<SizePrefixTypeNode<NestedTypeNode<T>>>),
     Value(T),
 }
 
@@ -27,6 +29,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
             NestedTypeNode::PostOffset(node) => node.get_nested_type_node(),
             NestedTypeNode::PreOffset(node) => node.get_nested_type_node(),
             NestedTypeNode::Sentinel(node) => node.get_nested_type_node(),
+            NestedTypeNode::SizePrefix(node) => node.get_nested_type_node(),
             NestedTypeNode::Value(value) => value,
         }
     }

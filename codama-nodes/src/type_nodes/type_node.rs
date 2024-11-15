@@ -4,8 +4,8 @@ use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, EnumTypeNode,
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
     OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
-    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SolAmountTypeNode, StringTypeNode,
-    StructTypeNode, TupleTypeNode, TypeNodeEnumTrait,
+    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
+    StringTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait, ZeroableOptionTypeNode,
 };
 
 #[derive(IntoEnum, Debug, PartialEq)]
@@ -28,10 +28,12 @@ pub enum TypeNode {
     RemainderOption(Box<RemainderOptionTypeNode>),
     Sentinel(Box<SentinelTypeNode<TypeNode>>),
     Set(Box<SetTypeNode>),
+    SizePrefix(Box<SizePrefixTypeNode<TypeNode>>),
     SolAmount(SolAmountTypeNode),
     String(StringTypeNode),
     Struct(StructTypeNode),
     Tuple(TupleTypeNode),
+    ZeroableOption(Box<ZeroableOptionTypeNode>),
 }
 
 impl TypeNodeEnumTrait for TypeNode {}
