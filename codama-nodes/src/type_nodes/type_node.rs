@@ -3,8 +3,9 @@ use codama_nodes_derive::IntoEnum;
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, EnumTypeNode,
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
-    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, SetTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait,
+    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
+    RemainderOptionTypeNode, SetTypeNode, SolAmountTypeNode, StringTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNodeEnumTrait,
 };
 
 #[derive(IntoEnum, Debug, PartialEq)]
@@ -23,6 +24,8 @@ pub enum TypeNode {
     Option(Box<OptionTypeNode>),
     PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
     PreOffset(Box<PreOffsetTypeNode<TypeNode>>),
+    PublicKey(PublicKeyTypeNode),
+    RemainderOption(Box<RemainderOptionTypeNode>),
     Set(Box<SetTypeNode>),
     SolAmount(SolAmountTypeNode),
     String(StringTypeNode),
