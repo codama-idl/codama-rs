@@ -9,6 +9,7 @@ mod root_node;
 mod shared;
 mod traits;
 mod type_nodes;
+mod value_nodes;
 
 pub use account_node::*;
 pub use count_nodes::*;
@@ -21,3 +22,4 @@ pub use root_node::*;
 pub use shared::*;
 pub use traits::*;
 pub use type_nodes::*;
+pub use value_nodes::*;
