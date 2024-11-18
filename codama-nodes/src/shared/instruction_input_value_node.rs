@@ -1,8 +1,9 @@
 use crate::{
     AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ArrayValueNode, BooleanValueNode,
-    BytesValueNode, ConditionalValueNode, ConstantValueNode, EnumValueNode, MapValueNode,
-    NoneValueNode, NumberValueNode, ProgramLinkNode, PublicKeyValueNode, SetValueNode,
-    SomeValueNode, StringValueNode, StructValueNode, TupleValueNode,
+    BytesValueNode, ConditionalValueNode, ConstantValueNode, EnumValueNode, IdentityValueNode,
+    MapValueNode, NoneValueNode, NumberValueNode, PayerValueNode, ProgramLinkNode,
+    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructValueNode,
+    TupleValueNode,
 };
 use codama_nodes_derive::IntoEnum;
 
@@ -13,8 +14,8 @@ pub enum InstructionInputValueNode {
     AccountBump(AccountBumpValueNode),
     Argument(ArgumentValueNode),
     Conditional(Box<ConditionalValueNode>),
-    // Identity(IdentityValueNode),
-    // Payer(PayerValueNode),
+    Identity(IdentityValueNode),
+    Payer(PayerValueNode),
     // Pda(PdaValueNode),
     // ProgramId(ProgramIdValueNode),
     // Resolver(ResolverValueNode),
