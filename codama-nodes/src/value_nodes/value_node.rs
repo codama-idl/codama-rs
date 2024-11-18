@@ -1,6 +1,6 @@
 use super::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
-    NumberValueNode, StringValueNode, StructValueNode, TupleValueNode,
+    MapValueNode, NumberValueNode, StringValueNode, StructValueNode, TupleValueNode,
 };
 use codama_nodes_derive::IntoEnum;
 
@@ -11,6 +11,7 @@ pub enum ValueNode {
     Bytes(BytesValueNode),
     Constant(Box<ConstantValueNode>),
     Enum(EnumValueNode),
+    Map(MapValueNode),
     Number(NumberValueNode),
     String(StringValueNode),
     Struct(StructValueNode),
