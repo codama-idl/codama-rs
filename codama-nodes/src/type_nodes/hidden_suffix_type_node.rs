@@ -1,15 +1,15 @@
-use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 use codama_nodes_derive::{Node, TypeNode};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct HiddenSuffixTypeNode<T: TypeNodeEnumTrait> {
     // Children.
     pub r#type: T,
-    pub suffix: Vec<()>, // TODO: ConstantValueNode
+    pub suffix: Vec<ConstantValueNode>,
 }
 
 impl<T: TypeNodeEnumTrait> HiddenSuffixTypeNode<T> {
-    pub fn new<U>(r#type: U, suffix: Vec<()>) -> Self
+    pub fn new<U>(r#type: U, suffix: Vec<ConstantValueNode>) -> Self
     where
         U: Into<T>,
     {
@@ -31,15 +31,17 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{NestedTypeNode, StringTypeNode, TypeNode};
-
     use super::*;
+    use crate::{Base16, NestedTypeNode, StringTypeNode, TypeNode};
 
     #[test]
     fn new_type_node() {
-        let node = HiddenSuffixTypeNode::<TypeNode>::new(StringTypeNode::utf8(), vec![]);
+        let node = HiddenSuffixTypeNode::<TypeNode>::new(
+            StringTypeNode::utf8(),
+            vec![ConstantValueNode::bytes(Base16, "ffff")],
+        );
         assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.suffix, vec![]);
+        assert_eq!(node.suffix, vec![ConstantValueNode::bytes(Base16, "ffff")]);
     }
 
     #[test]

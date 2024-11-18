@@ -1,11 +1,11 @@
-use crate::TypeNode;
+use crate::{ConstantValueNode, TypeNode};
 use codama_nodes_derive::{Node, TypeNode};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct ZeroableOptionTypeNode {
     // Children.
     pub item: TypeNode,
-    pub zero_value: Option<()>, // TODO ConstantValueNode
+    pub zero_value: Option<ConstantValueNode>,
 }
 
 impl ZeroableOptionTypeNode {
@@ -19,7 +19,7 @@ impl ZeroableOptionTypeNode {
         }
     }
 
-    pub fn custom<T>(item: T, zero_value: ()) -> Self
+    pub fn custom<T>(item: T, zero_value: ConstantValueNode) -> Self
     where
         T: Into<TypeNode>,
     {
@@ -33,7 +33,7 @@ impl ZeroableOptionTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, U64};
+    use crate::{Base16, NumberTypeNode, U64};
 
     #[test]
     fn new() {
@@ -44,8 +44,14 @@ mod tests {
 
     #[test]
     fn custom() {
-        let node = ZeroableOptionTypeNode::custom(NumberTypeNode::le(U64), ());
+        let node = ZeroableOptionTypeNode::custom(
+            NumberTypeNode::le(U64),
+            ConstantValueNode::bytes(Base16, "ffffffffffffffff"),
+        );
         assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.zero_value, Some(())); // TODO ConstantValueNode
+        assert_eq!(
+            node.zero_value,
+            Some(ConstantValueNode::bytes(Base16, "ffffffffffffffff"))
+        );
     }
 }
