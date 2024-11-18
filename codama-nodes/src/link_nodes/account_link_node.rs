@@ -32,6 +32,18 @@ impl AccountLinkNode {
     }
 }
 
+impl From<String> for AccountLinkNode {
+    fn from(name: String) -> Self {
+        Self::new(name)
+    }
+}
+
+impl From<&str> for AccountLinkNode {
+    fn from(name: &str) -> Self {
+        Self::new(name)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,5 +60,19 @@ mod tests {
             AccountLinkNode::new_from_program("my_account", ProgramLinkNode::new("my_program"));
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
+    }
+
+    #[test]
+    fn from_string() {
+        let node: AccountLinkNode = String::from("my_account").into();
+        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.program, None);
+    }
+
+    #[test]
+    fn from_str() {
+        let node: AccountLinkNode = "my_account".into();
+        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.program, None);
     }
 }

@@ -32,6 +32,18 @@ impl InstructionLinkNode {
     }
 }
 
+impl From<String> for InstructionLinkNode {
+    fn from(name: String) -> Self {
+        Self::new(name)
+    }
+}
+
+impl From<&str> for InstructionLinkNode {
+    fn from(name: &str) -> Self {
+        Self::new(name)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -50,5 +62,19 @@ mod tests {
         );
         assert_eq!(node.name, CamelCaseString::new("myInstruction"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
+    }
+
+    #[test]
+    fn from_string() {
+        let node: InstructionLinkNode = String::from("my_instruction").into();
+        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.program, None);
+    }
+
+    #[test]
+    fn from_str() {
+        let node: InstructionLinkNode = "my_instruction".into();
+        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.program, None);
     }
 }

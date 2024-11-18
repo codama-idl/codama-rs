@@ -32,6 +32,18 @@ impl InstructionAccountLinkNode {
     }
 }
 
+impl From<String> for InstructionAccountLinkNode {
+    fn from(name: String) -> Self {
+        Self::new(name)
+    }
+}
+
+impl From<&str> for InstructionAccountLinkNode {
+    fn from(name: &str) -> Self {
+        Self::new(name)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::ProgramLinkNode;
@@ -61,5 +73,19 @@ mod tests {
                 ProgramLinkNode::new("myProgram")
             ))
         );
+    }
+
+    #[test]
+    fn from_string() {
+        let node: InstructionAccountLinkNode = String::from("my_instruction_account").into();
+        assert_eq!(node.name, CamelCaseString::new("myInstructionAccount"));
+        assert_eq!(node.instruction, None);
+    }
+
+    #[test]
+    fn from_str() {
+        let node: InstructionAccountLinkNode = "my_instruction_account".into();
+        assert_eq!(node.name, CamelCaseString::new("myInstructionAccount"));
+        assert_eq!(node.instruction, None);
     }
 }
