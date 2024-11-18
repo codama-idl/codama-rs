@@ -2,18 +2,16 @@ use crate::{CamelCaseString, Docs, TypeNode};
 use codama_nodes_derive::Node;
 
 #[derive(Node, Debug, PartialEq)]
-pub struct StructFieldTypeNode {
+pub struct VariablePdaSeedNode {
     // Data.
     pub name: CamelCaseString,
-    pub default_value_strategy: Option<DefaultValueStrategy>,
     pub docs: Docs,
 
     // Children.
     pub r#type: TypeNode,
-    pub default_value: Option<()>, // TODO: Implement value nodes.
 }
 
-impl StructFieldTypeNode {
+impl VariablePdaSeedNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
     where
         T: Into<CamelCaseString>,
@@ -21,10 +19,8 @@ impl StructFieldTypeNode {
     {
         Self {
             name: name.into(),
-            default_value_strategy: None,
             docs: Docs::default(),
             r#type: r#type.into(),
-            default_value: None,
         }
     }
 }
@@ -42,28 +38,20 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = StructFieldTypeNode::new("my_field", NumberTypeNode::le(U32));
-        assert_eq!(node.name, CamelCaseString::new("myField"));
+        let node = VariablePdaSeedNode::new("my_seed", NumberTypeNode::le(U32));
+        assert_eq!(node.name, CamelCaseString::new("mySeed"));
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
     fn direct_instantiation() {
-        let node = StructFieldTypeNode {
-            name: "myField".into(),
-            default_value_strategy: Some(DefaultValueStrategy::Optional),
+        let node = VariablePdaSeedNode {
+            name: "mySeed".into(),
             docs: vec!["Hello".to_string()].into(),
             r#type: NumberTypeNode::le(U32).into(),
-            default_value: None,
         };
-
-        assert_eq!(node.name, CamelCaseString::new("myField"));
-        assert_eq!(
-            node.default_value_strategy,
-            Some(DefaultValueStrategy::Optional)
-        );
+        assert_eq!(node.name, CamelCaseString::new("mySeed"));
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
-        assert_eq!(node.default_value, None);
     }
 }

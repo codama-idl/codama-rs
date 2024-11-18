@@ -1,6 +1,8 @@
+use crate::{ConstantPdaSeedNode, VariablePdaSeedNode};
 use codama_nodes_derive::IntoEnum;
 
 #[derive(IntoEnum, Debug, PartialEq)]
 pub enum PdaSeedNode {
-    // TODO
+    Constant(ConstantPdaSeedNode),
+    Variable(VariablePdaSeedNode),
 }
