@@ -1,4 +1,6 @@
-use crate::{AccountValueNode, ArgumentValueNode, InstructionInputValueNode, ValueNode};
+use crate::{
+    AccountValueNode, ArgumentValueNode, InstructionInputValueNode, ResolverValueNode, ValueNode,
+};
 use codama_nodes_derive::{IntoEnum, Node};
 
 #[derive(Node, Debug, PartialEq)]
@@ -14,7 +16,7 @@ pub struct ConditionalValueNode {
 pub enum ConditionNode {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),
-    // Resolver(ResolverValueNode), // TODO
+    Resolver(ResolverValueNode),
 }
 
 #[cfg(test)]

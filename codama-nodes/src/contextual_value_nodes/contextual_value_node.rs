@@ -1,6 +1,6 @@
 use super::{
     AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ConditionalValueNode,
-    IdentityValueNode, PayerValueNode,
+    IdentityValueNode, PayerValueNode, PdaValueNode, ProgramIdValueNode, ResolverValueNode,
 };
 use codama_nodes_derive::IntoEnum;
 
@@ -12,7 +12,7 @@ pub enum ContextualValueNode {
     Conditional(Box<ConditionalValueNode>),
     Identity(IdentityValueNode),
     Payer(PayerValueNode),
-    // Pda(PdaValueNode),
-    // ProgramId(ProgramIdValueNode),
-    // Resolver(ResolverValueNode),
+    Pda(PdaValueNode),
+    ProgramId(ProgramIdValueNode),
+    Resolver(ResolverValueNode),
 }

@@ -5,6 +5,10 @@ mod conditional_value_node;
 mod contextual_value_node;
 mod identity_value_node;
 mod payer_value_node;
+mod pda_seed_value_node;
+mod pda_value_node;
+mod program_id_value_node;
+mod resolver_value_node;
 
 pub use account_bump_value_node::*;
 pub use account_value_node::*;
@@ -13,3 +17,7 @@ pub use conditional_value_node::*;
 pub use contextual_value_node::*;
 pub use identity_value_node::*;
 pub use payer_value_node::*;
+pub use pda_seed_value_node::*;
+pub use pda_value_node::*;
+pub use program_id_value_node::*;
+pub use resolver_value_node::*;

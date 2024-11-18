@@ -1,8 +1,9 @@
 use codama_nodes_derive::Node;
-#[derive(Node, Debug, PartialEq)]
-pub struct PayerValueNode {}
 
-impl PayerValueNode {
+#[derive(Node, Debug, PartialEq)]
+pub struct ProgramIdValueNode {}
+
+impl ProgramIdValueNode {
     pub fn new() -> Self {
         Self {}
     }
@@ -14,7 +15,7 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = PayerValueNode::new();
-        assert_eq!(node, PayerValueNode {});
+        let node = ProgramIdValueNode::new();
+        assert_eq!(node, ProgramIdValueNode {});
     }
 }
