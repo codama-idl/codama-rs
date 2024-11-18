@@ -1,5 +1,3 @@
-use codama_nodes_derive::IntoEnum;
-
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, EnumTypeNode,
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
@@ -7,6 +5,7 @@ use crate::{
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
     StringTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait, ZeroableOptionTypeNode,
 };
+use codama_nodes_derive::IntoEnum;
 
 #[derive(IntoEnum, Debug, PartialEq)]
 pub enum TypeNode {

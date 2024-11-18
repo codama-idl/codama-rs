@@ -1,7 +1,5 @@
-use crate::{CamelCaseString, DefinedTypeLinkNode, TupleValueNode};
+use crate::{CamelCaseString, DefinedTypeLinkNode, StructValueNode, TupleValueNode};
 use codama_nodes_derive::{IntoEnum, Node};
-
-use super::StructValueNode;
 
 #[derive(Node, Debug, PartialEq)]
 pub struct EnumValueNode {

@@ -1,4 +1,4 @@
-use super::{NestedTypeNode, NumberTypeNode, TypeNode, U8};
+use crate::{NestedTypeNode, NumberTypeNode, TypeNode, U8};
 use codama_nodes_derive::{Node, TypeNode};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]

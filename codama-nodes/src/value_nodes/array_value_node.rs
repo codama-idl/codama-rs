@@ -1,4 +1,4 @@
-use super::ValueNode;
+use crate::ValueNode;
 use codama_nodes_derive::Node;
 
 #[derive(Node, Debug, PartialEq)]

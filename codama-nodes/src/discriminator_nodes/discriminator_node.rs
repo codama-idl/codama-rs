@@ -1,4 +1,4 @@
-use super::{ConstantDiscriminatorNode, FieldDiscriminatorNode, SizeDiscriminatorNode};
+use crate::{ConstantDiscriminatorNode, FieldDiscriminatorNode, SizeDiscriminatorNode};
 use codama_nodes_derive::IntoEnum;
 
 #[derive(IntoEnum, Debug, PartialEq)]

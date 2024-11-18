@@ -1,4 +1,4 @@
-use super::TypeNode;
+use crate::TypeNode;
 use codama_nodes_derive::{Node, TypeNode};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]

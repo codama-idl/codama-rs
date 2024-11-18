@@ -1,6 +1,5 @@
+use crate::StructFieldTypeNode;
 use codama_nodes_derive::{Node, TypeNode};
-
-use super::StructFieldTypeNode;
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct StructTypeNode {

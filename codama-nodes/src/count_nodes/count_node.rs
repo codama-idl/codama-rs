@@ -1,6 +1,5 @@
+use crate::{FixedCountNode, PrefixedCountNode, RemainderCountNode};
 use codama_nodes_derive::IntoEnum;
-
-use super::{FixedCountNode, PrefixedCountNode, RemainderCountNode};
 
 #[derive(IntoEnum, Debug, PartialEq)]
 pub enum CountNode {

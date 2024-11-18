@@ -1,7 +1,8 @@
-use crate::{CountNode, FixedCountNode, PrefixedCountNode, RemainderCountNode};
+use crate::{
+    CountNode, FixedCountNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
+    RemainderCountNode, TypeNode,
+};
 use codama_nodes_derive::{Node, TypeNode};
-
-use super::{NestedTypeNode, NumberTypeNode, TypeNode};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct MapTypeNode {

@@ -1,6 +1,5 @@
+use crate::{EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, U8};
 use codama_nodes_derive::{Node, TypeNode};
-
-use super::{EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, U8};
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct EnumTypeNode {

@@ -1,7 +1,5 @@
-use crate::{CamelCaseString, Docs};
+use crate::{CamelCaseString, Docs, TypeNode};
 use codama_nodes_derive::Node;
-
-use super::TypeNode;
 
 #[derive(Node, Debug, PartialEq)]
 pub struct StructFieldTypeNode {

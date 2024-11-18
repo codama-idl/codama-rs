@@ -1,7 +1,5 @@
-use crate::CamelCaseString;
+use crate::{CamelCaseString, NestedTypeNode, TupleTypeNode};
 use codama_nodes_derive::Node;
-
-use super::{NestedTypeNode, TupleTypeNode};
 
 #[derive(Node, Debug, PartialEq)]
 pub struct EnumTupleVariantTypeNode {

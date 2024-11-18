@@ -1,6 +1,5 @@
+use crate::TypeNode;
 use codama_nodes_derive::{Node, TypeNode};
-
-use super::TypeNode;
 
 #[derive(Node, TypeNode, Debug, PartialEq)]
 pub struct TupleTypeNode {
