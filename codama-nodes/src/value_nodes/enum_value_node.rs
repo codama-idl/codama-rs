@@ -14,16 +14,15 @@ pub struct EnumValueNode {
 }
 
 impl EnumValueNode {
-    pub fn new<T, U, V>(r#enum: T, variant: U, value: V) -> Self
+    pub fn new<T, U>(r#enum: T, variant: U, value: Option<EnumVariantData>) -> Self
     where
         T: Into<DefinedTypeLinkNode>,
         U: Into<CamelCaseString>,
-        V: Into<Option<EnumVariantData>>,
     {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: value.into(),
+            value,
         }
     }
 
@@ -99,10 +98,10 @@ mod tests {
         let node = EnumValueNode::fields(
             "command",
             "move",
-            StructValueNode::new(vec![
+            vec![
                 StructFieldValueNode::new("x", NumberValueNode::new(10)),
                 StructFieldValueNode::new("y", NumberValueNode::new(20)),
-            ]),
+            ],
         );
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, CamelCaseString::from("move"));
@@ -120,7 +119,7 @@ mod tests {
         let node = EnumValueNode::tuple(
             "command",
             "write",
-            TupleValueNode::new(vec![StringValueNode::new("Hello World").into()]),
+            vec![StringValueNode::new("Hello World").into()],
         );
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, CamelCaseString::from("write"));

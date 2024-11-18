@@ -13,6 +13,12 @@ impl StructValueNode {
     }
 }
 
+impl From<Vec<StructFieldValueNode>> for StructValueNode {
+    fn from(items: Vec<StructFieldValueNode>) -> Self {
+        Self::new(items)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -24,6 +30,22 @@ mod tests {
             StructFieldValueNode::new("name", StringValueNode::new("Alice")).into(),
             StructFieldValueNode::new("age", NumberValueNode::new(42)).into(),
         ]);
+        assert_eq!(
+            node.fields,
+            vec![
+                StructFieldValueNode::new("name", ValueNode::String(StringValueNode::new("Alice"))),
+                StructFieldValueNode::new("age", ValueNode::Number(NumberValueNode::new(42))),
+            ]
+        );
+    }
+
+    #[test]
+    fn from_vec() {
+        let node: StructValueNode = vec![
+            StructFieldValueNode::new("name", StringValueNode::new("Alice")).into(),
+            StructFieldValueNode::new("age", NumberValueNode::new(42)).into(),
+        ]
+        .into();
         assert_eq!(
             node.fields,
             vec![

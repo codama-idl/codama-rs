@@ -13,6 +13,12 @@ impl TupleValueNode {
     }
 }
 
+impl From<Vec<ValueNode>> for TupleValueNode {
+    fn from(items: Vec<ValueNode>) -> Self {
+        Self::new(items)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{BooleanValueNode, NumberValueNode, StringValueNode};
@@ -33,6 +39,15 @@ mod tests {
                 ValueNode::String(StringValueNode::new("Hello")),
                 ValueNode::Boolean(BooleanValueNode::new(true)),
             ]
+        );
+    }
+
+    #[test]
+    fn from_vec() {
+        let node: TupleValueNode = vec![NumberValueNode::new(42).into()].into();
+        assert_eq!(
+            node.items,
+            vec![ValueNode::Number(NumberValueNode::new(42))]
         );
     }
 }
