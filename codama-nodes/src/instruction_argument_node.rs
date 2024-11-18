@@ -1,8 +1,8 @@
-use crate::{CamelCaseString, DefaultValueStrategy, Docs, TypeNode, ValueNode};
+use crate::{CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, TypeNode};
 use codama_nodes_derive::Node;
 
 #[derive(Node, Debug, PartialEq)]
-pub struct StructFieldTypeNode {
+pub struct InstructionArgumentNode {
     // Data.
     pub name: CamelCaseString,
     pub default_value_strategy: Option<DefaultValueStrategy>,
@@ -10,10 +10,10 @@ pub struct StructFieldTypeNode {
 
     // Children.
     pub r#type: TypeNode,
-    pub default_value: Option<ValueNode>,
+    pub default_value: Option<InstructionInputValueNode>,
 }
 
-impl StructFieldTypeNode {
+impl InstructionArgumentNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
     where
         T: Into<CamelCaseString>,
@@ -32,32 +32,37 @@ impl StructFieldTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, NumberValueNode, U32};
+    use crate::{ArgumentValueNode, NumberTypeNode, U32};
 
     #[test]
     fn new() {
-        let node = StructFieldTypeNode::new("my_field", NumberTypeNode::le(U32));
-        assert_eq!(node.name, CamelCaseString::new("myField"));
+        let node = InstructionArgumentNode::new("my_argument", NumberTypeNode::le(U32));
+        assert_eq!(node.name, CamelCaseString::new("myArgument"));
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
     fn direct_instantiation() {
-        let node = StructFieldTypeNode {
-            name: "myField".into(),
+        let node = InstructionArgumentNode {
+            name: "myArgument".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: NumberTypeNode::le(U32).into(),
-            default_value: Some(NumberValueNode::new(42u32).into()),
+            default_value: Some(ArgumentValueNode::new("myOtherArgument").into()),
         };
 
-        assert_eq!(node.name, CamelCaseString::new("myField"));
+        assert_eq!(node.name, CamelCaseString::new("myArgument"));
         assert_eq!(
             node.default_value_strategy,
             Some(DefaultValueStrategy::Optional)
         );
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
-        assert_eq!(node.default_value, Some(NumberValueNode::new(42u32).into()));
+        assert_eq!(
+            node.default_value,
+            Some(InstructionInputValueNode::Argument(ArgumentValueNode::new(
+                "myOtherArgument"
+            )))
+        );
     }
 }
