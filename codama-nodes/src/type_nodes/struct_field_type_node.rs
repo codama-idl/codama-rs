@@ -50,7 +50,7 @@ mod tests {
     }
 
     #[test]
-    fn direct_instanciation() {
+    fn direct_instantiation() {
         let node = StructFieldTypeNode {
             name: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),

@@ -57,7 +57,7 @@ mod tests {
     }
 
     #[test]
-    fn direct_instanciation() {
+    fn direct_instantiation() {
         let node = OptionTypeNode {
             fixed: true,
             item: StringTypeNode::utf8().into(),

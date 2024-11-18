@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[test]
-    fn direct_instanciation() {
+    fn direct_instantiation() {
         let r#enum = EnumTypeNode {
             variants: vec![],
             size: NumberTypeNode::le(U32).into(),
