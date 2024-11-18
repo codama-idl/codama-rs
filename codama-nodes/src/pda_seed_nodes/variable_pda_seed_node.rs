@@ -25,12 +25,6 @@ impl VariablePdaSeedNode {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum DefaultValueStrategy {
-    Omitted,
-    Optional,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
