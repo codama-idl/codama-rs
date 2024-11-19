@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs, InstructionInputValueNode};
+use crate::{CamelCaseString, Docs, InstructionInputValueNode, IsAccountSigner};
 use codama_nodes_derive::Node;
 
 #[derive(Node, Debug, PartialEq)]
@@ -27,22 +27,6 @@ impl InstructionAccountNode {
             is_optional: false,
             docs: Docs::default(),
             default_value: None,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum IsAccountSigner {
-    True,
-    False,
-    Either,
-}
-
-impl From<bool> for IsAccountSigner {
-    fn from(value: bool) -> Self {
-        match value {
-            true => Self::True,
-            false => Self::False,
         }
     }
 }
