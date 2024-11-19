@@ -1,8 +1,9 @@
 use codama_nodes_derive::{Node, TypeNode};
+use serde::{Deserialize, Serialize};
 
 pub use NumberFormat::*;
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Serialize, Deserialize)]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,
@@ -23,7 +24,8 @@ impl NumberTypeNode {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum NumberFormat {
     U8,
     U16,
@@ -40,9 +42,11 @@ pub enum NumberFormat {
     ShortU16,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Endian {
+    #[serde(rename = "be")]
     Big,
+    #[serde(rename = "le")]
     Little,
 }
 
@@ -69,5 +73,12 @@ mod tests {
         let node = NumberTypeNode::be(U32);
         assert_eq!(node.format, NumberFormat::U32);
         assert_eq!(node.endian, Endian::Big);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = NumberTypeNode::new(U8, Endian::Big);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"format":"u8","endian":"be"}"#);
     }
 }

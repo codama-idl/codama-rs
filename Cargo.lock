@@ -29,6 +29,8 @@ name = "codama-nodes"
 version = "0.1.0"
 dependencies = [
  "codama-nodes-derive",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
