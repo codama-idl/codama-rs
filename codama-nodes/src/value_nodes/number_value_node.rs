@@ -20,8 +20,7 @@ impl NumberValueNode {
 }
 
 #[derive(IntoEnum, Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
-#[serde(from = "JsonNumber")]
-#[serde(into = "JsonNumber")]
+#[serde(from = "JsonNumber", into = "JsonNumber")]
 pub enum Number {
     UnsignedInteger(u64),
     SignedInteger(i64),
