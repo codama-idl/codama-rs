@@ -28,7 +28,7 @@ pub enum PdaValue {
 
 #[cfg(test)]
 mod tests {
-    use crate::{NumberValueNode, PublicKeyValueNode};
+    use crate::{NumberTypeNode, NumberValueNode, PublicKeyValueNode, VariablePdaSeedNode, U32};
 
     use super::*;
 
@@ -63,17 +63,18 @@ mod tests {
     #[test]
     fn new_nested() {
         let node = PdaValueNode::new(
-            // TODO: PdaNode
-            PdaNode {
-                name: "counter".into(),
-            },
+            PdaNode::new(
+                "counter",
+                vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
+            ),
             vec![PdaSeedValueNode::new("value", NumberValueNode::new(42))],
         );
         assert_eq!(
             node.pda,
-            PdaValue::Nested(PdaNode {
-                name: "counter".into(),
-            })
+            PdaValue::Nested(PdaNode::new(
+                "counter",
+                vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
+            ))
         );
         assert_eq!(
             node.seeds,
