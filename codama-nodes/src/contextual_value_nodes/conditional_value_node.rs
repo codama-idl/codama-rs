@@ -3,7 +3,7 @@ use crate::{
 };
 use codama_nodes_derive::{IntoEnum, Node};
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct ConditionalValueNode {
     // Children.
     pub condition: ConditionNode,
@@ -12,7 +12,7 @@ pub struct ConditionalValueNode {
     pub if_false: Option<InstructionInputValueNode>,
 }
 
-#[derive(IntoEnum, Debug, PartialEq)]
+#[derive(IntoEnum, Debug, PartialEq, Clone)]
 pub enum ConditionNode {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),

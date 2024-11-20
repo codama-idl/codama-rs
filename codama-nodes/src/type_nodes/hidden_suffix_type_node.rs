@@ -1,7 +1,7 @@
 use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct HiddenSuffixTypeNode<T: TypeNodeEnumTrait> {
     // Children.
     pub r#type: T,

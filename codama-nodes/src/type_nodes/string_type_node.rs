@@ -1,7 +1,7 @@
 use crate::BytesEncoding;
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct StringTypeNode {
     // Data.
     pub encoding: BytesEncoding,

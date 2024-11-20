@@ -4,7 +4,7 @@ use crate::{
 };
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct ArrayTypeNode {
     // Children.
     pub item: TypeNode,

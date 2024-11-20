@@ -1,7 +1,7 @@
 use crate::StructFieldTypeNode;
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct StructTypeNode {
     // Children.
     pub fields: Vec<StructFieldTypeNode>,

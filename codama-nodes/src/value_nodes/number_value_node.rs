@@ -2,7 +2,7 @@ use codama_nodes_derive::{IntoEnum, Node};
 use serde::{Deserialize, Serialize};
 use serde_json::Number as JsonNumber;
 
-#[derive(Node, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Node, Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NumberValueNode {
     // Data.
     pub number: Number,

@@ -1,7 +1,7 @@
 use crate::{ArgumentValueNode, Docs, IsAccountSigner, ResolverValueNode};
 use codama_nodes_derive::{IntoEnum, Node};
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct InstructionRemainingAccountsNode {
     // Data.
     pub is_optional: bool,
@@ -13,7 +13,7 @@ pub struct InstructionRemainingAccountsNode {
     pub value: InstructionRemainingAccountsNodeValue,
 }
 
-#[derive(IntoEnum, Debug, PartialEq)]
+#[derive(IntoEnum, Debug, PartialEq, Clone)]
 pub enum InstructionRemainingAccountsNodeValue {
     Argument(ArgumentValueNode),
     Resolver(ResolverValueNode),

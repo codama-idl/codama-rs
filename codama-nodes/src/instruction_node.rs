@@ -4,7 +4,7 @@ use crate::{
 };
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug, PartialEq, Default)]
+#[derive(Node, Debug, PartialEq, Clone, Default)]
 pub struct InstructionNode {
     // Data.
     pub name: CamelCaseString,

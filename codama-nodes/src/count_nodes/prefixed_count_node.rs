@@ -1,7 +1,7 @@
 use crate::{NestedTypeNode, NumberTypeNode};
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct PrefixedCountNode {
     // Data.
     pub prefix: NestedTypeNode<NumberTypeNode>,

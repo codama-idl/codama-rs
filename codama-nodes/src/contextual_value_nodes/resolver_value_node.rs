@@ -1,7 +1,7 @@
 use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs};
 use codama_nodes_derive::{IntoEnum, Node};
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct ResolverValueNode {
     // Data.
     pub name: CamelCaseString,
@@ -24,7 +24,7 @@ impl ResolverValueNode {
     }
 }
 
-#[derive(IntoEnum, Debug, PartialEq)]
+#[derive(IntoEnum, Debug, PartialEq, Clone)]
 pub enum ResolverDependency {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),

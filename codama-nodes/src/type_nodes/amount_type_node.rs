@@ -1,7 +1,7 @@
 use crate::{NestedTypeNode, NumberTypeNode};
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct AmountTypeNode {
     // Data.
     pub decimals: u8,

@@ -1,7 +1,7 @@
 use crate::{ConstantValueNode, TypeNode};
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct ZeroableOptionTypeNode {
     // Children.
     pub item: TypeNode,

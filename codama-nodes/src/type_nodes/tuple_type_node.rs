@@ -1,7 +1,7 @@
 use crate::TypeNode;
 use codama_nodes_derive::{Node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
 pub struct TupleTypeNode {
     // Children.
     pub items: Vec<TypeNode>,

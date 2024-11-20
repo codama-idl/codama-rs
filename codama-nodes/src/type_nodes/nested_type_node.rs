@@ -5,7 +5,7 @@ use crate::{
 };
 use codama_nodes_derive::IntoEnum;
 
-#[derive(IntoEnum, Debug, PartialEq)]
+#[derive(IntoEnum, Debug, PartialEq, Clone)]
 pub enum NestedTypeNode<T: TypeNodeTrait> {
     FixedSize(Box<FixedSizeTypeNode<NestedTypeNode<T>>>),
     HiddenPrefix(Box<HiddenPrefixTypeNode<NestedTypeNode<T>>>),

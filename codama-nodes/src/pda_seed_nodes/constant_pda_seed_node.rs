@@ -1,7 +1,7 @@
 use crate::{TypeNode, ValueNode};
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct ConstantPdaSeedNode {
     // Children.
     pub r#type: TypeNode,

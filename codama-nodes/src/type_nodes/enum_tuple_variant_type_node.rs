@@ -1,7 +1,7 @@
 use crate::{CamelCaseString, NestedTypeNode, TupleTypeNode};
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct EnumTupleVariantTypeNode {
     // Data.
     pub name: CamelCaseString,

@@ -1,7 +1,7 @@
 use crate::{CamelCaseString, ProgramLinkNode};
 use codama_nodes_derive::Node;
 
-#[derive(Node, Debug, PartialEq)]
+#[derive(Node, Debug, PartialEq, Clone)]
 pub struct PdaLinkNode {
     // Data.
     pub name: CamelCaseString,
