@@ -5,6 +5,27 @@ use syn::{parse_macro_input, DeriveInput};
 mod utils;
 use utils::*;
 
+#[proc_macro_attribute]
+pub fn node(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let syn::Data::Struct(_) = input.data else {
+        // Return a compile error if the attribute is not on a struct.
+        return syn::Error::new_spanned(input, "expected a struct")
+            .to_compile_error()
+            .into();
+    };
+
+    let item_name = &input.ident;
+    let kind = lowercase_first_letter(&item_name.to_string());
+
+    quote! {
+        #[derive(codama_nodes_derive::Node, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone, serde::Serialize, serde::Deserialize)]
+        #[serde(tag = "kind", rename = #kind)]
+        #input
+    }
+    .into()
+}
+
 #[proc_macro_derive(Node)]
 pub fn derive_node(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

@@ -1,9 +1,8 @@
 use crate::{NestedTypeNode, NumberTypeNode};
-use codama_nodes_derive::{Node, TypeNode};
-use serde::{Deserialize, Serialize};
+use codama_nodes_derive::{node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename = "amountTypeNode")]
+#[node]
+#[derive(TypeNode)]
 pub struct AmountTypeNode {
     // Data.
     pub decimals: u8,

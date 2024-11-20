@@ -1,10 +1,10 @@
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
 use serde::{Deserialize, Serialize};
 
 pub use NumberFormat::*;
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename = "numberTypeNode")]
+#[node]
+#[derive(TypeNode)]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,

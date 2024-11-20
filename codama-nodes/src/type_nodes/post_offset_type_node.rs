@@ -1,9 +1,9 @@
 use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
 use serde::{Deserialize, Serialize};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename = "postOffsetTypeNode")]
+#[node]
+#[derive(TypeNode)]
 pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: i32,
