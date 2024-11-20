@@ -1,10 +1,10 @@
-use crate::NodeTrait;
 use codama_nodes_derive::{Node, TypeNode};
 use serde::{Deserialize, Serialize};
 
 pub use NumberFormat::*;
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename = "numberTypeNode")]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,
@@ -41,52 +41,6 @@ pub enum NumberFormat {
     F32,
     F64,
     ShortU16,
-}
-
-#[derive(Serialize, Deserialize)]
-struct SerdeWrapper<'a> {
-    pub kind: &'a str,
-    pub format: NumberFormat,
-    pub endian: Endian,
-}
-
-// Implement Serialize to add the "kind" field.
-impl Serialize for NumberTypeNode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        SerdeWrapper {
-            kind: Self::KIND,
-            format: self.format,
-            endian: self.endian,
-        }
-        .serialize(serializer)
-    }
-}
-
-// Implement Deserialize to handle the "kind" field.
-impl<'de> Deserialize<'de> for NumberTypeNode {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let helper = SerdeWrapper::deserialize(deserializer)?;
-
-        // Validate that the "kind" field matches the expected constant.
-        if helper.kind != Self::KIND {
-            return Err(serde::de::Error::custom(format!(
-                "Invalid kind: expected '{}', got '{}'",
-                Self::KIND,
-                helper.kind
-            )));
-        }
-
-        Ok(Self {
-            format: helper.format,
-            endian: helper.endian,
-        })
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
