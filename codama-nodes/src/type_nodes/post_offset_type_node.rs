@@ -1,7 +1,9 @@
 use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
 use codama_nodes_derive::{Node, TypeNode};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename = "postOffsetTypeNode")]
 pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: i32,
@@ -61,7 +63,8 @@ where
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum PostOffsetStrategy {
     Absolute,
     Padded,
@@ -71,7 +74,7 @@ pub enum PostOffsetStrategy {
 
 #[cfg(test)]
 mod tests {
-    use crate::{NestedTypeNode, StringTypeNode, TypeNode, Utf8};
+    use crate::{NestedTypeNode, NumberTypeNode, StringTypeNode, TypeNode, Utf8, U64};
 
     use super::*;
 
@@ -133,5 +136,18 @@ mod tests {
         assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::Padded);
         assert_eq!(node.offset, 8);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = PostOffsetTypeNode::<NestedTypeNode<NumberTypeNode>>::padded(
+            NumberTypeNode::le(U64),
+            4,
+        );
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"postOffsetTypeNode","offset":4,"strategy":"padded","type":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
     }
 }
