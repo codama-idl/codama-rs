@@ -43,7 +43,6 @@ pub enum NumberFormat {
     ShortU16,
 }
 
-// Implement Serialize to add the "kind" field.
 #[derive(Serialize, Deserialize)]
 struct SerdeWrapper<'a> {
     pub kind: &'a str,
@@ -51,6 +50,7 @@ struct SerdeWrapper<'a> {
     pub endian: Endian,
 }
 
+// Implement Serialize to add the "kind" field.
 impl Serialize for NumberTypeNode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
