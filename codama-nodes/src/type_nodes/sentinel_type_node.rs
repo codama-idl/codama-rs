@@ -55,4 +55,30 @@ mod tests {
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.sentinel, ConstantValueNode::bytes(Base16, "ffff"));
     }
+
+    #[test]
+    fn to_json() {
+        let node = SentinelTypeNode::<TypeNode>::new(
+            StringTypeNode::utf8(),
+            ConstantValueNode::bytes(Base16, "ffff"),
+        );
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"sentinelTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"sentinel":{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"ffff","encoding":"base16"}}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"sentinelTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"sentinel":{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"ffff","encoding":"base16"}}}"#;
+        let node: SentinelTypeNode<TypeNode> = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            SentinelTypeNode::<TypeNode>::new(
+                StringTypeNode::utf8(),
+                ConstantValueNode::bytes(Base16, "ffff"),
+            )
+        );
+    }
 }

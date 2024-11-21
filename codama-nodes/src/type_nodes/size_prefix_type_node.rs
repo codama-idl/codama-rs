@@ -57,4 +57,25 @@ mod tests {
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
     }
+
+    #[test]
+    fn to_json() {
+        let node =
+            SizePrefixTypeNode::<TypeNode>::new(StringTypeNode::utf8(), NumberTypeNode::le(U32));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"sizePrefixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"prefix":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"sizePrefixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"prefix":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+        let node: SizePrefixTypeNode<TypeNode> = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            SizePrefixTypeNode::<TypeNode>::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
+        );
+    }
 }

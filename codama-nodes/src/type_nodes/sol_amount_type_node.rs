@@ -65,4 +65,21 @@ mod tests {
             &NumberTypeNode::new(U64, Endian::Big)
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = SolAmountTypeNode::new(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"solAmountTypeNode","number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"solAmountTypeNode","number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: SolAmountTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, SolAmountTypeNode::new(NumberTypeNode::le(U64)));
+    }
 }

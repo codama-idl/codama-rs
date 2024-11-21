@@ -81,4 +81,21 @@ mod tests {
         assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
+
+    #[test]
+    fn to_json() {
+        let node = SetTypeNode::fixed(NumberTypeNode::le(U64), 42);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"setTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"setTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#;
+        let node: SetTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, SetTypeNode::fixed(NumberTypeNode::le(U64), 42));
+    }
 }
