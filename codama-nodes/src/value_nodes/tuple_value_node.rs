@@ -50,4 +50,24 @@ mod tests {
             vec![ValueNode::Number(NumberValueNode::new(42))]
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = TupleValueNode::new(vec![NumberValueNode::new(42).into()]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"tupleValueNode","items":[{"kind":"numberValueNode","number":42}]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"tupleValueNode","items":[{"kind":"numberValueNode","number":42}]}"#;
+        let node: TupleValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            TupleValueNode::new(vec![NumberValueNode::new(42u32).into()])
+        );
+    }
 }

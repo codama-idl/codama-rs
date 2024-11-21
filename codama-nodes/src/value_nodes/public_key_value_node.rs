@@ -5,6 +5,7 @@ use codama_nodes_derive::node;
 pub struct PublicKeyValueNode {
     // Data.
     pub public_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub identifier: Option<CamelCaseString>,
 }
 
@@ -45,5 +46,25 @@ mod tests {
             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".to_string()
         );
         assert_eq!(node.identifier, Some(CamelCaseString::new("splToken")));
+    }
+
+    #[test]
+    fn to_json() {
+        let node = PublicKeyValueNode::new("6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"publicKeyValueNode","public_key":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"publicKeyValueNode","public_key":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#;
+        let node: PublicKeyValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            PublicKeyValueNode::new("6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm")
+        );
     }
 }
