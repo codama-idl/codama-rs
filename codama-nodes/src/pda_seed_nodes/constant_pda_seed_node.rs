@@ -32,4 +32,24 @@ mod tests {
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42u64)));
     }
+
+    #[test]
+    fn to_json() {
+        let node = ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"constantPdaSeedNode","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"constantPdaSeedNode","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#;
+        let node: ConstantPdaSeedNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64))
+        );
+    }
 }

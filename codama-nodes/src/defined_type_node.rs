@@ -51,4 +51,21 @@ mod tests {
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
     }
+
+    #[test]
+    fn to_json() {
+        let node = DefinedTypeNode::new("myType", NumberTypeNode::le(U8));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"definedTypeNode","name":"myType","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"definedTypeNode","name":"myType","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let node: DefinedTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, DefinedTypeNode::new("myType", NumberTypeNode::le(U8)));
+    }
 }

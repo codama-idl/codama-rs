@@ -7,6 +7,7 @@ use codama_nodes_derive::node;
 pub struct AccountNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<usize>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Docs::is_empty")]
@@ -14,7 +15,10 @@ pub struct AccountNode {
 
     // Children.
     pub data: NestedTypeNode<StructTypeNode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pda: Option<PdaLinkNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub discriminators: Vec<DiscriminatorNode>,
 }
 
@@ -89,5 +93,37 @@ mod tests {
         );
         assert_eq!(node.pda, None);
         assert_eq!(node.discriminators, vec![]);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = AccountNode::new(
+            "myAccount",
+            StructTypeNode::new(vec![
+                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+            ]),
+        );
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"accountNode","name":"myAccount","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","name":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","name":"age","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}]}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"accountNode","name":"myAccount","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","name":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","name":"age","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}]}}"#;
+        let node: AccountNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            AccountNode::new(
+                "myAccount",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                ]),
+            )
+        );
     }
 }

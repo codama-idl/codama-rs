@@ -50,4 +50,24 @@ mod tests {
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
+
+    #[test]
+    fn to_json() {
+        let node = VariablePdaSeedNode::new("mySeed", NumberTypeNode::le(U32));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"variablePdaSeedNode","name":"mySeed","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"variablePdaSeedNode","name":"mySeed","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+        let node: VariablePdaSeedNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            VariablePdaSeedNode::new("mySeed", NumberTypeNode::le(U32))
+        );
+    }
 }
