@@ -5,15 +5,9 @@ use crate::{
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
     StringTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait, ZeroableOptionTypeNode,
 };
-use codama_nodes_derive::NodeUnion;
+use codama_nodes_derive::node_union;
 
-#[derive(
-    codama_nodes_derive::IntoEnum,
-    core::fmt::Debug,
-    core::cmp::PartialEq,
-    core::clone::Clone,
-    NodeUnion,
-)]
+#[node_union]
 pub enum TypeNode {
     Amount(AmountTypeNode),
     Array(Box<ArrayTypeNode>),

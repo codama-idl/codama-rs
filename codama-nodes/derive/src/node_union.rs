@@ -6,8 +6,7 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> syn::Result<Toke
     as_derive_enum(&input)?;
 
     Ok(quote! {
-        #[derive(codama_nodes_derive::IntoEnum, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone, serde::Serialize, serde::Deserialize)]
-        #[serde(untagged)]
+        #[derive(codama_nodes_derive::NodeUnion, codama_nodes_derive::IntoEnum, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone)]
         #input
     })
 }
