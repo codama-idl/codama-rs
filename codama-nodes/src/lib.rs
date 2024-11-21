@@ -12,7 +12,6 @@ mod instruction_remaining_accounts_node;
 mod link_nodes;
 mod pda_node;
 mod pda_seed_nodes;
-mod playground; // TODO: Remove
 mod program_node;
 mod root_node;
 mod shared;
