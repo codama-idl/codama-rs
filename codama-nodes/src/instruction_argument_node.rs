@@ -69,4 +69,24 @@ mod tests {
             )))
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionArgumentNode::new("myArgument", NumberTypeNode::le(U32));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionArgumentNode","name":"myArgument","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"instructionArgumentNode","name":"myArgument","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+        let node: InstructionArgumentNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            InstructionArgumentNode::new("myArgument", NumberTypeNode::le(U32))
+        );
+    }
 }

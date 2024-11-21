@@ -54,13 +54,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"publicKeyValueNode","public_key":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#
+            r#"{"kind":"publicKeyValueNode","publicKey":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"publicKeyValueNode","public_key":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#;
+        let json = r#"{"kind":"publicKeyValueNode","publicKey":"6QTRDBBuSgBomH6h5VoKqrw6XZ1ESd7x2dj7ixHc3LWm"}"#;
         let node: PublicKeyValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

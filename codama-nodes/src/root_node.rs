@@ -100,4 +100,34 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = RootNode::new(ProgramNode {
+            name: "myProgram".into(),
+            public_key: "1234..5678".into(),
+            version: "1.2.3".into(),
+            ..ProgramNode::default()
+        });
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"rootNode","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"rootNode","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#;
+        let node: RootNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            RootNode::new(ProgramNode {
+                name: "myProgram".into(),
+                public_key: "1234..5678".into(),
+                version: "1.2.3".into(),
+                ..ProgramNode::default()
+            })
+        );
+    }
 }

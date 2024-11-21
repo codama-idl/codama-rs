@@ -7,7 +7,7 @@ pub struct InstructionByteDeltaNode {
     pub with_header: bool,
     #[serde(default)]
     #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub substract: bool,
+    pub subtract: bool,
 
     // Children.
     pub value: InstructionByteDeltaNodeValue,
@@ -21,7 +21,7 @@ impl InstructionByteDeltaNode {
         Self {
             value: value.into(),
             with_header,
-            substract: false,
+            subtract: false,
         }
     }
 
@@ -32,7 +32,7 @@ impl InstructionByteDeltaNode {
         Self {
             value: value.into(),
             with_header,
-            substract: true,
+            subtract: true,
         }
     }
 }
@@ -57,7 +57,7 @@ mod tests {
             InstructionByteDeltaNodeValue::Argument(ArgumentValueNode::new("myArgument"))
         );
         assert_eq!(node.with_header, true);
-        assert_eq!(node.substract, false);
+        assert_eq!(node.subtract, false);
     }
 
     #[test]
@@ -68,6 +68,46 @@ mod tests {
             InstructionByteDeltaNodeValue::Number(NumberValueNode::new(42))
         );
         assert_eq!(node.with_header, true);
-        assert_eq!(node.substract, true);
+        assert_eq!(node.subtract, true);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionByteDeltaNode::new(ArgumentValueNode::new("myArgument"), true);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionByteDeltaNode","withHeader":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"instructionByteDeltaNode","withHeader":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#;
+        let node: InstructionByteDeltaNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            InstructionByteDeltaNode::new(ArgumentValueNode::new("myArgument"), true)
+        );
+    }
+
+    #[test]
+    fn to_json_minus() {
+        let node = InstructionByteDeltaNode::minus(ArgumentValueNode::new("myArgument"), true);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionByteDeltaNode","withHeader":true,"subtract":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json_minus() {
+        let json = r#"{"kind":"instructionByteDeltaNode","withHeader":true,"subtract":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#;
+        let node: InstructionByteDeltaNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            InstructionByteDeltaNode::minus(ArgumentValueNode::new("myArgument"), true)
+        );
     }
 }

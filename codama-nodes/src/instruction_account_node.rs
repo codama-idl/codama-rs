@@ -74,4 +74,21 @@ mod tests {
             )))
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionAccountNode::new("myAccount", false, true);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionAccountNode","name":"myAccount","isWritable":false,"isSigner":true}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"instructionAccountNode","name":"myAccount","isWritable":false,"isSigner":true}"#;
+        let node: InstructionAccountNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, InstructionAccountNode::new("myAccount", false, true));
+    }
 }

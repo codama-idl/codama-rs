@@ -8,6 +8,7 @@ pub struct PdaNode {
     #[serde(default)]
     #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub program_id: Option<String>,
 
     // Children.
@@ -74,5 +75,19 @@ mod tests {
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.program_id, Some("1234..5678".into()));
         assert_eq!(node.seeds, vec![]);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = PdaNode::new("myPda", vec![]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"pdaNode","name":"myPda","seeds":[]}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"pdaNode","name":"myPda","seeds":[]}"#;
+        let node: PdaNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, PdaNode::new("myPda", vec![]));
     }
 }

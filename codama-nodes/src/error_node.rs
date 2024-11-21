@@ -53,4 +53,22 @@ mod tests {
         assert_eq!(node.message, "Something went wrong".to_string());
         assert_eq!(node.docs, Docs::default());
     }
+
+    #[test]
+    fn to_json() {
+        let node = ErrorNode::new("myError", 42, "Something went wrong");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"errorNode","name":"myError","code":42,"message":"Something went wrong"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json =
+            r#"{"kind":"errorNode","name":"myError","code":42,"message":"Something went wrong"}"#;
+        let node: ErrorNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ErrorNode::new("myError", 42, "Something went wrong"));
+    }
 }

@@ -13,15 +13,27 @@ pub struct InstructionNode {
     #[serde(default)]
     #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "InstructionOptionalAccountStrategy::is_default")]
     pub optional_account_strategy: InstructionOptionalAccountStrategy,
 
     // Children.
     pub accounts: Vec<InstructionAccountNode>,
     pub arguments: Vec<InstructionArgumentNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub extra_arguments: Vec<InstructionArgumentNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub remaining_accounts: Vec<InstructionRemainingAccountsNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub byte_deltas: Vec<InstructionByteDeltaNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub discriminators: Vec<DiscriminatorNode>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub sub_instructions: Vec<InstructionNode>,
 }
 
@@ -31,6 +43,12 @@ pub enum InstructionOptionalAccountStrategy {
     Omitted,
     #[default]
     ProgramId,
+}
+
+impl InstructionOptionalAccountStrategy {
+    pub fn is_default(&self) -> bool {
+        matches!(self, Self::ProgramId)
+    }
 }
 
 #[cfg(test)]
@@ -86,6 +104,33 @@ mod tests {
                     ..InstructionNode::default()
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionNode {
+            name: "myInstruction".into(),
+            ..InstructionNode::default()
+        };
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionNode","name":"myInstruction","accounts":[],"arguments":[]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json =
+            r#"{"kind":"instructionNode","name":"myInstruction","accounts":[],"arguments":[]}"#;
+        let node: InstructionNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            InstructionNode {
+                name: "myInstruction".into(),
+                ..InstructionNode::default()
+            }
         );
     }
 }

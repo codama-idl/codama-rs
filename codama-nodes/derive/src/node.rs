@@ -10,6 +10,7 @@ pub fn expand_attribute_node(input: &syn::DeriveInput) -> syn::Result<TokenStrea
     Ok(quote! {
         #[derive(codama_nodes_derive::Node, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone, serde::Serialize, serde::Deserialize)]
         #[serde(tag = "kind", rename = #kind)]
+        #[serde(rename_all = "camelCase")]
         #input
     })
 }

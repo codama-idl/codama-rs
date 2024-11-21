@@ -64,13 +64,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"if_true":{"kind":"accountValueNode","name":"myOtherAccount"}}"#
+            r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"ifTrue":{"kind":"accountValueNode","name":"myOtherAccount"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"if_true":{"kind":"accountValueNode","name":"myOtherAccount"}}"#;
+        let json = r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"ifTrue":{"kind":"accountValueNode","name":"myOtherAccount"}}"#;
         let node: ConditionalValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

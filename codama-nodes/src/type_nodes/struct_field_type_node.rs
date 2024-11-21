@@ -97,13 +97,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"structFieldTypeNode","name":"myField","default_value_strategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"default_value":{"kind":"numberValueNode","number":42}}"#
+            r#"{"kind":"structFieldTypeNode","name":"myField","defaultValueStrategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"defaultValue":{"kind":"numberValueNode","number":42}}"#
         );
     }
 
     #[test]
     fn from_json_full() {
-        let json = r#"{"kind":"structFieldTypeNode","name":"myField","default_value_strategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"default_value":{"kind":"numberValueNode","number":42}}"#;
+        let json = r#"{"kind":"structFieldTypeNode","name":"myField","defaultValueStrategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"defaultValue":{"kind":"numberValueNode","number":42}}"#;
         let node: StructFieldTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

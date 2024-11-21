@@ -45,4 +45,36 @@ mod tests {
             InstructionRemainingAccountsNodeValue::Argument(ArgumentValueNode::new("myArgument"))
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionRemainingAccountsNode {
+            is_optional: false,
+            is_signer: IsAccountSigner::Either,
+            is_writable: true,
+            docs: vec![].into(),
+            value: ArgumentValueNode::new("myArgument").into(),
+        };
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionRemainingAccountsNode","isSigner":"either","isWritable":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"instructionRemainingAccountsNode","isSigner":"either","isWritable":true,"value":{"kind":"argumentValueNode","name":"myArgument"}}"#;
+        let node: InstructionRemainingAccountsNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            InstructionRemainingAccountsNode {
+                is_optional: false,
+                is_signer: IsAccountSigner::Either,
+                is_writable: true,
+                docs: vec![].into(),
+                value: ArgumentValueNode::new("myArgument").into(),
+            }
+        );
+    }
 }
