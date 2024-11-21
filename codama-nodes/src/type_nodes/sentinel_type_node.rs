@@ -4,6 +4,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct SentinelTypeNode<T: TypeNodeEnumTrait> {
     // Children.
+    #[serde(bound = "T: TypeNodeEnumTrait")]
     pub r#type: T,
     pub sentinel: ConstantValueNode,
 }

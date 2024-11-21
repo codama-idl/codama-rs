@@ -4,6 +4,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct HiddenSuffixTypeNode<T: TypeNodeEnumTrait> {
     // Children.
+    #[serde(bound = "T: TypeNodeEnumTrait")]
     pub r#type: T,
     pub suffix: Vec<ConstantValueNode>,
 }

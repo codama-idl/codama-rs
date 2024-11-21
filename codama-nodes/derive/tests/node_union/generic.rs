@@ -1,17 +1,19 @@
 use codama_nodes_derive::NodeUnion;
 
-pub trait SomeTrait {}
+pub trait SomeTrait: serde::Serialize + for<'de> serde::Deserialize<'de> {}
 impl SomeTrait for u32 {}
 
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
 #[serde(tag = "kind", rename = "numberTypeNode")]
 pub struct NumberTypeNode<T: SomeTrait> {
+    #[serde(bound(serialize = "T: SomeTrait", deserialize = "T: SomeTrait"))]
     pub value: T,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
 #[serde(tag = "kind", rename = "stringTypeNode")]
 pub struct StringTypeNode<T: SomeTrait> {
+    #[serde(bound(serialize = "T: SomeTrait", deserialize = "T: SomeTrait"))]
     pub value: T,
 }
 

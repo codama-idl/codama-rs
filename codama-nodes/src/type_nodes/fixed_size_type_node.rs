@@ -7,6 +7,7 @@ pub struct FixedSizeTypeNode<T: TypeNodeEnumTrait> {
     pub size: usize,
 
     // Children.
+    #[serde(bound = "T: TypeNodeEnumTrait")]
     pub r#type: T,
 }
 

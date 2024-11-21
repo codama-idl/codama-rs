@@ -9,6 +9,7 @@ pub struct PreOffsetTypeNode<T: TypeNodeEnumTrait> {
     pub strategy: PreOffsetStrategy,
 
     // Children.
+    #[serde(bound = "T: TypeNodeEnumTrait")]
     pub r#type: T,
 }
 

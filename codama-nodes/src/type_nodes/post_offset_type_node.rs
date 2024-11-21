@@ -9,6 +9,7 @@ pub struct PostOffsetTypeNode<T: TypeNodeEnumTrait> {
     pub strategy: PostOffsetStrategy,
 
     // Children.
+    #[serde(bound = "T: TypeNodeEnumTrait")]
     pub r#type: T,
 }
 
