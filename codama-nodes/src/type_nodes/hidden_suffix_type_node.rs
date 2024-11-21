@@ -55,4 +55,30 @@ mod tests {
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.suffix, vec![]);
     }
+
+    #[test]
+    fn to_json() {
+        let node = HiddenSuffixTypeNode::<TypeNode>::new(
+            StringTypeNode::utf8(),
+            vec![ConstantValueNode::bytes(Base16, "ffff")],
+        );
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"hiddenSuffixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"suffix":[{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"ffff","encoding":"base16"}}]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"hiddenSuffixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"suffix":[{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"ffff","encoding":"base16"}}]}"#;
+        let node: HiddenSuffixTypeNode<TypeNode> = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            HiddenSuffixTypeNode::<TypeNode>::new(
+                StringTypeNode::utf8(),
+                vec![ConstantValueNode::bytes(Base16, "ffff")],
+            )
+        );
+    }
 }

@@ -60,4 +60,24 @@ mod tests {
         };
         assert_eq!(r#enum.size, NestedTypeNode::Value(NumberTypeNode::le(U32)));
     }
+
+    #[test]
+    fn to_json() {
+        let node = EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant", None).into()]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"enumTypeNode","variants":[{"kind":"enumEmptyVariantTypeNode","name":"myVariant"}],"size":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"enumTypeNode","variants":[{"kind":"enumEmptyVariantTypeNode","name":"myVariant"}],"size":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let node: EnumTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant", None).into()])
+        );
+    }
 }

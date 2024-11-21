@@ -53,4 +53,46 @@ mod tests {
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.size, 42);
     }
+
+    #[test]
+    fn to_json_type_node() {
+        let node = FixedSizeTypeNode::<TypeNode>::new(StringTypeNode::utf8(), 42);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"fixedSizeTypeNode","size":42,"type":{"kind":"stringTypeNode","encoding":"utf8"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json_type_node() {
+        let json = r#"{"kind":"fixedSizeTypeNode","size":42,"type":{"kind":"stringTypeNode","encoding":"utf8"}}"#;
+        let node: FixedSizeTypeNode<TypeNode> = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            FixedSizeTypeNode::<TypeNode>::new(StringTypeNode::utf8(), 42)
+        );
+    }
+
+    #[test]
+    fn to_json_nested_type_node() {
+        let node =
+            FixedSizeTypeNode::<NestedTypeNode<StringTypeNode>>::new(StringTypeNode::utf8(), 42);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"fixedSizeTypeNode","size":42,"type":{"kind":"stringTypeNode","encoding":"utf8"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json_nested_type_node() {
+        let json = r#"{"kind":"fixedSizeTypeNode","size":42,"type":{"kind":"stringTypeNode","encoding":"utf8"}}"#;
+        let node: FixedSizeTypeNode<NestedTypeNode<StringTypeNode>> =
+            serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            FixedSizeTypeNode::<NestedTypeNode<StringTypeNode>>::new(StringTypeNode::utf8(), 42)
+        );
+    }
 }
