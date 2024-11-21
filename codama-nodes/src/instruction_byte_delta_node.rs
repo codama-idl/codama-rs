@@ -1,6 +1,5 @@
 use crate::{AccountLinkNode, ArgumentValueNode, NumberValueNode, ResolverValueNode};
-use codama_nodes_derive::{node, IntoEnum};
-use serde::{Deserialize, Serialize};
+use codama_nodes_derive::{node, node_union};
 
 #[node]
 pub struct InstructionByteDeltaNode {
@@ -36,8 +35,7 @@ impl InstructionByteDeltaNode {
     }
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[node_union]
 pub enum InstructionByteDeltaNodeValue {
     Account(AccountLinkNode),
     Argument(ArgumentValueNode),

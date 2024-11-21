@@ -1,5 +1,5 @@
 use crate::{Endian, NodeTrait, NumberFormat};
-use codama_nodes_derive::{IntoEnum, Node, TypeNode};
+use codama_nodes_derive::{node_union, Node, TypeNode};
 use serde::{Deserialize, Serialize};
 
 #[derive(Node, TypeNode, Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -18,8 +18,7 @@ struct AmountTypeNode {
     number: NumberTypeNode,
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[node_union]
 enum TypeNode {
     Amount(AmountTypeNode),
     Number(NumberTypeNode),

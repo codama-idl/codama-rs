@@ -5,11 +5,9 @@ use crate::{
     ProgramLinkNode, PublicKeyValueNode, ResolverValueNode, SetValueNode, SomeValueNode,
     StringValueNode, StructValueNode, TupleValueNode,
 };
-use codama_nodes_derive::IntoEnum;
-use serde::{Deserialize, Serialize};
+use codama_nodes_derive::node_union;
 
-#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[node_union]
 pub enum InstructionInputValueNode {
     // ContextualValueNodes.
     Account(AccountValueNode),
