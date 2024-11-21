@@ -21,7 +21,6 @@ pub fn expand_derive_node(input: &syn::DeriveInput) -> syn::Result<TokenStream> 
     let item_type_params = get_type_params(&item_generics);
     let kind = lowercase_first_letter(&item_name.to_string());
 
-    // Render the macro output.
     Ok(quote! {
         impl #item_generics crate::NodeTrait for #item_name #item_type_params{
             const KIND: &'static str = #kind;
