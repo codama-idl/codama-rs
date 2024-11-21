@@ -48,6 +48,14 @@ pub fn node_union(_attr: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[proc_macro_derive(NodeUnion)]
+pub fn derive_node_union(input: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    node_union::expand_derive_node_union(&mut input)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
 #[proc_macro_derive(IntoEnum)]
 pub fn derive_into_enum(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
