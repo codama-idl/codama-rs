@@ -1,5 +1,21 @@
 use quote::quote;
 
+// Ensure the derive input is a struct and return the data.
+pub fn as_derive_struct(input: &syn::DeriveInput) -> syn::Result<&syn::DataStruct> {
+    let syn::Data::Struct(data) = &input.data else {
+        return Err(syn::Error::new_spanned(input, "expected a struct").into());
+    };
+    Ok(data)
+}
+
+// Ensure the derive input is an enum and return the data.
+pub fn as_derive_enum(input: &syn::DeriveInput) -> syn::Result<&syn::DataEnum> {
+    let syn::Data::Enum(data) = &input.data else {
+        return Err(syn::Error::new_spanned(input, "expected a enum").into());
+    };
+    Ok(data)
+}
+
 // Identify the inner type of a type — e.g. `Box<T>` -> `T`.
 pub fn unwrap_inner_type<'a>(ty: &'a syn::Type, ident: &'a str) -> Option<&'a syn::Type> {
     // Get the path of the type. — e.g. `a::b::c::Option`.
