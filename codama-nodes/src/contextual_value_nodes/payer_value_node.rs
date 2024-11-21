@@ -18,4 +18,18 @@ mod tests {
         let node = PayerValueNode::new();
         assert_eq!(node, PayerValueNode {});
     }
+
+    #[test]
+    fn to_json() {
+        let node = PayerValueNode::new();
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"payerValueNode"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"payerValueNode"}"#;
+        let node: PayerValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, PayerValueNode::new());
+    }
 }

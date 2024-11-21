@@ -18,4 +18,18 @@ mod tests {
         let node = ProgramIdValueNode::new();
         assert_eq!(node, ProgramIdValueNode {});
     }
+
+    #[test]
+    fn to_json() {
+        let node = ProgramIdValueNode::new();
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"programIdValueNode"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"programIdValueNode"}"#;
+        let node: ProgramIdValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ProgramIdValueNode::new());
+    }
 }
