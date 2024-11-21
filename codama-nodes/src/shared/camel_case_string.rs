@@ -165,4 +165,18 @@ mod tests {
         let value = CamelCaseString::new("Hello World!");
         assert_eq!(value.as_ref(), "helloWorld");
     }
+
+    #[test]
+    fn to_json() {
+        let value = CamelCaseString::new("helloWorld");
+        let json = serde_json::to_string(&value).unwrap();
+        assert_eq!(json, "\"helloWorld\"");
+    }
+
+    #[test]
+    fn from_json() {
+        let json = "\"helloWorld\"";
+        let value: CamelCaseString = serde_json::from_str(json).unwrap();
+        assert_eq!(value, CamelCaseString::new("helloWorld"));
+    }
 }
