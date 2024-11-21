@@ -1,8 +1,7 @@
 use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
-use codama_nodes_derive::{node, TypeNode};
+use codama_nodes_derive::type_node;
 
-#[node]
-#[derive(TypeNode)]
+#[type_node]
 pub struct SentinelTypeNode<T: TypeNodeEnumTrait> {
     // Children.
     pub r#type: T,

@@ -1,8 +1,7 @@
 use crate::{NestedTypeNode, NumberTypeNode};
-use codama_nodes_derive::{node, TypeNode};
+use codama_nodes_derive::type_node;
 
-#[node]
-#[derive(TypeNode)]
+#[type_node]
 pub struct BooleanTypeNode {
     // Children.
     pub size: NestedTypeNode<NumberTypeNode>,
