@@ -1,7 +1,7 @@
 use crate::{CamelCaseString, Docs, InstructionInputValueNode, IsAccountSigner};
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct InstructionAccountNode {
     // Data.
     pub name: CamelCaseString,

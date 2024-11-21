@@ -1,8 +1,8 @@
-use codama_nodes_derive::{IntoEnum, Node};
+use codama_nodes_derive::{node, IntoEnum};
 use serde::{Deserialize, Serialize};
 use serde_json::Number as JsonNumber;
 
-#[derive(Node, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[node]
 pub struct NumberValueNode {
     // Data.
     pub number: Number,
@@ -139,12 +139,13 @@ mod tests {
     fn to_json() {
         let node = NumberValueNode::new(42u16);
         let json = serde_json::to_string(&node).unwrap();
-        assert_eq!(json, r#"{"number":42}"#);
+        assert_eq!(json, r#"{"kind":"numberValueNode","number":42}"#);
     }
 
     #[test]
     fn from_json() {
-        let node: NumberValueNode = serde_json::from_str(r#"{"number":42}"#).unwrap();
+        let node: NumberValueNode =
+            serde_json::from_str(r#"{"kind":"numberValueNode","number":42}"#).unwrap();
         assert_eq!(node.number, Number::UnsignedInteger(42));
     }
 }

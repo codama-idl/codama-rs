@@ -1,9 +1,10 @@
 use crate::{
     NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNodeEnumTrait, TypeNodeTrait,
 };
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[node]
+#[derive(TypeNode)]
 pub struct SizePrefixTypeNode<T: TypeNodeEnumTrait> {
     // Children.
     pub r#type: T,

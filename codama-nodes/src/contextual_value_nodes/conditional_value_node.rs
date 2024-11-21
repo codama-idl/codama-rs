@@ -1,9 +1,10 @@
 use crate::{
     AccountValueNode, ArgumentValueNode, InstructionInputValueNode, ResolverValueNode, ValueNode,
 };
-use codama_nodes_derive::{IntoEnum, Node};
+use codama_nodes_derive::{node, IntoEnum};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct ConditionalValueNode {
     // Children.
     pub condition: ConditionNode,
@@ -12,7 +13,8 @@ pub struct ConditionalValueNode {
     pub if_false: Option<InstructionInputValueNode>,
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone)]
+#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ConditionNode {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),

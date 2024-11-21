@@ -1,7 +1,7 @@
 use crate::{CamelCaseString, Docs, PdaSeedNode};
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct PdaNode {
     // Data.
     pub name: CamelCaseString,

@@ -1,7 +1,8 @@
 use crate::{EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, U8};
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[node]
+#[derive(TypeNode)]
 pub struct EnumTypeNode {
     // Children.
     pub variants: Vec<EnumVariantTypeNode>,

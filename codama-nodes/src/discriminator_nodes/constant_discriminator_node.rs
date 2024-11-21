@@ -1,7 +1,7 @@
 use crate::ConstantValueNode;
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct ConstantDiscriminatorNode {
     // Data.
     pub offset: usize,

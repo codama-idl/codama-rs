@@ -1,7 +1,8 @@
 use crate::{ArgumentValueNode, Docs, IsAccountSigner, ResolverValueNode};
-use codama_nodes_derive::{IntoEnum, Node};
+use codama_nodes_derive::{node, IntoEnum};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct InstructionRemainingAccountsNode {
     // Data.
     pub is_optional: bool,
@@ -13,7 +14,8 @@ pub struct InstructionRemainingAccountsNode {
     pub value: InstructionRemainingAccountsNodeValue,
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone)]
+#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum InstructionRemainingAccountsNodeValue {
     Argument(ArgumentValueNode),
     Resolver(ResolverValueNode),

@@ -2,9 +2,11 @@ use crate::{
     CamelCaseString, DiscriminatorNode, Docs, InstructionAccountNode, InstructionArgumentNode,
     InstructionByteDeltaNode, InstructionRemainingAccountsNode,
 };
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, Debug, PartialEq, Clone, Default)]
+#[node]
+#[derive(Default)]
 pub struct InstructionNode {
     // Data.
     pub name: CamelCaseString,
@@ -21,7 +23,8 @@ pub struct InstructionNode {
     pub sub_instructions: Vec<InstructionNode>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum InstructionOptionalAccountStrategy {
     Omitted,
     #[default]

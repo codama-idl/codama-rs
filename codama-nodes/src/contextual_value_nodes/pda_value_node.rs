@@ -1,7 +1,8 @@
 use crate::{PdaLinkNode, PdaNode, PdaSeedValueNode};
-use codama_nodes_derive::{IntoEnum, Node};
+use codama_nodes_derive::{node, IntoEnum};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct PdaValueNode {
     // Children.
     pub pda: PdaValue,
@@ -20,7 +21,8 @@ impl PdaValueNode {
     }
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone)]
+#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum PdaValue {
     Linked(PdaLinkNode),
     Nested(PdaNode),

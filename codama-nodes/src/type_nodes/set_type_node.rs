@@ -2,9 +2,10 @@ use crate::{
     CountNode, FixedCountNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
     RemainderCountNode, TypeNode,
 };
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[node]
+#[derive(TypeNode)]
 pub struct SetTypeNode {
     // Children.
     pub item: TypeNode,

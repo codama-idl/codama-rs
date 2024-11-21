@@ -1,7 +1,9 @@
 use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
-use codama_nodes_derive::{Node, TypeNode};
+use codama_nodes_derive::{node, TypeNode};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, TypeNode, Debug, PartialEq, Clone)]
+#[node]
+#[derive(TypeNode)]
 pub struct PreOffsetTypeNode<T: TypeNodeEnumTrait> {
     // Data.
     pub offset: i32,
@@ -54,7 +56,8 @@ where
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum PreOffsetStrategy {
     Absolute,
     Padded,

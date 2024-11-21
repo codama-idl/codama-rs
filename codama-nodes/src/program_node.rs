@@ -1,9 +1,10 @@
 use crate::{
     AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, InstructionNode, PdaNode,
 };
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
 
-#[derive(Node, Debug, PartialEq, Clone, Default)]
+#[node]
+#[derive(Default)]
 pub struct ProgramNode {
     // Data.
     pub name: CamelCaseString,

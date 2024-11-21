@@ -1,7 +1,7 @@
 use crate::{BytesEncoding, BytesTypeNode, BytesValueNode, TypeNode, ValueNode};
-use codama_nodes_derive::Node;
+use codama_nodes_derive::node;
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct ConstantValueNode {
     // Children.
     pub r#type: TypeNode,

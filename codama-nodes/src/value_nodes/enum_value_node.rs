@@ -1,7 +1,8 @@
 use crate::{CamelCaseString, DefinedTypeLinkNode, StructValueNode, TupleValueNode};
-use codama_nodes_derive::{IntoEnum, Node};
+use codama_nodes_derive::{node, IntoEnum};
+use serde::{Deserialize, Serialize};
 
-#[derive(Node, Debug, PartialEq, Clone)]
+#[node]
 pub struct EnumValueNode {
     // Data.
     pub variant: CamelCaseString,
@@ -63,7 +64,8 @@ impl EnumValueNode {
     }
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone)]
+#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum EnumVariantData {
     Struct(StructValueNode),
     Tuple(TupleValueNode),

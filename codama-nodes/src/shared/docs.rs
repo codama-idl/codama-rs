@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub struct Docs(Vec<String>);
 
 impl Docs {
