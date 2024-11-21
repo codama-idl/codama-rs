@@ -81,4 +81,22 @@ mod tests {
             vec![PdaSeedValueNode::new("value", NumberValueNode::new(42)),]
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json: &str =
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[]}"#;
+        let node: PdaValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]));
+    }
 }

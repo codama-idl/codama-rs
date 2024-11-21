@@ -7,6 +7,8 @@ pub struct ErrorNode {
     pub name: CamelCaseString,
     pub code: usize,
     pub message: String,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 }
 

@@ -35,4 +35,24 @@ mod tests {
         assert_eq!(node.name, CamelCaseString::from("answer"));
         assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42)));
     }
+
+    #[test]
+    fn to_json() {
+        let node = PdaSeedValueNode::new("answer", NumberValueNode::new(42));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"pdaSeedValueNode","name":"answer","value":{"kind":"numberValueNode","number":42}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json: &str = r#"{"kind":"pdaSeedValueNode","name":"answer","value":{"kind":"numberValueNode","number":42}}"#;
+        let node: PdaSeedValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            PdaSeedValueNode::new("answer", NumberValueNode::new(42u32))
+        );
+    }
 }

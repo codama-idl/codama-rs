@@ -25,4 +25,21 @@ mod tests {
         let node = AccountBumpValueNode::new("my_account");
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
     }
+
+    #[test]
+    fn to_json() {
+        let node = AccountBumpValueNode::new("myAccount");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"accountBumpValueNode","name":"myAccount"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"accountBumpValueNode","name":"myAccount"}"#;
+        let node: AccountBumpValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, AccountBumpValueNode::new("myAccount"));
+    }
 }

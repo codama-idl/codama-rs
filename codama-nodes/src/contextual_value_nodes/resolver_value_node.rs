@@ -5,9 +5,12 @@ use codama_nodes_derive::{node, node_union};
 pub struct ResolverValueNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub depends_on: Option<Vec<ResolverDependency>>,
 }
 
@@ -64,5 +67,19 @@ mod tests {
                 ResolverDependency::Argument(ArgumentValueNode::new("myDependentArgument")),
             ])
         );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = ResolverValueNode::new("myResolver");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"resolverValueNode","name":"myResolver"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"resolverValueNode","name":"myResolver"}"#;
+        let node: ResolverValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ResolverValueNode::new("myResolver"));
     }
 }

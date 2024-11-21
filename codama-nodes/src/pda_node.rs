@@ -5,6 +5,8 @@ use codama_nodes_derive::node;
 pub struct PdaNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
     pub program_id: Option<String>,
 

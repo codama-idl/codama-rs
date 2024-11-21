@@ -8,6 +8,8 @@ pub struct AccountNode {
     // Data.
     pub name: CamelCaseString,
     pub size: Option<usize>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.

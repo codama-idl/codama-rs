@@ -4,9 +4,13 @@ use codama_nodes_derive::{node, node_union};
 #[node]
 pub struct InstructionRemainingAccountsNode {
     // Data.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub is_optional: bool,
     pub is_signer: IsAccountSigner,
     pub is_writable: bool,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.

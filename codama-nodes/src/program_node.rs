@@ -11,6 +11,8 @@ pub struct ProgramNode {
     pub public_key: String,
     pub version: String,
     pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.

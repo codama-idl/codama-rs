@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 pub struct InstructionNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
     pub optional_account_strategy: InstructionOptionalAccountStrategy,
 
