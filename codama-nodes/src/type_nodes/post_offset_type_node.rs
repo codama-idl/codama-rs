@@ -140,14 +140,21 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = PostOffsetTypeNode::<NestedTypeNode<NumberTypeNode>>::padded(
-            NumberTypeNode::le(U64),
-            4,
-        );
+        let node = PostOffsetTypeNode::<TypeNode>::padded(NumberTypeNode::le(U64), 4);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
             r#"{"kind":"postOffsetTypeNode","offset":4,"strategy":"padded","type":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"postOffsetTypeNode","offset":4,"strategy":"padded","type":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: PostOffsetTypeNode<TypeNode> = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            PostOffsetTypeNode::<TypeNode>::padded(NumberTypeNode::le(U64), 4)
         );
     }
 }

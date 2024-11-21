@@ -77,11 +77,18 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = NumberTypeNode::new(U8, Endian::Big);
+        let node = NumberTypeNode::be(U8);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
             r#"{"kind":"numberTypeNode","format":"u8","endian":"be"}"#
         );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"numberTypeNode","format":"u8","endian":"be"}"#;
+        let node: NumberTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, NumberTypeNode::be(U8));
     }
 }

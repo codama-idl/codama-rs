@@ -4,6 +4,8 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct OptionTypeNode {
     // Data.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub fixed: bool,
 
     // Children.
@@ -67,5 +69,39 @@ mod tests {
         assert_eq!(node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U64)));
         assert_eq!(node.fixed, true);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = OptionTypeNode::new(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"optionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"prefix":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"optionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"prefix":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let node: OptionTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, OptionTypeNode::new(NumberTypeNode::le(U64)));
+    }
+
+    #[test]
+    fn to_json_fixed() {
+        let node = OptionTypeNode::fixed(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"optionTypeNode","fixed":true,"item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"prefix":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json_fixed() {
+        let json = r#"{"kind":"optionTypeNode","fixed":true,"item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"prefix":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let node: OptionTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, OptionTypeNode::fixed(NumberTypeNode::le(U64)));
     }
 }
