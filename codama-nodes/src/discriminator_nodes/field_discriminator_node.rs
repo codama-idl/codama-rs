@@ -30,4 +30,21 @@ mod tests {
         assert_eq!(node.name, CamelCaseString::new("myField"));
         assert_eq!(node.offset, 0);
     }
+
+    #[test]
+    fn to_json() {
+        let node = FieldDiscriminatorNode::new("myField", 0);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"fieldDiscriminatorNode","name":"myField","offset":0}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"fieldDiscriminatorNode","name":"myField","offset":0}"#;
+        let node: FieldDiscriminatorNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, FieldDiscriminatorNode::new("myField", 0));
+    }
 }
