@@ -5,6 +5,7 @@ use codama_nodes_derive::node;
 pub struct EnumStructVariantTypeNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub discriminator: Option<usize>,
 
     // Children.
@@ -71,6 +72,26 @@ mod tests {
         assert_eq!(
             node.r#struct.get_nested_type_node(),
             &StructTypeNode::new(vec![])
+        );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]), None);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode","fields":[]}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode","fields":[]}}"#;
+        let node: EnumStructVariantTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]), None)
         );
     }
 }

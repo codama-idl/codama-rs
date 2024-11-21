@@ -5,6 +5,7 @@ use codama_nodes_derive::node;
 pub struct EnumTupleVariantTypeNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub discriminator: Option<usize>,
 
     // Children.
@@ -71,6 +72,26 @@ mod tests {
         assert_eq!(
             node.tuple.get_nested_type_node(),
             &TupleTypeNode::new(vec![])
+        );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]), None);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode","items":[]}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode","items":[]}}"#;
+        let node: EnumTupleVariantTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]), None)
         );
     }
 }

@@ -55,4 +55,21 @@ mod tests {
             &NumberTypeNode::le(U64,)
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = DateTimeTypeNode::new(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"dateTimeTypeNode","number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"dateTimeTypeNode","number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: DateTimeTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, DateTimeTypeNode::new(NumberTypeNode::le(U64)));
+    }
 }

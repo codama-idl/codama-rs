@@ -45,4 +45,21 @@ mod tests {
         );
         assert_eq!(node.size.get_nested_type_node(), &NumberTypeNode::le(U64,));
     }
+
+    #[test]
+    fn to_json() {
+        let node = BooleanTypeNode::new(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"booleanTypeNode","size":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"booleanTypeNode","size":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: BooleanTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, BooleanTypeNode::new(NumberTypeNode::le(U64)));
+    }
 }
