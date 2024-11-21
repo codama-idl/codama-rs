@@ -7,6 +7,7 @@ pub struct InstructionAccountLinkNode {
     pub name: CamelCaseString,
 
     // Children.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub instruction: Option<InstructionLinkNode>,
 }
 
@@ -87,5 +88,22 @@ mod tests {
         let node: InstructionAccountLinkNode = "my_instruction_account".into();
         assert_eq!(node.name, CamelCaseString::new("myInstructionAccount"));
         assert_eq!(node.instruction, None);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = InstructionAccountLinkNode::new("myAccount");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"instructionAccountLinkNode","name":"myAccount"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"instructionAccountLinkNode","name":"myAccount"}"#;
+        let node: InstructionAccountLinkNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, InstructionAccountLinkNode::new("myAccount"));
     }
 }

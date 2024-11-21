@@ -7,6 +7,7 @@ pub struct DefinedTypeLinkNode {
     pub name: CamelCaseString,
 
     // Children.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub program: Option<ProgramLinkNode>,
 }
 
@@ -74,5 +75,19 @@ mod tests {
         let node: DefinedTypeLinkNode = "my_type".into();
         assert_eq!(node.name, CamelCaseString::new("myType"));
         assert_eq!(node.program, None);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = DefinedTypeLinkNode::new("myType");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"definedTypeLinkNode","name":"myType"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"definedTypeLinkNode","name":"myType"}"#;
+        let node: DefinedTypeLinkNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, DefinedTypeLinkNode::new("myType"));
     }
 }

@@ -7,6 +7,7 @@ pub struct PdaLinkNode {
     pub name: CamelCaseString,
 
     // Children.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub program: Option<ProgramLinkNode>,
 }
 
@@ -73,5 +74,19 @@ mod tests {
         let node: PdaLinkNode = "my_pda".into();
         assert_eq!(node.name, CamelCaseString::new("myPda"));
         assert_eq!(node.program, None);
+    }
+
+    #[test]
+    fn to_json() {
+        let node = PdaLinkNode::new("myPda");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"pdaLinkNode","name":"myPda"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"pdaLinkNode","name":"myPda"}"#;
+        let node: PdaLinkNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, PdaLinkNode::new("myPda"));
     }
 }

@@ -49,4 +49,18 @@ mod tests {
         let node: ProgramLinkNode = "my_program".into();
         assert_eq!(node.name, CamelCaseString::new("myProgram"));
     }
+
+    #[test]
+    fn to_json() {
+        let node = ProgramLinkNode::new("myProgram");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"programLinkNode","name":"myProgram"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"programLinkNode","name":"myProgram"}"#;
+        let node: ProgramLinkNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ProgramLinkNode::new("myProgram"));
+    }
 }

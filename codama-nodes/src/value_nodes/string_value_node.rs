@@ -33,4 +33,21 @@ mod tests {
         );
         assert_eq!(StringValueNode::new('a').string, "a".to_string());
     }
+
+    #[test]
+    fn to_json() {
+        let node = StringValueNode::new("Hello World!");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"stringValueNode","string":"Hello World!"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"stringValueNode","string":"Hello World!"}"#;
+        let node: StringValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, StringValueNode::new("Hello World!"));
+    }
 }

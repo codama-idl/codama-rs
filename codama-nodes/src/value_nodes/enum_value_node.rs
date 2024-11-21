@@ -8,6 +8,7 @@ pub struct EnumValueNode {
 
     // Children.
     pub r#enum: DefinedTypeLinkNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<EnumVariantData>,
 }
 
@@ -127,5 +128,22 @@ mod tests {
                 StringValueNode::new("Hello World").into()
             ])))
         );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = EnumValueNode::empty("command", "exit");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"enumValueNode","variant":"exit","enum":{"kind":"definedTypeLinkNode","name":"command"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"enumValueNode","variant":"exit","enum":{"kind":"definedTypeLinkNode","name":"command"}}"#;
+        let node: EnumValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, EnumValueNode::empty("command", "exit"));
     }
 }

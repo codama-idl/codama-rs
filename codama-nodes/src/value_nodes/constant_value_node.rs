@@ -52,4 +52,21 @@ mod tests {
             ValueNode::Bytes(BytesValueNode::base16("deadb0d1e5"))
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = ConstantValueNode::bytes(Base16, "deadb0d1e5");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"deadb0d1e5","encoding":"base16"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"constantValueNode","type":{"kind":"bytesTypeNode"},"value":{"kind":"bytesValueNode","data":"deadb0d1e5","encoding":"base16"}}"#;
+        let node: ConstantValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ConstantValueNode::bytes(Base16, "deadb0d1e5"));
+    }
 }

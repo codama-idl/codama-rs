@@ -87,4 +87,21 @@ mod tests {
         assert_eq!(node.encoding, BytesEncoding::Utf8);
         assert_eq!(node.data, "Hello World");
     }
+
+    #[test]
+    fn to_json() {
+        let node = BytesValueNode::base16("deadb0d1e5");
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"bytesValueNode","data":"deadb0d1e5","encoding":"base16"}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"bytesValueNode","data":"deadb0d1e5","encoding":"base16"}"#;
+        let node: BytesValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, BytesValueNode::base16("deadb0d1e5"));
+    }
 }

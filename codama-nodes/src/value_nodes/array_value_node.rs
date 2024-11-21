@@ -35,4 +35,24 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = ArrayValueNode::new(vec![NumberValueNode::new(42u32).into()]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"arrayValueNode","items":[{"kind":"numberValueNode","number":42}]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"arrayValueNode","items":[{"kind":"numberValueNode","number":42}]}"#;
+        let node: ArrayValueNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            ArrayValueNode::new(vec![NumberValueNode::new(42u32).into()])
+        );
+    }
 }
