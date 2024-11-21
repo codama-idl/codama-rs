@@ -18,7 +18,10 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
     let item_name = &input.ident;
     let item_generics = &input.generics;
     let item_type_params = get_type_params(&item_generics);
-    // TODO: Refactor and Add `'de` to Generics.
+    let mut item_generics_with_de = item_generics.clone();
+    item_generics_with_de
+        .params
+        .insert(0, syn::parse_quote!('de));
 
     let serialize_patterns = variants.iter().map(|variant| {
         let variant_name = &variant.ident;
@@ -68,7 +71,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
             }
         }
 
-        impl<'de> serde::Deserialize<'de> for #item_name #item_type_params {
+        impl #item_generics_with_de serde::Deserialize<'de> for #item_name #item_type_params {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
                 D: serde::Deserializer<'de>,
