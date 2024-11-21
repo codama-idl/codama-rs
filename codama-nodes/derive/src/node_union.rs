@@ -11,3 +11,11 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> syn::Result<Toke
         #input
     })
 }
+
+// pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+//     let data = as_derive_enum(&input)?;
+
+//     Ok(quote! {
+//         #input
+//     })
+// }
