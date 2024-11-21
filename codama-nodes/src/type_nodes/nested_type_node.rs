@@ -14,6 +14,7 @@ pub enum NestedTypeNode<T: TypeNodeTrait> {
     PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
     Sentinel(Box<SentinelTypeNode<NestedTypeNode<T>>>),
     SizePrefix(Box<SizePrefixTypeNode<NestedTypeNode<T>>>),
+    #[fallback]
     Value(T),
 }
 

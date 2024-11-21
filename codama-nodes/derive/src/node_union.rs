@@ -22,6 +22,15 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
         .params
         .insert(0, syn::parse_quote!('de));
 
+    let fallback_variant = variants.iter().find(|variant| {
+        variant.attrs.iter().any(|attr| {
+            let syn::Meta::Path(path) = &attr.meta else {
+                return false;
+            };
+            path.is_ident("fallback")
+        })
+    });
+
     let serialize_patterns = variants.iter().map(|variant| {
         let variant_name = &variant.ident;
         quote! {
@@ -31,6 +40,10 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
 
     let deserialize_patterns = variants
         .iter()
+        .filter(|variant| match fallback_variant {
+            Some(fallback_variant) => *variant != fallback_variant,
+            None => true,
+        })
         .map(|variant| {
             let variant_name = &variant.ident;
             let syn::Fields::Unnamed(fields) = &variant.fields else {
@@ -58,6 +71,20 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
         })
         .collect::<Result<Vec<_>, _>>()?;
 
+    let fallback_deserialize_pattern = match fallback_variant {
+        Some(fallback_variant) => {
+            let fallback_variant_name = &fallback_variant.ident;
+            quote! {
+                _ => Ok(#item_name::#fallback_variant_name(
+                    serde_json::from_value(value).map_err(to_serde_error)?,
+                )),
+            }
+        }
+        None => {
+            quote! { _ => Err(serde::de::Error::custom(format!(concat!("unknown kind {} for ", stringify!(#item_name)), kind))), }
+        }
+    };
+
     Ok(quote! {
         impl #item_generics serde::Serialize for #item_name #item_type_params {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -82,7 +109,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
                 };
                 match kind {
                     #(#deserialize_patterns)*
-                    _ => Err(serde::de::Error::custom(concat!("unknown kind for ", stringify!(#item_name)))),
+                    #fallback_deserialize_pattern
                 }
             }
         }

@@ -48,7 +48,7 @@ pub fn node_union(_attr: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
-#[proc_macro_derive(NodeUnion)]
+#[proc_macro_derive(NodeUnion, attributes(fallback))]
 pub fn derive_node_union(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     node_union::expand_derive_node_union(&mut input)

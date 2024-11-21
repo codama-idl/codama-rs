@@ -106,4 +106,14 @@ mod tests {
             r#"{"kind":"amountTypeNode","decimals":9,"number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
         );
     }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"amountTypeNode","decimals":9,"number":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: AmountTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            AmountTypeNode::new(NumberTypeNode::new(U64, Endian::Little), 9, None)
+        );
+    }
 }
