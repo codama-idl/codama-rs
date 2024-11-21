@@ -12,6 +12,10 @@ impl Docs {
     pub fn push<T: Into<String>>(&mut self, value: T) {
         self.0.push(value.into());
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 impl From<Vec<String>> for Docs {

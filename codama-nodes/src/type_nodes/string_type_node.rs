@@ -63,4 +63,18 @@ mod tests {
         let node = StringTypeNode::utf8();
         assert_eq!(node.encoding, BytesEncoding::Utf8);
     }
+
+    #[test]
+    fn to_json() {
+        let node = StringTypeNode::utf8();
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(json, r#"{"kind":"stringTypeNode","encoding":"utf8"}"#);
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"stringTypeNode","encoding":"utf8"}"#;
+        let node: StringTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, StringTypeNode::utf8());
+    }
 }

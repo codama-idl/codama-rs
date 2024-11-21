@@ -5,11 +5,15 @@ use codama_nodes_derive::node;
 pub struct StructFieldTypeNode {
     // Data.
     pub name: CamelCaseString,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_value_strategy: Option<DefaultValueStrategy>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
     pub r#type: TypeNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_value: Option<ValueNode>,
 }
 
@@ -59,5 +63,57 @@ mod tests {
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
         assert_eq!(node.default_value, Some(NumberValueNode::new(42u32).into()));
+    }
+
+    #[test]
+    fn to_json() {
+        let node = StructFieldTypeNode::new("myField", NumberTypeNode::le(U32));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"structFieldTypeNode","name":"myField","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"structFieldTypeNode","name":"myField","type":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+        let node: StructFieldTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            StructFieldTypeNode::new("myField", NumberTypeNode::le(U32))
+        );
+    }
+
+    #[test]
+    fn to_json_full() {
+        let node = StructFieldTypeNode {
+            name: "myField".into(),
+            default_value_strategy: Some(DefaultValueStrategy::Optional),
+            docs: vec!["Hello".to_string()].into(),
+            r#type: NumberTypeNode::le(U32).into(),
+            default_value: Some(NumberValueNode::new(42u32).into()),
+        };
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"structFieldTypeNode","name":"myField","default_value_strategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"default_value":{"kind":"numberValueNode","number":42}}"#
+        );
+    }
+
+    #[test]
+    fn from_json_full() {
+        let json = r#"{"kind":"structFieldTypeNode","name":"myField","default_value_strategy":"optional","docs":["Hello"],"type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"default_value":{"kind":"numberValueNode","number":42}}"#;
+        let node: StructFieldTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            StructFieldTypeNode {
+                name: "myField".into(),
+                default_value_strategy: Some(DefaultValueStrategy::Optional),
+                docs: vec!["Hello".to_string()].into(),
+                r#type: NumberTypeNode::le(U32).into(),
+                default_value: Some(NumberValueNode::new(42u32).into()),
+            }
+        );
     }
 }
