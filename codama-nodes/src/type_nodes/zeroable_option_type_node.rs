@@ -5,6 +5,7 @@ use codama_nodes_derive::type_node;
 pub struct ZeroableOptionTypeNode {
     // Children.
     pub item: TypeNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub zero_value: Option<ConstantValueNode>,
 }
 
@@ -53,5 +54,22 @@ mod tests {
             node.zero_value,
             Some(ConstantValueNode::bytes(Base16, "ffffffffffffffff"))
         );
+    }
+
+    #[test]
+    fn to_json() {
+        let node = ZeroableOptionTypeNode::new(NumberTypeNode::le(U64));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let node: ZeroableOptionTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(node, ZeroableOptionTypeNode::new(NumberTypeNode::le(U64)));
     }
 }

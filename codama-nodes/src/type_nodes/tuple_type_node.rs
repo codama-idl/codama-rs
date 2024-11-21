@@ -32,4 +32,30 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn to_json() {
+        let node = TupleTypeNode::new(vec![
+            NumberTypeNode::le(U32).into(),
+            StringTypeNode::utf8().into(),
+        ]);
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"tupleTypeNode","items":[{"kind":"numberTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#
+        );
+    }
+
+    #[test]
+    fn from_json() {
+        let json = r#"{"kind":"tupleTypeNode","items":[{"kind":"numberTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#;
+        let node: TupleTypeNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            TupleTypeNode::new(vec![
+                NumberTypeNode::le(U32).into(),
+                StringTypeNode::utf8().into(),
+            ])
+        );
+    }
 }
