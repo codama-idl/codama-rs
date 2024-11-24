@@ -4,7 +4,12 @@ use std::path::Path;
 
 use crate::attributes::Attribute;
 use crate::internals::ParsingResult;
+use crate::korok_visitor::KorokVisitor;
 use crate::stores::{CrateStore, ModuleStore, RootStore};
+
+pub trait Korok<'a> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor);
+}
 
 #[derive(Debug)]
 pub struct RootKorok<'a> {
@@ -22,6 +27,12 @@ impl<'a> RootKorok<'a> {
                 .collect::<ParsingResult<_>>()?,
             node: None,
         })
+    }
+}
+
+impl Korok<'_> for RootKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_root(self);
     }
 }
 
@@ -43,6 +54,12 @@ impl<'a> CrateKorok<'a> {
             node: None,
             path: &crate_store.path,
         })
+    }
+}
+
+impl Korok<'_> for CrateKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_crate(self);
     }
 }
 
@@ -95,6 +112,12 @@ impl<'a> ItemKorok<'a> {
     }
 }
 
+impl Korok<'_> for ItemKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_item(self);
+    }
+}
+
 #[derive(Debug)]
 pub struct FileModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
@@ -124,6 +147,12 @@ impl<'a> FileModuleKorok<'a> {
     }
 }
 
+impl Korok<'_> for FileModuleKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_file_module(self);
+    }
+}
+
 #[derive(Debug)]
 pub struct ModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
@@ -148,6 +177,12 @@ impl<'a> ModuleKorok<'a> {
     }
 }
 
+impl Korok<'_> for ModuleKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_module(self);
+    }
+}
+
 #[derive(Debug)]
 pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
@@ -164,6 +199,12 @@ impl<'a> StructKorok<'a> {
             fields: FieldKorok::parse_all(&ast.fields)?,
             node: None,
         })
+    }
+}
+
+impl Korok<'_> for StructKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_struct(self);
     }
 }
 
@@ -193,6 +234,12 @@ impl<'a> FieldKorok<'a> {
     }
 }
 
+impl Korok<'_> for FieldKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_field(self);
+    }
+}
+
 #[derive(Debug)]
 pub struct EnumKorok<'a> {
     pub ast: &'a syn::ItemEnum,
@@ -209,6 +256,12 @@ impl<'a> EnumKorok<'a> {
             node: None,
             variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
+    }
+}
+
+impl Korok<'_> for EnumKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_enum(self);
     }
 }
 
@@ -237,8 +290,20 @@ impl<'a> EnumVariantKorok<'a> {
     }
 }
 
+impl Korok<'_> for EnumVariantKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_enum_variant(self);
+    }
+}
+
 #[derive(Debug)]
 pub struct UnsupportedItemKorok<'a> {
     pub ast: &'a syn::Item,
     pub node: Option<Node>,
+}
+
+impl Korok<'_> for UnsupportedItemKorok<'_> {
+    fn accept(&self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_unsupported_item(self);
+    }
 }
