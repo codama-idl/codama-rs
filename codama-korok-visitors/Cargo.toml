@@ -1,0 +1,16 @@
+[package]
+name = "codama-korok-visitors"
+version = "0.1.0"
+edition = "2021"
+
+[[test]]
+name = "tests"
+path = "tests/lib.rs"
+
+[dev-dependencies]
+trybuild = { version = "1.0", features = ["diff"] }
+
+[dependencies]
+codama-nodes = { path = "../codama-nodes" }
+codama-koroks = { path = "../codama-koroks" }
+quote = "1.0"

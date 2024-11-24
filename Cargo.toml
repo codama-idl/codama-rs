@@ -1,3 +1,8 @@
 [workspace]
 resolver = "2"
-members = ["codama-koroks", "codama-nodes", "codama-nodes/derive"]
+members = [
+  "codama-koroks",
+  "codama-korok-visitors",
+  "codama-nodes",
+  "codama-nodes/derive",
+]

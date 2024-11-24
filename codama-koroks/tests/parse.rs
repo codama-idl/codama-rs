@@ -1,8 +1,4 @@
-use codama_koroks::{
-    korok_visitor::KorokVisitor,
-    koroks::{FieldKorok, Korok, RootKorok},
-    stores::RootStore,
-};
+use codama_koroks::{stores::RootStore, RootKorok};
 use quote::quote;
 
 fn main() {
@@ -17,17 +13,5 @@ fn main() {
 
     let store = RootStore::populate_from(tt).unwrap();
     let korok = RootKorok::parse(&store).unwrap();
-
-    struct MyVisitor {}
-    impl KorokVisitor for MyVisitor {
-        fn visit_field(&mut self, korok: &FieldKorok) {
-            println!(
-                "Field: {:#?}",
-                korok.ast.ident.as_ref().unwrap().to_string()
-            );
-        }
-    }
-
-    let mut visitor = MyVisitor {};
-    korok.accept(&mut visitor);
+    println!("{:#?}", korok);
 }
