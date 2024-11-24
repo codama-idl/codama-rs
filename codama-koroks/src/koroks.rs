@@ -1,8 +1,6 @@
-use std::path::Path;
-
 use cargo_toml::Manifest;
-use codama_nodes::NumberFormat::U16;
-use codama_nodes::{Endian, NumberTypeNode, TypeNode};
+use codama_nodes::Node;
+use std::path::Path;
 
 use crate::attributes::Attribute;
 use crate::internals::ParsingResult;
@@ -11,6 +9,7 @@ use crate::stores::{CrateStore, ModuleStore, RootStore};
 #[derive(Debug)]
 pub struct RootKorok<'a> {
     pub crates: Vec<CrateKorok<'a>>,
+    pub node: Option<Node>,
 }
 
 impl<'a> RootKorok<'a> {
@@ -21,6 +20,7 @@ impl<'a> RootKorok<'a> {
                 .iter()
                 .map(CrateKorok::parse)
                 .collect::<ParsingResult<_>>()?,
+            node: None,
         })
     }
 }
@@ -30,6 +30,7 @@ pub struct CrateKorok<'a> {
     pub file: &'a syn::File,
     pub items: Vec<ItemKorok<'a>>,
     pub manifest: &'a Option<Manifest>,
+    pub node: Option<Node>,
     pub path: &'a Path,
 }
 
@@ -39,6 +40,7 @@ impl<'a> CrateKorok<'a> {
             file: &crate_store.file,
             items: ItemKorok::parse_all(&crate_store.file.items, &crate_store.modules)?,
             manifest: &crate_store.manifest,
+            node: None,
             path: &crate_store.path,
         })
     }
@@ -74,7 +76,10 @@ impl<'a> ItemKorok<'a> {
             }
             syn::Item::Struct(ast) => Ok(ItemKorok::Struct(StructKorok::parse(ast)?)),
             syn::Item::Enum(ast) => Ok(ItemKorok::Enum(EnumKorok::parse(ast)?)),
-            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok { ast: item })),
+            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok {
+                ast: item,
+                node: None,
+            })),
         }
     }
 
@@ -95,6 +100,7 @@ pub struct FileModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub file: &'a syn::File,
     pub items: Vec<ItemKorok<'a>>,
+    pub node: Option<Node>,
     pub path: &'a Path,
 }
 
@@ -113,6 +119,7 @@ impl<'a> FileModuleKorok<'a> {
             file: &module.file,
             items: ItemKorok::parse_all(&module.file.items, &module.modules)?,
             path: &module.path,
+            node: None,
         })
     }
 }
@@ -121,6 +128,7 @@ impl<'a> FileModuleKorok<'a> {
 pub struct ModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub items: Vec<ItemKorok<'a>>,
+    pub node: Option<Node>,
 }
 
 impl<'a> ModuleKorok<'a> {
@@ -129,6 +137,7 @@ impl<'a> ModuleKorok<'a> {
             Some(content) => Ok(Self {
                 ast,
                 items: ItemKorok::parse_all(&content.1, modules)?,
+                node: None,
             }),
             None => Err(syn::Error::new_spanned(
                 ast,
@@ -144,6 +153,7 @@ pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
     pub attributes: Vec<Attribute<'a>>,
     pub fields: Vec<FieldKorok<'a>>,
+    pub node: Option<Node>,
 }
 
 impl<'a> StructKorok<'a> {
@@ -152,6 +162,7 @@ impl<'a> StructKorok<'a> {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
             fields: FieldKorok::parse_all(&ast.fields)?,
+            node: None,
         })
     }
 }
@@ -160,7 +171,7 @@ impl<'a> StructKorok<'a> {
 pub struct FieldKorok<'a> {
     pub ast: &'a syn::Field,
     pub attributes: Vec<Attribute<'a>>,
-    pub base_type: TypeNode,
+    pub node: Option<Node>,
 }
 
 impl<'a> FieldKorok<'a> {
@@ -176,9 +187,8 @@ impl<'a> FieldKorok<'a> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         Ok(Self {
             ast,
-            // TODO: implement.
-            base_type: NumberTypeNode::new(U16, Endian::Little).into(),
             attributes,
+            node: None,
         })
     }
 }
@@ -187,6 +197,7 @@ impl<'a> FieldKorok<'a> {
 pub struct EnumKorok<'a> {
     pub ast: &'a syn::ItemEnum,
     pub attributes: Vec<Attribute<'a>>,
+    pub node: Option<Node>,
     pub variants: Vec<EnumVariantKorok<'a>>,
 }
 
@@ -195,6 +206,7 @@ impl<'a> EnumKorok<'a> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
+            node: None,
             variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
     }
@@ -205,6 +217,7 @@ pub struct EnumVariantKorok<'a> {
     pub ast: &'a syn::Variant,
     pub attributes: Vec<Attribute<'a>>,
     pub fields: Vec<FieldKorok<'a>>,
+    pub node: Option<Node>,
 }
 
 impl<'a> EnumVariantKorok<'a> {
@@ -213,6 +226,7 @@ impl<'a> EnumVariantKorok<'a> {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
             fields: FieldKorok::parse_all(&ast.fields)?,
+            node: None,
         })
     }
 
@@ -226,4 +240,5 @@ impl<'a> EnumVariantKorok<'a> {
 #[derive(Debug)]
 pub struct UnsupportedItemKorok<'a> {
     pub ast: &'a syn::Item,
+    pub node: Option<Node>,
 }
