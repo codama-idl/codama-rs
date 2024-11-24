@@ -4,6 +4,7 @@ use syn::{parse_macro_input, DeriveInput};
 mod into_enum;
 mod node;
 mod node_union;
+mod registered_nodes;
 mod type_node;
 mod utils;
 use utils::*;
@@ -60,6 +61,14 @@ pub fn derive_node_union(input: TokenStream) -> TokenStream {
 pub fn derive_into_enum(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     into_enum::expand_derive_into_enum(&mut input)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+#[proc_macro_derive(RegisteredNodes, attributes(registered))]
+pub fn derive_registered_nodes(input: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    registered_nodes::expand_derive_registered_nodes(&mut input)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

@@ -1,12 +1,14 @@
 use super::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
-    MapValueNode, NoneValueNode, NumberValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode,
-    StringValueNode, StructValueNode, TupleValueNode,
+    MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode, PublicKeyValueNode,
+    SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode, StructValueNode,
+    TupleValueNode,
 };
-use codama_nodes_derive::node_union;
+use codama_nodes_derive::{node_union, RegisteredNodes};
 
+#[derive(RegisteredNodes)]
 #[node_union]
-pub enum ValueNode {
+pub enum RegisteredValueNode {
     Array(ArrayValueNode),
     Boolean(BooleanValueNode),
     Bytes(BytesValueNode),
@@ -21,4 +23,9 @@ pub enum ValueNode {
     String(StringValueNode),
     Struct(StructValueNode),
     Tuple(TupleValueNode),
+
+    #[registered]
+    StructField(StructFieldValueNode),
+    #[registered]
+    MapEntry(MapEntryValueNode),
 }

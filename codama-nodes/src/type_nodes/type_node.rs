@@ -1,14 +1,17 @@
 use crate::{
-    AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, EnumTypeNode,
+    AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
+    EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode,
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
     OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait, ZeroableOptionTypeNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait,
+    ZeroableOptionTypeNode,
 };
-use codama_nodes_derive::node_union;
+use codama_nodes_derive::{node_union, RegisteredNodes};
 
+#[derive(RegisteredNodes)]
 #[node_union]
-pub enum TypeNode {
+pub enum RegisteredTypeNode {
     Amount(AmountTypeNode),
     Array(Box<ArrayTypeNode>),
     Boolean(BooleanTypeNode),
@@ -33,6 +36,15 @@ pub enum TypeNode {
     Struct(StructTypeNode),
     Tuple(TupleTypeNode),
     ZeroableOption(Box<ZeroableOptionTypeNode>),
+
+    #[registered]
+    EnumEmptyVariant(EnumEmptyVariantTypeNode),
+    #[registered]
+    EnumStructVariant(EnumStructVariantTypeNode),
+    #[registered]
+    EnumTupleVariant(EnumTupleVariantTypeNode),
+    #[registered]
+    StructField(StructFieldTypeNode),
 }
 
 impl TypeNodeEnumTrait for TypeNode {}
