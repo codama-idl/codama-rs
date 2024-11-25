@@ -27,13 +27,6 @@ impl<'a> RootKorok<'a> {
     pub fn first_item(&self) -> &ItemKorok {
         &self.crates[0].items[0]
     }
-
-    pub fn first_item_as_struct(&self) -> &StructKorok {
-        match self.first_item() {
-            ItemKorok::Struct(s) => s,
-            _ => panic!("First item is not a struct"),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -103,6 +96,34 @@ impl<'a> ItemKorok<'a> {
             .enumerate()
             .map(|(item_index, item)| Self::parse(item, modules, item_index))
             .collect()
+    }
+
+    pub fn as_file_module(&self) -> Option<&FileModuleKorok> {
+        match self {
+            ItemKorok::FileModule(x) => Some(x),
+            _ => None,
+        }
+    }
+
+    pub fn as_module(&self) -> Option<&ModuleKorok> {
+        match self {
+            ItemKorok::Module(x) => Some(x),
+            _ => None,
+        }
+    }
+
+    pub fn as_struct(&self) -> Option<&StructKorok> {
+        match self {
+            ItemKorok::Struct(x) => Some(x),
+            _ => None,
+        }
+    }
+
+    pub fn as_enum(&self) -> Option<&EnumKorok> {
+        match self {
+            ItemKorok::Enum(x) => Some(x),
+            _ => None,
+        }
     }
 }
 
