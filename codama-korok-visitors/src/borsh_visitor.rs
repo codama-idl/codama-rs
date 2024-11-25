@@ -91,37 +91,102 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
             if path.leading_colon.is_some() {
                 return None;
             }
-            let path_prefix = path
-                .segments
-                .iter()
-                .map(|segment| segment.ident.to_string())
-                .collect::<Vec<_>>()[..path.segments.len() - 1]
-                .join("::");
-            let last_segment = path.segments.last().unwrap();
-            let ident = &last_segment.ident;
-            match (path_prefix.as_str(), ident.to_string().as_str()) {
-                ("", "String") => Some(
+            let path_helper = PathHelper(path);
+            match (
+                // a::b::c::Option<T> -> a::b::c
+                path_helper.prefix().as_str(),
+                // a::b::c::Option<T> -> Option
+                path_helper.last_indent().as_str(),
+                // a::b::c::Option<T> -> T
+                path_helper.generic_arguments().first_type(),
+            ) {
+                ("", "String", None) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
-                ("", "bool") => Some(BooleanTypeNode::default().into()),
-                ("" | "std::primitive", "usize") => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u8") => Some(NumberTypeNode::le(U8).into()),
-                ("" | "std::primitive", "u16") => Some(NumberTypeNode::le(U16).into()),
-                ("" | "std::primitive", "u32") => Some(NumberTypeNode::le(U32).into()),
-                ("" | "std::primitive", "u64") => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u128") => Some(NumberTypeNode::le(U128).into()),
-                ("" | "std::primitive", "isize") => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i8") => Some(NumberTypeNode::le(I8).into()),
-                ("" | "std::primitive", "i16") => Some(NumberTypeNode::le(I16).into()),
-                ("" | "std::primitive", "i32") => Some(NumberTypeNode::le(I32).into()),
-                ("" | "std::primitive", "i64") => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i128") => Some(NumberTypeNode::le(I128).into()),
-                ("" | "std::primitive", "f32") => Some(NumberTypeNode::le(F32).into()),
-                ("" | "std::primitive", "f64") => Some(NumberTypeNode::le(F64).into()),
-                (_, "ShortU16") => Some(NumberTypeNode::le(ShortU16).into()),
+                ("", "bool", None) => Some(BooleanTypeNode::default().into()),
+                ("" | "std::primitive", "usize", None) => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u8", None) => Some(NumberTypeNode::le(U8).into()),
+                ("" | "std::primitive", "u16", None) => Some(NumberTypeNode::le(U16).into()),
+                ("" | "std::primitive", "u32", None) => Some(NumberTypeNode::le(U32).into()),
+                ("" | "std::primitive", "u64", None) => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u128", None) => Some(NumberTypeNode::le(U128).into()),
+                ("" | "std::primitive", "isize", None) => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i8", None) => Some(NumberTypeNode::le(I8).into()),
+                ("" | "std::primitive", "i16", None) => Some(NumberTypeNode::le(I16).into()),
+                ("" | "std::primitive", "i32", None) => Some(NumberTypeNode::le(I32).into()),
+                ("" | "std::primitive", "i64", None) => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i128", None) => Some(NumberTypeNode::le(I128).into()),
+                ("" | "std::primitive", "f32", None) => Some(NumberTypeNode::le(F32).into()),
+                ("" | "std::primitive", "f64", None) => Some(NumberTypeNode::le(F64).into()),
+                (_, "ShortU16", None) => Some(NumberTypeNode::le(ShortU16).into()),
                 _ => None,
             }
         }
         _ => None,
+    }
+}
+
+struct PathHelper<'a>(&'a syn::Path);
+
+impl PathHelper<'_> {
+    /// Returns all segment idents joined by "::" except the last one.
+    /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
+    pub fn prefix(&self) -> String {
+        self.0
+            .segments
+            .iter()
+            .map(|segment| segment.ident.to_string())
+            .collect::<Vec<_>>()[..self.0.segments.len() - 1]
+            .join("::")
+    }
+
+    /// Returns the last segment.
+    pub fn last(&self) -> &syn::PathSegment {
+        self.0.segments.last().unwrap()
+    }
+
+    /// Returns the ident of the last segment as a string.
+    pub fn last_indent(&self) -> String {
+        self.last().ident.to_string()
+    }
+
+    /// Returns the generic arguments of the last segment.
+    /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArgumentsHelper(Some(['a, T, U]))`.
+    /// E.g. for `a::b::c::u32` it returns `GenericArgumentsHelper(None)`.
+    pub fn generic_arguments(&self) -> GenericArgumentsHelper {
+        match &self.last().arguments {
+            syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
+                args,
+                ..
+            }) => GenericArgumentsHelper(Some(args)),
+            _ => GenericArgumentsHelper(None),
+        }
+    }
+}
+
+struct GenericArgumentsHelper<'a>(
+    Option<&'a syn::punctuated::Punctuated<syn::GenericArgument, syn::Token![,]>>,
+);
+
+impl GenericArgumentsHelper<'_> {
+    /// Filters out all generic arguments that are not types.
+    /// E.g. for `Option<'a, T, U>` it returns `[T, U]`.
+    pub fn types(&self) -> Vec<&syn::Type> {
+        match self.0 {
+            Some(args) => args
+                .iter()
+                .filter_map(|arg| match arg {
+                    syn::GenericArgument::Type(ty) => Some(ty),
+                    _ => None,
+                })
+                .collect(),
+            None => vec![],
+        }
+    }
+
+    /// Returns the first genertic type argument if there is one.
+    /// E.g. for `Vec<'a, T, U>` it returns `Some(T)`.
+    pub fn first_type(&self) -> Option<&syn::Type> {
+        self.types().first().copied()
     }
 }
