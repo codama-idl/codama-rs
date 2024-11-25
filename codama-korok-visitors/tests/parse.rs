@@ -13,11 +13,11 @@ fn main() {
     };
 
     let store = RootStore::populate_from(tt).unwrap();
-    let korok = RootKorok::parse(&store).unwrap();
+    let mut korok = RootKorok::parse(&store).unwrap();
 
     struct MyVisitor {}
     impl KorokVisitor for MyVisitor {
-        fn visit_field(&mut self, korok: &FieldKorok) {
+        fn visit_field(&mut self, korok: &mut FieldKorok) {
             println!(
                 "Field: {:#?}",
                 korok.ast.ident.as_ref().unwrap().to_string()
