@@ -1,3 +1,4 @@
+mod array_type_node;
 mod boolean_type_node;
 mod number_type_node;
 mod string_type_node;

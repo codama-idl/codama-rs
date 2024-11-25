@@ -1,6 +1,7 @@
 use codama_nodes::{
-    BooleanTypeNode, Node, NumberFormat::*, NumberTypeNode, RegisteredTypeNode, SizePrefixTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, Node, NumberFormat::*, NumberTypeNode, PrefixedCountNode,
+    RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -100,9 +101,6 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 // a::b::c::Option<T> -> T
                 path_helper.generic_arguments().first_type(),
             ) {
-                ("" | "std::string", "String", None) => Some(
-                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
-                ),
                 ("" | "std::primitive", "bool", None) => Some(BooleanTypeNode::default().into()),
                 ("" | "std::primitive", "usize", None) => Some(NumberTypeNode::le(U64).into()),
                 ("" | "std::primitive", "u8", None) => Some(NumberTypeNode::le(U8).into()),
@@ -119,6 +117,16 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 ("" | "std::primitive", "f32", None) => Some(NumberTypeNode::le(F32).into()),
                 ("" | "std::primitive", "f64", None) => Some(NumberTypeNode::le(F64).into()),
                 (_, "ShortU16", None) => Some(NumberTypeNode::le(ShortU16).into()),
+                ("" | "std::string", "String", None) => Some(
+                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
+                ),
+                ("" | "std::vec", "Vec", Some(t)) => match get_type_node_from_syn_type(t) {
+                    Some(item) => Some(
+                        ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                            .into(),
+                    ),
+                    None => None,
+                },
                 _ => None,
             }
         }
