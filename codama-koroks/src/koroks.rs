@@ -23,6 +23,17 @@ impl<'a> RootKorok<'a> {
             node: None,
         })
     }
+
+    pub fn first_item(&self) -> &ItemKorok {
+        &self.crates[0].items[0]
+    }
+
+    pub fn first_item_as_struct(&self) -> &StructKorok {
+        match self.first_item() {
+            ItemKorok::Struct(s) => s,
+            _ => panic!("First item is not a struct"),
+        }
+    }
 }
 
 #[derive(Debug)]

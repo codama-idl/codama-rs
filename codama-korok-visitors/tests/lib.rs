@@ -1,5 +1,1 @@
-#[test]
-fn tests() {
-    let t = trybuild::TestCases::new();
-    t.pass("tests/parse.rs");
-}
+mod borsh_visitor;

@@ -7,6 +7,12 @@ use crate::KorokVisitor;
 
 pub struct BorshVisitor {}
 
+impl BorshVisitor {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl KorokVisitor for BorshVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
         for field_korok in &mut korok.fields {
@@ -27,7 +33,7 @@ impl KorokVisitor for BorshVisitor {
                     if let Some(Node::Type(RegisteredTypeNode::StructField(field))) = &field.node {
                         field.clone()
                     } else {
-                        panic!("Expected struct field node");
+                        panic!("Expected RegisteredTypeNode");
                     }
                 })
                 .collect::<Vec<_>>();
@@ -37,15 +43,29 @@ impl KorokVisitor for BorshVisitor {
         }
 
         let is_all_tuple_item = korok.fields.iter().all(|field| {
-            !matches!(
-                field.node,
-                Some(Node::Type(RegisteredTypeNode::StructField(_)))
-            )
+            let Some(Node::Type(t)) = &field.node else {
+                return false;
+            };
+            match t {
+                RegisteredTypeNode::StructField(_) => false,
+                RegisteredTypeNode::EnumEmptyVariant(_) => false,
+                RegisteredTypeNode::EnumTupleVariant(_) => false,
+                RegisteredTypeNode::EnumStructVariant(_) => false,
+                _ => true,
+            }
         });
         if is_all_tuple_item {
-            // TODO: create tuple node.
-            let tuple_node = TupleTypeNode::new(vec![]);
-            korok.node = Some(RegisteredTypeNode::Tuple(tuple_node).into());
+            let items = korok
+                .fields
+                .iter()
+                .map(|field| {
+                    let Some(Node::Type(t)) = &field.node else {
+                        panic!("Expected RegisteredTypeNode");
+                    };
+                    TypeNode::try_from(t.clone()).unwrap()
+                })
+                .collect::<Vec<_>>();
+            korok.node = Some(RegisteredTypeNode::Tuple(TupleTypeNode::new(items)).into());
             return ();
         }
     }
