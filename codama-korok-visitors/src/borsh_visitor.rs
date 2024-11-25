@@ -100,7 +100,7 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 // a::b::c::Option<T> -> T
                 path_helper.generic_arguments().first_type(),
             ) {
-                ("", "String", None) => Some(
+                ("" | "std::string", "String", None) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
                 ("" | "std::primitive", "bool", None) => Some(BooleanTypeNode::default().into()),
