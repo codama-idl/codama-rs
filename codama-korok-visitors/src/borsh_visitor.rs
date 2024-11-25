@@ -1,5 +1,5 @@
 use codama_nodes::{
-    BooleanTypeNode, Node, NumberFormat, NumberTypeNode, RegisteredTypeNode, SizePrefixTypeNode,
+    BooleanTypeNode, Node, NumberFormat::*, NumberTypeNode, RegisteredTypeNode, SizePrefixTypeNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 
@@ -88,32 +88,37 @@ impl KorokVisitor for BorshVisitor {
 pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
     match ty {
         syn::Type::Path(syn::TypePath { path, .. }) => {
+            if path.leading_colon.is_some() {
+                return None;
+            }
+            let path_prefix = path
+                .segments
+                .iter()
+                .map(|segment| segment.ident.to_string())
+                .collect::<Vec<_>>()[..path.segments.len() - 1]
+                .join("::");
             let last_segment = path.segments.last().unwrap();
             let ident = &last_segment.ident;
-            match ident.to_string().as_str() {
-                "String" => Some(
-                    SizePrefixTypeNode::new(
-                        StringTypeNode::utf8(),
-                        NumberTypeNode::le(NumberFormat::U32),
-                    )
-                    .into(),
+            match (path_prefix.as_str(), ident.to_string().as_str()) {
+                ("", "String") => Some(
+                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
-                "bool" => Some(BooleanTypeNode::default().into()),
-                "usize" => Some(NumberTypeNode::le(NumberFormat::U64).into()),
-                "u8" => Some(NumberTypeNode::le(NumberFormat::U8).into()),
-                "u16" => Some(NumberTypeNode::le(NumberFormat::U16).into()),
-                "u32" => Some(NumberTypeNode::le(NumberFormat::U32).into()),
-                "u64" => Some(NumberTypeNode::le(NumberFormat::U64).into()),
-                "u128" => Some(NumberTypeNode::le(NumberFormat::U128).into()),
-                "isize" => Some(NumberTypeNode::le(NumberFormat::I64).into()),
-                "i8" => Some(NumberTypeNode::le(NumberFormat::I8).into()),
-                "i16" => Some(NumberTypeNode::le(NumberFormat::I16).into()),
-                "i32" => Some(NumberTypeNode::le(NumberFormat::I32).into()),
-                "i64" => Some(NumberTypeNode::le(NumberFormat::I64).into()),
-                "i128" => Some(NumberTypeNode::le(NumberFormat::I128).into()),
-                "f32" => Some(NumberTypeNode::le(NumberFormat::F32).into()),
-                "f64" => Some(NumberTypeNode::le(NumberFormat::F64).into()),
-                "ShortU16" => Some(NumberTypeNode::le(NumberFormat::ShortU16).into()),
+                ("", "bool") => Some(BooleanTypeNode::default().into()),
+                ("" | "std::primitive", "usize") => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u8") => Some(NumberTypeNode::le(U8).into()),
+                ("" | "std::primitive", "u16") => Some(NumberTypeNode::le(U16).into()),
+                ("" | "std::primitive", "u32") => Some(NumberTypeNode::le(U32).into()),
+                ("" | "std::primitive", "u64") => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u128") => Some(NumberTypeNode::le(U128).into()),
+                ("" | "std::primitive", "isize") => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i8") => Some(NumberTypeNode::le(I8).into()),
+                ("" | "std::primitive", "i16") => Some(NumberTypeNode::le(I16).into()),
+                ("" | "std::primitive", "i32") => Some(NumberTypeNode::le(I32).into()),
+                ("" | "std::primitive", "i64") => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i128") => Some(NumberTypeNode::le(I128).into()),
+                ("" | "std::primitive", "f32") => Some(NumberTypeNode::le(F32).into()),
+                ("" | "std::primitive", "f64") => Some(NumberTypeNode::le(F64).into()),
+                (_, "ShortU16") => Some(NumberTypeNode::le(ShortU16).into()),
                 _ => None,
             }
         }
