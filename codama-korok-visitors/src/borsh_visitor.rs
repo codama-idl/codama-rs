@@ -1,7 +1,7 @@
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, Node, NumberFormat::*, NumberTypeNode, PrefixedCountNode,
-    RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
-    TupleTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, FixedCountNode, Node, NumberFormat::*, NumberTypeNode,
+    PrefixedCountNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
+    StructTypeNode, TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -128,6 +128,23 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                     None => None,
                 },
                 _ => None,
+            }
+        }
+        syn::Type::Array(syn::TypeArray {
+            elem,
+            len:
+                syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Int(len),
+                    ..
+                }),
+            ..
+        }) => {
+            let Ok(size) = len.base10_parse::<usize>() else {
+                return None;
+            };
+            match get_type_node_from_syn_type(elem) {
+                Some(item) => Some(ArrayTypeNode::new(item, FixedCountNode::new(size)).into()),
+                None => None,
             }
         }
         _ => None,
