@@ -19,6 +19,7 @@ dependencies = [
  "codama-koroks",
  "codama-nodes",
  "quote",
+ "syn",
  "trybuild",
 ]
 

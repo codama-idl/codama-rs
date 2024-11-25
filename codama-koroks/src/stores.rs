@@ -1,9 +1,8 @@
+use cargo_toml::Manifest;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
-
-use cargo_toml::Manifest;
 
 use crate::internals::ParsingResult;
 

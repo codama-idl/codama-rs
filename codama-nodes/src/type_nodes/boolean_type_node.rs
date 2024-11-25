@@ -1,4 +1,4 @@
-use crate::{NestedTypeNode, NumberTypeNode};
+use crate::{NestedTypeNode, NumberTypeNode, U8};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -13,6 +13,12 @@ impl BooleanTypeNode {
         T: Into<NestedTypeNode<NumberTypeNode>>,
     {
         Self { size: size.into() }
+    }
+}
+
+impl Default for BooleanTypeNode {
+    fn default() -> Self {
+        Self::new(NumberTypeNode::le(U8))
     }
 }
 
@@ -43,7 +49,13 @@ mod tests {
                 0,
             )))
         );
-        assert_eq!(node.size.get_nested_type_node(), &NumberTypeNode::le(U64,));
+        assert_eq!(node.size.get_nested_type_node(), &NumberTypeNode::le(U64));
+    }
+
+    #[test]
+    fn default() {
+        let node = BooleanTypeNode::default();
+        assert_eq!(node.size, NestedTypeNode::Value(NumberTypeNode::le(U8)));
     }
 
     #[test]
