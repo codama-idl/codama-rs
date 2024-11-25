@@ -103,7 +103,7 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 ("", "String", None) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
-                ("", "bool", None) => Some(BooleanTypeNode::default().into()),
+                ("" | "std::primitive", "bool", None) => Some(BooleanTypeNode::default().into()),
                 ("" | "std::primitive", "usize", None) => Some(NumberTypeNode::le(U64).into()),
                 ("" | "std::primitive", "u8", None) => Some(NumberTypeNode::le(U8).into()),
                 ("" | "std::primitive", "u16", None) => Some(NumberTypeNode::le(U16).into()),
