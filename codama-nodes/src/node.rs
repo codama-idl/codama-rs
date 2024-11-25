@@ -1,8 +1,9 @@
 use crate::{
-    AccountNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode, InstructionAccountNode,
-    InstructionArgumentNode, InstructionByteDeltaNode, InstructionNode,
+    AccountNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode, InstructionNode,
     InstructionRemainingAccountsNode, LinkNode, PdaNode, PdaSeedNode, ProgramNode,
-    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
+    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode,
+    ValueNode,
 };
 use codama_nodes_derive::IntoEnum;
 use serde::{Deserialize, Serialize};
@@ -31,6 +32,24 @@ pub enum Node {
     Pda(PdaNode),
     Program(ProgramNode),
     Root(RootNode),
+}
+
+impl From<ContextualValueNode> for Node {
+    fn from(node: ContextualValueNode) -> Self {
+        Node::ContextualValue(node.into())
+    }
+}
+
+impl From<TypeNode> for Node {
+    fn from(node: TypeNode) -> Self {
+        Node::Type(node.into())
+    }
+}
+
+impl From<ValueNode> for Node {
+    fn from(node: ValueNode) -> Self {
+        Node::Value(node.into())
+    }
 }
 
 #[cfg(test)]
