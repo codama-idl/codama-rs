@@ -38,8 +38,7 @@ impl KorokVisitor for BorshVisitor {
                     }
                 })
                 .collect::<Vec<_>>();
-            let struct_node = StructTypeNode::new(fields);
-            korok.node = Some(RegisteredTypeNode::Struct(struct_node).into());
+            korok.node = Some(StructTypeNode::new(fields).into());
             return ();
         }
 
@@ -66,7 +65,7 @@ impl KorokVisitor for BorshVisitor {
                     TypeNode::try_from(t.clone()).unwrap()
                 })
                 .collect::<Vec<_>>();
-            korok.node = Some(RegisteredTypeNode::Tuple(TupleTypeNode::new(items)).into());
+            korok.node = Some(TupleTypeNode::new(items).into());
             return ();
         }
     }
@@ -78,8 +77,7 @@ impl KorokVisitor for BorshVisitor {
 
         match &korok.ast.ident {
             Some(ident) => {
-                let field = StructFieldTypeNode::new(ident.to_string(), node_type);
-                korok.node = Some(RegisteredTypeNode::StructField(field).into());
+                korok.node = Some(StructFieldTypeNode::new(ident.to_string(), node_type).into())
             }
             None => korok.node = Some(node_type.into()),
         };

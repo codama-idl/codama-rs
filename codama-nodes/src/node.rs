@@ -59,7 +59,7 @@ mod tests {
 
     #[test]
     fn type_node_to_json() {
-        let node: Node = RegisteredTypeNode::Number(NumberTypeNode::le(U32)).into();
+        let node: Node = NumberTypeNode::le(U32).into();
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
