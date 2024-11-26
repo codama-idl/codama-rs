@@ -1,8 +1,8 @@
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, Node, NumberFormat::*,
-    NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode, SetTypeNode,
-    SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNode,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, FixedCountNode, MapTypeNode, Node,
+    NumberFormat::*, NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode,
+    SetTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -21,13 +21,9 @@ impl KorokVisitor for BorshVisitor {
             self.visit_field(field_korok);
         }
 
-        let is_all_struct_field = korok.fields.iter().all(|field| {
-            matches!(
-                field.node,
-                Some(Node::Type(RegisteredTypeNode::StructField(_)))
-            )
-        });
-        if is_all_struct_field {
+        let struct_name = korok.ast.ident.to_string();
+
+        if korok.has_named_fields() && korok.all_fields_have_nodes() {
             let fields = korok
                 .fields
                 .iter()
@@ -35,27 +31,16 @@ impl KorokVisitor for BorshVisitor {
                     if let Some(Node::Type(RegisteredTypeNode::StructField(field))) = &field.node {
                         field.clone()
                     } else {
-                        panic!("Expected RegisteredTypeNode");
+                        panic!("Expected StructFieldTypeNode");
                     }
                 })
                 .collect::<Vec<_>>();
-            korok.node = Some(StructTypeNode::new(fields).into());
+            korok.node =
+                Some(DefinedTypeNode::new(struct_name, StructTypeNode::new(fields)).into());
             return ();
         }
 
-        let is_all_tuple_item = korok.fields.iter().all(|field| {
-            let Some(Node::Type(t)) = &field.node else {
-                return false;
-            };
-            match t {
-                RegisteredTypeNode::StructField(_) => false,
-                RegisteredTypeNode::EnumEmptyVariant(_) => false,
-                RegisteredTypeNode::EnumTupleVariant(_) => false,
-                RegisteredTypeNode::EnumStructVariant(_) => false,
-                _ => true,
-            }
-        });
-        if is_all_tuple_item {
+        if korok.has_unnamed_fields() && korok.all_fields_have_nodes() {
             let items = korok
                 .fields
                 .iter()
@@ -66,7 +51,7 @@ impl KorokVisitor for BorshVisitor {
                     TypeNode::try_from(t.clone()).unwrap()
                 })
                 .collect::<Vec<_>>();
-            korok.node = Some(TupleTypeNode::new(items).into());
+            korok.node = Some(DefinedTypeNode::new(struct_name, TupleTypeNode::new(items)).into());
             return ();
         }
     }
@@ -76,11 +61,9 @@ impl KorokVisitor for BorshVisitor {
             return ();
         };
 
-        match &korok.ast.ident {
-            Some(ident) => {
-                korok.node = Some(StructFieldTypeNode::new(ident.to_string(), node_type).into())
-            }
-            None => korok.node = Some(node_type.into()),
+        korok.node = match &korok.ast.ident {
+            Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node_type).into()),
+            None => Some(node_type.into()),
         };
     }
 }

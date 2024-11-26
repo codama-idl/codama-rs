@@ -197,6 +197,18 @@ impl<'a> StructKorok<'a> {
             node: None,
         })
     }
+
+    pub fn has_named_fields(&self) -> bool {
+        matches!(self.ast.fields, syn::Fields::Named(_))
+    }
+
+    pub fn has_unnamed_fields(&self) -> bool {
+        matches!(self.ast.fields, syn::Fields::Unnamed(_))
+    }
+
+    pub fn all_fields_have_nodes(&self) -> bool {
+        self.fields.iter().all(|field| field.node.is_some())
+    }
 }
 
 #[derive(Debug)]
