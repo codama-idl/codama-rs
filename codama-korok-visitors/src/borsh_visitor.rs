@@ -1,7 +1,8 @@
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, Node, NumberFormat::*,
-    NumberTypeNode, PrefixedCountNode, RegisteredTypeNode, SetTypeNode, SizePrefixTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
+    NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode, SetTypeNode,
+    SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -115,6 +116,7 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
                 ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
                 (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
+                ("" | "solana_sdk::pubkey", "Pubkey", []) => Some(PublicKeyTypeNode::new().into()),
                 ("" | "std::string", "String", []) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
