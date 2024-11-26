@@ -1,5 +1,6 @@
 mod array_type_node;
 mod boolean_type_node;
+mod map_type_node;
 mod number_type_node;
 mod string_type_node;
 mod struct_type_node;

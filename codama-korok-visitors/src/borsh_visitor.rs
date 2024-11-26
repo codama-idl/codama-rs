@@ -1,7 +1,7 @@
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, FixedCountNode, Node, NumberFormat::*, NumberTypeNode,
-    PrefixedCountNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, Node, NumberFormat::*,
+    NumberTypeNode, PrefixedCountNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -94,39 +94,55 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
             }
             let path_helper = PathHelper(path);
             match (
-                // a::b::c::Option<T> -> a::b::c
+                // a::b<B>::c::Map<K, V> -> a::b::c
                 path_helper.prefix().as_str(),
-                // a::b::c::Option<T> -> Option
+                // a::b::c::Map<K, V> -> Map
                 path_helper.last_indent().as_str(),
-                // a::b::c::Option<T> -> T
-                path_helper.generic_arguments().first_type(),
+                // a::b::c::Map<K, V> -> [K, V]
+                path_helper.generic_arguments().types().as_slice(),
             ) {
-                ("" | "std::primitive", "bool", None) => Some(BooleanTypeNode::default().into()),
-                ("" | "std::primitive", "usize", None) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u8", None) => Some(NumberTypeNode::le(U8).into()),
-                ("" | "std::primitive", "u16", None) => Some(NumberTypeNode::le(U16).into()),
-                ("" | "std::primitive", "u32", None) => Some(NumberTypeNode::le(U32).into()),
-                ("" | "std::primitive", "u64", None) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u128", None) => Some(NumberTypeNode::le(U128).into()),
-                ("" | "std::primitive", "isize", None) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i8", None) => Some(NumberTypeNode::le(I8).into()),
-                ("" | "std::primitive", "i16", None) => Some(NumberTypeNode::le(I16).into()),
-                ("" | "std::primitive", "i32", None) => Some(NumberTypeNode::le(I32).into()),
-                ("" | "std::primitive", "i64", None) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i128", None) => Some(NumberTypeNode::le(I128).into()),
-                ("" | "std::primitive", "f32", None) => Some(NumberTypeNode::le(F32).into()),
-                ("" | "std::primitive", "f64", None) => Some(NumberTypeNode::le(F64).into()),
-                (_, "ShortU16", None) => Some(NumberTypeNode::le(ShortU16).into()),
-                ("" | "std::string", "String", None) => Some(
+                ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
+                ("" | "std::primitive", "usize", []) => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u8", []) => Some(NumberTypeNode::le(U8).into()),
+                ("" | "std::primitive", "u16", []) => Some(NumberTypeNode::le(U16).into()),
+                ("" | "std::primitive", "u32", []) => Some(NumberTypeNode::le(U32).into()),
+                ("" | "std::primitive", "u64", []) => Some(NumberTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u128", []) => Some(NumberTypeNode::le(U128).into()),
+                ("" | "std::primitive", "isize", []) => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i8", []) => Some(NumberTypeNode::le(I8).into()),
+                ("" | "std::primitive", "i16", []) => Some(NumberTypeNode::le(I16).into()),
+                ("" | "std::primitive", "i32", []) => Some(NumberTypeNode::le(I32).into()),
+                ("" | "std::primitive", "i64", []) => Some(NumberTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i128", []) => Some(NumberTypeNode::le(I128).into()),
+                ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
+                ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
+                (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
+                ("" | "std::string", "String", []) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
-                ("" | "std::vec", "Vec", Some(t)) => match get_type_node_from_syn_type(t) {
+                ("" | "std::vec", "Vec", [t]) => match get_type_node_from_syn_type(t) {
                     Some(item) => Some(
                         ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
                             .into(),
                     ),
                     None => None,
                 },
+                ("" | "std::iter" | "core::iter", "Map", [k, v]) => {
+                    match (
+                        get_type_node_from_syn_type(k),
+                        get_type_node_from_syn_type(v),
+                    ) {
+                        (Some(key), Some(value)) => Some(
+                            MapTypeNode::new(
+                                key,
+                                value,
+                                PrefixedCountNode::new(NumberTypeNode::le(U32)),
+                            )
+                            .into(),
+                        ),
+                        _ => None,
+                    }
+                }
                 _ => None,
             }
         }
@@ -151,7 +167,7 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
     }
 }
 
-struct PathHelper<'a>(&'a syn::Path);
+pub struct PathHelper<'a>(&'a syn::Path);
 
 impl PathHelper<'_> {
     /// Returns all segment idents joined by "::" except the last one.
@@ -189,7 +205,7 @@ impl PathHelper<'_> {
     }
 }
 
-struct GenericArgumentsHelper<'a>(
+pub struct GenericArgumentsHelper<'a>(
     Option<&'a syn::punctuated::Punctuated<syn::GenericArgument, syn::Token![,]>>,
 );
 
