@@ -254,6 +254,10 @@ impl<'a> EnumKorok<'a> {
             variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
     }
+
+    pub fn all_variants_have_nodes(&self) -> bool {
+        self.variants.iter().all(|field| field.node.is_some())
+    }
 }
 
 #[derive(Debug)]

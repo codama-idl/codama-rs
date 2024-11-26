@@ -1,9 +1,9 @@
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode,
-    EnumStructVariantTypeNode, EnumTupleVariantTypeNode, FixedCountNode, MapTypeNode, Node,
-    NumberFormat::*, NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode,
-    SetTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
-    TupleTypeNode, TypeNode,
+    EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode, EnumVariantTypeNode,
+    FixedCountNode, MapTypeNode, Node, NumberFormat::*, NumberTypeNode, PrefixedCountNode,
+    PublicKeyTypeNode, RegisteredTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -66,6 +66,34 @@ impl KorokVisitor for BorshVisitor {
             Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node_type).into()),
             None => Some(node_type.into()),
         };
+    }
+
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
+        for variant_korok in &mut korok.variants {
+            self.visit_enum_variant(variant_korok);
+        }
+
+        let enum_name = korok.ast.ident.to_string();
+
+        if korok.all_variants_have_nodes() {
+            let variants = korok
+                .variants
+                .iter()
+                .map(|variant| match &variant.node {
+                    Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
+                        EnumVariantTypeNode::Empty(node.clone())
+                    }
+                    Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
+                        EnumVariantTypeNode::Tuple(node.clone())
+                    }
+                    Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
+                        EnumVariantTypeNode::Struct(node.clone())
+                    }
+                    _ => panic!("Expected EnumVariantTypeNode"),
+                })
+                .collect::<Vec<_>>();
+            korok.node = Some(DefinedTypeNode::new(enum_name, EnumTypeNode::new(variants)).into());
+        }
     }
 
     fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
