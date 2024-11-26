@@ -92,11 +92,11 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
             }
             let path_helper = PathHelper(path);
             match (
-                // a::b<B>::c::Map<K, V> -> a::b::c
+                // a::b<B>::c::HashMap<K, V> -> a::b::c
                 path_helper.prefix().as_str(),
-                // a::b::c::Map<K, V> -> Map
+                // a::b::c::HashMap<K, V> -> HashMap
                 path_helper.last_indent().as_str(),
-                // a::b::c::Map<K, V> -> [K, V]
+                // a::b::c::HashMap<K, V> -> [K, V]
                 path_helper.generic_arguments().types().as_slice(),
             ) {
                 ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
@@ -125,7 +125,7 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                     ),
                     None => None,
                 },
-                ("" | "std::iter" | "core::iter", "Map", [k, v]) => {
+                ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
                     match (
                         get_type_node_from_syn_type(k),
                         get_type_node_from_syn_type(v),
