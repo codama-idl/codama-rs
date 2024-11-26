@@ -99,7 +99,9 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
                 ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
                 (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
-                ("" | "solana_sdk::pubkey", "Pubkey", []) => Some(PublicKeyTypeNode::new().into()),
+                ("" | "solana_sdk::pubkey" | "solana_program" | "solana_pubkey", "Pubkey", []) => {
+                    Some(PublicKeyTypeNode::new().into())
+                }
                 ("" | "std::string", "String", []) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
