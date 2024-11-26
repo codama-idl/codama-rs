@@ -1,7 +1,7 @@
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, Node, NumberFormat::*,
-    NumberTypeNode, PrefixedCountNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
+    NumberTypeNode, PrefixedCountNode, RegisteredTypeNode, SetTypeNode, SizePrefixTypeNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -125,6 +125,15 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                     ),
                     None => None,
                 },
+                ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
+                    match get_type_node_from_syn_type(t) {
+                        Some(item) => Some(
+                            SetTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                                .into(),
+                        ),
+                        None => None,
+                    }
+                }
                 ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
                     match (
                         get_type_node_from_syn_type(k),
