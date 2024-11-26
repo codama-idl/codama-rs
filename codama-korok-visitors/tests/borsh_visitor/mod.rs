@@ -1,5 +1,8 @@
 mod array_type_node;
 mod boolean_type_node;
+mod enum_empty_variant_type_node;
+mod enum_struct_variant_type_node;
+mod enum_tuple_variant_type_node;
 mod map_type_node;
 mod number_type_node;
 mod public_key_type_node;

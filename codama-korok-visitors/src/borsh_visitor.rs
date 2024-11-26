@@ -1,5 +1,6 @@
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, FixedCountNode, MapTypeNode, Node,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode,
+    EnumStructVariantTypeNode, EnumTupleVariantTypeNode, FixedCountNode, MapTypeNode, Node,
     NumberFormat::*, NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode,
     SetTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
     TupleTypeNode, TypeNode,
@@ -65,6 +66,72 @@ impl KorokVisitor for BorshVisitor {
             Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node_type).into()),
             None => Some(node_type.into()),
         };
+    }
+
+    fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
+        for field_korok in &mut korok.fields {
+            self.visit_field(field_korok);
+        }
+
+        let variant_name = korok.ast.ident.to_string();
+        let discriminator = korok
+            .ast
+            .discriminant
+            .as_ref()
+            .map_or(None, |(_, x)| ExprHelper(&x).as_literal_integer::<usize>());
+
+        korok.node = match &korok.ast.fields {
+            syn::Fields::Unit => Some(
+                EnumEmptyVariantTypeNode {
+                    name: variant_name.into(),
+                    discriminator,
+                }
+                .into(),
+            ),
+            syn::Fields::Named(_) => {
+                let fields = korok
+                    .fields
+                    .iter()
+                    .map(|field| {
+                        if let Some(Node::Type(RegisteredTypeNode::StructField(field))) =
+                            &field.node
+                        {
+                            field.clone()
+                        } else {
+                            panic!("Expected StructFieldTypeNode");
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                Some(
+                    EnumStructVariantTypeNode {
+                        name: variant_name.into(),
+                        r#struct: StructTypeNode::new(fields).into(),
+                        discriminator,
+                    }
+                    .into(),
+                )
+            }
+            syn::Fields::Unnamed(_) => {
+                let fields = korok
+                    .fields
+                    .iter()
+                    .map(|field| {
+                        let Some(Node::Type(t)) = &field.node else {
+                            panic!("Expected RegisteredTypeNode");
+                        };
+                        TypeNode::try_from(t.clone()).unwrap()
+                    })
+                    .collect::<Vec<_>>();
+                Some(
+                    EnumTupleVariantTypeNode {
+                        name: variant_name.into(),
+                        tuple: TupleTypeNode::new(fields).into(),
+                        discriminator,
+                    }
+                    .into(),
+                )
+            }
+        }
     }
 }
 
@@ -140,16 +207,8 @@ pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
                 _ => None,
             }
         }
-        syn::Type::Array(syn::TypeArray {
-            elem,
-            len:
-                syn::Expr::Lit(syn::ExprLit {
-                    lit: syn::Lit::Int(len),
-                    ..
-                }),
-            ..
-        }) => {
-            let Ok(size) = len.base10_parse::<usize>() else {
+        syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
+            let Some(size) = ExprHelper(len).as_literal_integer::<usize>() else {
                 return None;
             };
             match get_type_node_from_syn_type(elem) {
@@ -223,5 +282,24 @@ impl GenericArgumentsHelper<'_> {
     /// E.g. for `Vec<'a, T, U>` it returns `Some(T)`.
     pub fn first_type(&self) -> Option<&syn::Type> {
         self.types().first().copied()
+    }
+}
+
+pub struct ExprHelper<'a>(&'a syn::Expr);
+
+impl ExprHelper<'_> {
+    /// Returns the integer value of the expression if it is a literal integer.
+    pub fn as_literal_integer<T>(&self) -> Option<T>
+    where
+        T: std::str::FromStr,
+        T::Err: std::fmt::Display,
+    {
+        match self.0 {
+            syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Int(value),
+                ..
+            }) => value.base10_parse::<T>().ok(),
+            _ => None,
+        }
     }
 }
