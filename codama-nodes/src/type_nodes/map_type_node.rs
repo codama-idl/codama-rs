@@ -12,6 +12,12 @@ pub struct MapTypeNode {
     pub count: CountNode,
 }
 
+impl Into<crate::Node> for MapTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl MapTypeNode {
     pub fn new<K, V, C>(key: K, value: V, count: C) -> Self
     where

@@ -8,6 +8,12 @@ pub struct BytesValueNode {
     pub encoding: BytesEncoding,
 }
 
+impl Into<crate::Node> for BytesValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl BytesValueNode {
     pub fn new<T>(encoding: BytesEncoding, data: T) -> Self
     where

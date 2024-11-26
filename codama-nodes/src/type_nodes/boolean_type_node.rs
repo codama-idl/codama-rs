@@ -7,6 +7,12 @@ pub struct BooleanTypeNode {
     pub size: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for BooleanTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl BooleanTypeNode {
     pub fn new<T>(size: T) -> Self
     where

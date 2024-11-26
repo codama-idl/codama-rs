@@ -3,6 +3,12 @@ use codama_nodes_derive::node;
 #[node]
 pub struct RemainderCountNode {}
 
+impl Into<crate::Node> for RemainderCountNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Count(self.into())
+    }
+}
+
 impl RemainderCountNode {
     pub fn new() -> Self {
         Self {}

@@ -12,6 +12,12 @@ pub struct EnumValueNode {
     pub value: Option<EnumVariantData>,
 }
 
+impl Into<crate::Node> for EnumValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl EnumValueNode {
     pub fn new<T, U>(r#enum: T, variant: U, value: Option<EnumVariantData>) -> Self
     where

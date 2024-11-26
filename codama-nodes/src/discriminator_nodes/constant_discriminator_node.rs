@@ -10,6 +10,12 @@ pub struct ConstantDiscriminatorNode {
     pub constant: ConstantValueNode,
 }
 
+impl Into<crate::Node> for ConstantDiscriminatorNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Discriminator(self.into())
+    }
+}
+
 impl ConstantDiscriminatorNode {
     pub fn new<T>(constant: T, offset: usize) -> Self
     where

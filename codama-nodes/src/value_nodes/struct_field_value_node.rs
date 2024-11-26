@@ -10,6 +10,12 @@ pub struct StructFieldValueNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for StructFieldValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl StructFieldValueNode {
     pub fn new<T, U>(name: T, value: U) -> Self
     where

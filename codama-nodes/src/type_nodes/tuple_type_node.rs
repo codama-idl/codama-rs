@@ -7,6 +7,12 @@ pub struct TupleTypeNode {
     pub items: Vec<TypeNode>,
 }
 
+impl Into<crate::Node> for TupleTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl TupleTypeNode {
     pub fn new(items: Vec<TypeNode>) -> Self {
         Self { items }

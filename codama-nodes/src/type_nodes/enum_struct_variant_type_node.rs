@@ -12,6 +12,12 @@ pub struct EnumStructVariantTypeNode {
     pub r#struct: NestedTypeNode<StructTypeNode>,
 }
 
+impl Into<crate::Node> for EnumStructVariantTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl EnumStructVariantTypeNode {
     pub fn new<T, U>(name: T, r#struct: U, discriminator: Option<usize>) -> Self
     where

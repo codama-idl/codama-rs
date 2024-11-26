@@ -7,6 +7,12 @@ pub struct DateTimeTypeNode {
     pub number: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for DateTimeTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl DateTimeTypeNode {
     pub fn new<T>(number: T) -> Self
     where

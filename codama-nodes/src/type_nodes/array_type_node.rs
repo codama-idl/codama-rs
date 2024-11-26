@@ -11,6 +11,12 @@ pub struct ArrayTypeNode {
     pub count: CountNode,
 }
 
+impl Into<crate::Node> for ArrayTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl ArrayTypeNode {
     pub fn new<T, U>(item: T, count: U) -> Self
     where

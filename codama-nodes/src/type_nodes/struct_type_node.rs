@@ -7,6 +7,12 @@ pub struct StructTypeNode {
     pub fields: Vec<StructFieldTypeNode>,
 }
 
+impl Into<crate::Node> for StructTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl StructTypeNode {
     pub fn new(fields: Vec<StructFieldTypeNode>) -> Self {
         Self { fields }

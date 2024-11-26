@@ -11,6 +11,12 @@ pub struct InstructionArgumentLinkNode {
     pub instruction: Option<InstructionLinkNode>,
 }
 
+impl Into<crate::Node> for InstructionArgumentLinkNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Link(self.into())
+    }
+}
+
 impl InstructionArgumentLinkNode {
     pub fn new<T>(name: T) -> Self
     where

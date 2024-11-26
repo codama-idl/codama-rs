@@ -9,6 +9,12 @@ pub struct HiddenSuffixTypeNode<T: TypeNodeEnumTrait> {
     pub suffix: Vec<ConstantValueNode>,
 }
 
+impl Into<crate::Node> for HiddenSuffixTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> HiddenSuffixTypeNode<T> {
     pub fn new<U>(r#type: U, suffix: Vec<ConstantValueNode>) -> Self
     where

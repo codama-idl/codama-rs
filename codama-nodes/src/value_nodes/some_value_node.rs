@@ -7,6 +7,12 @@ pub struct SomeValueNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for SomeValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl SomeValueNode {
     pub fn new<T>(value: T) -> Self
     where

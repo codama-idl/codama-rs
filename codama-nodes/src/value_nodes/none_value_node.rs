@@ -3,6 +3,12 @@ use codama_nodes_derive::node;
 #[node]
 pub struct NoneValueNode {}
 
+impl Into<crate::Node> for NoneValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl NoneValueNode {
     pub fn new() -> Self {
         Self {}

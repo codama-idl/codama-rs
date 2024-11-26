@@ -8,6 +8,12 @@ pub struct EnumTypeNode {
     pub size: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for EnumTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl EnumTypeNode {
     pub fn new(variants: Vec<EnumVariantTypeNode>) -> Self {
         Self {

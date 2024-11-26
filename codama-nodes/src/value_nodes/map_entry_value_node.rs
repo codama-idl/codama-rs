@@ -8,6 +8,12 @@ pub struct MapEntryValueNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for MapEntryValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl MapEntryValueNode {
     pub fn new<T, U>(key: T, value: U) -> Self
     where

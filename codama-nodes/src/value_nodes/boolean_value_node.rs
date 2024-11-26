@@ -6,6 +6,12 @@ pub struct BooleanValueNode {
     pub boolean: bool,
 }
 
+impl Into<crate::Node> for BooleanValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl BooleanValueNode {
     pub fn new(boolean: bool) -> Self {
         Self { boolean }

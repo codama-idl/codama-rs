@@ -7,6 +7,12 @@ pub struct SetValueNode {
     pub items: Vec<ValueNode>,
 }
 
+impl Into<crate::Node> for SetValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl SetValueNode {
     pub fn new(items: Vec<ValueNode>) -> Self {
         Self { items }

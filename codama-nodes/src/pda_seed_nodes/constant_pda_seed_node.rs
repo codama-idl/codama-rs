@@ -8,6 +8,12 @@ pub struct ConstantPdaSeedNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for ConstantPdaSeedNode {
+    fn into(self) -> crate::Node {
+        crate::Node::PdaSeed(self.into())
+    }
+}
+
 impl ConstantPdaSeedNode {
     pub fn new<T, U>(r#type: T, value: U) -> Self
     where

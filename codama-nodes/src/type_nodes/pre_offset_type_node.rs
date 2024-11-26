@@ -13,6 +13,12 @@ pub struct PreOffsetTypeNode<T: TypeNodeEnumTrait> {
     pub r#type: T,
 }
 
+impl Into<crate::Node> for PreOffsetTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> PreOffsetTypeNode<T> {
     pub fn new<U>(r#type: U, strategy: PreOffsetStrategy, offset: i32) -> Self
     where

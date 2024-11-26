@@ -8,6 +8,12 @@ pub struct NumberValueNode {
     pub number: Number,
 }
 
+impl Into<crate::Node> for NumberValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl NumberValueNode {
     pub fn new<T>(number: T) -> Self
     where

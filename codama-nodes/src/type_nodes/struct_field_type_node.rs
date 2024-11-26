@@ -17,6 +17,12 @@ pub struct StructFieldTypeNode {
     pub default_value: Option<ValueNode>,
 }
 
+impl Into<crate::Node> for StructFieldTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl StructFieldTypeNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
     where

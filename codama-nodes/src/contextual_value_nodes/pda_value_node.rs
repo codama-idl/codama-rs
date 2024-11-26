@@ -8,6 +8,12 @@ pub struct PdaValueNode {
     pub seeds: Vec<PdaSeedValueNode>,
 }
 
+impl Into<crate::Node> for PdaValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 impl PdaValueNode {
     pub fn new<T>(pda: T, seeds: Vec<PdaSeedValueNode>) -> Self
     where

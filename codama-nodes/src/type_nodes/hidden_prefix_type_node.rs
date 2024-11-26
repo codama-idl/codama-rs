@@ -9,6 +9,12 @@ pub struct HiddenPrefixTypeNode<T: TypeNodeEnumTrait> {
     pub prefix: Vec<ConstantValueNode>,
 }
 
+impl Into<crate::Node> for HiddenPrefixTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> HiddenPrefixTypeNode<T> {
     pub fn new<U>(r#type: U, prefix: Vec<ConstantValueNode>) -> Self
     where

@@ -15,6 +15,12 @@ pub struct ConditionalValueNode {
     pub if_false: Option<InstructionInputValueNode>,
 }
 
+impl Into<crate::Node> for ConditionalValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 #[node_union]
 pub enum ConditionNode {
     Account(AccountValueNode),

@@ -11,6 +11,12 @@ pub struct SizePrefixTypeNode<T: TypeNodeEnumTrait> {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for SizePrefixTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> SizePrefixTypeNode<T> {
     pub fn new<U, V>(r#type: U, prefix: V) -> Self
     where

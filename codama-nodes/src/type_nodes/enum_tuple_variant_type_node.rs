@@ -12,6 +12,12 @@ pub struct EnumTupleVariantTypeNode {
     pub tuple: NestedTypeNode<TupleTypeNode>,
 }
 
+impl Into<crate::Node> for EnumTupleVariantTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl EnumTupleVariantTypeNode {
     pub fn new<T, U>(name: T, tuple: U, discriminator: Option<usize>) -> Self
     where

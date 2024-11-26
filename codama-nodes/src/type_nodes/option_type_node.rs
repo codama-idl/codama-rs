@@ -13,6 +13,12 @@ pub struct OptionTypeNode {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for OptionTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl OptionTypeNode {
     pub fn new<T>(item: T) -> Self
     where

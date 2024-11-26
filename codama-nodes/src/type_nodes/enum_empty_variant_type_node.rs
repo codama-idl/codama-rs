@@ -9,6 +9,12 @@ pub struct EnumEmptyVariantTypeNode {
     pub discriminator: Option<usize>,
 }
 
+impl Into<crate::Node> for EnumEmptyVariantTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl EnumEmptyVariantTypeNode {
     pub fn new<T>(name: T, discriminator: Option<usize>) -> Self
     where

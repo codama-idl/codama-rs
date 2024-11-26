@@ -8,6 +8,12 @@ pub struct ConstantValueNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for ConstantValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl ConstantValueNode {
     pub fn new<T, U>(r#type: T, value: U) -> Self
     where

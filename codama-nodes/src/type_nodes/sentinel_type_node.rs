@@ -9,6 +9,12 @@ pub struct SentinelTypeNode<T: TypeNodeEnumTrait> {
     pub sentinel: ConstantValueNode,
 }
 
+impl Into<crate::Node> for SentinelTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> SentinelTypeNode<T> {
     pub fn new<U>(r#type: U, sentinel: ConstantValueNode) -> Self
     where

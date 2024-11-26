@@ -12,6 +12,12 @@ pub struct AmountTypeNode {
     pub number: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for AmountTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl AmountTypeNode {
     pub fn new<T>(number: T, decimals: u8, unit: Option<String>) -> Self
     where

@@ -7,6 +7,12 @@ pub struct SolAmountTypeNode {
     pub number: NestedTypeNode<NumberTypeNode>,
 }
 
+impl Into<crate::Node> for SolAmountTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl SolAmountTypeNode {
     pub fn new<T>(number: T) -> Self
     where

@@ -3,6 +3,12 @@ use codama_nodes_derive::node;
 #[node]
 pub struct PayerValueNode {}
 
+impl Into<crate::Node> for PayerValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 impl PayerValueNode {
     pub fn new() -> Self {
         Self {}

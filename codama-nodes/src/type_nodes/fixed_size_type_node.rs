@@ -11,6 +11,12 @@ pub struct FixedSizeTypeNode<T: TypeNodeEnumTrait> {
     pub r#type: T,
 }
 
+impl Into<crate::Node> for FixedSizeTypeNode<crate::TypeNode> {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl<T: TypeNodeEnumTrait> FixedSizeTypeNode<T> {
     pub fn new<U>(r#type: U, size: usize) -> Self
     where

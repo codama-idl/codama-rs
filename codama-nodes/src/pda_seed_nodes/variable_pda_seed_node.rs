@@ -13,6 +13,12 @@ pub struct VariablePdaSeedNode {
     pub r#type: TypeNode,
 }
 
+impl Into<crate::Node> for VariablePdaSeedNode {
+    fn into(self) -> crate::Node {
+        crate::Node::PdaSeed(self.into())
+    }
+}
+
 impl VariablePdaSeedNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
     where

@@ -14,6 +14,12 @@ pub struct ResolverValueNode {
     pub depends_on: Option<Vec<ResolverDependency>>,
 }
 
+impl Into<crate::Node> for ResolverValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 impl ResolverValueNode {
     pub fn new<T>(name: T) -> Self
     where

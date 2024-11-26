@@ -7,6 +7,12 @@ pub struct MapValueNode {
     pub entries: Vec<MapEntryValueNode>,
 }
 
+impl Into<crate::Node> for MapValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Value(self.into())
+    }
+}
+
 impl MapValueNode {
     pub fn new(entries: Vec<MapEntryValueNode>) -> Self {
         Self { entries }

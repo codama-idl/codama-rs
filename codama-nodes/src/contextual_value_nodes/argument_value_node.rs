@@ -7,6 +7,12 @@ pub struct ArgumentValueNode {
     pub name: CamelCaseString,
 }
 
+impl Into<crate::Node> for ArgumentValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 impl ArgumentValueNode {
     pub fn new<T>(name: T) -> Self
     where

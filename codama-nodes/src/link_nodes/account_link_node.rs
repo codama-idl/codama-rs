@@ -11,6 +11,12 @@ pub struct AccountLinkNode {
     pub program: Option<ProgramLinkNode>,
 }
 
+impl Into<crate::Node> for AccountLinkNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Link(self.into())
+    }
+}
+
 impl AccountLinkNode {
     pub fn new<T>(name: T) -> Self
     where

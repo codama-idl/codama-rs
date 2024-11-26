@@ -10,6 +10,12 @@ pub struct PdaSeedValueNode {
     pub value: ValueNode,
 }
 
+impl Into<crate::Node> for PdaSeedValueNode {
+    fn into(self) -> crate::Node {
+        crate::Node::ContextualValue(self.into())
+    }
+}
+
 impl PdaSeedValueNode {
     pub fn new<T, U>(name: T, value: U) -> Self
     where

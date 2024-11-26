@@ -3,6 +3,12 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct PublicKeyTypeNode {}
 
+impl Into<crate::Node> for PublicKeyTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 impl PublicKeyTypeNode {
     pub fn new() -> Self {
         Self {}

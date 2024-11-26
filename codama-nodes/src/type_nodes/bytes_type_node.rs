@@ -9,6 +9,12 @@ impl BytesTypeNode {
     }
 }
 
+impl Into<crate::Node> for BytesTypeNode {
+    fn into(self) -> crate::Node {
+        crate::Node::Type(self.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
