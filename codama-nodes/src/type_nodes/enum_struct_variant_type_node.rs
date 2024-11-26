@@ -19,14 +19,14 @@ impl Into<crate::Node> for EnumStructVariantTypeNode {
 }
 
 impl EnumStructVariantTypeNode {
-    pub fn new<T, U>(name: T, r#struct: U, discriminator: Option<usize>) -> Self
+    pub fn new<T, U>(name: T, r#struct: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<NestedTypeNode<StructTypeNode>>,
     {
         Self {
             name: name.into(),
-            discriminator,
+            discriminator: None,
             r#struct: r#struct.into(),
         }
     }
@@ -47,7 +47,29 @@ mod tests {
             StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
             StructFieldTypeNode::new("name", StringTypeNode::utf8()),
         ]);
-        let node = EnumStructVariantTypeNode::new("my_variant", r#struct, Some(42));
+        let node = EnumStructVariantTypeNode::new("my_variant", r#struct);
+        assert_eq!(node.name, CamelCaseString::new("myVariant"));
+        assert_eq!(node.discriminator, None);
+        assert_eq!(
+            node.r#struct,
+            NestedTypeNode::Value(StructTypeNode::new(vec![
+                StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
+                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn direct_instantiation() {
+        let r#struct = StructTypeNode::new(vec![
+            StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
+            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+        ]);
+        let node = EnumStructVariantTypeNode {
+            name: "my_variant".into(),
+            discriminator: Some(42),
+            r#struct: NestedTypeNode::Value(r#struct),
+        };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));
         assert_eq!(
@@ -64,7 +86,7 @@ mod tests {
         let r#struct = StructTypeNode::new(vec![]);
         let nested_struct =
             PostOffsetTypeNode::pre_offset(PreOffsetTypeNode::absolute(r#struct, 0), 0);
-        let node = EnumStructVariantTypeNode::new("my_variant", nested_struct, None);
+        let node = EnumStructVariantTypeNode::new("my_variant", nested_struct);
         assert_eq!(
             node.r#struct,
             NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode::pre_offset(
@@ -83,7 +105,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]), None);
+        let node = EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -97,7 +119,7 @@ mod tests {
         let node: EnumStructVariantTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]), None)
+            EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]))
         );
     }
 }

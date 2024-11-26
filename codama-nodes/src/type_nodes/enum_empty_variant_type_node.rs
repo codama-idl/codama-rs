@@ -16,13 +16,13 @@ impl Into<crate::Node> for EnumEmptyVariantTypeNode {
 }
 
 impl EnumEmptyVariantTypeNode {
-    pub fn new<T>(name: T, discriminator: Option<usize>) -> Self
+    pub fn new<T>(name: T) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
             name: name.into(),
-            discriminator,
+            discriminator: None,
         }
     }
 }
@@ -33,14 +33,24 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = EnumEmptyVariantTypeNode::new("my_variant", Some(42));
+        let node = EnumEmptyVariantTypeNode::new("my_variant");
+        assert_eq!(node.name, CamelCaseString::new("myVariant"));
+        assert_eq!(node.discriminator, None);
+    }
+
+    #[test]
+    fn direct_instantiation() {
+        let node = EnumEmptyVariantTypeNode {
+            name: "my_variant".into(),
+            discriminator: Some(42),
+        };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));
     }
 
     #[test]
     fn to_json() {
-        let node = EnumEmptyVariantTypeNode::new("myVariant", None);
+        let node = EnumEmptyVariantTypeNode::new("myVariant");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -52,6 +62,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"enumEmptyVariantTypeNode","name":"myVariant"}"#;
         let node: EnumEmptyVariantTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, EnumEmptyVariantTypeNode::new("myVariant", None));
+        assert_eq!(node, EnumEmptyVariantTypeNode::new("myVariant"));
     }
 }

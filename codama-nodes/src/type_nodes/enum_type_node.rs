@@ -35,14 +35,13 @@ mod tests {
     #[test]
     fn new() {
         let r#enum = EnumTypeNode::new(vec![
-            EnumEmptyVariantTypeNode::new("quit", None).into(),
+            EnumEmptyVariantTypeNode::new("quit").into(),
             EnumTupleVariantTypeNode::new(
                 "move",
                 TupleTypeNode::new(vec![
                     NumberTypeNode::le(U8).into(),
                     NumberTypeNode::le(U8).into(),
                 ]),
-                None,
             )
             .into(),
             EnumStructVariantTypeNode::new(
@@ -51,7 +50,6 @@ mod tests {
                     "message",
                     StringTypeNode::utf8(),
                 )]),
-                None,
             )
             .into(),
         ]);
@@ -69,7 +67,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant", None).into()]);
+        let node = EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant").into()]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -83,7 +81,7 @@ mod tests {
         let node: EnumTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant", None).into()])
+            EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant").into()])
         );
     }
 }

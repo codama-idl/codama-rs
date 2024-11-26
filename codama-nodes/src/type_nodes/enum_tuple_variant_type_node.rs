@@ -19,14 +19,14 @@ impl Into<crate::Node> for EnumTupleVariantTypeNode {
 }
 
 impl EnumTupleVariantTypeNode {
-    pub fn new<T, U>(name: T, tuple: U, discriminator: Option<usize>) -> Self
+    pub fn new<T, U>(name: T, tuple: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<NestedTypeNode<TupleTypeNode>>,
     {
         Self {
             name: name.into(),
-            discriminator,
+            discriminator: None,
             tuple: tuple.into(),
         }
     }
@@ -47,7 +47,29 @@ mod tests {
             NumberTypeNode::le(U32).into(),
             StringTypeNode::utf8().into(),
         ]);
-        let node = EnumTupleVariantTypeNode::new("my_variant", tuple, Some(42));
+        let node = EnumTupleVariantTypeNode::new("my_variant", tuple);
+        assert_eq!(node.name, CamelCaseString::new("myVariant"));
+        assert_eq!(node.discriminator, None);
+        assert_eq!(
+            node.tuple,
+            NestedTypeNode::Value(TupleTypeNode::new(vec![
+                NumberTypeNode::le(U32).into(),
+                StringTypeNode::utf8().into(),
+            ]))
+        );
+    }
+
+    #[test]
+    fn direct_instantiation() {
+        let tuple = TupleTypeNode::new(vec![
+            NumberTypeNode::le(U32).into(),
+            StringTypeNode::utf8().into(),
+        ]);
+        let node = EnumTupleVariantTypeNode {
+            name: "my_variant".into(),
+            discriminator: Some(42),
+            tuple: tuple.into(),
+        };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));
         assert_eq!(
@@ -64,7 +86,7 @@ mod tests {
         let tuple = TupleTypeNode::new(vec![]);
         let nested_struct =
             PostOffsetTypeNode::pre_offset(PreOffsetTypeNode::absolute(tuple, 0), 0);
-        let node = EnumTupleVariantTypeNode::new("my_variant", nested_struct, None);
+        let node = EnumTupleVariantTypeNode::new("my_variant", nested_struct);
         assert_eq!(
             node.tuple,
             NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode::pre_offset(
@@ -83,7 +105,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]), None);
+        let node = EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -97,7 +119,7 @@ mod tests {
         let node: EnumTupleVariantTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]), None)
+            EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]))
         );
     }
 }
