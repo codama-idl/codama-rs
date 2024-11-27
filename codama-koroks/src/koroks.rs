@@ -98,31 +98,13 @@ impl<'a> ItemKorok<'a> {
             .collect()
     }
 
-    pub fn as_file_module(&self) -> Option<&FileModuleKorok> {
+    pub fn node(&self) -> Option<Node> {
         match self {
-            ItemKorok::FileModule(x) => Some(x),
-            _ => None,
-        }
-    }
-
-    pub fn as_module(&self) -> Option<&ModuleKorok> {
-        match self {
-            ItemKorok::Module(x) => Some(x),
-            _ => None,
-        }
-    }
-
-    pub fn as_struct(&self) -> Option<&StructKorok> {
-        match self {
-            ItemKorok::Struct(x) => Some(x),
-            _ => None,
-        }
-    }
-
-    pub fn as_enum(&self) -> Option<&EnumKorok> {
-        match self {
-            ItemKorok::Enum(x) => Some(x),
-            _ => None,
+            ItemKorok::Struct(k) => k.node.clone(),
+            ItemKorok::Enum(k) => k.node.clone(),
+            ItemKorok::FileModule(k) => k.node.clone(),
+            ItemKorok::Module(k) => k.node.clone(),
+            ItemKorok::Unsupported(k) => k.node.clone(),
         }
     }
 }

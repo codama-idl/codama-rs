@@ -1,4 +1,4 @@
-use crate::borsh_visitor::utils::get_node_from_enum;
+use crate::borsh_visitor::utils::get_node_from_item;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     EnumTypeNode, Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
@@ -9,7 +9,7 @@ use quote::quote;
 #[test]
 fn it_wraps_all_variants_in_a_defined_enum() {
     assert_eq!(
-        get_node_from_enum(quote! {
+        get_node_from_item(quote! {
             pub enum Message {
                 Quit,
                 Move { x: i32, y: i32 },
