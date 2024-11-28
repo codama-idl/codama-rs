@@ -52,6 +52,12 @@ impl KorokVisitable for codama_koroks::FieldKorok<'_> {
     }
 }
 
+impl KorokVisitable for codama_koroks::TypeKorok<'_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_type(self);
+    }
+}
+
 impl KorokVisitable for codama_koroks::EnumKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
         visitor.visit_enum(self);

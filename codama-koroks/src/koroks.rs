@@ -1,7 +1,7 @@
 use cargo_toml::Manifest;
 use codama_nodes::{
-    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
+    StructTypeNode, TupleTypeNode, TypeNode,
 };
 use std::path::Path;
 
@@ -238,6 +238,7 @@ pub struct FieldKorok<'a> {
     pub ast: &'a syn::Field,
     pub attributes: Vec<Attribute<'a>>,
     pub node: Option<Node>,
+    pub r#type: TypeKorok<'a>,
 }
 
 impl<'a> FieldKorok<'a> {
@@ -247,7 +248,33 @@ impl<'a> FieldKorok<'a> {
             ast,
             attributes,
             node: None,
+            r#type: TypeKorok::new(&ast.ty),
         })
+    }
+
+    pub fn create_type_node(&self) -> Option<RegisteredTypeNode> {
+        match &self.r#type.node {
+            Some(Node::Type(node)) => match &self.ast.ident {
+                Some(ident) => match TypeNode::try_from(node.clone()) {
+                    Ok(node) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
+                    Err(_) => None,
+                },
+                None => Some(node.clone().into()),
+            },
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct TypeKorok<'a> {
+    pub ast: &'a syn::Type,
+    pub node: Option<Node>,
+}
+
+impl<'a> TypeKorok<'a> {
+    pub fn new(ast: &'a syn::Type) -> Self {
+        Self { ast, node: None }
     }
 }
 

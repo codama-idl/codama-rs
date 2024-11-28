@@ -2,7 +2,7 @@ use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode,
     EnumStructVariantTypeNode, EnumTupleVariantTypeNode, FixedCountNode, MapTypeNode, Node,
     NumberFormat::*, NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode,
-    SetTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, TypeNode,
+    SetTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -29,32 +29,6 @@ impl KorokVisitor for BorshVisitor {
             },
             _ => None,
         }
-    }
-
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        for field_korok in &mut korok.all {
-            self.visit_field(field_korok);
-        }
-
-        if !korok.all_have_nodes() {
-            return ();
-        }
-        korok.node = match &korok.ast {
-            syn::Fields::Named(_) => Some(korok.create_struct_node().into()),
-            syn::Fields::Unnamed(_) => Some(korok.create_tuple_node().into()),
-            syn::Fields::Unit => None,
-        };
-    }
-
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        let Some(node_type) = get_type_node_from_syn_type(&korok.ast.ty) else {
-            return ();
-        };
-
-        korok.node = match &korok.ast.ident {
-            Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node_type).into()),
-            None => Some(node_type.into()),
-        };
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
@@ -106,90 +80,125 @@ impl KorokVisitor for BorshVisitor {
             _ => None,
         }
     }
+
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
+        for field_korok in &mut korok.all {
+            self.visit_field(field_korok);
+        }
+
+        if !korok.all_have_nodes() {
+            return ();
+        }
+        korok.node = match &korok.ast {
+            syn::Fields::Named(_) => Some(korok.create_struct_node().into()),
+            syn::Fields::Unnamed(_) => Some(korok.create_tuple_node().into()),
+            syn::Fields::Unit => None,
+        };
+    }
+
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
+        self.visit_type(&mut korok.r#type);
+        korok.node = korok.create_type_node().map(|node| node.into());
+    }
+
+    fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
+        korok.node = match self.get_type_node(&korok.ast) {
+            Some(node) => Some(node.into()),
+            None => None,
+        };
+    }
 }
 
-pub fn get_type_node_from_syn_type(ty: &syn::Type) -> Option<TypeNode> {
-    match ty {
-        syn::Type::Path(syn::TypePath { path, .. }) => {
-            if path.leading_colon.is_some() {
-                return None;
-            }
-            let path_helper = PathHelper(path);
-            match (
-                // a::b<B>::c::HashMap<K, V> -> a::b::c
-                path_helper.prefix().as_str(),
-                // a::b::c::HashMap<K, V> -> HashMap
-                path_helper.last_indent().as_str(),
-                // a::b::c::HashMap<K, V> -> [K, V]
-                path_helper.generic_arguments().types().as_slice(),
-            ) {
-                ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
-                ("" | "std::primitive", "usize", []) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u8", []) => Some(NumberTypeNode::le(U8).into()),
-                ("" | "std::primitive", "u16", []) => Some(NumberTypeNode::le(U16).into()),
-                ("" | "std::primitive", "u32", []) => Some(NumberTypeNode::le(U32).into()),
-                ("" | "std::primitive", "u64", []) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u128", []) => Some(NumberTypeNode::le(U128).into()),
-                ("" | "std::primitive", "isize", []) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i8", []) => Some(NumberTypeNode::le(I8).into()),
-                ("" | "std::primitive", "i16", []) => Some(NumberTypeNode::le(I16).into()),
-                ("" | "std::primitive", "i32", []) => Some(NumberTypeNode::le(I32).into()),
-                ("" | "std::primitive", "i64", []) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i128", []) => Some(NumberTypeNode::le(I128).into()),
-                ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
-                ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
-                (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
-                ("" | "solana_sdk::pubkey" | "solana_program" | "solana_pubkey", "Pubkey", []) => {
-                    Some(PublicKeyTypeNode::new().into())
+impl BorshVisitor {
+    fn get_type_node(&self, ty: &syn::Type) -> Option<TypeNode> {
+        match ty {
+            syn::Type::Path(syn::TypePath { path, .. }) => {
+                if path.leading_colon.is_some() {
+                    return None;
                 }
-                ("" | "std::string", "String", []) => Some(
-                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
-                ),
-                ("" | "std::vec", "Vec", [t]) => match get_type_node_from_syn_type(t) {
-                    Some(item) => Some(
-                        ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                let path_helper = PathHelper(path);
+                match (
+                    // a::b<B>::c::HashMap<K, V> -> a::b::c
+                    path_helper.prefix().as_str(),
+                    // a::b::c::HashMap<K, V> -> HashMap
+                    path_helper.last_indent().as_str(),
+                    // a::b::c::HashMap<K, V> -> [K, V]
+                    path_helper.generic_arguments().types().as_slice(),
+                ) {
+                    ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
+                    ("" | "std::primitive", "usize", []) => Some(NumberTypeNode::le(U64).into()),
+                    ("" | "std::primitive", "u8", []) => Some(NumberTypeNode::le(U8).into()),
+                    ("" | "std::primitive", "u16", []) => Some(NumberTypeNode::le(U16).into()),
+                    ("" | "std::primitive", "u32", []) => Some(NumberTypeNode::le(U32).into()),
+                    ("" | "std::primitive", "u64", []) => Some(NumberTypeNode::le(U64).into()),
+                    ("" | "std::primitive", "u128", []) => Some(NumberTypeNode::le(U128).into()),
+                    ("" | "std::primitive", "isize", []) => Some(NumberTypeNode::le(I64).into()),
+                    ("" | "std::primitive", "i8", []) => Some(NumberTypeNode::le(I8).into()),
+                    ("" | "std::primitive", "i16", []) => Some(NumberTypeNode::le(I16).into()),
+                    ("" | "std::primitive", "i32", []) => Some(NumberTypeNode::le(I32).into()),
+                    ("" | "std::primitive", "i64", []) => Some(NumberTypeNode::le(I64).into()),
+                    ("" | "std::primitive", "i128", []) => Some(NumberTypeNode::le(I128).into()),
+                    ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
+                    ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
+                    (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
+                    (
+                        "" | "solana_sdk::pubkey" | "solana_program" | "solana_pubkey",
+                        "Pubkey",
+                        [],
+                    ) => Some(PublicKeyTypeNode::new().into()),
+                    ("" | "std::string", "String", []) => Some(
+                        SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
                             .into(),
                     ),
-                    None => None,
-                },
-                ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
-                    match get_type_node_from_syn_type(t) {
+                    ("" | "std::vec", "Vec", [t]) => match self.get_type_node(t) {
                         Some(item) => Some(
-                            SetTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
-                                .into(),
-                        ),
-                        None => None,
-                    }
-                }
-                ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
-                    match (
-                        get_type_node_from_syn_type(k),
-                        get_type_node_from_syn_type(v),
-                    ) {
-                        (Some(key), Some(value)) => Some(
-                            MapTypeNode::new(
-                                key,
-                                value,
+                            ArrayTypeNode::new(
+                                item,
                                 PrefixedCountNode::new(NumberTypeNode::le(U32)),
                             )
                             .into(),
                         ),
-                        _ => None,
+                        None => None,
+                    },
+                    ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
+                        match self.get_type_node(t) {
+                            Some(item) => Some(
+                                SetTypeNode::new(
+                                    item,
+                                    PrefixedCountNode::new(NumberTypeNode::le(U32)),
+                                )
+                                .into(),
+                            ),
+                            None => None,
+                        }
                     }
+                    ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
+                        match (self.get_type_node(k), self.get_type_node(v)) {
+                            (Some(key), Some(value)) => Some(
+                                MapTypeNode::new(
+                                    key,
+                                    value,
+                                    PrefixedCountNode::new(NumberTypeNode::le(U32)),
+                                )
+                                .into(),
+                            ),
+                            _ => None,
+                        }
+                    }
+                    _ => None,
                 }
-                _ => None,
             }
-        }
-        syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
-            let Some(size) = ExprHelper(len).as_literal_integer::<usize>() else {
-                return None;
-            };
-            match get_type_node_from_syn_type(elem) {
-                Some(item) => Some(ArrayTypeNode::new(item, FixedCountNode::new(size)).into()),
-                None => None,
+            syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
+                let Some(size) = ExprHelper(len).as_literal_integer::<usize>() else {
+                    return None;
+                };
+                match self.get_type_node(elem) {
+                    Some(item) => Some(ArrayTypeNode::new(item, FixedCountNode::new(size)).into()),
+                    None => None,
+                }
             }
+            _ => None,
         }
-        _ => None,
     }
 }
 
