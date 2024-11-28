@@ -40,6 +40,12 @@ impl KorokVisitable for codama_koroks::StructKorok<'_> {
     }
 }
 
+impl KorokVisitable for codama_koroks::FieldsKorok<'_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
+        visitor.visit_fields(self);
+    }
+}
+
 impl KorokVisitable for codama_koroks::FieldKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
         visitor.visit_field(self);

@@ -3,7 +3,7 @@ use codama_nodes::{
     EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode, EnumVariantTypeNode,
     FixedCountNode, MapTypeNode, Node, NumberFormat::*, NumberTypeNode, PrefixedCountNode,
     PublicKeyTypeNode, RegisteredTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
+    StructFieldTypeNode, TypeNode,
 };
 
 use crate::KorokVisitor;
@@ -18,43 +18,33 @@ impl BorshVisitor {
 
 impl KorokVisitor for BorshVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        for field_korok in &mut korok.fields {
+        self.visit_fields(&mut korok.fields);
+
+        korok.node = match &korok.fields.node {
+            Some(Node::Type(type_node)) => match TypeNode::try_from(type_node.clone()) {
+                Ok(type_node) => {
+                    let name = korok.ast.ident.to_string();
+                    Some(DefinedTypeNode::new(name, type_node).into())
+                }
+                Err(_) => None,
+            },
+            _ => None,
+        }
+    }
+
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
+        for field_korok in &mut korok.all {
             self.visit_field(field_korok);
         }
 
-        let struct_name = korok.ast.ident.to_string();
-
-        if korok.has_named_fields() && korok.all_fields_have_nodes() {
-            let fields = korok
-                .fields
-                .iter()
-                .map(|field| {
-                    if let Some(Node::Type(RegisteredTypeNode::StructField(field))) = &field.node {
-                        field.clone()
-                    } else {
-                        panic!("Expected StructFieldTypeNode");
-                    }
-                })
-                .collect::<Vec<_>>();
-            korok.node =
-                Some(DefinedTypeNode::new(struct_name, StructTypeNode::new(fields)).into());
+        if !korok.all_have_nodes() {
             return ();
         }
-
-        if korok.has_unnamed_fields() && korok.all_fields_have_nodes() {
-            let items = korok
-                .fields
-                .iter()
-                .map(|field| {
-                    let Some(Node::Type(t)) = &field.node else {
-                        panic!("Expected RegisteredTypeNode");
-                    };
-                    TypeNode::try_from(t.clone()).unwrap()
-                })
-                .collect::<Vec<_>>();
-            korok.node = Some(DefinedTypeNode::new(struct_name, TupleTypeNode::new(items)).into());
-            return ();
-        }
+        korok.node = match &korok.ast {
+            syn::Fields::Named(_) => Some(korok.create_struct_node().into()),
+            syn::Fields::Unnamed(_) => Some(korok.create_tuple_node().into()),
+            syn::Fields::Unit => None,
+        };
     }
 
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
@@ -97,9 +87,7 @@ impl KorokVisitor for BorshVisitor {
     }
 
     fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        for field_korok in &mut korok.fields {
-            self.visit_field(field_korok);
-        }
+        self.visit_fields(&mut korok.fields);
 
         let variant_name = korok.ast.ident.to_string();
         let discriminator = korok
@@ -108,57 +96,31 @@ impl KorokVisitor for BorshVisitor {
             .as_ref()
             .map_or(None, |(_, x)| ExprHelper(&x).as_literal_integer::<usize>());
 
-        korok.node = match &korok.ast.fields {
-            syn::Fields::Unit => Some(
+        korok.node = match (&korok.ast.fields, &korok.fields.node) {
+            (syn::Fields::Unit, _) => Some(
                 EnumEmptyVariantTypeNode {
                     name: variant_name.into(),
                     discriminator,
                 }
                 .into(),
             ),
-            syn::Fields::Named(_) => {
-                let fields = korok
-                    .fields
-                    .iter()
-                    .map(|field| {
-                        if let Some(Node::Type(RegisteredTypeNode::StructField(field))) =
-                            &field.node
-                        {
-                            field.clone()
-                        } else {
-                            panic!("Expected StructFieldTypeNode");
-                        }
-                    })
-                    .collect::<Vec<_>>();
-                Some(
-                    EnumStructVariantTypeNode {
-                        name: variant_name.into(),
-                        r#struct: StructTypeNode::new(fields).into(),
-                        discriminator,
-                    }
-                    .into(),
-                )
-            }
-            syn::Fields::Unnamed(_) => {
-                let fields = korok
-                    .fields
-                    .iter()
-                    .map(|field| {
-                        let Some(Node::Type(t)) = &field.node else {
-                            panic!("Expected RegisteredTypeNode");
-                        };
-                        TypeNode::try_from(t.clone()).unwrap()
-                    })
-                    .collect::<Vec<_>>();
-                Some(
-                    EnumTupleVariantTypeNode {
-                        name: variant_name.into(),
-                        tuple: TupleTypeNode::new(fields).into(),
-                        discriminator,
-                    }
-                    .into(),
-                )
-            }
+            (syn::Fields::Named(_), Some(Node::Type(RegisteredTypeNode::Struct(node)))) => Some(
+                EnumStructVariantTypeNode {
+                    name: variant_name.into(),
+                    r#struct: node.clone().into(),
+                    discriminator,
+                }
+                .into(),
+            ),
+            (syn::Fields::Unnamed(_), Some(Node::Type(RegisteredTypeNode::Tuple(node)))) => Some(
+                EnumTupleVariantTypeNode {
+                    name: variant_name.into(),
+                    tuple: node.clone().into(),
+                    discriminator,
+                }
+                .into(),
+            ),
+            _ => None,
         }
     }
 }

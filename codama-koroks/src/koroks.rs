@@ -1,5 +1,5 @@
 use cargo_toml::Manifest;
-use codama_nodes::Node;
+use codama_nodes::{Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode, TypeNode};
 use std::path::Path;
 
 use crate::attributes::Attribute;
@@ -166,7 +166,7 @@ impl<'a> ModuleKorok<'a> {
 pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
     pub attributes: Vec<Attribute<'a>>,
-    pub fields: Vec<FieldKorok<'a>>,
+    pub fields: FieldsKorok<'a>,
     pub node: Option<Node>,
 }
 
@@ -175,21 +175,58 @@ impl<'a> StructKorok<'a> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
-            fields: FieldKorok::parse_all(&ast.fields)?,
+            fields: FieldsKorok::parse(&ast.fields)?,
+            node: None,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct FieldsKorok<'a> {
+    pub ast: &'a syn::Fields,
+    pub all: Vec<FieldKorok<'a>>,
+    pub node: Option<Node>,
+}
+
+impl<'a> FieldsKorok<'a> {
+    pub fn parse(ast: &'a syn::Fields) -> ParsingResult<Self> {
+        Ok(Self {
+            ast,
+            all: match ast {
+                syn::Fields::Named(f) => f.named.iter().map(FieldKorok::parse).collect(),
+                syn::Fields::Unnamed(f) => f.unnamed.iter().map(FieldKorok::parse).collect(),
+                syn::Fields::Unit => Ok(vec![]),
+            }?,
             node: None,
         })
     }
 
-    pub fn has_named_fields(&self) -> bool {
-        matches!(self.ast.fields, syn::Fields::Named(_))
+    pub fn all_have_nodes(&self) -> bool {
+        self.all.iter().all(|field| field.node.is_some())
     }
 
-    pub fn has_unnamed_fields(&self) -> bool {
-        matches!(self.ast.fields, syn::Fields::Unnamed(_))
+    pub fn create_struct_node(&self) -> StructTypeNode {
+        let fields = self
+            .all
+            .iter()
+            .filter_map(|field| match &field.node {
+                Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(field.clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        StructTypeNode::new(fields)
     }
 
-    pub fn all_fields_have_nodes(&self) -> bool {
-        self.fields.iter().all(|field| field.node.is_some())
+    pub fn create_tuple_node(&self) -> TupleTypeNode {
+        let items = self
+            .all
+            .iter()
+            .filter_map(|field| match &field.node {
+                Some(Node::Type(t)) => TypeNode::try_from(t.clone()).ok(),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        TupleTypeNode::new(items)
     }
 }
 
@@ -201,14 +238,6 @@ pub struct FieldKorok<'a> {
 }
 
 impl<'a> FieldKorok<'a> {
-    pub fn parse_all(fields: &'a syn::Fields) -> ParsingResult<Vec<Self>> {
-        match fields {
-            syn::Fields::Named(f) => f.named.iter().map(Self::parse).collect(),
-            syn::Fields::Unnamed(f) => f.unnamed.iter().map(Self::parse).collect(),
-            syn::Fields::Unit => Ok(vec![]),
-        }
-    }
-
     pub fn parse(ast: &'a syn::Field) -> ParsingResult<Self> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         Ok(Self {
@@ -246,7 +275,7 @@ impl<'a> EnumKorok<'a> {
 pub struct EnumVariantKorok<'a> {
     pub ast: &'a syn::Variant,
     pub attributes: Vec<Attribute<'a>>,
-    pub fields: Vec<FieldKorok<'a>>,
+    pub fields: FieldsKorok<'a>,
     pub node: Option<Node>,
 }
 
@@ -255,7 +284,7 @@ impl<'a> EnumVariantKorok<'a> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
-            fields: FieldKorok::parse_all(&ast.fields)?,
+            fields: FieldsKorok::parse(&ast.fields)?,
             node: None,
         })
     }
