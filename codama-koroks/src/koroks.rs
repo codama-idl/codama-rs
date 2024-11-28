@@ -1,5 +1,8 @@
 use cargo_toml::Manifest;
-use codama_nodes::{Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode, TypeNode};
+use codama_nodes::{
+    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNode,
+};
 use std::path::Path;
 
 use crate::attributes::Attribute;
@@ -268,6 +271,26 @@ impl<'a> EnumKorok<'a> {
 
     pub fn all_variants_have_nodes(&self) -> bool {
         self.variants.iter().all(|field| field.node.is_some())
+    }
+
+    pub fn create_enum_node(&self) -> EnumTypeNode {
+        let variants = self
+            .variants
+            .iter()
+            .filter_map(|variant| match &variant.node {
+                Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
+                    Some(EnumVariantTypeNode::Empty(node.clone()))
+                }
+                Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
+                    Some(EnumVariantTypeNode::Tuple(node.clone()))
+                }
+                Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
+                    Some(EnumVariantTypeNode::Struct(node.clone()))
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        EnumTypeNode::new(variants)
     }
 }
 
