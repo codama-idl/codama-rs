@@ -1,11 +1,13 @@
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode,
-    EnumStructVariantTypeNode, EnumTupleVariantTypeNode, FixedCountNode, MapTypeNode, Node,
-    NumberFormat::*, NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, RegisteredTypeNode,
-    SetTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, NumberFormat::*, NumberTypeNode,
+    PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
+    TypeNode,
 };
 
-use crate::KorokVisitor;
+use crate::{
+    utils::{ExprHelper, PathHelper},
+    KorokVisitor,
+};
 
 pub struct BorshVisitor {}
 
@@ -16,88 +18,6 @@ impl BorshVisitor {
 }
 
 impl KorokVisitor for BorshVisitor {
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_fields(&mut korok.fields);
-
-        korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
-            Ok(type_node) => {
-                let name = korok.ast.ident.to_string();
-                Some(DefinedTypeNode::new(name, type_node).into())
-            }
-            Err(_) => None,
-        }
-    }
-
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        for variant_korok in &mut korok.variants {
-            self.visit_enum_variant(variant_korok);
-        }
-
-        if !korok.all_variants_have_nodes() {
-            return ();
-        }
-        let enum_name = korok.ast.ident.to_string();
-        korok.node = Some(DefinedTypeNode::new(enum_name, korok.create_enum_node()).into());
-    }
-
-    fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        self.visit_fields(&mut korok.fields);
-
-        let variant_name = korok.ast.ident.to_string();
-        let discriminator = korok
-            .ast
-            .discriminant
-            .as_ref()
-            .map_or(None, |(_, x)| ExprHelper(&x).as_literal_integer::<usize>());
-
-        korok.node = match (&korok.ast.fields, &korok.fields.node) {
-            (syn::Fields::Unit, _) => Some(
-                EnumEmptyVariantTypeNode {
-                    name: variant_name.into(),
-                    discriminator,
-                }
-                .into(),
-            ),
-            (syn::Fields::Named(_), Some(Node::Type(RegisteredTypeNode::Struct(node)))) => Some(
-                EnumStructVariantTypeNode {
-                    name: variant_name.into(),
-                    r#struct: node.clone().into(),
-                    discriminator,
-                }
-                .into(),
-            ),
-            (syn::Fields::Unnamed(_), Some(Node::Type(RegisteredTypeNode::Tuple(node)))) => Some(
-                EnumTupleVariantTypeNode {
-                    name: variant_name.into(),
-                    tuple: node.clone().into(),
-                    discriminator,
-                }
-                .into(),
-            ),
-            _ => None,
-        }
-    }
-
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        for field_korok in &mut korok.all {
-            self.visit_field(field_korok);
-        }
-
-        if !korok.all_have_nodes() {
-            return ();
-        }
-        korok.node = match &korok.ast {
-            syn::Fields::Named(_) => Some(korok.create_struct_node().into()),
-            syn::Fields::Unnamed(_) => Some(korok.create_tuple_node().into()),
-            syn::Fields::Unit => None,
-        };
-    }
-
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_type(&mut korok.r#type);
-        korok.node = korok.create_type_node().map(|node| node.into());
-    }
-
     fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
         korok.node = match self.get_type_node(&korok.ast) {
             Some(node) => Some(node.into()),
@@ -194,90 +114,6 @@ impl BorshVisitor {
                     None => None,
                 }
             }
-            _ => None,
-        }
-    }
-}
-
-pub struct PathHelper<'a>(&'a syn::Path);
-
-impl PathHelper<'_> {
-    /// Returns all segment idents joined by "::" except the last one.
-    /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
-    pub fn prefix(&self) -> String {
-        self.0
-            .segments
-            .iter()
-            .map(|segment| segment.ident.to_string())
-            .collect::<Vec<_>>()[..self.0.segments.len() - 1]
-            .join("::")
-    }
-
-    /// Returns the last segment.
-    pub fn last(&self) -> &syn::PathSegment {
-        self.0.segments.last().unwrap()
-    }
-
-    /// Returns the ident of the last segment as a string.
-    pub fn last_indent(&self) -> String {
-        self.last().ident.to_string()
-    }
-
-    /// Returns the generic arguments of the last segment.
-    /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArgumentsHelper(Some(['a, T, U]))`.
-    /// E.g. for `a::b::c::u32` it returns `GenericArgumentsHelper(None)`.
-    pub fn generic_arguments(&self) -> GenericArgumentsHelper {
-        match &self.last().arguments {
-            syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
-                args,
-                ..
-            }) => GenericArgumentsHelper(Some(args)),
-            _ => GenericArgumentsHelper(None),
-        }
-    }
-}
-
-pub struct GenericArgumentsHelper<'a>(
-    Option<&'a syn::punctuated::Punctuated<syn::GenericArgument, syn::Token![,]>>,
-);
-
-impl GenericArgumentsHelper<'_> {
-    /// Filters out all generic arguments that are not types.
-    /// E.g. for `Option<'a, T, U>` it returns `[T, U]`.
-    pub fn types(&self) -> Vec<&syn::Type> {
-        match self.0 {
-            Some(args) => args
-                .iter()
-                .filter_map(|arg| match arg {
-                    syn::GenericArgument::Type(ty) => Some(ty),
-                    _ => None,
-                })
-                .collect(),
-            None => vec![],
-        }
-    }
-
-    /// Returns the first genertic type argument if there is one.
-    /// E.g. for `Vec<'a, T, U>` it returns `Some(T)`.
-    pub fn first_type(&self) -> Option<&syn::Type> {
-        self.types().first().copied()
-    }
-}
-
-pub struct ExprHelper<'a>(&'a syn::Expr);
-
-impl ExprHelper<'_> {
-    /// Returns the integer value of the expression if it is a literal integer.
-    pub fn as_literal_integer<T>(&self) -> Option<T>
-    where
-        T: std::str::FromStr,
-        T::Err: std::fmt::Display,
-    {
-        match self.0 {
-            syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Int(value),
-                ..
-            }) => value.base10_parse::<T>().ok(),
             _ => None,
         }
     }
