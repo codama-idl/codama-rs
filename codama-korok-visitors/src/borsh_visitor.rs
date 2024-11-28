@@ -19,15 +19,12 @@ impl KorokVisitor for BorshVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
         self.visit_fields(&mut korok.fields);
 
-        korok.node = match &korok.fields.node {
-            Some(Node::Type(type_node)) => match TypeNode::try_from(type_node.clone()) {
-                Ok(type_node) => {
-                    let name = korok.ast.ident.to_string();
-                    Some(DefinedTypeNode::new(name, type_node).into())
-                }
-                Err(_) => None,
-            },
-            _ => None,
+        korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
+            Ok(type_node) => {
+                let name = korok.ast.ident.to_string();
+                Some(DefinedTypeNode::new(name, type_node).into())
+            }
+            Err(_) => None,
         }
     }
 

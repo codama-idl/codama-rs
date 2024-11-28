@@ -224,10 +224,7 @@ impl<'a> FieldsKorok<'a> {
         let items = self
             .all
             .iter()
-            .filter_map(|field| match &field.node {
-                Some(Node::Type(t)) => TypeNode::try_from(t.clone()).ok(),
-                _ => None,
-            })
+            .filter_map(|f| TypeNode::try_from(f.node.clone()).ok())
             .collect::<Vec<_>>();
         TupleTypeNode::new(items)
     }

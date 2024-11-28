@@ -1,8 +1,8 @@
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode,
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
-    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
+    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node,
+    NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait,
     ZeroableOptionTypeNode,
@@ -48,3 +48,28 @@ pub enum RegisteredTypeNode {
 }
 
 impl TypeNodeEnumTrait for TypeNode {}
+
+impl TryFrom<Node> for TypeNode {
+    type Error = (); // TODO: Replace with a real error type
+
+    fn try_from(node: Node) -> Result<Self, Self::Error> {
+        match node {
+            Node::Type(node) => Self::try_from(node),
+            _ => Err(()),
+        }
+    }
+}
+
+impl<T> TryFrom<Option<T>> for TypeNode
+where
+    T: TryInto<Self, Error = ()>,
+{
+    type Error = (); // TODO: Replace with a real error type
+
+    fn try_from(node: Option<T>) -> Result<Self, Self::Error> {
+        match node {
+            Some(t) => t.try_into(),
+            _ => Err(()),
+        }
+    }
+}
