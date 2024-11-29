@@ -73,6 +73,7 @@ dependencies = [
 name = "codama-syn-helpers"
 version = "0.1.0"
 dependencies = [
+ "codama-errors",
  "proc-macro2",
  "quote",
  "syn",

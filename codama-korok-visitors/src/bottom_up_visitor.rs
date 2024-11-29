@@ -2,7 +2,7 @@ use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     Node, RegisteredTypeNode, TypeNode,
 };
-use codama_syn_helpers::ExprHelper;
+use codama_syn_helpers::syn_wrap;
 
 use crate::KorokVisitor;
 
@@ -55,11 +55,9 @@ impl KorokVisitor for BottomUpVisitor {
         }
 
         let variant_name = korok.ast.ident.to_string();
-        let discriminator = korok
-            .ast
-            .discriminant
-            .as_ref()
-            .map_or(None, |(_, x)| ExprHelper(&x).as_literal_integer::<usize>());
+        let discriminator = korok.ast.discriminant.as_ref().map_or(None, |(_, x)| {
+            syn_wrap::Expr(&x).as_literal_integer::<usize>()
+        });
 
         korok.node = match (&korok.ast.fields, &korok.fields.node) {
             (syn::Fields::Unit, _) => Some(

@@ -1,8 +1,8 @@
-use crate::GenericArgumentsHelper;
+use super::GenericArguments;
 
-pub struct PathHelper<'a>(pub &'a syn::Path);
+pub struct Path<'a>(pub &'a syn::Path);
 
-impl PathHelper<'_> {
+impl Path<'_> {
     /// Returns all segment idents joined by "::" except the last one.
     /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
     pub fn prefix(&self) -> String {
@@ -25,15 +25,15 @@ impl PathHelper<'_> {
     }
 
     /// Returns the generic arguments of the last segment.
-    /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArgumentsHelper(Some(['a, T, U]))`.
-    /// E.g. for `a::b::c::u32` it returns `GenericArgumentsHelper(None)`.
-    pub fn generic_arguments(&self) -> GenericArgumentsHelper {
+    /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArguments(Some(['a, T, U]))`.
+    /// E.g. for `a::b::c::u32` it returns `GenericArguments(None)`.
+    pub fn generic_arguments(&self) -> GenericArguments {
         match &self.last().arguments {
             syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
                 args,
                 ..
-            }) => GenericArgumentsHelper(Some(args)),
-            _ => GenericArgumentsHelper(None),
+            }) => GenericArguments(Some(args)),
+            _ => GenericArguments(None),
         }
     }
 }

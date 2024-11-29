@@ -1,8 +1,8 @@
-pub struct GenericArgumentsHelper<'a>(
+pub struct GenericArguments<'a>(
     pub Option<&'a syn::punctuated::Punctuated<syn::GenericArgument, syn::Token![,]>>,
 );
 
-impl GenericArgumentsHelper<'_> {
+impl GenericArguments<'_> {
     /// Filters out all generic arguments that are not types.
     /// E.g. for `Option<'a, T, U>` it returns `[T, U]`.
     pub fn types(&self) -> Vec<&syn::Type> {

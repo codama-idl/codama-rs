@@ -1,6 +1,6 @@
-pub struct ExprHelper<'a>(pub &'a syn::Expr);
+pub struct Expr<'a>(pub &'a syn::Expr);
 
-impl ExprHelper<'_> {
+impl Expr<'_> {
     /// Returns the integer value of the expression if it is a literal integer.
     pub fn as_literal_integer<T>(&self) -> Option<T>
     where

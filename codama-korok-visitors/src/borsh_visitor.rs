@@ -3,7 +3,7 @@ use codama_nodes::{
     PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
     TypeNode,
 };
-use codama_syn_helpers::{ExprHelper, PathHelper};
+use codama_syn_helpers::syn_wrap;
 
 use crate::KorokVisitor;
 
@@ -31,7 +31,7 @@ impl BorshVisitor {
                 if path.leading_colon.is_some() {
                     return None;
                 }
-                let path_helper = PathHelper(path);
+                let path_helper = syn_wrap::Path(path);
                 match (
                     // a::b<B>::c::HashMap<K, V> -> a::b::c
                     path_helper.prefix().as_str(),
@@ -104,7 +104,7 @@ impl BorshVisitor {
                 }
             }
             syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
-                let Some(size) = ExprHelper(len).as_literal_integer::<usize>() else {
+                let Some(size) = syn_wrap::Expr(len).as_literal_integer::<usize>() else {
                     return None;
                 };
                 match self.get_type_node(elem) {
