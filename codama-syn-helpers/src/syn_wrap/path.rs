@@ -37,3 +37,39 @@ impl Path<'_> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::syn_build;
+    use quote::quote;
+
+    #[test]
+    fn prefix() {
+        let path = syn_build::parse(quote! { std::option::Option<String> });
+        let result = Path(&path).prefix();
+        assert_eq!(result, "std::option");
+    }
+
+    #[test]
+    fn prefix_with_inner_generics() {
+        let path = syn_build::parse(quote! { a<A>::b<B>::c::Final });
+        let result = Path(&path).prefix();
+        assert_eq!(result, "a::b::c");
+    }
+
+    #[test]
+    fn prefix_empty() {
+        let path = syn_build::parse(quote! { Foo });
+        let result = Path(&path).prefix();
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn generic_arguments() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path = Path(&path);
+        let result = path.generic_arguments();
+        assert!(matches!(result, GenericArguments(Some(_))));
+    }
+}
