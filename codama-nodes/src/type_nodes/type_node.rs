@@ -2,10 +2,10 @@ use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode,
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node,
-    NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
-    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
-    ZeroableOptionTypeNode,
+    NodeUnionTrait, NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode,
+    PublicKeyTypeNode, RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode,
+    SolAmountTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNodeUnionTrait, ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
 use codama_nodes_derive::{node_union, RegisteredNodes};
@@ -57,7 +57,7 @@ impl TryFrom<Node> for TypeNode {
         match node {
             Node::Type(node) => Self::try_from(node),
             _ => Err(CodamaError::InvalidNodeConversion {
-                from: "node.kind().to_string()".to_string(), // TODO
+                from: node.kind().to_string(),
                 into: "TypeNode".to_string(),
             }),
         }
@@ -96,5 +96,22 @@ mod tests {
     fn kind_from_registered() {
         let node: RegisteredTypeNode = StringTypeNode::utf8().into();
         assert_eq!(node.kind(), "stringTypeNode");
+    }
+
+    #[test]
+    fn try_from_node_ok() {
+        let node: Node = StringTypeNode::utf8().into();
+        let result = TypeNode::try_from(node);
+        assert!(matches!(result, Ok(TypeNode::String(_))));
+    }
+
+    #[test]
+    fn try_from_node_err() {
+        let node: Node = StructFieldTypeNode::new("foo", StringTypeNode::utf8()).into();
+        let result = TypeNode::try_from(node);
+        assert!(matches!(
+            result,
+            Err(CodamaError::InvalidNodeConversion { from, into }) if from == "structFieldTypeNode" && into == "TypeNode"
+        ));
     }
 }

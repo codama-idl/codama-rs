@@ -9,7 +9,6 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
 
     // Clone the enum.
     let mut standalone_enum = input.clone();
-    let standalone_enum_name_str = standalone_enum.ident.to_string();
 
     // Remove the "Registered" prefix from the enum variants.
     standalone_enum.ident = syn::Ident::new(
@@ -21,6 +20,7 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
         standalone_enum.ident.span(),
     );
     let standalone_enum_name = &standalone_enum.ident;
+    let standalone_enum_name_str = standalone_enum.ident.to_string();
 
     // Get variants without the "registered" attribute.
     let is_standalone = |variant: &&syn::Variant| {
@@ -68,10 +68,11 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
             type Error = codama_errors::CodamaError;
 
             fn try_from(value: #registered_enum_name) -> Result<Self, Self::Error> {
+                use crate::NodeUnionTrait;
                 match value {
                     #(#from_registered_patterns)*
                     _ => Err(codama_errors::CodamaError::InvalidNodeConversion {
-                        from: "value.kind().to_string()".to_string(), // TODO
+                        from: value.kind().to_string(),
                         into: #standalone_enum_name_str.to_string(),
                     }),
                 }
