@@ -56,7 +56,7 @@ impl KorokVisitor for BottomUpVisitor {
 
         let variant_name = korok.ast.ident.to_string();
         let discriminator = korok.ast.discriminant.as_ref().map_or(None, |(_, x)| {
-            syn_wrap::Expr(&x).as_literal_integer::<usize>()
+            syn_wrap::Expr(&x).as_literal_integer::<usize>().ok()
         });
 
         korok.node = match (&korok.ast.fields, &korok.fields.node) {

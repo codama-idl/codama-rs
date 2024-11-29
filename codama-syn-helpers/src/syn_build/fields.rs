@@ -37,3 +37,34 @@ pub fn try_unnamed_field(tt: TokenStream) -> CodamaResult<syn::Field> {
 pub fn unnamed_field(tt: TokenStream) -> syn::Field {
     try_unnamed_field(tt).unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use codama_errors::CodamaError;
+
+    use super::*;
+
+    #[test]
+    fn named_field_ok() {
+        let result = try_named_field(quote! { pub foo: u32 });
+        assert!(matches!(result, Ok(syn::Field { ident: Some(_), .. })));
+    }
+
+    #[test]
+    fn named_field_err() {
+        let result = try_named_field(quote! { u32 });
+        assert!(matches!(result, Err(CodamaError::Compilation(_))));
+    }
+
+    #[test]
+    fn unnamed_field_ok() {
+        let result = try_unnamed_field(quote! { u32 });
+        assert!(matches!(result, Ok(syn::Field { ident: None, .. })));
+    }
+
+    #[test]
+    fn unnamed_field_err() {
+        let result = try_unnamed_field(quote! { pub foo: u32  });
+        assert!(matches!(result, Err(CodamaError::Compilation(_))));
+    }
+}

@@ -104,7 +104,7 @@ impl BorshVisitor {
                 }
             }
             syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
-                let Some(size) = syn_wrap::Expr(len).as_literal_integer::<usize>() else {
+                let Ok(size) = syn_wrap::Expr(len).as_literal_integer::<usize>() else {
                     return None;
                 };
                 match self.get_type_node(elem) {
