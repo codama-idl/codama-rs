@@ -73,6 +73,20 @@ impl<'a> Path<'a> {
             syn::Error::new_spanned(self.0, "expected at least one generic type").into()
         })
     }
+
+    /// Shortcut for checking if the path is expected and returning the first generic type.
+    /// This also ensures there is only one generic type to unwrap.
+    pub fn unwrap_inner_type(&self, path: &str) -> CodamaResult<&'a syn::Type> {
+        if !self.is(path) {
+            return Err(syn::Error::new_spanned(self.0, format!("expected `{}`", path)).into());
+        }
+        if self.generic_types().len() != 1 {
+            return Err(
+                syn::Error::new_spanned(self.0, format!("expected a single generic type")).into(),
+            );
+        }
+        self.first_generic_type()
+    }
 }
 
 impl Deref for Path<'_> {
@@ -161,5 +175,31 @@ mod tests {
     fn first_generic_type_err() {
         let path = syn_build::parse(quote! { prefix::Foo<'a> });
         assert!(matches!(Path(&path).first_generic_type(), Err(_)));
+    }
+
+    #[test]
+    fn unwrap_inner_type_ok() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a, String> });
+        assert!(matches!(
+            Path(&path).unwrap_inner_type("prefix::Foo"),
+            Ok(syn::Type::Path(_))
+        ));
+        assert!(matches!(
+            Path(&path).unwrap_inner_type("Foo"),
+            Ok(syn::Type::Path(_))
+        ));
+    }
+
+    #[test]
+    fn unwrap_inner_type_err() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a, String> });
+        assert!(matches!(Path(&path).unwrap_inner_type("Bar"), Err(_)));
+
+        let path = syn_build::parse(quote! { prefix::Foo<'a, String, u32> });
+        assert!(matches!(Path(&path).unwrap_inner_type("Foo"), Err(_)));
+        assert!(matches!(
+            Path(&path).unwrap_inner_type("prefix::Foo"),
+            Err(_)
+        ));
     }
 }

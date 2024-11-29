@@ -1,5 +1,6 @@
-use crate::{as_derive_enum, get_type_params, lowercase_first_letter, unwrap_inner_type};
+use crate::{as_derive_enum, get_type_params, lowercase_first_letter};
 use codama_errors::CodamaResult;
+use codama_syn_helpers::syn_wrap;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -61,9 +62,9 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 ));
             };
             let node_type = &(fields.unnamed.first()).unwrap().ty;
-            let node_type = match unwrap_inner_type(&node_type, "Box") {
-                Some(inner_type) => inner_type,
-                None => node_type,
+            let node_type = match syn_wrap::Type(node_type).unwrap_inner_type("Box") {
+                Ok(inner_type) => inner_type,
+                _ => node_type,
             };
             let syn::Type::Path(node_type_path) = node_type else {
                 return Err(syn::Error::new_spanned(node_type, "expected a path type"));

@@ -1,8 +1,9 @@
 use codama_errors::CodamaResult;
+use codama_syn_helpers::syn_wrap;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{as_derive_enum, get_type_params, unwrap_inner_type};
+use crate::{as_derive_enum, get_type_params};
 
 pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     let data = as_derive_enum(input)?;
@@ -34,13 +35,12 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
             }
         };
 
-        let boxed_type = unwrap_inner_type(variant_type, "Box");
-        let input_type = boxed_type.unwrap_or(variant_type);
-        let value = if boxed_type.is_some() {
-            quote! { value.into() }
-        } else {
-            quote! { value }
+        let boxed_type = syn_wrap::Type(variant_type).unwrap_inner_type("Box");
+        let value = match boxed_type {
+            Ok(_) => quote! { value.into() },
+            _ => quote! { value },
         };
+        let input_type = boxed_type.unwrap_or(variant_type);
 
         quote! {
             impl #enum_generics From<#input_type> for #enum_name #enum_type_params {

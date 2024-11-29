@@ -25,6 +25,12 @@ impl<'a> Type<'a> {
             _ => false,
         }
     }
+
+    /// Shortcut for checking if the type is an expected path and returning the first generic type.
+    /// This also ensures there is only one generic type to unwrap.
+    pub fn unwrap_inner_type(&self, path: &str) -> CodamaResult<&'a syn::Type> {
+        self.as_path()?.unwrap_inner_type(path)
+    }
 }
 
 impl Deref for Type<'_> {

@@ -63,6 +63,7 @@ version = "0.1.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
+ "codama-syn-helpers",
  "proc-macro2",
  "quote",
  "serde",
