@@ -68,16 +68,10 @@ impl<'a> Path<'a> {
 
     /// Tries to return the first genertic type argument if there is one.
     /// E.g. for `Vec<'a, T, U>` it returns `Ok(T)`.
-    pub fn try_first_generic_type(&self) -> CodamaResult<&'a syn::Type> {
+    pub fn first_generic_type(&self) -> CodamaResult<&'a syn::Type> {
         self.generic_types().first().copied().ok_or_else(|| {
             syn::Error::new_spanned(self.0, "expected at least one generic type").into()
         })
-    }
-
-    /// Returns the first genertic type argument or panics if there is none.
-    /// E.g. for `Vec<'a, T, U>` it returns `T`.
-    pub fn first_generic_type(&self) -> &'a syn::Type {
-        self.try_first_generic_type().unwrap()
     }
 }
 
@@ -158,7 +152,7 @@ mod tests {
     fn first_generic_type_ok() {
         let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
         assert!(matches!(
-            Path(&path).try_first_generic_type(),
+            Path(&path).first_generic_type(),
             Ok(syn::Type::Path(_))
         ));
     }
@@ -166,6 +160,6 @@ mod tests {
     #[test]
     fn first_generic_type_err() {
         let path = syn_build::parse(quote! { prefix::Foo<'a> });
-        assert!(matches!(Path(&path).try_first_generic_type(), Err(_)));
+        assert!(matches!(Path(&path).first_generic_type(), Err(_)));
     }
 }

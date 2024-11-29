@@ -5,23 +5,25 @@ use std::ops::Deref;
 pub struct Type<'a>(pub &'a syn::Type);
 
 impl<'a> Type<'a> {
-    pub fn try_as_path(&self) -> CodamaResult<Path<'a>> {
+    pub fn as_path(&self) -> CodamaResult<Path<'a>> {
         match self.0 {
             syn::Type::Path(path) => Ok(Path(&path.path)),
             _ => Err(syn::Error::new_spanned(self.0, "expected a path").into()),
         }
     }
 
-    pub fn as_path(&self) -> Path<'a> {
-        self.try_as_path().unwrap()
-    }
-
     pub fn is_path(&self, path: &str) -> bool {
-        self.as_path().is(path)
+        match self.as_path() {
+            Ok(p) => p.is(path),
+            _ => false,
+        }
     }
 
     pub fn is_strict_path(&self, path: &str) -> bool {
-        self.as_path().is_strict(path)
+        match self.as_path() {
+            Ok(p) => p.is_strict(path),
+            _ => false,
+        }
     }
 }
 
@@ -42,12 +44,12 @@ mod tests {
     #[test]
     fn as_path_ok() {
         let r#type = syn_build::parse(quote! { std::option::Option<String> });
-        assert!(matches!(Type(&r#type).try_as_path(), Ok(_)));
+        assert!(matches!(Type(&r#type).as_path(), Ok(_)));
     }
 
     #[test]
     fn as_path_err() {
         let r#type = syn_build::parse(quote! { [u8; 32] });
-        assert!(matches!(Type(&r#type).try_as_path(), Err(_)));
+        assert!(matches!(Type(&r#type).as_path(), Err(_)));
     }
 }
