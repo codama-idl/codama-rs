@@ -1,14 +1,15 @@
+use super::{new, try_new};
 use codama_errors::CodamaResult;
 use proc_macro2::TokenStream;
 
 /// E.g. `40 + 2`
 pub fn try_expr(tt: TokenStream) -> CodamaResult<syn::Expr> {
-    syn::parse2::<syn::Expr>(tt).map_err(|e| e.into())
+    try_new(tt)
 }
 
 /// E.g. `40 + 2`
 pub fn expr(tt: TokenStream) -> syn::Expr {
-    try_expr(tt).unwrap()
+    new(tt)
 }
 
 #[cfg(test)]
