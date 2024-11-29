@@ -1,3 +1,4 @@
+use proc_macro2::TokenStream;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -13,3 +14,12 @@ pub enum CodamaError {
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
+
+impl CodamaError {
+    pub fn to_compile_error(&self) -> TokenStream {
+        match self {
+            CodamaError::Compilation(error) => error.to_compile_error(),
+            _ => TokenStream::new(),
+        }
+    }
+}

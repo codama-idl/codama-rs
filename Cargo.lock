@@ -17,7 +17,7 @@ name = "codama-errors"
 version = "0.1.0"
 dependencies = [
  "cargo_toml",
- "quote",
+ "proc-macro2",
  "syn",
  "thiserror",
 ]
