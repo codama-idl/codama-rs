@@ -34,8 +34,10 @@ impl Path<'_> {
 
     /// Returns true if the path is equal to the given path including the prefix.
     pub fn is_strict(&self, path: &str) -> bool {
-        let full_path = format!("{}::{}", self.prefix(), self.last_indent());
-        full_path == path
+        let mut segments = path.split("::").collect::<Vec<_>>();
+        let last = segments.pop().unwrap();
+        let prefix = segments.join("::");
+        prefix == self.prefix() && last == self.last_indent()
     }
 
     /// Returns the generic arguments of the last segment.
@@ -86,6 +88,11 @@ mod tests {
         assert_eq!(Path(&path).is("Foo"), true);
         assert_eq!(Path(&path).is("wrong::prefix::Foo"), false);
         assert_eq!(Path(&path).is("Bar"), false);
+
+        let path = syn_build::parse(quote! { Foo<T> });
+        assert_eq!(Path(&path).is("Foo"), true);
+        assert_eq!(Path(&path).is("prefix::Foo"), false);
+        assert_eq!(Path(&path).is("Bar"), false);
     }
 
     #[test]
@@ -94,6 +101,11 @@ mod tests {
         assert_eq!(Path(&path).is_strict("prefix::Foo"), true);
         assert_eq!(Path(&path).is_strict("Foo"), false);
         assert_eq!(Path(&path).is_strict("wrong::prefix::Foo"), false);
+        assert_eq!(Path(&path).is_strict("Bar"), false);
+
+        let path = syn_build::parse(quote! { Foo<T> });
+        assert_eq!(Path(&path).is_strict("Foo"), true);
+        assert_eq!(Path(&path).is_strict("prefix::Foo"), false);
         assert_eq!(Path(&path).is_strict("Bar"), false);
     }
 
