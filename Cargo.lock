@@ -18,6 +18,7 @@ version = "0.1.0"
 dependencies = [
  "codama-koroks",
  "codama-nodes",
+ "codama-syn-helpers",
  "proc-macro2",
  "quote",
  "syn",
@@ -54,6 +55,15 @@ dependencies = [
  "serde_json",
  "syn",
  "trybuild",
+]
+
+[[package]]
+name = "codama-syn-helpers"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

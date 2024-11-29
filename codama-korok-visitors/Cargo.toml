@@ -10,4 +10,5 @@ quote = "1.0"
 [dependencies]
 codama-nodes = { path = "../codama-nodes" }
 codama-koroks = { path = "../codama-koroks" }
+codama-syn-helpers = { path = "../codama-syn-helpers" }
 syn = { version = "2.0", features = ["extra-traits", "full"] }

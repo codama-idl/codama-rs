@@ -3,11 +3,9 @@ use codama_nodes::{
     PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
     TypeNode,
 };
+use codama_syn_helpers::{ExprHelper, PathHelper};
 
-use crate::{
-    utils::{ExprHelper, PathHelper},
-    KorokVisitor,
-};
+use crate::KorokVisitor;
 
 pub struct BorshVisitor {}
 

@@ -7,5 +7,3 @@ pub use borsh_visitor::*;
 pub use bottom_up_visitor::*;
 pub use visitable::*;
 pub use visitor::*;
-
-pub mod utils;

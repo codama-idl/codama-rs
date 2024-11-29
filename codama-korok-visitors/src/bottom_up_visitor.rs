@@ -2,8 +2,9 @@ use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     Node, RegisteredTypeNode, TypeNode,
 };
+use codama_syn_helpers::ExprHelper;
 
-use crate::{utils::ExprHelper, KorokVisitor};
+use crate::KorokVisitor;
 
 #[derive(Default)]
 pub struct BottomUpVisitor {
