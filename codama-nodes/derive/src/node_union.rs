@@ -53,24 +53,22 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             Some(fallback_variant) => *variant != fallback_variant,
             None => true,
         })
-        .map(|variant| {
+        .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
             let syn::Fields::Unnamed(fields) = &variant.fields else {
                 return Err(syn::Error::new_spanned(
                     variant,
                     "expected a single unnamed field in the variant",
-                ));
+                )
+                .into());
             };
-            let node_type = &(fields.unnamed.first()).unwrap().ty;
-            let node_type = match syn_wrap::Type(node_type).unwrap_inner_type("Box") {
-                Ok(inner_type) => inner_type,
+            let node_type = syn_wrap::Type(&(fields.unnamed.first()).unwrap().ty);
+            let node_path = node_type.as_path()?;
+            let node_type = match (node_path.is("Box"), node_path.single_generic_type()) {
+                (true, Ok(inner_type)) => syn_wrap::Type(inner_type),
                 _ => node_type,
             };
-            let syn::Type::Path(node_type_path) = node_type else {
-                return Err(syn::Error::new_spanned(node_type, "expected a path type"));
-            };
-            let node_type_ident = &node_type_path.path.segments.first().unwrap().ident;
-            let kind = lowercase_first_letter(&node_type_ident.to_string());
+            let kind = lowercase_first_letter(&node_type.as_path()?.last_str());
 
             Ok(quote! {
                 #kind => Ok(#item_name::#variant_name(
@@ -78,7 +76,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 )),
             })
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<CodamaResult<Vec<_>>>()?;
 
     let fallback_deserialize_pattern = match fallback_variant {
         Some(fallback_variant) => {

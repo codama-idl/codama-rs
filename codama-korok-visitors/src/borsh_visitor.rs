@@ -36,7 +36,7 @@ impl BorshVisitor {
                     // a::b<B>::c::HashMap<K, V> -> a::b::c
                     path_helper.prefix().as_str(),
                     // a::b::c::HashMap<K, V> -> HashMap
-                    path_helper.last_indent().as_str(),
+                    path_helper.last_str().as_str(),
                     // a::b::c::HashMap<K, V> -> [K, V]
                     path_helper.generic_types().as_slice(),
                 ) {

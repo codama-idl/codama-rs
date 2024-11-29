@@ -21,7 +21,7 @@ impl<'a> Path<'a> {
     }
 
     /// Returns the ident of the last segment as a string.
-    pub fn last_indent(&self) -> String {
+    pub fn last_str(&self) -> String {
         self.last().ident.to_string()
     }
 
@@ -30,7 +30,7 @@ impl<'a> Path<'a> {
         let mut segments = path.split("::").collect::<Vec<_>>();
         let last = segments.pop().unwrap();
         let prefix = segments.join("::");
-        (prefix == self.prefix() || prefix == "") && last == self.last_indent()
+        (prefix == self.prefix() || prefix == "") && last == self.last_str()
     }
 
     /// Returns true if the path is equal to the given path including the prefix.
@@ -38,7 +38,7 @@ impl<'a> Path<'a> {
         let mut segments = path.split("::").collect::<Vec<_>>();
         let last = segments.pop().unwrap();
         let prefix = segments.join("::");
-        prefix == self.prefix() && last == self.last_indent()
+        prefix == self.prefix() && last == self.last_str()
     }
 
     /// Returns the generic arguments of the last segment.
@@ -66,7 +66,7 @@ impl<'a> Path<'a> {
             .collect()
     }
 
-    /// Tries to return the first genertic type argument if there is one.
+    /// Returns the first generic type argument if there is one.
     /// E.g. for `Vec<'a, T, U>` it returns `Ok(T)`.
     pub fn first_generic_type(&self) -> CodamaResult<&'a syn::Type> {
         self.generic_types().first().copied().ok_or_else(|| {
@@ -74,12 +74,9 @@ impl<'a> Path<'a> {
         })
     }
 
-    /// Shortcut for checking if the path is expected and returning the first generic type.
-    /// This also ensures there is only one generic type to unwrap.
-    pub fn unwrap_inner_type(&self, path: &str) -> CodamaResult<&'a syn::Type> {
-        if !self.is(path) {
-            return Err(syn::Error::new_spanned(self.0, format!("expected `{}`", path)).into());
-        }
+    /// Returns the first generic type argument if there is exactly one.
+    /// E.g. for `Vec<'a, T>` it returns `Ok(T)`.
+    pub fn single_generic_type(&self) -> CodamaResult<&'a syn::Type> {
         if self.generic_types().len() != 1 {
             return Err(
                 syn::Error::new_spanned(self.0, format!("expected a single generic type")).into(),
@@ -178,28 +175,20 @@ mod tests {
     }
 
     #[test]
-    fn unwrap_inner_type_ok() {
-        let path = syn_build::parse(quote! { prefix::Foo<'a, String> });
+    fn single_generic_type_ok() {
+        let path = syn_build::parse(quote! { Foo<'a, String> });
         assert!(matches!(
-            Path(&path).unwrap_inner_type("prefix::Foo"),
-            Ok(syn::Type::Path(_))
-        ));
-        assert!(matches!(
-            Path(&path).unwrap_inner_type("Foo"),
+            Path(&path).single_generic_type(),
             Ok(syn::Type::Path(_))
         ));
     }
 
     #[test]
-    fn unwrap_inner_type_err() {
-        let path = syn_build::parse(quote! { prefix::Foo<'a, String> });
-        assert!(matches!(Path(&path).unwrap_inner_type("Bar"), Err(_)));
+    fn single_generic_type_err() {
+        let path = syn_build::parse(quote! { Foo<'a, String, u32> });
+        assert!(matches!(Path(&path).single_generic_type(), Err(_)));
 
-        let path = syn_build::parse(quote! { prefix::Foo<'a, String, u32> });
-        assert!(matches!(Path(&path).unwrap_inner_type("Foo"), Err(_)));
-        assert!(matches!(
-            Path(&path).unwrap_inner_type("prefix::Foo"),
-            Err(_)
-        ));
+        let path = syn_build::parse(quote! { Foo<'a> });
+        assert!(matches!(Path(&path).single_generic_type(), Err(_)));
     }
 }
