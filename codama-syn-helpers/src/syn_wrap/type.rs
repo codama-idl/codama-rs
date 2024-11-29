@@ -1,6 +1,6 @@
-use codama_errors::CodamaResult;
-
 use super::Path;
+use codama_errors::CodamaResult;
+use std::ops::Deref;
 
 pub struct Type<'a>(pub &'a syn::Type);
 
@@ -22,6 +22,14 @@ impl Type<'_> {
 
     pub fn is_strict_path(&self, path: &str) -> bool {
         self.as_path().is_strict(path)
+    }
+}
+
+impl Deref for Type<'_> {
+    type Target = syn::Type;
+
+    fn deref(&self) -> &Self::Target {
+        self.0
     }
 }
 

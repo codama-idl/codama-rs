@@ -1,4 +1,5 @@
 use codama_errors::CodamaResult;
+use std::ops::Deref;
 
 pub struct Expr<'a>(pub &'a syn::Expr);
 
@@ -20,6 +21,14 @@ impl Expr<'_> {
             )
             .into()),
         }
+    }
+}
+
+impl Deref for Expr<'_> {
+    type Target = syn::Expr;
+
+    fn deref(&self) -> &Self::Target {
+        self.0
     }
 }
 

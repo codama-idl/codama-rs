@@ -1,4 +1,5 @@
 use codama_errors::CodamaResult;
+use std::ops::Deref;
 
 pub struct Path<'a>(pub &'a syn::Path);
 
@@ -77,6 +78,14 @@ impl Path<'_> {
     /// E.g. for `Vec<'a, T, U>` it returns `T`.
     pub fn first_generic_type(&self) -> &syn::Type {
         self.try_first_generic_type().unwrap()
+    }
+}
+
+impl Deref for Path<'_> {
+    type Target = syn::Path;
+
+    fn deref(&self) -> &Self::Target {
+        self.0
     }
 }
 
