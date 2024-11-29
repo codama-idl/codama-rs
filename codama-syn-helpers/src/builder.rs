@@ -4,11 +4,20 @@ use quote::quote;
 pub struct SynBuilder {}
 
 impl SynBuilder {
-    /// E.g. `{ pub foo: u32 }` for nammed or `(pub u32)` for unnamed.
-    pub fn field(tt: TokenStream) -> syn::Field {
-        let ast = syn::parse2::<syn::ItemStruct>(quote! { struct Foo #tt }).unwrap();
+    /// E.g. `pub foo: u32`
+    pub fn named_field(tt: TokenStream) -> syn::Field {
+        let ast = syn::parse2::<syn::ItemStruct>(quote! { struct Foo { #tt } }).unwrap();
         let field = match &ast.fields {
             syn::Fields::Named(f) => f.named.first().cloned(),
+            _ => None,
+        };
+        field.unwrap()
+    }
+
+    /// E.g. `pub u32`
+    pub fn unnamed_field(tt: TokenStream) -> syn::Field {
+        let ast = syn::parse2::<syn::ItemStruct>(quote! { struct Foo (#tt); }).unwrap();
+        let field = match &ast.fields {
             syn::Fields::Unnamed(f) => f.unnamed.first().cloned(),
             _ => None,
         };
