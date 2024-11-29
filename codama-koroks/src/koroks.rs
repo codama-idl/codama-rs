@@ -1,4 +1,5 @@
 use cargo_toml::Manifest;
+use codama_errors::CodamaResult;
 use codama_nodes::{
     EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
     StructTypeNode, TupleTypeNode, TypeNode,
@@ -6,7 +7,6 @@ use codama_nodes::{
 use std::path::Path;
 
 use crate::attributes::Attribute;
-use crate::internals::ParsingResult;
 use crate::stores::{CrateStore, ModuleStore, RootStore};
 
 #[derive(Debug)]
@@ -16,13 +16,13 @@ pub struct RootKorok<'a> {
 }
 
 impl<'a> RootKorok<'a> {
-    pub fn parse(root_store: &'a RootStore) -> ParsingResult<Self> {
+    pub fn parse(root_store: &'a RootStore) -> CodamaResult<Self> {
         Ok(Self {
             crates: root_store
                 .crates
                 .iter()
                 .map(CrateKorok::parse)
-                .collect::<ParsingResult<_>>()?,
+                .collect::<CodamaResult<_>>()?,
             node: None,
         })
     }
@@ -42,7 +42,7 @@ pub struct CrateKorok<'a> {
 }
 
 impl<'a> CrateKorok<'a> {
-    pub fn parse(crate_store: &'a CrateStore) -> ParsingResult<Self> {
+    pub fn parse(crate_store: &'a CrateStore) -> CodamaResult<Self> {
         Ok(Self {
             file: &crate_store.file,
             items: ItemKorok::parse_all(&crate_store.file.items, &crate_store.modules)?,
@@ -67,7 +67,7 @@ impl<'a> ItemKorok<'a> {
         item: &'a syn::Item,
         modules: &'a Vec<ModuleStore>,
         item_index: usize,
-    ) -> ParsingResult<Self> {
+    ) -> CodamaResult<Self> {
         match item {
             syn::Item::Mod(ast) if ast.content.is_none() => {
                 let module = modules.iter().nth(item_index);
@@ -93,7 +93,7 @@ impl<'a> ItemKorok<'a> {
     pub fn parse_all(
         items: &'a Vec<syn::Item>,
         modules: &'a Vec<ModuleStore>,
-    ) -> ParsingResult<Vec<Self>> {
+    ) -> CodamaResult<Vec<Self>> {
         items
             .iter()
             .enumerate()
@@ -122,7 +122,7 @@ pub struct FileModuleKorok<'a> {
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, module: &'a ModuleStore) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, module: &'a ModuleStore) -> CodamaResult<Self> {
         if let Some(_) = ast.content {
             return Err(syn::Error::new_spanned(
                 ast,
@@ -149,7 +149,7 @@ pub struct ModuleKorok<'a> {
 }
 
 impl<'a> ModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<ModuleStore>) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<ModuleStore>) -> CodamaResult<Self> {
         match &ast.content {
             Some(content) => Ok(Self {
                 ast,
@@ -174,7 +174,7 @@ pub struct StructKorok<'a> {
 }
 
 impl<'a> StructKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemStruct) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemStruct) -> CodamaResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
@@ -192,7 +192,7 @@ pub struct FieldsKorok<'a> {
 }
 
 impl<'a> FieldsKorok<'a> {
-    pub fn parse(ast: &'a syn::Fields) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::Fields) -> CodamaResult<Self> {
         Ok(Self {
             ast,
             all: match ast {
@@ -239,7 +239,7 @@ pub struct FieldKorok<'a> {
 }
 
 impl<'a> FieldKorok<'a> {
-    pub fn parse(ast: &'a syn::Field) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::Field) -> CodamaResult<Self> {
         let attributes = Attribute::parse_all(&ast.attrs)?;
         Ok(Self {
             ast,
@@ -284,7 +284,7 @@ pub struct EnumKorok<'a> {
 }
 
 impl<'a> EnumKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemEnum) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::ItemEnum) -> CodamaResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
@@ -327,7 +327,7 @@ pub struct EnumVariantKorok<'a> {
 }
 
 impl<'a> EnumVariantKorok<'a> {
-    pub fn parse(ast: &'a syn::Variant) -> ParsingResult<Self> {
+    pub fn parse(ast: &'a syn::Variant) -> CodamaResult<Self> {
         Ok(Self {
             ast,
             attributes: Attribute::parse_all(&ast.attrs)?,
@@ -338,7 +338,7 @@ impl<'a> EnumVariantKorok<'a> {
 
     pub fn parse_all(
         variants: &'a syn::punctuated::Punctuated<syn::Variant, syn::Token![,]>,
-    ) -> ParsingResult<Vec<Self>> {
+    ) -> CodamaResult<Vec<Self>> {
         variants.iter().map(Self::parse).collect()
     }
 }

@@ -1,10 +1,9 @@
 use cargo_toml::Manifest;
+use codama_errors::CodamaResult;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
-
-use crate::internals::ParsingResult;
 
 #[derive(Debug)]
 pub struct RootStore {
@@ -12,16 +11,16 @@ pub struct RootStore {
 }
 
 impl RootStore {
-    pub fn load_from(paths: &Vec<&Path>) -> ParsingResult<Self> {
+    pub fn load_from(paths: &Vec<&Path>) -> CodamaResult<Self> {
         Ok(Self {
             crates: paths
                 .iter()
                 .map(|path| CrateStore::load_from(path))
-                .collect::<ParsingResult<_>>()?,
+                .collect::<CodamaResult<_>>()?,
         })
     }
 
-    pub fn populate_from(tt: proc_macro2::TokenStream) -> ParsingResult<Self> {
+    pub fn populate_from(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
         Ok(Self {
             crates: vec![CrateStore::populate_from(tt)?],
         })
@@ -37,7 +36,7 @@ pub struct CrateStore {
 }
 
 impl CrateStore {
-    pub fn load_from(path: &Path) -> ParsingResult<Self> {
+    pub fn load_from(path: &Path) -> CodamaResult<Self> {
         let content = fs::read_to_string(path)?;
         let file = syn::parse_file(&content)?;
         let manifest = Manifest::from_path(path)?;
@@ -51,7 +50,7 @@ impl CrateStore {
         })
     }
 
-    pub fn populate_from(tt: proc_macro2::TokenStream) -> ParsingResult<Self> {
+    pub fn populate_from(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
         Ok(Self {
             file: syn::parse2::<syn::File>(tt)?,
             manifest: None,
@@ -70,7 +69,7 @@ pub struct ModuleStore {
 }
 
 impl ModuleStore {
-    pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> ParsingResult<Vec<Self>> {
+    pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
         let items = &items
             .iter()
             .filter_map(|item| match item {
@@ -83,10 +82,10 @@ impl ModuleStore {
             .iter()
             .enumerate()
             .map(|(item_index, &item)| ModuleStore::load_from(&path, item, item_index))
-            .collect::<ParsingResult<Vec<_>>>()
+            .collect::<CodamaResult<Vec<_>>>()
     }
 
-    pub fn load_from(path: &Path, item: &syn::ItemMod, item_index: usize) -> ParsingResult<Self> {
+    pub fn load_from(path: &Path, item: &syn::ItemMod, item_index: usize) -> CodamaResult<Self> {
         let parent_directory = path.parent().unwrap();
         let filename = path.file_stem().unwrap().to_str().unwrap();
         let current_directory = parent_directory.join(filename);

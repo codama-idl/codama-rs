@@ -13,6 +13,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-errors"
+version = "0.1.0"
+dependencies = [
+ "cargo_toml",
+ "syn",
+]
+
+[[package]]
 name = "codama-korok-visitors"
 version = "0.1.0"
 dependencies = [
@@ -29,6 +37,7 @@ name = "codama-koroks"
 version = "0.1.0"
 dependencies = [
  "cargo_toml",
+ "codama-errors",
  "codama-nodes",
  "proc-macro2",
  "quote",

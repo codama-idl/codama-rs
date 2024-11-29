@@ -1,6 +1,5 @@
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::TypeNode;
-
-use crate::internals::{ParsingError, ParsingResult};
 
 #[derive(Debug)]
 pub enum Attribute<'a> {
@@ -11,15 +10,15 @@ pub enum Attribute<'a> {
 }
 
 impl<'a> Attribute<'a> {
-    pub fn parse_all(attrs: &'a Vec<syn::Attribute>) -> ParsingResult<Vec<Self>> {
+    pub fn parse_all(attrs: &'a Vec<syn::Attribute>) -> CodamaResult<Vec<Self>> {
         attrs.iter().map(Self::try_from).collect()
     }
 }
 
 impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
-    type Error = ParsingError;
+    type Error = CodamaError;
 
-    fn try_from(ast: &'a syn::Attribute) -> ParsingResult<Self> {
+    fn try_from(ast: &'a syn::Attribute) -> CodamaResult<Self> {
         // TODO: implement.
         Ok(Attribute::Unsupported(UnsupportedAttribute { ast }))
     }
