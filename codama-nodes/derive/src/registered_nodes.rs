@@ -9,6 +9,7 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
 
     // Clone the enum.
     let mut standalone_enum = input.clone();
+    let standalone_enum_name_str = standalone_enum.ident.to_string();
 
     // Remove the "Registered" prefix from the enum variants.
     standalone_enum.ident = syn::Ident::new(
@@ -64,12 +65,15 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
         #standalone_enum
 
         impl TryFrom<#registered_enum_name> for #standalone_enum_name {
-            type Error = ();
+            type Error = codama_errors::CodamaError;
 
             fn try_from(value: #registered_enum_name) -> Result<Self, Self::Error> {
                 match value {
                     #(#from_registered_patterns)*
-                    _ => Err(()),
+                    _ => Err(codama_errors::CodamaError::InvalidNodeConversion {
+                        from: "value.kind().to_string()".to_string(), // TODO
+                        into: #standalone_enum_name_str.to_string(),
+                    }),
                 }
             }
         }

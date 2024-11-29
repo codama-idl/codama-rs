@@ -51,6 +51,7 @@ dependencies = [
 name = "codama-nodes"
 version = "0.1.0"
 dependencies = [
+ "codama-errors",
  "codama-nodes-derive",
  "serde",
  "serde_json",
