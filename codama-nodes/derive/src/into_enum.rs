@@ -47,7 +47,7 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
                 Some(_) => quote! { value.into() },
                 _ => quote! { value },
             };
-            let input_type = boxed_type.unwrap_or(variant_type).0;
+            let input_type = boxed_type.unwrap_or(variant_type);
 
             Ok(quote! {
                 impl #enum_generics From<#input_type> for #enum_name #enum_type_params {

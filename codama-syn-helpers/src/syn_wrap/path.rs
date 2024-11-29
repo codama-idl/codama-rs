@@ -1,4 +1,5 @@
 use codama_errors::CodamaResult;
+use quote::ToTokens;
 use std::ops::Deref;
 
 pub struct Path<'a>(pub &'a syn::Path);
@@ -91,6 +92,12 @@ impl Deref for Path<'_> {
 
     fn deref(&self) -> &Self::Target {
         self.0
+    }
+}
+
+impl ToTokens for Path<'_> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        self.0.to_tokens(tokens);
     }
 }
 

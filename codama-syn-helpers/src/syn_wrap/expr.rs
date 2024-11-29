@@ -1,4 +1,5 @@
 use codama_errors::CodamaResult;
+use quote::ToTokens;
 use std::ops::Deref;
 
 pub struct Expr<'a>(pub &'a syn::Expr);
@@ -21,6 +22,12 @@ impl<'a> Expr<'a> {
             )
             .into()),
         }
+    }
+}
+
+impl ToTokens for Expr<'_> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        self.0.to_tokens(tokens);
     }
 }
 
