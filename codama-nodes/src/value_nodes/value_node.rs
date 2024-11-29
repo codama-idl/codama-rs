@@ -29,3 +29,21 @@ pub enum RegisteredValueNode {
     #[registered]
     MapEntry(MapEntryValueNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::NodeUnionTrait;
+
+    #[test]
+    fn kind_from_standalone() {
+        let node: ValueNode = NoneValueNode::new().into();
+        assert_eq!(node.kind(), "noneValueNode");
+    }
+
+    #[test]
+    fn kind_from_registered() {
+        let node: RegisteredValueNode = NoneValueNode::new().into();
+        assert_eq!(node.kind(), "noneValueNode");
+    }
+}

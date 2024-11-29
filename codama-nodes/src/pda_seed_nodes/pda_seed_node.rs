@@ -6,3 +6,16 @@ pub enum PdaSeedNode {
     Constant(ConstantPdaSeedNode),
     Variable(VariablePdaSeedNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{NodeUnionTrait, NumberTypeNode, NumberValueNode, U8};
+
+    #[test]
+    fn kind() {
+        let node: PdaSeedNode =
+            ConstantPdaSeedNode::new(NumberTypeNode::le(U8), NumberValueNode::new(42u8)).into();
+        assert_eq!(node.kind(), "constantPdaSeedNode");
+    }
+}

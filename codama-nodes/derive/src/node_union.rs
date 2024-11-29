@@ -31,6 +31,13 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
         })
     });
 
+    let kind_patterns = variants.iter().map(|variant| {
+        let variant_name = &variant.ident;
+        quote! {
+            #item_name::#variant_name(node) => node.kind(),
+        }
+    });
+
     let serialize_patterns = variants.iter().map(|variant| {
         let variant_name = &variant.ident;
         quote! {
@@ -86,6 +93,15 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
     };
 
     Ok(quote! {
+        impl #item_generics crate::NodeUnionTrait for #item_name #item_type_params {
+            fn kind(&self) -> &'static str {
+                use crate::NodeTrait;
+                match self {
+                    #(#kind_patterns)*
+                }
+            }
+        }
+
         impl #item_generics serde::Serialize for #item_name #item_type_params {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where

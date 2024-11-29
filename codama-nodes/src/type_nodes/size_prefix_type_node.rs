@@ -1,12 +1,12 @@
 use crate::{
-    NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNodeEnumTrait, TypeNodeTrait,
+    NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNodeUnionTrait, TypeNodeTrait,
 };
 use codama_nodes_derive::type_node;
 
 #[type_node]
-pub struct SizePrefixTypeNode<T: TypeNodeEnumTrait> {
+pub struct SizePrefixTypeNode<T: TypeNodeUnionTrait> {
     // Children.
-    #[serde(bound = "T: TypeNodeEnumTrait")]
+    #[serde(bound = "T: TypeNodeUnionTrait")]
     pub r#type: T,
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
@@ -17,7 +17,7 @@ impl Into<crate::Node> for SizePrefixTypeNode<crate::TypeNode> {
     }
 }
 
-impl<T: TypeNodeEnumTrait> SizePrefixTypeNode<T> {
+impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
     pub fn new<U, V>(r#type: U, prefix: V) -> Self
     where
         U: Into<T>,
@@ -30,7 +30,7 @@ impl<T: TypeNodeEnumTrait> SizePrefixTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for SizePrefixTypeNode<T>
+impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for SizePrefixTypeNode<T>
 where
     T: NestedTypeNodeTrait<U>,
 {

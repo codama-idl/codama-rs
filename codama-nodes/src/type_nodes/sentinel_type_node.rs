@@ -1,10 +1,10 @@
-use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeUnionTrait, TypeNodeTrait};
 use codama_nodes_derive::type_node;
 
 #[type_node]
-pub struct SentinelTypeNode<T: TypeNodeEnumTrait> {
+pub struct SentinelTypeNode<T: TypeNodeUnionTrait> {
     // Children.
-    #[serde(bound = "T: TypeNodeEnumTrait")]
+    #[serde(bound = "T: TypeNodeUnionTrait")]
     pub r#type: T,
     pub sentinel: ConstantValueNode,
 }
@@ -15,7 +15,7 @@ impl Into<crate::Node> for SentinelTypeNode<crate::TypeNode> {
     }
 }
 
-impl<T: TypeNodeEnumTrait> SentinelTypeNode<T> {
+impl<T: TypeNodeUnionTrait> SentinelTypeNode<T> {
     pub fn new<U>(r#type: U, sentinel: ConstantValueNode) -> Self
     where
         U: Into<T>,
@@ -27,7 +27,7 @@ impl<T: TypeNodeEnumTrait> SentinelTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for SentinelTypeNode<T>
+impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for SentinelTypeNode<T>
 where
     T: NestedTypeNodeTrait<U>,
 {

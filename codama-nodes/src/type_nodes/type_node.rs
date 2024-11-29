@@ -4,7 +4,7 @@ use crate::{
     FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node,
     NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeEnumTrait,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
     ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
@@ -48,7 +48,7 @@ pub enum RegisteredTypeNode {
     StructField(StructFieldTypeNode),
 }
 
-impl TypeNodeEnumTrait for TypeNode {}
+impl TypeNodeUnionTrait for TypeNode {}
 
 impl TryFrom<Node> for TypeNode {
     type Error = CodamaError;
@@ -58,7 +58,7 @@ impl TryFrom<Node> for TypeNode {
             Node::Type(node) => Self::try_from(node),
             _ => Err(CodamaError::InvalidNodeConversion {
                 from: "node.kind().to_string()".to_string(), // TODO
-                into: "typeNode".to_string(),
+                into: "TypeNode".to_string(),
             }),
         }
     }
@@ -75,8 +75,26 @@ where
             Some(t) => t.try_into(),
             _ => Err(CodamaError::InvalidNodeConversion {
                 from: "None".to_string(),
-                into: "typeNode".to_string(),
+                into: "TypeNode".to_string(),
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::NodeUnionTrait;
+
+    #[test]
+    fn kind_from_standalone() {
+        let node: TypeNode = StringTypeNode::utf8().into();
+        assert_eq!(node.kind(), "stringTypeNode");
+    }
+
+    #[test]
+    fn kind_from_registered() {
+        let node: RegisteredTypeNode = StringTypeNode::utf8().into();
+        assert_eq!(node.kind(), "stringTypeNode");
     }
 }

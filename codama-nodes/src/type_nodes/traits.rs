@@ -1,14 +1,9 @@
+use crate::{NodeTrait, NodeUnionTrait};
 use std::fmt::Debug;
 
-pub trait TypeNodeTrait:
-    Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
-{
-}
+pub trait TypeNodeTrait: NodeTrait {}
 
-pub trait TypeNodeEnumTrait:
-    Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
-{
-}
+pub trait TypeNodeUnionTrait: NodeUnionTrait {}
 
 pub trait NestedTypeNodeTrait<T: TypeNodeTrait>:
     Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>

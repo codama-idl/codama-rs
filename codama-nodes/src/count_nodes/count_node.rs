@@ -7,3 +7,15 @@ pub enum CountNode {
     Prefixed(PrefixedCountNode),
     Remainder(RemainderCountNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::NodeUnionTrait;
+
+    #[test]
+    fn kind() {
+        let node: CountNode = RemainderCountNode::new().into();
+        assert_eq!(node.kind(), "remainderCountNode");
+    }
+}

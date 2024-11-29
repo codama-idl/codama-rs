@@ -14,3 +14,15 @@ pub enum LinkNode {
     Pda(PdaLinkNode),
     Program(ProgramLinkNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::NodeUnionTrait;
+
+    #[test]
+    fn kind() {
+        let node: LinkNode = ProgramLinkNode::new("myProgram").into();
+        assert_eq!(node.kind(), "programLinkNode");
+    }
+}

@@ -1,10 +1,10 @@
-use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeUnionTrait, TypeNodeTrait};
 use codama_nodes_derive::type_node;
 
 #[type_node]
-pub struct HiddenPrefixTypeNode<T: TypeNodeEnumTrait> {
+pub struct HiddenPrefixTypeNode<T: TypeNodeUnionTrait> {
     // Children.
-    #[serde(bound = "T: TypeNodeEnumTrait")]
+    #[serde(bound = "T: TypeNodeUnionTrait")]
     pub r#type: T,
     pub prefix: Vec<ConstantValueNode>,
 }
@@ -15,7 +15,7 @@ impl Into<crate::Node> for HiddenPrefixTypeNode<crate::TypeNode> {
     }
 }
 
-impl<T: TypeNodeEnumTrait> HiddenPrefixTypeNode<T> {
+impl<T: TypeNodeUnionTrait> HiddenPrefixTypeNode<T> {
     pub fn new<U>(r#type: U, prefix: Vec<ConstantValueNode>) -> Self
     where
         U: Into<T>,
@@ -27,7 +27,7 @@ impl<T: TypeNodeEnumTrait> HiddenPrefixTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for HiddenPrefixTypeNode<T>
+impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for HiddenPrefixTypeNode<T>
 where
     T: NestedTypeNodeTrait<U>,
 {

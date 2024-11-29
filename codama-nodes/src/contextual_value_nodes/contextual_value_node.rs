@@ -21,3 +21,21 @@ pub enum RegisteredContextualValueNode {
     #[registered]
     PdaSeed(PdaSeedValueNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::NodeUnionTrait;
+
+    #[test]
+    fn kind_from_standalone() {
+        let node: ContextualValueNode = ProgramIdValueNode::new().into();
+        assert_eq!(node.kind(), "programIdValueNode");
+    }
+
+    #[test]
+    fn kind_from_registered() {
+        let node: RegisteredContextualValueNode = ProgramIdValueNode::new().into();
+        assert_eq!(node.kind(), "programIdValueNode");
+    }
+}

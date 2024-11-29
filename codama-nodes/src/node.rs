@@ -1,9 +1,9 @@
 use crate::{
     AccountNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode,
     InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode, InstructionNode,
-    InstructionRemainingAccountsNode, LinkNode, PdaNode, PdaSeedNode, ProgramNode,
-    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode,
-    ValueNode,
+    InstructionRemainingAccountsNode, LinkNode, NodeTrait, NodeUnionTrait, PdaNode, PdaSeedNode,
+    ProgramNode, RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
+    TypeNode, ValueNode,
 };
 use codama_nodes_derive::IntoEnum;
 use serde::{Deserialize, Serialize};
@@ -52,10 +52,41 @@ impl From<ValueNode> for Node {
     }
 }
 
+impl NodeUnionTrait for Node {
+    fn kind(&self) -> &'static str {
+        match self {
+            Node::ContextualValue(node) => node.kind(),
+            Node::Count(node) => node.kind(),
+            Node::Discriminator(node) => node.kind(),
+            Node::Link(node) => node.kind(),
+            Node::PdaSeed(node) => node.kind(),
+            Node::Type(node) => node.kind(),
+            Node::Value(node) => node.kind(),
+            Node::Account(node) => node.kind(),
+            Node::DefinedType(node) => node.kind(),
+            Node::Error(node) => node.kind(),
+            Node::Instruction(node) => node.kind(),
+            Node::InstructionAccount(node) => node.kind(),
+            Node::InstructionArgument(node) => node.kind(),
+            Node::InstructionByteDelta(node) => node.kind(),
+            Node::InstructionRemainingAccounts(node) => node.kind(),
+            Node::Pda(node) => node.kind(),
+            Node::Program(node) => node.kind(),
+            Node::Root(node) => node.kind(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{NumberTypeNode, U32};
+
+    #[test]
+    fn kind() {
+        let node: Node = ProgramNode::default().into();
+        assert_eq!(node.kind(), "programNode");
+    }
 
     #[test]
     fn type_node_to_json() {

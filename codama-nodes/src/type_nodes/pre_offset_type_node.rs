@@ -1,15 +1,15 @@
-use crate::{NestedTypeNodeTrait, TypeNodeEnumTrait, TypeNodeTrait};
+use crate::{NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
 use codama_nodes_derive::type_node;
 use serde::{Deserialize, Serialize};
 
 #[type_node]
-pub struct PreOffsetTypeNode<T: TypeNodeEnumTrait> {
+pub struct PreOffsetTypeNode<T: TypeNodeUnionTrait> {
     // Data.
     pub offset: i32,
     pub strategy: PreOffsetStrategy,
 
     // Children.
-    #[serde(bound = "T: TypeNodeEnumTrait")]
+    #[serde(bound = "T: TypeNodeUnionTrait")]
     pub r#type: T,
 }
 
@@ -19,7 +19,7 @@ impl Into<crate::Node> for PreOffsetTypeNode<crate::TypeNode> {
     }
 }
 
-impl<T: TypeNodeEnumTrait> PreOffsetTypeNode<T> {
+impl<T: TypeNodeUnionTrait> PreOffsetTypeNode<T> {
     pub fn new<U>(r#type: U, strategy: PreOffsetStrategy, offset: i32) -> Self
     where
         U: Into<T>,
@@ -53,7 +53,7 @@ impl<T: TypeNodeEnumTrait> PreOffsetTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeEnumTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for PreOffsetTypeNode<T>
+impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for PreOffsetTypeNode<T>
 where
     T: NestedTypeNodeTrait<U>,
 {
