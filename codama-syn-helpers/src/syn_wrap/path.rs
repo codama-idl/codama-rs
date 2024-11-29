@@ -3,7 +3,7 @@ use std::ops::Deref;
 
 pub struct Path<'a>(pub &'a syn::Path);
 
-impl Path<'_> {
+impl<'a> Path<'a> {
     /// Returns all segment idents joined by "::" except the last one.
     /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
     pub fn prefix(&self) -> String {
@@ -16,7 +16,7 @@ impl Path<'_> {
     }
 
     /// Returns the last segment.
-    pub fn last(&self) -> &syn::PathSegment {
+    pub fn last(&self) -> &'a syn::PathSegment {
         self.0.segments.last().unwrap()
     }
 
@@ -44,7 +44,7 @@ impl Path<'_> {
     /// Returns the generic arguments of the last segment.
     /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArguments(Some(['a, T, U]))`.
     /// E.g. for `a::b::c::u32` it returns `GenericArguments(None)`.
-    pub fn generic_arguments(&self) -> Vec<&syn::GenericArgument> {
+    pub fn generic_arguments(&self) -> Vec<&'a syn::GenericArgument> {
         match &self.last().arguments {
             syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
                 args,
@@ -56,7 +56,7 @@ impl Path<'_> {
 
     /// Filters out all generic arguments that are not types.
     /// E.g. for `Option<'a, T, U>` it returns `[T, U]`.
-    pub fn generic_types(&self) -> Vec<&syn::Type> {
+    pub fn generic_types(&self) -> Vec<&'a syn::Type> {
         self.generic_arguments()
             .iter()
             .filter_map(|arg| match arg {
@@ -68,7 +68,7 @@ impl Path<'_> {
 
     /// Tries to return the first genertic type argument if there is one.
     /// E.g. for `Vec<'a, T, U>` it returns `Ok(T)`.
-    pub fn try_first_generic_type(&self) -> CodamaResult<&syn::Type> {
+    pub fn try_first_generic_type(&self) -> CodamaResult<&'a syn::Type> {
         self.generic_types().first().copied().ok_or_else(|| {
             syn::Error::new_spanned(self.0, "expected at least one generic type").into()
         })
@@ -76,7 +76,7 @@ impl Path<'_> {
 
     /// Returns the first genertic type argument or panics if there is none.
     /// E.g. for `Vec<'a, T, U>` it returns `T`.
-    pub fn first_generic_type(&self) -> &syn::Type {
+    pub fn first_generic_type(&self) -> &'a syn::Type {
         self.try_first_generic_type().unwrap()
     }
 }
@@ -104,15 +104,13 @@ mod tests {
 
     #[test]
     fn prefix_with_inner_generics() {
-        let path = syn_build::parse(quote! { a<A>::b<B>::c::Final });
-        let result = Path(&path).prefix();
+        let result = Path(&syn_build::parse(quote! { a<A>::b<B>::c::Final })).prefix();
         assert_eq!(result, "a::b::c");
     }
 
     #[test]
     fn prefix_empty() {
-        let path = syn_build::parse(quote! { Foo });
-        let result = Path(&path).prefix();
+        let result = Path(&syn_build::parse(quote! { Foo })).prefix();
         assert_eq!(result, "");
     }
 
@@ -147,32 +145,27 @@ mod tests {
     #[test]
     fn generic_arguments() {
         let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
-        let path = Path(&path);
-        let result = path.generic_arguments();
-        assert!(result.len() == 3);
+        assert_eq!(Path(&path).generic_arguments().len(), 3);
     }
 
     #[test]
     fn generic_types() {
         let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
-        let path = Path(&path);
-        let result = path.generic_types();
-        assert_eq!(result.len(), 2);
+        assert_eq!(Path(&path).generic_types().len(), 2);
     }
 
     #[test]
     fn first_generic_type_ok() {
         let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
-        let path = Path(&path);
-        let result = path.try_first_generic_type();
-        assert!(matches!(result, Ok(syn::Type::Path(_))));
+        assert!(matches!(
+            Path(&path).try_first_generic_type(),
+            Ok(syn::Type::Path(_))
+        ));
     }
 
     #[test]
     fn first_generic_type_err() {
         let path = syn_build::parse(quote! { prefix::Foo<'a> });
-        let path = Path(&path);
-        let result = path.try_first_generic_type();
-        assert!(matches!(result, Err(_)));
+        assert!(matches!(Path(&path).try_first_generic_type(), Err(_)));
     }
 }

@@ -3,7 +3,7 @@ use std::ops::Deref;
 
 pub struct Expr<'a>(pub &'a syn::Expr);
 
-impl Expr<'_> {
+impl<'a> Expr<'a> {
     /// Returns the integer value of the expression if it is a literal integer.
     pub fn as_literal_integer<T>(&self) -> CodamaResult<T>
     where

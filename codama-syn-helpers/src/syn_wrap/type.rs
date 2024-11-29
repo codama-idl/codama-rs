@@ -4,15 +4,15 @@ use std::ops::Deref;
 
 pub struct Type<'a>(pub &'a syn::Type);
 
-impl Type<'_> {
-    pub fn try_as_path(&self) -> CodamaResult<Path> {
+impl<'a> Type<'a> {
+    pub fn try_as_path(&self) -> CodamaResult<Path<'a>> {
         match self.0 {
             syn::Type::Path(path) => Ok(Path(&path.path)),
             _ => Err(syn::Error::new_spanned(self.0, "expected a path").into()),
         }
     }
 
-    pub fn as_path(&self) -> Path {
+    pub fn as_path(&self) -> Path<'a> {
         self.try_as_path().unwrap()
     }
 
@@ -42,16 +42,12 @@ mod tests {
     #[test]
     fn as_path_ok() {
         let r#type = syn_build::parse(quote! { std::option::Option<String> });
-        let r#type = Type(&r#type);
-        let result = r#type.try_as_path();
-        assert!(matches!(result, Ok(_)));
+        assert!(matches!(Type(&r#type).try_as_path(), Ok(_)));
     }
 
     #[test]
     fn as_path_err() {
         let r#type = syn_build::parse(quote! { [u8; 32] });
-        let r#type = Type(&r#type);
-        let result = r#type.try_as_path();
-        assert!(matches!(result, Err(_)));
+        assert!(matches!(Type(&r#type).try_as_path(), Err(_)));
     }
 }
