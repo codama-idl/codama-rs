@@ -38,7 +38,7 @@ impl BorshVisitor {
                     // a::b::c::HashMap<K, V> -> HashMap
                     path_helper.last_indent().as_str(),
                     // a::b::c::HashMap<K, V> -> [K, V]
-                    path_helper.generic_arguments().types().as_slice(),
+                    path_helper.generic_types().as_slice(),
                 ) {
                     ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
                     ("" | "std::primitive", "usize", []) => Some(NumberTypeNode::le(U64).into()),

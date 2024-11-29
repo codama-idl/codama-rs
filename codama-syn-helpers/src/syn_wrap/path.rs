@@ -1,4 +1,4 @@
-use super::GenericArguments;
+use codama_errors::CodamaResult;
 
 pub struct Path<'a>(pub &'a syn::Path);
 
@@ -43,14 +43,40 @@ impl Path<'_> {
     /// Returns the generic arguments of the last segment.
     /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArguments(Some(['a, T, U]))`.
     /// E.g. for `a::b::c::u32` it returns `GenericArguments(None)`.
-    pub fn generic_arguments(&self) -> GenericArguments {
+    pub fn generic_arguments(&self) -> Vec<&syn::GenericArgument> {
         match &self.last().arguments {
             syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
                 args,
                 ..
-            }) => GenericArguments(Some(args)),
-            _ => GenericArguments(None),
+            }) => args.iter().collect(),
+            _ => vec![],
         }
+    }
+
+    /// Filters out all generic arguments that are not types.
+    /// E.g. for `Option<'a, T, U>` it returns `[T, U]`.
+    pub fn generic_types(&self) -> Vec<&syn::Type> {
+        self.generic_arguments()
+            .iter()
+            .filter_map(|arg| match arg {
+                syn::GenericArgument::Type(ty) => Some(ty),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Tries to return the first genertic type argument if there is one.
+    /// E.g. for `Vec<'a, T, U>` it returns `Ok(T)`.
+    pub fn try_first_generic_type(&self) -> CodamaResult<&syn::Type> {
+        self.generic_types().first().copied().ok_or_else(|| {
+            syn::Error::new_spanned(self.0, "expected at least one generic type").into()
+        })
+    }
+
+    /// Returns the first genertic type argument or panics if there is none.
+    /// E.g. for `Vec<'a, T, U>` it returns `T`.
+    pub fn first_generic_type(&self) -> &syn::Type {
+        self.try_first_generic_type().unwrap()
     }
 }
 
@@ -114,6 +140,30 @@ mod tests {
         let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
         let path = Path(&path);
         let result = path.generic_arguments();
-        assert!(matches!(result, GenericArguments(Some(_))));
+        assert!(result.len() == 3);
+    }
+
+    #[test]
+    fn generic_types() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path = Path(&path);
+        let result = path.generic_types();
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn first_generic_type_ok() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path = Path(&path);
+        let result = path.try_first_generic_type();
+        assert!(matches!(result, Ok(syn::Type::Path(_))));
+    }
+
+    #[test]
+    fn first_generic_type_err() {
+        let path = syn_build::parse(quote! { prefix::Foo<'a> });
+        let path = Path(&path);
+        let result = path.try_first_generic_type();
+        assert!(matches!(result, Err(_)));
     }
 }
