@@ -32,14 +32,14 @@ mod tests {
 
     #[test]
     fn as_literal_integer_ok() {
-        let expr = syn_build::expr(quote! { 42 });
+        let expr = syn_build::parse(quote! { 42 });
         let result = Expr(&expr).as_literal_integer::<usize>();
         assert!(matches!(result, Ok(42usize)));
     }
 
     #[test]
     fn as_literal_integer_err() {
-        let expr = syn_build::expr(quote! { 40 + 2 });
+        let expr = syn_build::parse(quote! { 40 + 2 });
         let result = Expr(&expr).as_literal_integer::<usize>();
         assert!(matches!(result, Err(CodamaError::Compilation(_))));
     }
