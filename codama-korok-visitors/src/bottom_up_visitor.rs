@@ -8,7 +8,7 @@ use crate::KorokVisitor;
 
 #[derive(Default)]
 pub struct BottomUpVisitor {
-    r#override: bool,
+    pub r#override: bool,
 }
 
 impl BottomUpVisitor {
