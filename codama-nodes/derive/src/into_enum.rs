@@ -1,9 +1,10 @@
+use codama_errors::CodamaResult;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{as_derive_enum, get_type_params, unwrap_inner_type};
 
-pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     let data = as_derive_enum(input)?;
     let variants = &data.variants;
     let enum_name = &input.ident;

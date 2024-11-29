@@ -1,7 +1,8 @@
+use codama_errors::CodamaResult;
 use quote::quote;
 
 // Ensure the derive input is a struct and return the data.
-pub fn as_derive_struct(input: &syn::DeriveInput) -> syn::Result<&syn::DataStruct> {
+pub fn as_derive_struct(input: &syn::DeriveInput) -> CodamaResult<&syn::DataStruct> {
     let syn::Data::Struct(data) = &input.data else {
         return Err(syn::Error::new_spanned(input, "expected a struct").into());
     };
@@ -9,7 +10,7 @@ pub fn as_derive_struct(input: &syn::DeriveInput) -> syn::Result<&syn::DataStruc
 }
 
 // Ensure the derive input is an enum and return the data.
-pub fn as_derive_enum(input: &syn::DeriveInput) -> syn::Result<&syn::DataEnum> {
+pub fn as_derive_enum(input: &syn::DeriveInput) -> CodamaResult<&syn::DataEnum> {
     let syn::Data::Enum(data) = &input.data else {
         return Err(syn::Error::new_spanned(input, "expected a enum").into());
     };

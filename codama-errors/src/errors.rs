@@ -22,4 +22,8 @@ impl CodamaError {
             _ => TokenStream::new(),
         }
     }
+
+    pub fn into_compile_error(self) -> TokenStream {
+        self.to_compile_error()
+    }
 }

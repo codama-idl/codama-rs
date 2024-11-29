@@ -1,8 +1,9 @@
 use crate::{as_derive_enum, get_type_params, lowercase_first_letter, unwrap_inner_type};
+use codama_errors::CodamaResult;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     as_derive_enum(&input)?;
 
     Ok(quote! {
@@ -11,7 +12,7 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> syn::Result<Toke
     })
 }
 
-pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     let data = as_derive_enum(&input)?;
     let variants = &data.variants;
     let item_name = &input.ident;

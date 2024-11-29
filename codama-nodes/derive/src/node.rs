@@ -1,8 +1,9 @@
 use crate::{as_derive_struct, get_type_params, lowercase_first_letter};
+use codama_errors::CodamaResult;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_attribute_node(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_attribute_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     as_derive_struct(&input)?;
     let item_name = &input.ident;
     let kind = lowercase_first_letter(&item_name.to_string());
@@ -15,7 +16,7 @@ pub fn expand_attribute_node(input: &syn::DeriveInput) -> syn::Result<TokenStrea
     })
 }
 
-pub fn expand_derive_node(input: &syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_derive_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     as_derive_struct(&input)?;
     let item_name = &input.ident;
     let item_generics = &input.generics;
