@@ -61,6 +61,8 @@ dependencies = [
 name = "codama-nodes-derive"
 version = "0.1.0"
 dependencies = [
+ "codama-errors",
+ "codama-nodes",
  "proc-macro2",
  "quote",
  "serde",

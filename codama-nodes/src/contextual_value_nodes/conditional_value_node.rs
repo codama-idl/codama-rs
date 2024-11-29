@@ -1,5 +1,6 @@
 use crate::{
-    AccountValueNode, ArgumentValueNode, InstructionInputValueNode, ResolverValueNode, ValueNode,
+    AccountValueNode, ArgumentValueNode, InstructionInputValueNode, NodeTrait, NodeUnionTrait,
+    ResolverValueNode, ValueNode,
 };
 use codama_nodes_derive::{node, node_union};
 

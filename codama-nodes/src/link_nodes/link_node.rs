@@ -1,6 +1,6 @@
 use crate::{
     AccountLinkNode, DefinedTypeLinkNode, InstructionAccountLinkNode, InstructionArgumentLinkNode,
-    InstructionLinkNode, PdaLinkNode, ProgramLinkNode,
+    InstructionLinkNode, NodeTrait, NodeUnionTrait, PdaLinkNode, ProgramLinkNode,
 };
 use codama_nodes_derive::node_union;
 

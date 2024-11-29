@@ -1,7 +1,7 @@
 use crate::{
     AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ConditionalValueNode,
-    IdentityValueNode, PayerValueNode, PdaSeedValueNode, PdaValueNode, ProgramIdValueNode,
-    ResolverValueNode,
+    IdentityValueNode, NodeTrait, NodeUnionTrait, PayerValueNode, PdaSeedValueNode, PdaValueNode,
+    ProgramIdValueNode, ResolverValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 

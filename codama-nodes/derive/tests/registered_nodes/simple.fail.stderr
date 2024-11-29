@@ -1,8 +1,8 @@
 error[E0599]: no variant or associated item named `StructField` found for enum `TypeNode` in the current scope
-  --> tests/registered_nodes/simple.fail.rs:16:15
+  --> tests/registered_nodes/simple.fail.rs:23:15
    |
-8  | pub enum RegisteredTypeNode {
+15 | pub enum RegisteredTypeNode {
    | --------------------------- variant or associated item `StructField` not found for this enum
 ...
-16 |     TypeNode::StructField(StructFieldTypeNode {});
+23 |     TypeNode::StructField(StructFieldTypeNode {});
    |               ^^^^^^^^^^^ variant or associated item not found in `TypeNode`

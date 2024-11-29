@@ -1,4 +1,4 @@
-use crate::{FixedCountNode, PrefixedCountNode, RemainderCountNode};
+use crate::{FixedCountNode, NodeTrait, NodeUnionTrait, PrefixedCountNode, RemainderCountNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]

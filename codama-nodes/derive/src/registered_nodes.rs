@@ -68,7 +68,6 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> syn::Result<T
             type Error = codama_errors::CodamaError;
 
             fn try_from(value: #registered_enum_name) -> Result<Self, Self::Error> {
-                use crate::NodeUnionTrait;
                 match value {
                     #(#from_registered_patterns)*
                     _ => Err(codama_errors::CodamaError::InvalidNodeConversion {

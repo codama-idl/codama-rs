@@ -93,9 +93,8 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> syn::Result<TokenSt
     };
 
     Ok(quote! {
-        impl #item_generics crate::NodeUnionTrait for #item_name #item_type_params {
+        impl #item_generics NodeUnionTrait for #item_name #item_type_params {
             fn kind(&self) -> &'static str {
-                use crate::NodeTrait;
                 match self {
                     #(#kind_patterns)*
                 }

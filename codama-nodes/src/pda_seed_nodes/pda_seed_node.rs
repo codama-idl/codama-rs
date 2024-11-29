@@ -1,4 +1,4 @@
-use crate::{ConstantPdaSeedNode, VariablePdaSeedNode};
+use crate::{ConstantPdaSeedNode, NodeTrait, NodeUnionTrait, VariablePdaSeedNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]

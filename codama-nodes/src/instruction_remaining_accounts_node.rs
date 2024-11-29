@@ -1,4 +1,6 @@
-use crate::{ArgumentValueNode, Docs, IsAccountSigner, ResolverValueNode};
+use crate::{
+    ArgumentValueNode, Docs, IsAccountSigner, NodeTrait, NodeUnionTrait, ResolverValueNode,
+};
 use codama_nodes_derive::{node, node_union};
 
 #[node]

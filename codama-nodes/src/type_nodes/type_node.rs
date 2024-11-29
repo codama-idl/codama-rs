@@ -1,7 +1,7 @@
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode,
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node,
+    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node, NodeTrait,
     NodeUnionTrait, NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode,
     PublicKeyTypeNode, RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode,
     SolAmountTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,

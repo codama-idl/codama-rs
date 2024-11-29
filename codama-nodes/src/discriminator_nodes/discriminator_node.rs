@@ -1,4 +1,7 @@
-use crate::{ConstantDiscriminatorNode, FieldDiscriminatorNode, SizeDiscriminatorNode};
+use crate::{
+    ConstantDiscriminatorNode, FieldDiscriminatorNode, NodeTrait, NodeUnionTrait,
+    SizeDiscriminatorNode,
+};
 use codama_nodes_derive::node_union;
 
 #[node_union]

@@ -1,14 +1,13 @@
-use codama_nodes_derive::NodeUnion;
+use codama_nodes::{NodeTrait, NodeUnionTrait};
+use codama_nodes_derive::{node, NodeUnion};
 
-#[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
-#[serde(tag = "kind", rename = "numberTypeNode")]
+#[node]
 pub struct NumberTypeNode {}
 
-#[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
-#[serde(tag = "kind", rename = "stringTypeNode")]
+#[node]
 pub struct StringTypeNode {}
 
-#[derive(NodeUnion, PartialEq, Debug)]
+#[derive(NodeUnion, PartialEq, Debug, Clone)]
 pub enum TypeNode {
     Number(NumberTypeNode),
     String(StringTypeNode),

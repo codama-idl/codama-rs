@@ -1,7 +1,7 @@
 use crate::{
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, NestedTypeNodeTrait,
-    PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode, SizePrefixTypeNode, TypeNodeTrait,
-    TypeNodeUnionTrait,
+    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, NestedTypeNodeTrait, NodeTrait,
+    NodeUnionTrait, PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode, SizePrefixTypeNode,
+    TypeNodeTrait, TypeNodeUnionTrait,
 };
 use codama_nodes_derive::node_union;
 

@@ -1,8 +1,8 @@
-use super::{
+use crate::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
-    MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode, PublicKeyValueNode,
-    SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode, StructValueNode,
-    TupleValueNode,
+    MapEntryValueNode, MapValueNode, NodeTrait, NodeUnionTrait, NoneValueNode, NumberValueNode,
+    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode,
+    StructValueNode, TupleValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 

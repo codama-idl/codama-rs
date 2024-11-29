@@ -1,23 +1,26 @@
-use codama_nodes_derive::NodeUnion;
+use codama_nodes::{NodeTrait, NodeUnionTrait};
+use codama_nodes_derive::{node, NodeUnion};
+use std::fmt::Debug;
 
-pub trait SomeTrait: serde::Serialize + for<'de> serde::Deserialize<'de> {}
+pub trait SomeTrait:
+    Clone + PartialEq + Debug + serde::Serialize + for<'de> serde::Deserialize<'de>
+{
+}
 impl SomeTrait for u32 {}
 
-#[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
-#[serde(tag = "kind", rename = "numberTypeNode")]
+#[node]
 pub struct NumberTypeNode<T: SomeTrait> {
     #[serde(bound(serialize = "T: SomeTrait", deserialize = "T: SomeTrait"))]
     pub value: T,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
-#[serde(tag = "kind", rename = "stringTypeNode")]
+#[node]
 pub struct StringTypeNode<T: SomeTrait> {
     #[serde(bound(serialize = "T: SomeTrait", deserialize = "T: SomeTrait"))]
     pub value: T,
 }
 
-#[derive(NodeUnion, PartialEq, Debug)]
+#[derive(NodeUnion, PartialEq, Debug, Clone)]
 pub enum TypeNode<T: SomeTrait> {
     Number(NumberTypeNode<T>),
     String(StringTypeNode<T>),
