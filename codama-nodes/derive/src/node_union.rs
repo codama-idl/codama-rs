@@ -1,6 +1,6 @@
 use crate::{as_derive_enum, get_type_params, lowercase_first_letter};
 use codama_errors::CodamaResult;
-use codama_syn_helpers::syn_wrap;
+use codama_syn_helpers::syn_wrap::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -62,10 +62,10 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 )
                 .into());
             };
-            let node_type = syn_wrap::Type(&(fields.unnamed.first()).unwrap().ty);
+            let node_type = &(fields.unnamed.first()).unwrap().ty;
             let node_path = node_type.as_path()?;
             let node_type = match (node_path.is("Box"), node_path.single_generic_type()) {
-                (true, Ok(inner_type)) => syn_wrap::Type(inner_type),
+                (true, Ok(inner_type)) => inner_type,
                 _ => node_type,
             };
             let kind = lowercase_first_letter(&node_type.as_path()?.last_str());

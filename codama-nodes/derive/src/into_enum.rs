@@ -1,5 +1,5 @@
 use codama_errors::CodamaResult;
-use codama_syn_helpers::syn_wrap;
+use codama_syn_helpers::syn_wrap::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -37,10 +37,9 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
                 }
             };
 
-            let variant_type = syn_wrap::Type(variant_type);
             let variant_path = variant_type.as_path()?;
             let boxed_type = match (variant_path.is("Box"), variant_path.single_generic_type()) {
-                (true, Ok(inner_type)) => Some(syn_wrap::Type(inner_type)),
+                (true, Ok(inner_type)) => Some(inner_type),
                 _ => None,
             };
             let value = match boxed_type {

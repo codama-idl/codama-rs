@@ -1,26 +1,25 @@
 use super::Path;
 use codama_errors::CodamaResult;
-use quote::ToTokens;
-use std::ops::Deref;
 
-pub struct Type<'a>(pub &'a syn::Type);
+pub trait Type {
+    fn get_self(&self) -> &syn::Type;
 
-impl<'a> Type<'a> {
-    pub fn as_path(&self) -> CodamaResult<Path<'a>> {
-        match self.0 {
-            syn::Type::Path(path) => Ok(Path(&path.path)),
-            _ => Err(syn::Error::new_spanned(self.0, "expected a path").into()),
+    fn as_path(&self) -> CodamaResult<&syn::Path> {
+        let this = self.get_self();
+        match this {
+            syn::Type::Path(path) => Ok(&path.path),
+            _ => Err(syn::Error::new_spanned(this, "expected a path").into()),
         }
     }
 
-    pub fn is_path(&self, path: &str) -> bool {
+    fn is_path(&self, path: &str) -> bool {
         match self.as_path() {
             Ok(p) => p.is(path),
             _ => false,
         }
     }
 
-    pub fn is_strict_path(&self, path: &str) -> bool {
+    fn is_strict_path(&self, path: &str) -> bool {
         match self.as_path() {
             Ok(p) => p.is_strict(path),
             _ => false,
@@ -28,17 +27,9 @@ impl<'a> Type<'a> {
     }
 }
 
-impl Deref for Type<'_> {
-    type Target = syn::Type;
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
-impl ToTokens for Type<'_> {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.0.to_tokens(tokens);
+impl Type for syn::Type {
+    fn get_self(&self) -> &syn::Type {
+        self
     }
 }
 
@@ -50,13 +41,13 @@ mod tests {
 
     #[test]
     fn as_path_ok() {
-        let r#type = syn_build::parse(quote! { std::option::Option<String> });
-        assert!(matches!(Type(&r#type).as_path(), Ok(_)));
+        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        assert!(matches!(r#type.as_path(), Ok(_)));
     }
 
     #[test]
     fn as_path_err() {
-        let r#type = syn_build::parse(quote! { [u8; 32] });
-        assert!(matches!(Type(&r#type).as_path(), Err(_)));
+        let r#type: syn::Type = syn_build::parse(quote! { [u8; 32] });
+        assert!(matches!(r#type.as_path(), Err(_)));
     }
 }
