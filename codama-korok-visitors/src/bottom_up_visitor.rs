@@ -2,7 +2,7 @@ use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     Node, RegisteredTypeNode, TypeNode,
 };
-use codama_syn_helpers::syn_wrap::*;
+use codama_syn_helpers::syn_traits::*;
 
 use crate::KorokVisitor;
 

@@ -3,7 +3,7 @@ use codama_nodes::{
     PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
     TypeNode,
 };
-use codama_syn_helpers::syn_wrap::*;
+use codama_syn_helpers::syn_traits::*;
 
 use crate::KorokVisitor;
 

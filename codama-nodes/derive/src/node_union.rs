@@ -1,6 +1,6 @@
 use crate::{as_derive_enum, get_type_params, lowercase_first_letter};
 use codama_errors::CodamaResult;
-use codama_syn_helpers::syn_wrap::*;
+use codama_syn_helpers::syn_traits::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
