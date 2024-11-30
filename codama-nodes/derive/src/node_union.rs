@@ -55,20 +55,13 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         })
         .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
-            let syn::Fields::Unnamed(fields) = &variant.fields else {
-                return Err(syn::Error::new_spanned(
-                    variant,
-                    "expected a single unnamed field in the variant",
-                )
-                .into());
-            };
-            let node_type = &(fields.unnamed.first()).unwrap().ty;
-            let node_path = node_type.as_path()?;
-            let node_type = match (node_path.is("Box"), node_path.single_generic_type()) {
+            let variant_type = &variant.fields.single_unnamed_field()?.ty;
+            let variant_path = variant_type.as_path()?;
+            let variant_type = match (variant_path.is("Box"), variant_path.single_generic_type()) {
                 (true, Ok(inner_type)) => inner_type,
-                _ => node_type,
+                _ => variant_type,
             };
-            let kind = lowercase_first_letter(&node_type.as_path()?.last_str());
+            let kind = lowercase_first_letter(&variant_type.as_path()?.last_str());
 
             Ok(quote! {
                 #kind => Ok(#item_name::#variant_name(

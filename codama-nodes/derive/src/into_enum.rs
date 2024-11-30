@@ -17,26 +17,7 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
         .iter()
         .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
-            let variant_type = match &variant.fields {
-                syn::Fields::Unnamed(fields) => {
-                    if fields.unnamed.len() != 1 {
-                        return Err(syn::Error::new_spanned(
-                            fields,
-                            "expected a single field in the variant",
-                        )
-                        .into());
-                    }
-                    &fields.unnamed[0].ty
-                }
-                _ => {
-                    return Err(syn::Error::new_spanned(
-                        variant,
-                        "expected a single unnamed field in the variant",
-                    )
-                    .into());
-                }
-            };
-
+            let variant_type = &variant.fields.single_unnamed_field()?.ty;
             let variant_path = variant_type.as_path()?;
             let boxed_type = match (variant_path.is("Box"), variant_path.single_generic_type()) {
                 (true, Ok(inner_type)) => Some(inner_type),
