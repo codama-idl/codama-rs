@@ -29,7 +29,8 @@ pub trait Path {
         let mut segments = path.split("::").collect::<Vec<_>>();
         let last = segments.pop().unwrap();
         let prefix = segments.join("::");
-        (prefix == self.prefix() || prefix == "") && last == self.last_str()
+        let this_prefix = self.prefix();
+        (this_prefix == prefix || this_prefix == "") && last == self.last_str()
     }
 
     /// Returns true if the path is equal to the given path including the prefix.
@@ -121,13 +122,13 @@ mod tests {
     fn is() {
         let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T> });
         assert_eq!(path.is("prefix::Foo"), true);
-        assert_eq!(path.is("Foo"), true);
+        assert_eq!(path.is("Foo"), false);
         assert_eq!(path.is("wrong::prefix::Foo"), false);
         assert_eq!(path.is("Bar"), false);
 
         let path: syn::Path = syn_build::parse(quote! { Foo<T> });
         assert_eq!(path.is("Foo"), true);
-        assert_eq!(path.is("prefix::Foo"), false);
+        assert_eq!(path.is("prefix::Foo"), true);
         assert_eq!(path.is("Bar"), false);
     }
 
