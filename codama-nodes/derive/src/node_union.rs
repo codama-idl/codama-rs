@@ -56,11 +56,9 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
             let variant_type = &variant.fields.single_unnamed_field()?.ty;
-            let variant_path = variant_type.as_path()?;
-            let variant_type = match (variant_path.is("Box"), variant_path.single_generic_type()) {
-                (true, Ok(inner_type)) => inner_type,
-                _ => variant_type,
-            };
+            let variant_type = variant_type
+                .single_generic_type_from_path("Box")
+                .unwrap_or(variant_type);
             let kind = lowercase_first_letter(&variant_type.as_path()?.last_str());
 
             Ok(quote! {

@@ -18,16 +18,12 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
         .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
             let variant_type = &variant.fields.single_unnamed_field()?.ty;
-            let variant_path = variant_type.as_path()?;
-            let boxed_type = match (variant_path.is("Box"), variant_path.single_generic_type()) {
-                (true, Ok(inner_type)) => Some(inner_type),
-                _ => None,
-            };
+            let boxed_type = variant_type.single_generic_type_from_path("Box").ok();
+            let input_type = boxed_type.unwrap_or(variant_type);
             let value = match boxed_type {
                 Some(_) => quote! { value.into() },
                 _ => quote! { value },
             };
-            let input_type = boxed_type.unwrap_or(variant_type);
 
             Ok(quote! {
                 impl #enum_generics From<#input_type> for #enum_name #enum_type_params {

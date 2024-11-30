@@ -12,17 +12,11 @@ pub trait Type {
         }
     }
 
-    fn is_path(&self, path: &str) -> bool {
-        match self.as_path() {
-            Ok(p) => p.is(path),
-            _ => false,
-        }
-    }
-
-    fn is_strict_path(&self, path: &str) -> bool {
-        match self.as_path() {
-            Ok(p) => p.is_strict(path),
-            _ => false,
+    fn single_generic_type_from_path(&self, path: &str) -> CodamaResult<&syn::Type> {
+        let this = self.as_path()?;
+        match this.is(path) {
+            true => this.single_generic_type(),
+            false => Err(syn::Error::new_spanned(this, format!("expected path: {}", path)).into()),
         }
     }
 }
@@ -49,5 +43,49 @@ mod tests {
     fn as_path_err() {
         let r#type: syn::Type = syn_build::parse(quote! { [u8; 32] });
         assert!(matches!(r#type.as_path(), Err(_)));
+    }
+
+    #[test]
+    fn single_generic_type_from_path_ok() {
+        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        assert!(matches!(
+            r#type.single_generic_type_from_path("std::option::Option"),
+            Ok(_)
+        ));
+
+        let r#type: syn::Type = syn_build::parse(quote! { Option<String> });
+        assert!(matches!(
+            r#type.single_generic_type_from_path("std::option::Option"),
+            Ok(_)
+        ));
+        assert!(matches!(
+            r#type.single_generic_type_from_path("Option"),
+            Ok(_)
+        ));
+    }
+
+    #[test]
+    fn single_generic_type_from_path_err() {
+        let r#type: syn::Type = syn_build::parse(quote! { [u8; 32] });
+        assert!(matches!(
+            r#type.single_generic_type_from_path("Option"),
+            Err(_)
+        ));
+
+        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        assert!(matches!(
+            r#type.single_generic_type_from_path("Option"),
+            Err(_)
+        ));
+        assert!(matches!(
+            r#type.single_generic_type_from_path("wrong::prefix::Option"),
+            Err(_)
+        ));
+
+        let r#type: syn::Type = syn_build::parse(quote! { Option<String, u32> });
+        assert!(matches!(
+            r#type.single_generic_type_from_path("Option"),
+            Err(_)
+        ));
     }
 }
