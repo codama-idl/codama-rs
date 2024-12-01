@@ -1,10 +1,10 @@
 use cargo_toml::Manifest;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
+use codama_stores::{CrateStore, FileModuleStore, RootStore};
 use std::path::Path;
 
 use crate::attributes::Attribute;
-use crate::stores::{CrateStore, ModuleStore, RootStore};
 
 #[derive(Debug)]
 pub struct RootKorok<'a> {
@@ -38,7 +38,7 @@ impl<'a> CrateKorok<'a> {
     pub fn parse(crate_store: &'a CrateStore) -> CodamaResult<Self> {
         Ok(Self {
             file: &crate_store.file,
-            items: ItemKorok::parse_all(&crate_store.file.items, &crate_store.modules)?,
+            items: ItemKorok::parse_all(&crate_store.file.items, &crate_store.file_modules)?,
             manifest: &crate_store.manifest,
             node: None,
             path: &crate_store.path,
@@ -58,7 +58,7 @@ pub enum ItemKorok<'a> {
 impl<'a> ItemKorok<'a> {
     pub fn parse(
         item: &'a syn::Item,
-        modules: &'a Vec<ModuleStore>,
+        modules: &'a Vec<FileModuleStore>,
         item_index: usize,
     ) -> CodamaResult<Self> {
         match item {
@@ -85,7 +85,7 @@ impl<'a> ItemKorok<'a> {
 
     pub fn parse_all(
         items: &'a Vec<syn::Item>,
-        modules: &'a Vec<ModuleStore>,
+        modules: &'a Vec<FileModuleStore>,
     ) -> CodamaResult<Vec<Self>> {
         items
             .iter()
@@ -115,7 +115,7 @@ pub struct FileModuleKorok<'a> {
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, module: &'a ModuleStore) -> CodamaResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, module: &'a FileModuleStore) -> CodamaResult<Self> {
         if let Some(_) = ast.content {
             return Err(syn::Error::new_spanned(
                 ast,
@@ -127,7 +127,7 @@ impl<'a> FileModuleKorok<'a> {
         Ok(Self {
             ast,
             file: &module.file,
-            items: ItemKorok::parse_all(&module.file.items, &module.modules)?,
+            items: ItemKorok::parse_all(&module.file.items, &module.file_modules)?,
             path: &module.path,
             node: None,
         })
@@ -142,7 +142,7 @@ pub struct ModuleKorok<'a> {
 }
 
 impl<'a> ModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<ModuleStore>) -> CodamaResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<FileModuleStore>) -> CodamaResult<Self> {
         match &ast.content {
             Some(content) => Ok(Self {
                 ast,

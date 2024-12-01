@@ -6,5 +6,6 @@ members = [
   "codama-korok-visitors",
   "codama-nodes",
   "codama-nodes/derive",
+  "codama-stores",
   "codama-syn-helpers",
 ]

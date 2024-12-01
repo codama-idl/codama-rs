@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-codama-errors = { path = "../codama-errors", version = "0.1.0" }
+codama-errors = { path = "../codama-errors" }
 codama-nodes-derive = { path = "derive", version = "0.1.0" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

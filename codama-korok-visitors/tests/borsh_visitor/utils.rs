@@ -1,6 +1,7 @@
 use codama_korok_visitors::{BorshVisitor, BottomUpVisitor, KorokVisitable};
-use codama_koroks::{stores::RootStore, ItemKorok, RootKorok};
+use codama_koroks::{ItemKorok, RootKorok};
 use codama_nodes::Node;
+use codama_stores::RootStore;
 use proc_macro2::TokenStream;
 use quote::quote;
 

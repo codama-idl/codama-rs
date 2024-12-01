@@ -28,6 +28,7 @@ version = "0.1.0"
 dependencies = [
  "codama-koroks",
  "codama-nodes",
+ "codama-stores",
  "codama-syn-helpers",
  "proc-macro2",
  "quote",
@@ -41,10 +42,9 @@ dependencies = [
  "cargo_toml",
  "codama-errors",
  "codama-nodes",
+ "codama-stores",
  "proc-macro2",
- "quote",
  "syn",
- "trybuild",
 ]
 
 [[package]]
@@ -68,6 +68,18 @@ dependencies = [
  "quote",
  "serde",
  "serde_json",
+ "syn",
+ "trybuild",
+]
+
+[[package]]
+name = "codama-stores"
+version = "0.1.0"
+dependencies = [
+ "cargo_toml",
+ "codama-errors",
+ "proc-macro2",
+ "quote",
  "syn",
  "trybuild",
 ]
