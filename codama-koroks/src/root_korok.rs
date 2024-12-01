@@ -7,6 +7,7 @@ use codama_stores::RootStore;
 pub struct RootKorok<'a> {
     pub crates: Vec<CrateKorok<'a>>,
     pub node: Option<Node>,
+    pub store: &'a RootStore,
 }
 
 impl<'a> RootKorok<'a> {
@@ -18,6 +19,7 @@ impl<'a> RootKorok<'a> {
                 .map(CrateKorok::parse)
                 .collect::<CodamaResult<_>>()?,
             node: None,
+            store: root_store,
         })
     }
 }
