@@ -1,4 +1,4 @@
-use crate::{as_derive_enum, get_type_params, lowercase_first_letter};
+use crate::{as_derive_enum, lowercase_first_letter};
 use codama_errors::CodamaResult;
 use codama_syn_helpers::syn_traits::*;
 use proc_macro2::TokenStream;
@@ -17,12 +17,12 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
     let data = as_derive_enum(&input)?;
     let variants = &data.variants;
     let item_name = &input.ident;
-    let item_generics = &input.generics;
-    let item_type_params = get_type_params(&item_generics);
-    let mut item_generics_with_de = item_generics.clone();
+    let (pre_generics, post_generics) = input.generics.block_wrappers();
+    let mut item_generics_with_de = input.generics.clone();
     item_generics_with_de
         .params
         .insert(0, syn::parse_quote!('de));
+    let (pre_generics_with_de, _) = item_generics_with_de.block_wrappers();
 
     let fallback_variant = variants.iter().find(|variant| {
         variant.attrs.iter().any(|attr| {
@@ -84,7 +84,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
     };
 
     Ok(quote! {
-        impl #item_generics NodeUnionTrait for #item_name #item_type_params {
+        impl #pre_generics NodeUnionTrait for #item_name #post_generics {
             fn kind(&self) -> &'static str {
                 match self {
                     #(#kind_patterns)*
@@ -92,7 +92,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             }
         }
 
-        impl #item_generics serde::Serialize for #item_name #item_type_params {
+        impl #pre_generics serde::Serialize for #item_name #post_generics {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
@@ -103,7 +103,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             }
         }
 
-        impl #item_generics_with_de serde::Deserialize<'de> for #item_name #item_type_params {
+        impl #pre_generics_with_de serde::Deserialize<'de> for #item_name #post_generics {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
                 D: serde::Deserializer<'de>,

@@ -1,5 +1,6 @@
-use crate::{as_derive_struct, get_type_params};
+use crate::as_derive_struct;
 use codama_errors::CodamaResult;
+use codama_syn_helpers::syn_traits::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -16,10 +17,9 @@ pub fn expand_attribute_type_node(input: &syn::DeriveInput) -> CodamaResult<Toke
 pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     as_derive_struct(&input)?;
     let item_name = &input.ident;
-    let item_generics = &input.generics;
-    let item_type_params = get_type_params(&item_generics);
+    let (pre_generics, post_generics) = &input.generics.block_wrappers();
 
     Ok(quote! {
-        impl #item_generics crate::TypeNodeTrait for #item_name #item_type_params{}
+        impl #pre_generics crate::TypeNodeTrait for #item_name #post_generics{}
     })
 }

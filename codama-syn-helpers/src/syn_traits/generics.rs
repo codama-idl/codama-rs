@@ -30,7 +30,17 @@ pub trait Generics {
         }
     }
 
-    // TODO: block_wrappers -> (TokenStream, TokenStream)
+    fn block_wrappers(&self) -> (TokenStream, TokenStream) {
+        let this = self.get_self();
+        let declarations = &this.params;
+        let declarations = match &this.params.is_empty() {
+            true => quote! {},
+            false => quote! { <#declarations> },
+        };
+        let usages = self.param_idents();
+        let where_clause = &this.where_clause;
+        (quote! { #declarations }, quote! { #usages #where_clause })
+    }
 }
 
 impl Generics for syn::Generics {
@@ -58,6 +68,25 @@ mod tests {
         assert_eq!(
             r#struct.generics.param_idents().to_string(),
             quote! { <'a, T, U> }.to_string()
+        );
+    }
+
+    #[test]
+    fn block_wrappers() {
+        let r#struct: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+        let (pre, post) = r#struct.generics.block_wrappers();
+        assert_eq!(
+            quote! { impl #pre Bar for Foo #post {} }.to_string(),
+            quote! { impl Bar for Foo {} }.to_string()
+        );
+
+        let r#struct: syn::ItemStruct =
+            syn_build::parse(quote! { struct Foo<'a, T: Clone, U: PartialEq> where U: Eq (T); });
+        let (pre, post) = r#struct.generics.block_wrappers();
+        assert_eq!(
+            quote! { impl #pre Bar for Foo #post {} }.to_string(),
+            quote! { impl<'a, T: Clone, U: PartialEq> Bar for Foo<'a, T, U> where U: Eq (T) {} }
+                .to_string()
         );
     }
 }
