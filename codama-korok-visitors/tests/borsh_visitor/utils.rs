@@ -13,19 +13,23 @@ pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> 
 }
 
 pub fn get_node_from_item(tt: TokenStream) -> Option<Node> {
-    get_node(tt, |k| k.first_item().node())
+    get_node(tt, |k| (&k.crates[0].items[0]).node())
 }
 
 pub fn get_node_from_enum_variant(tt: TokenStream) -> Option<Node> {
-    get_node(quote! { pub enum Foo { #tt } }, |k| match k.first_item() {
-        ItemKorok::Enum(k) => k.variants[0].node.clone(),
-        _ => None,
+    get_node(quote! { pub enum Foo { #tt } }, |k| {
+        match &k.crates[0].items[0] {
+            ItemKorok::Enum(k) => k.variants[0].node.clone(),
+            _ => None,
+        }
     })
 }
 
 pub fn get_node_from_type(tt: TokenStream) -> Option<Node> {
-    get_node(quote! { pub struct Foo(#tt); }, |k| match k.first_item() {
-        ItemKorok::Struct(k) => k.fields.all[0].node.clone(),
-        _ => None,
+    get_node(quote! { pub struct Foo(#tt); }, |k| {
+        match &k.crates[0].items[0] {
+            ItemKorok::Struct(k) => k.fields.all[0].node.clone(),
+            _ => None,
+        }
     })
 }

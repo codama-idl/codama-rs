@@ -1,9 +1,6 @@
 use cargo_toml::Manifest;
 use codama_errors::CodamaResult;
-use codama_nodes::{
-    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, TypeNode,
-};
+use codama_nodes::Node;
 use std::path::Path;
 
 use crate::attributes::Attribute;
@@ -25,10 +22,6 @@ impl<'a> RootKorok<'a> {
                 .collect::<CodamaResult<_>>()?,
             node: None,
         })
-    }
-
-    pub fn first_item(&self) -> &ItemKorok {
-        &self.crates[0].items[0]
     }
 }
 
@@ -203,31 +196,6 @@ impl<'a> FieldsKorok<'a> {
             node: None,
         })
     }
-
-    pub fn all_have_nodes(&self) -> bool {
-        self.all.iter().all(|field| field.node.is_some())
-    }
-
-    pub fn create_struct_node(&self) -> StructTypeNode {
-        let fields = self
-            .all
-            .iter()
-            .filter_map(|field| match &field.node {
-                Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(field.clone()),
-                _ => None,
-            })
-            .collect::<Vec<_>>();
-        StructTypeNode::new(fields)
-    }
-
-    pub fn create_tuple_node(&self) -> TupleTypeNode {
-        let items = self
-            .all
-            .iter()
-            .filter_map(|f| TypeNode::try_from(f.node.clone()).ok())
-            .collect::<Vec<_>>();
-        TupleTypeNode::new(items)
-    }
 }
 
 #[derive(Debug)]
@@ -247,19 +215,6 @@ impl<'a> FieldKorok<'a> {
             node: None,
             r#type: TypeKorok::new(&ast.ty),
         })
-    }
-
-    pub fn create_type_node(&self) -> Option<RegisteredTypeNode> {
-        match &self.r#type.node {
-            Some(Node::Type(node)) => match &self.ast.ident {
-                Some(ident) => match TypeNode::try_from(node.clone()) {
-                    Ok(node) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
-                    Err(_) => None,
-                },
-                None => Some(node.clone().into()),
-            },
-            _ => None,
-        }
     }
 }
 
@@ -291,30 +246,6 @@ impl<'a> EnumKorok<'a> {
             node: None,
             variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
-    }
-
-    pub fn all_variants_have_nodes(&self) -> bool {
-        self.variants.iter().all(|field| field.node.is_some())
-    }
-
-    pub fn create_enum_node(&self) -> EnumTypeNode {
-        let variants = self
-            .variants
-            .iter()
-            .filter_map(|variant| match &variant.node {
-                Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
-                    Some(EnumVariantTypeNode::Empty(node.clone()))
-                }
-                Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
-                    Some(EnumVariantTypeNode::Tuple(node.clone()))
-                }
-                Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
-                    Some(EnumVariantTypeNode::Struct(node.clone()))
-                }
-                _ => None,
-            })
-            .collect::<Vec<_>>();
-        EnumTypeNode::new(variants)
     }
 }
 
