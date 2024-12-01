@@ -37,20 +37,6 @@ pub trait KorokVisitor {
         self.visit_fields(&mut korok.fields);
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        for field_korok in &mut korok.all {
-            self.visit_field(field_korok);
-        }
-    }
-
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_type(&mut korok.r#type);
-    }
-
-    fn visit_type(&mut self, _korok: &mut codama_koroks::TypeKorok) {
-        //
-    }
-
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
         for variant_korok in &mut korok.variants {
             self.visit_enum_variant(variant_korok);
@@ -62,6 +48,20 @@ pub trait KorokVisitor {
     }
 
     fn visit_unsupported_item(&mut self, _korok: &mut codama_koroks::UnsupportedItemKorok) {
+        //
+    }
+
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
+        for field_korok in &mut korok.all {
+            self.visit_field(field_korok);
+        }
+    }
+
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
+        self.visit_type(&mut korok.r#type);
+    }
+
+    fn visit_type(&mut self, _korok: &mut codama_koroks::TypeKorok) {
         //
     }
 }

@@ -60,4 +60,14 @@ impl<'a> ItemKorok<'a> {
             ItemKorok::Unsupported(k) => k.node.clone(),
         }
     }
+
+    pub fn set_node(&mut self, node: Option<Node>) {
+        match self {
+            ItemKorok::Struct(k) => k.node = node,
+            ItemKorok::Enum(k) => k.node = node,
+            ItemKorok::FileModule(k) => k.node = node,
+            ItemKorok::Module(k) => k.node = node,
+            ItemKorok::Unsupported(k) => k.node = node,
+        }
+    }
 }
