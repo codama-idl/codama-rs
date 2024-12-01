@@ -1,11 +1,11 @@
-use crate::{as_derive_enum, lowercase_first_letter};
+use crate::lowercase_first_letter;
 use codama_errors::CodamaResult;
 use codama_syn_helpers::syn_traits::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
-    as_derive_enum(&input)?;
+    input.as_enum()?;
 
     Ok(quote! {
         #[derive(codama_nodes_derive::NodeUnion, codama_nodes_derive::IntoEnum, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone)]
@@ -14,7 +14,7 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<Tok
 }
 
 pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
-    let data = as_derive_enum(&input)?;
+    let data = input.as_enum()?;
     let variants = &data.variants;
     let item_name = &input.ident;
     let (pre_generics, post_generics) = input.generics.block_wrappers();

@@ -3,10 +3,8 @@ use codama_syn_helpers::syn_traits::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::as_derive_enum;
-
 pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
-    let data = as_derive_enum(input)?;
+    let data = input.as_enum()?;
     let variants = &data.variants;
     let enum_name = &input.ident;
     let (pre_generics, post_generics) = input.generics.block_wrappers();

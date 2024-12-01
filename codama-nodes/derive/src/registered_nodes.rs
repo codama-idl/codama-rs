@@ -1,11 +1,10 @@
 use codama_errors::CodamaResult;
+use codama_syn_helpers::syn_traits::DeriveInput;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::as_derive_enum;
-
 pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
-    let syn::DataEnum { variants, .. } = as_derive_enum(&input)?;
+    let syn::DataEnum { variants, .. } = input.as_enum()?;
     let registered_enum_name = &input.ident;
 
     // Clone the enum.
