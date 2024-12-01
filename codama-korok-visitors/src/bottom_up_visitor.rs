@@ -24,11 +24,12 @@ impl KorokVisitor for BottomUpVisitor {
             return ();
         }
 
+        let name = korok.ast.ident.to_string();
         korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
-            Ok(type_node) => {
-                let name = korok.ast.ident.to_string();
-                Some(DefinedTypeNode::new(name, type_node).into())
+            Ok(TypeNode::Tuple(tuple_node)) if tuple_node.items.len() == 1 => {
+                Some(DefinedTypeNode::new(name, tuple_node.items.first().unwrap().clone()).into())
             }
+            Ok(type_node) => Some(DefinedTypeNode::new(name, type_node).into()),
             Err(_) => None,
         }
     }

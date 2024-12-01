@@ -1,7 +1,7 @@
 use crate::borsh_visitor::utils::get_node_from_item;
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeNode, Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode,
-    TupleTypeNode, U32, U8,
+    BooleanTypeNode, DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, SizePrefixTypeNode,
+    StringTypeNode, TupleTypeNode, U32, U8,
 };
 use quote::quote;
 
@@ -19,5 +19,13 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
                 BooleanTypeNode::default().into(),
             ])
         )))
+    );
+}
+
+#[test]
+fn it_uses_the_inner_type_directly_on_single_unnamed_fields() {
+    assert_eq!(
+        get_node_from_item(quote! { struct Slot(u64); }),
+        Some(DefinedTypeNode::new("slot", NumberTypeNode::le(U64)).into())
     );
 }
