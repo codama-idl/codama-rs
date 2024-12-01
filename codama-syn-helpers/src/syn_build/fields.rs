@@ -2,26 +2,18 @@ use codama_errors::CodamaResult;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-/// E.g. `pub foo: u32` or `pub u32`
-pub fn try_field(tt: TokenStream) -> CodamaResult<syn::Field> {
-    let ast = match syn::parse2::<syn::ItemStruct>(quote! { struct Foo { #tt } }) {
+/// E.g. `{ pub foo: u32, bar: String }` or `(pub u32, String)`
+pub fn try_fields(tt: TokenStream) -> CodamaResult<syn::Fields> {
+    let ast = match syn::parse2::<syn::ItemStruct>(quote! { struct Foo #tt }) {
         Ok(ast) => ast,
-        Err(_) => syn::parse2::<syn::ItemStruct>(quote! {struct Foo (#tt); })?,
+        Err(_) => syn::parse2::<syn::ItemStruct>(quote! { struct Foo #tt; })?,
     };
-    let field = match &ast.fields {
-        syn::Fields::Named(f) => f.named.first().cloned(),
-        syn::Fields::Unnamed(f) => f.unnamed.first().cloned(),
-        _ => None,
-    };
-    match field {
-        Some(f) => Ok(f),
-        None => Err(syn::Error::new_spanned(tt, "expected a field").into()),
-    }
+    Ok(ast.fields)
 }
 
-/// E.g. `pub foo: u32` or `pub u32`
-pub fn field(tt: TokenStream) -> syn::Field {
-    try_field(tt).unwrap()
+/// E.g. `{ pub foo: u32, bar: String }` or `(pub u32, String)`
+pub fn fields(tt: TokenStream) -> syn::Fields {
+    try_fields(tt).unwrap()
 }
 
 #[cfg(test)]
@@ -31,20 +23,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn named_field_ok() {
-        let result = try_field(quote! { pub foo: u32 });
-        assert!(matches!(result, Ok(syn::Field { ident: Some(_), .. })));
+    fn named_fields_ok() {
+        let result = try_fields(quote! { { pub foo: u32, bar: String } });
+        assert!(matches!(result, Ok(syn::Fields::Named(_))));
     }
 
     #[test]
-    fn unnamed_field_ok() {
-        let result = try_field(quote! { u32 });
-        assert!(matches!(result, Ok(syn::Field { ident: None, .. })));
+    fn unnamed_fields_ok() {
+        let result = try_fields(quote! { (pub u32, String) });
+        assert!(matches!(result, Ok(syn::Fields::Unnamed(_))));
     }
 
     #[test]
-    fn field_err() {
-        let result = try_field(quote! { struct Foo {} });
+    fn unit_fields_ok() {
+        let result = try_fields(quote! {});
+        assert!(matches!(result, Ok(syn::Fields::Unit)));
+    }
+
+    #[test]
+    fn fields_err() {
+        let result = try_fields(quote! { struct Foo {} });
         assert!(matches!(result, Err(CodamaError::Compilation(_))));
     }
 }
