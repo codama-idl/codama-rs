@@ -43,6 +43,7 @@ dependencies = [
  "codama-nodes",
  "codama-stores",
  "proc-macro2",
+ "quote",
  "syn",
 ]
 
