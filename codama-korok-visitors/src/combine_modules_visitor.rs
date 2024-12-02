@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_nodes::{Node, RootNode};
+use codama_nodes::{Node, ProgramNode, RootNode};
 
 #[derive(Default)]
 pub struct CombineModulesVisitor {}
@@ -66,6 +66,59 @@ fn merge_into_root_node(root: &mut RootNode, node: Node) {
     }
 }
 
-fn merge_root_nodes(_this: &mut RootNode, _that: RootNode) {
-    unimplemented!() // TODO
+fn merge_root_nodes(this: &mut RootNode, that: RootNode) {
+    // Get an array of all programs to merge.
+    let mut those_programs = Vec::new();
+    those_programs.push(that.program);
+    those_programs.extend(that.additional_programs);
+
+    // For each program to merge.
+    for that_program in those_programs {
+        // Check if it can be merged with the main root program.
+        if is_same_program(&this.program, &that_program) {
+            merge_program_nodes(&mut this.program, that_program);
+            continue;
+        }
+
+        // Then, check if it can be merged with any additional program.
+        let found = this
+            .additional_programs
+            .iter_mut()
+            .find(|p| is_same_program(p, &that_program));
+
+        if let Some(additional_program) = found {
+            // If so, merge it with the additional program found.
+            merge_program_nodes(additional_program, that_program);
+        } else {
+            // Otherwise, add it as another additional program.
+            this.additional_programs.push(that_program);
+        }
+    }
+}
+
+fn is_same_program(this: &ProgramNode, that: &ProgramNode) -> bool {
+    this.public_key == that.public_key
+}
+
+fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
+    if this.name.is_empty() {
+        this.name = that.name;
+    }
+    if this.public_key.is_empty() {
+        this.public_key = that.public_key;
+    }
+    if this.version.is_empty() {
+        this.version = that.version;
+    }
+    if this.origin.is_none() {
+        this.origin = that.origin;
+    }
+    if this.docs.is_empty() {
+        this.docs = that.docs;
+    }
+    this.accounts.extend(that.accounts);
+    this.instructions.extend(that.instructions);
+    this.defined_types.extend(that.defined_types);
+    this.errors.extend(that.errors);
+    this.pdas.extend(that.pdas);
 }
