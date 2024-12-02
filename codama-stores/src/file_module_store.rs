@@ -11,15 +11,7 @@ pub struct FileModuleStore {
 
 impl FileModuleStore {
     pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
-        let items = &items
-            .iter()
-            .filter_map(|item| match item {
-                syn::Item::Mod(item_mod) if item_mod.content.is_none() => Some(item_mod),
-                _ => None,
-            })
-            .collect::<Vec<_>>();
-
-        items
+        find_nested_file_modules(items)
             .iter()
             .enumerate()
             .map(|(item_index, &item)| FileModuleStore::load_from(&path, item, item_index))
@@ -55,4 +47,19 @@ impl FileModuleStore {
             path,
         })
     }
+}
+
+fn find_nested_file_modules(items: &Vec<syn::Item>) -> Vec<&syn::ItemMod> {
+    items
+        .iter()
+        .filter_map(|item| match item {
+            syn::Item::Mod(syn::ItemMod {
+                content: Some((_, items)),
+                ..
+            }) => Some(find_nested_file_modules(items)),
+            syn::Item::Mod(item_mod) => Some(vec![item_mod]),
+            _ => None,
+        })
+        .flatten()
+        .collect()
 }
