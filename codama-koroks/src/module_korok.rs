@@ -11,11 +11,15 @@ pub struct ModuleKorok<'a> {
 }
 
 impl<'a> ModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, modules: &'a Vec<FileModuleStore>) -> CodamaResult<Self> {
+    pub fn parse(
+        ast: &'a syn::ItemMod,
+        file_modules: &'a Vec<FileModuleStore>,
+        file_module_index: &mut usize,
+    ) -> CodamaResult<Self> {
         match &ast.content {
             Some(content) => Ok(Self {
                 ast,
-                items: ItemKorok::parse_all(&content.1, modules)?,
+                items: ItemKorok::parse_all(&content.1, file_modules, file_module_index)?,
                 node: None,
             }),
             None => Err(syn::Error::new_spanned(

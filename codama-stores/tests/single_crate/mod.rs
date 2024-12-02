@@ -46,10 +46,6 @@ fn load_single_crate() {
         _ => assert!(false, "Unexpected items in person module"),
     };
 
-    // The modules have the correct item indices.
-    assert_eq!(membership_module.item_index, 0);
-    assert_eq!(person_module.item_index, 1);
-
     // The modules have the expected paths.
     assert_eq!(
         membership_module.path,

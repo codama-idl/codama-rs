@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 #[derive(Debug)]
 pub struct FileModuleStore {
     pub file: syn::File,
-    pub item_index: usize,
     pub file_modules: Vec<FileModuleStore>,
     pub path: PathBuf,
 }
@@ -13,12 +12,11 @@ impl FileModuleStore {
     pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
         find_nested_file_modules(items)
             .iter()
-            .enumerate()
-            .map(|(item_index, &item)| FileModuleStore::load_from(&path, item, item_index))
+            .map(|&item| FileModuleStore::load_from(&path, item))
             .collect::<CodamaResult<Vec<_>>>()
     }
 
-    pub fn load_from(path: &Path, item: &syn::ItemMod, item_index: usize) -> CodamaResult<Self> {
+    pub fn load_from(path: &Path, item: &syn::ItemMod) -> CodamaResult<Self> {
         let parent_directory = path.parent().unwrap();
         let filename = path.file_stem().unwrap().to_str().unwrap();
         let current_directory = parent_directory.join(filename);
@@ -42,7 +40,6 @@ impl FileModuleStore {
 
         Ok(Self {
             file,
-            item_index,
             file_modules: modules,
             path,
         })

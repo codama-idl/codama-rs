@@ -16,7 +16,7 @@ fn it_merges_types_into_program_nodes() {
         }
     });
     let file_modules = Vec::new();
-    let mut korok = ModuleKorok::parse(&ast, &file_modules).unwrap();
+    let mut korok = ModuleKorok::parse(&ast, &file_modules, &mut 0).unwrap();
     let membership = DefinedTypeNode::new(
         "membership",
         EnumTypeNode::new(vec![
@@ -57,7 +57,7 @@ fn it_does_not_override_existing_nodes_by_default() {
         }
     });
     let file_modules = Vec::new();
-    let mut korok = ModuleKorok::parse(&ast, &file_modules).unwrap();
+    let mut korok = ModuleKorok::parse(&ast, &file_modules, &mut 0).unwrap();
     let membership = DefinedTypeNode::new(
         "membership",
         EnumTypeNode::new(vec![

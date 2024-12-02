@@ -12,7 +12,7 @@ pub struct FileModuleKorok<'a> {
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, module_store: &'a FileModuleStore) -> CodamaResult<Self> {
+    pub fn parse(ast: &'a syn::ItemMod, store: &'a FileModuleStore) -> CodamaResult<Self> {
         if let Some(_) = ast.content {
             return Err(syn::Error::new_spanned(
                 ast,
@@ -23,9 +23,9 @@ impl<'a> FileModuleKorok<'a> {
 
         Ok(Self {
             ast,
-            items: ItemKorok::parse_all(&module_store.file.items, &module_store.file_modules)?,
+            items: ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0)?,
             node: None,
-            store: module_store,
+            store,
         })
     }
 }
