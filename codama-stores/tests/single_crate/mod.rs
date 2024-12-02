@@ -4,7 +4,7 @@ use codama_stores::RootStore;
 #[test]
 fn load_single_crate() {
     let path = get_path("single_crate/dummy");
-    let root_store = RootStore::load_from(&vec![path.as_path()]).unwrap();
+    let root_store = RootStore::load_from(&vec![&path]).unwrap();
 
     // The root store has one crate.
     assert_eq!(root_store.crates.len(), 1);

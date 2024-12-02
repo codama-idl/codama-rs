@@ -1,4 +1,5 @@
 mod from_tokens;
+mod nested_modules;
 mod single_crate;
 
 pub fn get_path(relative_path: &str) -> std::path::PathBuf {

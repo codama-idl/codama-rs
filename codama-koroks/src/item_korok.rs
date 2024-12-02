@@ -20,7 +20,7 @@ impl<'a> ItemKorok<'a> {
     ) -> CodamaResult<Self> {
         match item {
             syn::Item::Mod(ast) if ast.content.is_none() => {
-                let module = modules.iter().nth(item_index);
+                let module = modules.iter().nth(item_index); // TODO: Fix this won't work with nested modules.
                 match module {
                     Some(module) => Ok(ItemKorok::FileModule(FileModuleKorok::parse(ast, module)?)),
                     None => {
