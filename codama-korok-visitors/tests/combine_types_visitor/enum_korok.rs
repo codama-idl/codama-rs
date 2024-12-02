@@ -1,4 +1,4 @@
-use codama_korok_visitors::{BottomUpVisitor, KorokVisitable};
+use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
@@ -35,7 +35,7 @@ fn it_creates_a_defined_type_enum_from_variants() {
     korok.variants[2].node = Some(variant_write.clone().into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(
@@ -63,6 +63,6 @@ fn it_does_not_override_existing_nodes_by_default() {
         EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("right").into()]),
     )));
     korok.node = original_node.clone();
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(korok.node, original_node);
 }

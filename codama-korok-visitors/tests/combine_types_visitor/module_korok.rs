@@ -1,4 +1,4 @@
-use codama_korok_visitors::{BottomUpVisitor, KorokVisitable};
+use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::ModuleKorok;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumTypeNode, NumberTypeNode, ProgramNode,
@@ -35,7 +35,7 @@ fn it_merges_types_into_program_nodes() {
     korok.items[1].set_node(Some(person.clone().into()));
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(
@@ -82,7 +82,7 @@ fn it_does_not_override_existing_nodes_by_default() {
         }
         .into(),
     );
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(

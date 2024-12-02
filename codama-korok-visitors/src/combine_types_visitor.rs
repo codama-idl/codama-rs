@@ -8,17 +8,17 @@ use codama_syn_helpers::syn_traits::*;
 use crate::KorokVisitor;
 
 #[derive(Default)]
-pub struct BottomUpVisitor {
+pub struct CombineTypesVisitor {
     pub r#override: bool,
 }
 
-impl BottomUpVisitor {
+impl CombineTypesVisitor {
     pub fn new() -> Self {
         Self { r#override: false }
     }
 }
 
-impl KorokVisitor for BottomUpVisitor {
+impl KorokVisitor for CombineTypesVisitor {
     fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
         for item_korok in &mut korok.items {
             self.visit_item(item_korok);

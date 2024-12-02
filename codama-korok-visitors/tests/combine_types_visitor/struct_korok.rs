@@ -1,4 +1,4 @@
-use codama_korok_visitors::{BottomUpVisitor, KorokVisitable};
+use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
 use codama_nodes::{
     DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, StringTypeNode, StructFieldTypeNode,
@@ -23,7 +23,7 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() {
     korok.fields.node = Some(struct_node.clone().into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(DefinedTypeNode::new("person", struct_node).into())
@@ -43,7 +43,7 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() {
     korok.fields.node = Some(tuple_node.clone().into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(DefinedTypeNode::new("coordinates", tuple_node).into())
@@ -59,7 +59,7 @@ fn it_creates_a_defined_type_from_single_unnammed_fields() {
     korok.fields.node = Some(TupleTypeNode::new(vec![NumberTypeNode::le(U64).into()]).into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(DefinedTypeNode::new("slot", NumberTypeNode::le(U64)).into())
@@ -85,6 +85,6 @@ fn it_does_not_override_existing_nodes_by_default() {
         StringTypeNode::utf8(),
     )));
     korok.node = original_node.clone();
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(korok.node, original_node);
 }

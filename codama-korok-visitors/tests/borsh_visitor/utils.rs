@@ -1,4 +1,4 @@
-use codama_korok_visitors::{BorshVisitor, BottomUpVisitor, KorokVisitable};
+use codama_korok_visitors::{BorshVisitor, CombineTypesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, RootKorok};
 use codama_nodes::Node;
 use codama_stores::RootStore;
@@ -9,7 +9,7 @@ pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> 
     let store = RootStore::populate_from(tt).unwrap();
     let mut korok = RootKorok::parse(&store).unwrap();
     korok.accept(&mut BorshVisitor::new());
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     node_getter(korok)
 }
 

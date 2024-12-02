@@ -1,4 +1,4 @@
-use codama_korok_visitors::{BottomUpVisitor, KorokVisitable};
+use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::FieldsKorok;
 use codama_nodes::{NumberTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64};
 use codama_syn_helpers::syn_build;
@@ -12,7 +12,7 @@ fn it_create_a_struct_type_node_from_struct_field_type_nodes() {
     korok.all[1].node = Some(StructFieldTypeNode::new("y", NumberTypeNode::le(I32)).into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(
@@ -33,7 +33,7 @@ fn it_create_a_tuple_type_node_from_multiple_type_nodes() {
     korok.all[1].node = Some(NumberTypeNode::le(U64).into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(
@@ -53,7 +53,7 @@ fn it_create_a_tuple_type_node_from_single_type_nodes() {
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(
         korok.node,
         Some(TupleTypeNode::new(vec![NumberTypeNode::le(I32).into()]).into())
@@ -66,7 +66,7 @@ fn it_sets_node_to_none_from_empty_fields() {
     let mut korok = FieldsKorok::parse(&ast).unwrap();
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(korok.node, None);
 }
 
@@ -77,7 +77,7 @@ fn it_does_not_override_existing_nodes_by_default() {
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 
-    korok.accept(&mut BottomUpVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new());
     assert_eq!(korok.node, Some(NumberTypeNode::le(U64).into()));
 }
 
@@ -88,7 +88,7 @@ fn it_can_override_existing_nodes() {
     korok.all[0].r#type.node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 
-    korok.accept(&mut BottomUpVisitor { r#override: true });
+    korok.accept(&mut CombineTypesVisitor { r#override: true });
     assert_eq!(
         korok.node,
         Some(TupleTypeNode::new(vec![NumberTypeNode::le(I32).into()]).into())
