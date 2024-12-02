@@ -3,7 +3,7 @@ use codama_stores::RootStore;
 
 #[test]
 fn load_single_crate() {
-    let path = get_path("single_crate/dummy");
+    let path = get_path("single_crate/crate");
     let root_store = RootStore::load_from(&vec![&path]).unwrap();
 
     // The root store has one crate.
@@ -29,7 +29,7 @@ fn load_single_crate() {
     ));
 
     // The crate store has the expected path.
-    assert_eq!(crate_store.path, get_path("single_crate/dummy/src/lib.rs"));
+    assert_eq!(crate_store.path, get_path("single_crate/crate/src/lib.rs"));
 
     // The crate store has 2 file modules.
     assert_eq!(crate_store.file_modules.len(), 2);
@@ -53,11 +53,11 @@ fn load_single_crate() {
     // The modules have the expected paths.
     assert_eq!(
         membership_module.path,
-        get_path("single_crate/dummy/src/membership.rs")
+        get_path("single_crate/crate/src/membership.rs")
     );
     assert_eq!(
         person_module.path,
-        get_path("single_crate/dummy/src/person.rs")
+        get_path("single_crate/crate/src/person.rs")
     );
 
     // The modules have no nested modules.

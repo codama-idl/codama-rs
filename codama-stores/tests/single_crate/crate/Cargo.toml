@@ -1,5 +1,5 @@
 [package]
-name = "single-crate-dummy"
+name = "single-crate"
 version = "0.0.0"
 edition = "2021"
 publish = false

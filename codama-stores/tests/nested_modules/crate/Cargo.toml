@@ -1,5 +1,5 @@
 [package]
-name = "nested-modules-crate"
+name = "nested-modules"
 version = "0.0.0"
 edition = "2021"
 publish = false
