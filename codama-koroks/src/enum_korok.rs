@@ -2,7 +2,7 @@ use crate::{attributes::Attribute, EnumVariantKorok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct EnumKorok<'a> {
     pub ast: &'a syn::ItemEnum,
     pub attributes: Vec<Attribute<'a>>,

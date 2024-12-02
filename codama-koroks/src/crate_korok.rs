@@ -3,7 +3,7 @@ use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::CrateStore;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CrateKorok<'a> {
     pub items: Vec<ItemKorok<'a>>,
     pub node: Option<Node>,

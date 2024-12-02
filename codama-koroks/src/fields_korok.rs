@@ -2,7 +2,7 @@ use crate::FieldKorok;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct FieldsKorok<'a> {
     pub ast: &'a syn::Fields,
     pub all: Vec<FieldKorok<'a>>,

@@ -4,7 +4,7 @@ use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 use std::ops::AddAssign;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ItemKorok<'a> {
     FileModule(FileModuleKorok<'a>),
     Module(ModuleKorok<'a>),

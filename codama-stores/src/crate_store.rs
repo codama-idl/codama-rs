@@ -7,7 +7,7 @@ use std::{
 
 use crate::FileModuleStore;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CrateStore {
     pub file: syn::File,
     pub manifest: Option<Manifest>,

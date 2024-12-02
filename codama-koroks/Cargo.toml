@@ -3,6 +3,9 @@ name = "codama-koroks"
 version = "0.1.0"
 edition = "2021"
 
+[dev-dependencies]
+quote = "1.0"
+
 [dependencies]
 codama-errors = { path = "../codama-errors" }
 codama-nodes = { path = "../codama-nodes" }

@@ -3,7 +3,7 @@ use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub items: Vec<ItemKorok<'a>>,

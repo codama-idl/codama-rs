@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct FileModuleStore {
     pub file: syn::File,
     pub file_modules: Vec<FileModuleStore>,

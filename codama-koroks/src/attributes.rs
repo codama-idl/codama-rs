@@ -1,7 +1,7 @@
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::TypeNode;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Attribute<'a> {
     Type(TypeAttribute<'a>),
     StringModifier(StringModifierAttribute<'a>),
@@ -24,23 +24,23 @@ impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct TypeAttribute<'a> {
     pub ast: &'a syn::Attribute,
     pub node: TypeNode,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct StringModifierAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NumberModifierAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct UnsupportedAttribute<'a> {
     pub ast: &'a syn::Attribute,
 }

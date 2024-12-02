@@ -2,7 +2,7 @@ use crate::CrateStore;
 use codama_errors::CodamaResult;
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct RootStore {
     pub crates: Vec<CrateStore>,
 }

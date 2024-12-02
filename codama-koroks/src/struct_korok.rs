@@ -2,7 +2,7 @@ use crate::{attributes::Attribute, FieldsKorok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
     pub attributes: Vec<Attribute<'a>>,

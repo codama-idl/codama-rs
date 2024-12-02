@@ -1,6 +1,6 @@
 use codama_nodes::Node;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct TypeKorok<'a> {
     pub ast: &'a syn::Type,
     pub node: Option<Node>,
