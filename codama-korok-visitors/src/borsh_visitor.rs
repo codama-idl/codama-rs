@@ -1,11 +1,10 @@
+use crate::KorokVisitor;
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, NumberFormat::*, NumberTypeNode,
     PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
     TypeNode,
 };
 use codama_syn_helpers::syn_traits::*;
-
-use crate::KorokVisitor;
 
 pub struct BorshVisitor {}
 
