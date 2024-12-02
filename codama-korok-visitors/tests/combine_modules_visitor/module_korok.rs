@@ -1,7 +1,7 @@
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::ModuleKorok;
 use codama_nodes::{
-    DefinedTypeNode, EnumEmptyVariantTypeNode, EnumTypeNode, NumberTypeNode, ProgramNode,
+    DefinedTypeNode, EnumEmptyVariantTypeNode, EnumTypeNode, NumberTypeNode, ProgramNode, RootNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, U32,
 };
 use codama_syn_helpers::syn_build;
@@ -39,10 +39,10 @@ fn it_merges_types_into_program_nodes() {
     assert_eq!(
         korok.node,
         Some(
-            ProgramNode {
+            RootNode::new(ProgramNode {
                 defined_types: vec![membership, person],
                 ..Default::default()
-            }
+            })
             .into()
         )
     );
