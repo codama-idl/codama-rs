@@ -11,6 +11,20 @@ impl CombineModulesVisitor {
 }
 
 impl KorokVisitor for CombineModulesVisitor {
+    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
+        for crate_korok in &mut korok.crates {
+            self.visit_crate(crate_korok);
+        }
+        korok.node = combine_crates(&korok.node, &korok.crates);
+    }
+
+    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
+        for item_korok in &mut korok.items {
+            self.visit_item(item_korok);
+        }
+        korok.node = combine_items(&korok.node, &korok.items);
+    }
+
     fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
         for item_korok in &mut korok.items {
             self.visit_item(item_korok);
@@ -26,25 +40,45 @@ impl KorokVisitor for CombineModulesVisitor {
     }
 }
 
-fn combine_items(node: &Option<Node>, items: &Vec<codama_koroks::ItemKorok>) -> Option<Node> {
-    // Create the new RootNode to bind all items together.
-    // If there is already a node that is not a RootNode nor a ProgramNode,
-    // return it without combining the items.
-    let mut root_node = match node {
-        Some(Node::Root(root)) => root.clone(),
-        Some(Node::Program(program)) => RootNode::new(program.clone()),
-        None => RootNode::default(),
-        _ => return node.clone(),
-    };
+fn combine_crates(
+    initial_node: &Option<Node>,
+    crates: &Vec<codama_koroks::CrateKorok>,
+) -> Option<Node> {
+    // Get all available nodes from the items.
+    let crate_nodes = crates
+        .iter()
+        .filter_map(|item| item.node.clone())
+        .collect::<Vec<_>>();
 
+    combine_nodes(initial_node, crate_nodes)
+}
+
+fn combine_items(
+    initial_node: &Option<Node>,
+    items: &Vec<codama_koroks::ItemKorok>,
+) -> Option<Node> {
     // Get all available nodes from the items.
     let item_nodes = items
         .iter()
         .filter_map(|item| item.node())
         .collect::<Vec<_>>();
 
-    // Merge them one by one into the root node.
-    for item_node in item_nodes {
+    combine_nodes(initial_node, item_nodes)
+}
+
+fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Option<Node> {
+    // Create the new RootNode to bind all items together.
+    // If there is already a node that is not a RootNode nor a ProgramNode,
+    // return it without combining the items.
+    let mut root_node = match initial_node {
+        Some(Node::Root(root)) => root.clone(),
+        Some(Node::Program(program)) => RootNode::new(program.clone()),
+        None => RootNode::default(),
+        _ => return initial_node.clone(),
+    };
+
+    // Merge each node into the root node one by one.
+    for item_node in nodes_to_merge {
         merge_into_root_node(&mut root_node, item_node);
     }
 
