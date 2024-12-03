@@ -19,7 +19,7 @@ impl CombineTypesVisitor {
 
 impl KorokVisitor for CombineTypesVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_fields(&mut korok.fields);
+        self.visit_children(korok);
         if korok.node.is_some() && !self.r#override {
             return ();
         }
@@ -35,9 +35,7 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        for variant_korok in &mut korok.variants {
-            self.visit_enum_variant(variant_korok);
-        }
+        self.visit_children(korok);
         if korok.node.is_some() && !self.r#override {
             return ();
         }
@@ -69,7 +67,7 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        self.visit_fields(&mut korok.fields);
+        self.visit_children(korok);
         if korok.node.is_some() && !self.r#override {
             return ();
         }
@@ -110,9 +108,7 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        for field_korok in &mut korok.all {
-            self.visit_field(field_korok);
-        }
+        self.visit_children(korok);
         if korok.node.is_some() && !self.r#override {
             return ();
         }
@@ -149,7 +145,7 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_type(&mut korok.r#type);
+        self.visit_children(korok);
         if korok.node.is_some() && !self.r#override {
             return ();
         }

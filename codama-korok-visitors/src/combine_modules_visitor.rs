@@ -13,30 +13,22 @@ impl CombineModulesVisitor {
 
 impl KorokVisitor for CombineModulesVisitor {
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
-        for crate_korok in &mut korok.crates {
-            self.visit_crate(crate_korok);
-        }
+        self.visit_children(korok);
         korok.node = combine_koroks(&korok.node, &korok.crates);
     }
 
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+        self.visit_children(korok);
         korok.node = combine_koroks(&korok.node, &korok.items);
     }
 
     fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+        self.visit_children(korok);
         korok.node = combine_koroks(&korok.node, &korok.items);
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+        self.visit_children(korok);
         korok.node = combine_koroks(&korok.node, &korok.items);
     }
 }

@@ -1,4 +1,15 @@
+use crate::KorokVisitable;
+
 pub trait KorokVisitor {
+    fn visit_children(&mut self, korok: &mut dyn KorokVisitable)
+    where
+        Self: Sized,
+    {
+        for child in korok.get_children() {
+            child.accept(self);
+        }
+    }
+
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
         for crate_korok in &mut korok.crates {
             self.visit_crate(crate_korok);
