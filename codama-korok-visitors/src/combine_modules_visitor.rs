@@ -16,59 +16,33 @@ impl KorokVisitor for CombineModulesVisitor {
         for crate_korok in &mut korok.crates {
             self.visit_crate(crate_korok);
         }
-        korok.node = combine_crates(&korok.node, &korok.crates);
+        korok.node = combine_koroks(&korok.node, &korok.crates);
     }
 
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
         for item_korok in &mut korok.items {
             self.visit_item(item_korok);
         }
-        korok.node = combine_items(&korok.node, &korok.items);
+        korok.node = combine_koroks(&korok.node, &korok.items);
     }
 
     fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
         for item_korok in &mut korok.items {
             self.visit_item(item_korok);
         }
-        korok.node = combine_items(&korok.node, &korok.items);
+        korok.node = combine_koroks(&korok.node, &korok.items);
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
         for item_korok in &mut korok.items {
             self.visit_item(item_korok);
         }
-        korok.node = combine_items(&korok.node, &korok.items);
+        korok.node = combine_koroks(&korok.node, &korok.items);
     }
 }
 
-fn combine_crates(
-    initial_node: &Option<Node>,
-    crates: &Vec<codama_koroks::CrateKorok>,
-) -> Option<Node> {
-    // Get all available nodes from crates.
-    let crate_nodes = crates
-        .iter()
-        .filter_map(|item| item.node.clone())
-        .collect::<Vec<_>>();
-
-    combine_nodes(initial_node, crate_nodes)
-}
-
-fn combine_items(
-    initial_node: &Option<Node>,
-    items: &Vec<codama_koroks::ItemKorok>,
-) -> Option<Node> {
-    // Get all available nodes from items.
-    let item_nodes = items
-        .iter()
-        .filter_map(|item| item.node().clone())
-        .collect::<Vec<_>>();
-
-    combine_nodes(initial_node, item_nodes)
-}
-
 /// Create a single RootNode from an initial node and a list of nodes to merge.
-fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Option<Node> {
+fn combine_koroks<T: Korok>(initial_node: &Option<Node>, koroks: &Vec<T>) -> Option<Node> {
     // Create the new RootNode to bind all items together from the exisiting node, in any.
     // - If there is already a RootNode or ProgramNode, use this as a starting point.
     // - If there is no existing node, use None and let the merging create a new one if needed.
@@ -79,6 +53,12 @@ fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Opti
         None => None,
         _ => return initial_node.clone(),
     };
+
+    // Get all nodes from the koroks to merge.
+    let nodes_to_merge = koroks
+        .iter()
+        .filter_map(|item| item.node().clone())
+        .collect::<Vec<_>>();
 
     // Convert all nodes into RootNodes and merge them with the binding root node.
     for that_root_node in get_root_nodes_to_merge(nodes_to_merge) {
