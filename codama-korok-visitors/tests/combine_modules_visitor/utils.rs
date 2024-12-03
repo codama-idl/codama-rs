@@ -1,6 +1,6 @@
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, ModuleKorok, UnsupportedItemKorok};
-use codama_nodes::Node;
+use codama_nodes::{DefinedTypeNode, Node, PublicKeyTypeNode};
 use codama_stores::CrateStore;
 use quote::{format_ident, quote};
 use std::default;
@@ -24,6 +24,11 @@ impl default::Default for CombineModulesInput {
 impl CombineModulesInput {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn set_initial_node<T: Into<Node>>(mut self, node: T) -> Self {
+        self.initial_node = Some(node.into());
+        self
     }
 
     pub fn add_node<T: Into<Node>>(mut self, node: T) -> Self {
@@ -71,4 +76,8 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
     module_korok.node = input.initial_node;
     module_korok.accept(&mut CombineModulesVisitor::new());
     module_korok.node
+}
+
+pub fn get_type(name: &str) -> DefinedTypeNode {
+    DefinedTypeNode::new(name, PublicKeyTypeNode::new())
 }
