@@ -1,10 +1,9 @@
-use std::default;
-
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, ModuleKorok, UnsupportedItemKorok};
 use codama_nodes::Node;
 use codama_stores::CrateStore;
 use quote::{format_ident, quote};
+use std::default;
 
 pub struct CombineModulesInput {
     pub name: String,
