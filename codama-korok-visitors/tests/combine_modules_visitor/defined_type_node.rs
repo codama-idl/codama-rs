@@ -21,10 +21,11 @@ fn it_merges_defined_types_into_root_nodes() {
         ]),
     );
     assert_eq!(
-        combine_modules(CombineModulesInput {
-            nodes: vec![Some(membership.clone().into()), Some(person.clone().into())],
-            ..Default::default()
-        }),
+        combine_modules(
+            CombineModulesInput::new()
+                .add_node(membership.clone())
+                .add_node(person.clone())
+        ),
         Some(
             RootNode::new(ProgramNode {
                 defined_types: vec![membership, person],
@@ -46,13 +47,11 @@ fn it_merges_defined_types_inside_programs_into_root_nodes() {
         ..Default::default()
     };
     assert_eq!(
-        combine_modules(CombineModulesInput {
-            nodes: vec![
-                Some(program_a.clone().into()),
-                Some(program_b.clone().into())
-            ],
-            ..Default::default()
-        }),
+        combine_modules(
+            CombineModulesInput::new()
+                .add_node(program_a)
+                .add_node(program_b)
+        ),
         Some(
             RootNode::new(ProgramNode {
                 defined_types: vec![

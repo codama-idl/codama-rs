@@ -21,6 +21,17 @@ impl default::Default for CombineModulesInput {
     }
 }
 
+impl CombineModulesInput {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn add_node<T: Into<Node>>(mut self, node: T) -> Self {
+        self.nodes.push(Some(node.into()));
+        self
+    }
+}
+
 pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
     let name = format_ident!("{}", input.name);
     let crate_store = CrateStore::populate_from(quote! {
