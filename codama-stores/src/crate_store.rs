@@ -82,18 +82,27 @@ pub fn get_closest_manifest_path(path: &Path) -> CodamaResult<PathBuf> {
 }
 
 fn get_product_path(manifest: &Manifest) -> CodamaResult<PathBuf> {
-    match &get_product(manifest)?.path {
+    let product = get_product_candidates(manifest)
+        .iter()
+        .filter_map(|product| match product.path {
+            Some(ref path) => Some(path),
+            None => None,
+        })
+        .next();
+
+    match product {
         Some(path) => Ok(PathBuf::from(path)),
         None => Err(cargo_toml::Error::Other("No crate path found in Cargo.toml").into()),
     }
 }
 
-fn get_product(manifest: &Manifest) -> CodamaResult<&cargo_toml::Product> {
+fn get_product_candidates(manifest: &Manifest) -> Vec<&cargo_toml::Product> {
+    let mut candidates = Vec::new();
     if let Some(product) = &manifest.lib {
-        return Ok(&product);
+        candidates.push(product);
     }
-    if manifest.bin.len() > 0 {
-        return Ok(&manifest.bin.first().unwrap());
+    for product in &manifest.bin {
+        candidates.push(product);
     }
-    Err(cargo_toml::Error::Other("No crate path found in Cargo.toml").into())
+    candidates
 }
