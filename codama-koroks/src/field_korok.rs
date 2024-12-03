@@ -1,4 +1,4 @@
-use crate::{attributes::Attribute, TypeKorok};
+use crate::{attributes::Attribute, Korok, TypeKorok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
@@ -19,5 +19,15 @@ impl<'a> FieldKorok<'a> {
             node: None,
             r#type: TypeKorok::new(&ast.ty),
         })
+    }
+}
+
+impl Korok for FieldKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }

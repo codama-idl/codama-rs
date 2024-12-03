@@ -1,5 +1,5 @@
 use codama_korok_visitors::{BorshVisitor, CombineTypesVisitor, KorokVisitable};
-use codama_koroks::{ItemKorok, RootKorok};
+use codama_koroks::{ItemKorok, Korok, RootKorok};
 use codama_nodes::Node;
 use codama_stores::RootStore;
 use proc_macro2::TokenStream;
@@ -14,7 +14,7 @@ pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> 
 }
 
 pub fn get_node_from_item(tt: TokenStream) -> Option<Node> {
-    get_node(tt, |k| (&k.crates[0].items[0]).node())
+    get_node(tt, |k| (&k.crates[0].items[0]).node().clone())
 }
 
 pub fn get_node_from_enum_variant(tt: TokenStream) -> Option<Node> {

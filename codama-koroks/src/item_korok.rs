@@ -1,4 +1,4 @@
-use crate::{EnumKorok, FileModuleKorok, ModuleKorok, StructKorok, UnsupportedItemKorok};
+use crate::{EnumKorok, FileModuleKorok, Korok, ModuleKorok, StructKorok, UnsupportedItemKorok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
@@ -53,24 +53,26 @@ impl<'a> ItemKorok<'a> {
             .map(|item| Self::parse(item, file_modules, file_module_index))
             .collect()
     }
+}
 
-    pub fn node(&self) -> Option<Node> {
+impl Korok for ItemKorok<'_> {
+    fn node(&self) -> &Option<Node> {
         match self {
-            ItemKorok::Struct(k) => k.node.clone(),
-            ItemKorok::Enum(k) => k.node.clone(),
-            ItemKorok::FileModule(k) => k.node.clone(),
-            ItemKorok::Module(k) => k.node.clone(),
-            ItemKorok::Unsupported(k) => k.node.clone(),
+            ItemKorok::Struct(k) => k.node(),
+            ItemKorok::Enum(k) => k.node(),
+            ItemKorok::FileModule(k) => k.node(),
+            ItemKorok::Module(k) => k.node(),
+            ItemKorok::Unsupported(k) => k.node(),
         }
     }
 
-    pub fn set_node(&mut self, node: Option<Node>) {
+    fn set_node(&mut self, node: Option<Node>) {
         match self {
-            ItemKorok::Struct(k) => k.node = node,
-            ItemKorok::Enum(k) => k.node = node,
-            ItemKorok::FileModule(k) => k.node = node,
-            ItemKorok::Module(k) => k.node = node,
-            ItemKorok::Unsupported(k) => k.node = node,
+            ItemKorok::Struct(k) => k.set_node(node),
+            ItemKorok::Enum(k) => k.set_node(node),
+            ItemKorok::FileModule(k) => k.set_node(node),
+            ItemKorok::Module(k) => k.set_node(node),
+            ItemKorok::Unsupported(k) => k.set_node(node),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::ItemKorok;
+use crate::{ItemKorok, Korok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
@@ -27,5 +27,15 @@ impl<'a> FileModuleKorok<'a> {
             node: None,
             store,
         })
+    }
+}
+
+impl Korok for FileModuleKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }

@@ -1,4 +1,4 @@
-use crate::{attributes::Attribute, FieldsKorok};
+use crate::{attributes::Attribute, FieldsKorok, Korok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
@@ -24,5 +24,15 @@ impl<'a> EnumVariantKorok<'a> {
         variants: &'a syn::punctuated::Punctuated<syn::Variant, syn::Token![,]>,
     ) -> CodamaResult<Vec<Self>> {
         variants.iter().map(Self::parse).collect()
+    }
+}
+
+impl Korok for EnumVariantKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }

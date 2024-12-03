@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_koroks::Korok;
 use codama_nodes::{Node, ProgramNode, RootNode};
 
 #[derive(Default)]
@@ -60,7 +61,7 @@ fn combine_items(
     // Get all available nodes from items.
     let item_nodes = items
         .iter()
-        .filter_map(|item| item.node())
+        .filter_map(|item| item.node().clone())
         .collect::<Vec<_>>();
 
     combine_nodes(initial_node, item_nodes)

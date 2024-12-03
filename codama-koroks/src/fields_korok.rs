@@ -1,4 +1,4 @@
-use crate::FieldKorok;
+use crate::{FieldKorok, Korok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
@@ -20,5 +20,15 @@ impl<'a> FieldsKorok<'a> {
             }?,
             node: None,
         })
+    }
+}
+
+impl Korok for FieldsKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }

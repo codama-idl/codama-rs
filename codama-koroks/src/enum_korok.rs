@@ -1,4 +1,4 @@
-use crate::{attributes::Attribute, EnumVariantKorok};
+use crate::{attributes::Attribute, EnumVariantKorok, Korok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 
@@ -18,5 +18,15 @@ impl<'a> EnumKorok<'a> {
             node: None,
             variants: EnumVariantKorok::parse_all(&ast.variants)?,
         })
+    }
+}
+
+impl Korok for EnumKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }

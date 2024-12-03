@@ -1,4 +1,4 @@
-use crate::ItemKorok;
+use crate::{ItemKorok, Korok};
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::CrateStore;
@@ -21,5 +21,15 @@ impl<'a> CrateKorok<'a> {
             node: None,
             store: crate_store,
         })
+    }
+}
+
+impl Korok for CrateKorok<'_> {
+    fn node(&self) -> &Option<Node> {
+        &self.node
+    }
+
+    fn set_node(&mut self, node: Option<Node>) {
+        self.node = node;
     }
 }
