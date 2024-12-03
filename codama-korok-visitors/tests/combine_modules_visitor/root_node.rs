@@ -18,25 +18,10 @@ fn roots_with_same_pubkey_programs() {
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .add_node(RootNode::new(ProgramNode {
-                    name: "foo".into(),
-                    public_key: "1234".into(),
-                    ..Default::default()
-                }))
-                .add_node(RootNode::new(ProgramNode {
-                    name: "bar".into(),
-                    public_key: "1234".into(),
-                    ..Default::default()
-                }))
+                .add_node(RootNode::new(ProgramNode::new("foo", "1234")))
+                .add_node(RootNode::new(ProgramNode::new("bar", "1234")))
         ),
-        Some(
-            RootNode::new(ProgramNode {
-                name: "foo".into(),
-                public_key: "1234".into(),
-                ..Default::default()
-            })
-            .into()
-        )
+        Some(RootNode::new(ProgramNode::new("foo", "1234")).into())
     );
 }
 
@@ -46,20 +31,12 @@ fn defined_root_within_scraps() {
         combine_modules(
             CombineModulesInput::new()
                 .add_node(DefinedTypeNode::new("foo", NumberTypeNode::le(U32)))
-                .add_node(RootNode::new(ProgramNode {
-                    name: "my_program".into(),
-                    public_key: "1234".into(),
-                    ..Default::default()
-                }))
+                .add_node(RootNode::new(ProgramNode::new("my_program", "1234")))
                 .add_node(DefinedTypeNode::new("bar", NumberTypeNode::le(U32)))
         ),
         Some(
             RootNode {
-                program: ProgramNode {
-                    name: "my_program".into(),
-                    public_key: "1234".into(),
-                    ..Default::default()
-                },
+                program: ProgramNode::new("my_program", "1234"),
                 additional_programs: vec![ProgramNode {
                     defined_types: vec![
                         DefinedTypeNode::new("foo", NumberTypeNode::le(U32)),

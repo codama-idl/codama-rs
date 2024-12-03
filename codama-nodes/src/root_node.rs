@@ -16,6 +16,11 @@ impl RootNode {
             ..Self::default()
         }
     }
+
+    pub fn add_program(mut self, program: ProgramNode) -> Self {
+        self.additional_programs.push(program);
+        self
+    }
 }
 
 impl From<ProgramNode> for RootNode {
@@ -64,39 +69,18 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = RootNode {
-            program: ProgramNode {
-                name: "myProgram".into(),
-                ..ProgramNode::default()
-            },
+            program: ProgramNode::new("myProgram", "1111"),
             additional_programs: vec![
-                ProgramNode {
-                    name: "myProgramDependencyA".into(),
-                    ..ProgramNode::default()
-                },
-                ProgramNode {
-                    name: "myProgramDependencyB".into(),
-                    ..ProgramNode::default()
-                },
+                ProgramNode::new("myProgramDependencyA", "2222"),
+                ProgramNode::new("myProgramDependencyB", "3333"),
             ],
         };
-        assert_eq!(
-            node.program,
-            ProgramNode {
-                name: "myProgram".into(),
-                ..ProgramNode::default()
-            }
-        );
+        assert_eq!(node.program, ProgramNode::new("myProgram", "1111"));
         assert_eq!(
             node.additional_programs,
             vec![
-                ProgramNode {
-                    name: "myProgramDependencyA".into(),
-                    ..ProgramNode::default()
-                },
-                ProgramNode {
-                    name: "myProgramDependencyB".into(),
-                    ..ProgramNode::default()
-                },
+                ProgramNode::new("myProgramDependencyA", "2222"),
+                ProgramNode::new("myProgramDependencyB", "3333"),
             ]
         );
     }

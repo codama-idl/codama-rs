@@ -30,12 +30,82 @@ pub struct ProgramNode {
     pub errors: Vec<ErrorNode>,
 }
 
+impl ProgramNode {
+    pub fn new<T: Into<CamelCaseString>, U: Into<String>>(name: T, public_key: U) -> Self {
+        Self {
+            name: name.into(),
+            public_key: public_key.into(),
+            ..Default::default()
+        }
+    }
+
+    pub fn set_version<T: Into<String>>(mut self, version: T) -> Self {
+        self.version = version.into();
+        self
+    }
+
+    pub fn add_account(mut self, account: AccountNode) -> Self {
+        self.accounts.push(account);
+        self
+    }
+
+    pub fn add_instruction(mut self, instruction: InstructionNode) -> Self {
+        self.instructions.push(instruction);
+        self
+    }
+
+    pub fn add_defined_type(mut self, defined_type: DefinedTypeNode) -> Self {
+        self.defined_types.push(defined_type);
+        self
+    }
+
+    pub fn add_pda(mut self, pda: PdaNode) -> Self {
+        self.pdas.push(pda);
+        self
+    }
+
+    pub fn add_error(mut self, error: ErrorNode) -> Self {
+        self.errors.push(error);
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn empty_program() {
+    fn new() {
+        let node = ProgramNode::new("my_program", "1234..5678");
+        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.public_key, "1234..5678".to_string());
+        assert_eq!(node.version, "".to_string());
+        assert_eq!(node.origin, None);
+        assert_eq!(node.docs, Docs::default());
+        assert_eq!(node.accounts, vec![]);
+        assert_eq!(node.instructions, vec![]);
+        assert_eq!(node.defined_types, vec![]);
+        assert_eq!(node.pdas, vec![]);
+        assert_eq!(node.errors, vec![]);
+    }
+
+    #[test]
+    fn default_program() {
+        let node = ProgramNode::default();
+        assert_eq!(node.name, CamelCaseString::new(""));
+        assert_eq!(node.public_key, "".to_string());
+        assert_eq!(node.version, "".to_string());
+        assert_eq!(node.origin, None);
+        assert_eq!(node.docs, Docs::default());
+        assert_eq!(node.accounts, vec![]);
+        assert_eq!(node.instructions, vec![]);
+        assert_eq!(node.defined_types, vec![]);
+        assert_eq!(node.pdas, vec![]);
+        assert_eq!(node.errors, vec![]);
+    }
+
+    #[test]
+    fn direct_instantiation() {
         let node = ProgramNode {
             name: "myProgram".into(),
             public_key: "1234..5678".into(),

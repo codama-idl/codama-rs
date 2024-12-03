@@ -27,10 +27,11 @@ fn it_merges_defined_types_into_root_nodes() {
                 .add_node(person.clone())
         ),
         Some(
-            RootNode::new(ProgramNode {
-                defined_types: vec![membership, person],
-                ..Default::default()
-            })
+            RootNode::new(
+                ProgramNode::default()
+                    .add_defined_type(membership)
+                    .add_defined_type(person)
+            )
             .into()
         )
     );
@@ -38,14 +39,10 @@ fn it_merges_defined_types_into_root_nodes() {
 
 #[test]
 fn it_merges_defined_types_inside_programs_into_root_nodes() {
-    let program_a = ProgramNode {
-        defined_types: vec![DefinedTypeNode::new("foo", NumberTypeNode::le(U32))],
-        ..Default::default()
-    };
-    let program_b = ProgramNode {
-        defined_types: vec![DefinedTypeNode::new("bar", NumberTypeNode::le(U32))],
-        ..Default::default()
-    };
+    let program_a = ProgramNode::default()
+        .add_defined_type(DefinedTypeNode::new("foo", NumberTypeNode::le(U32)));
+    let program_b = ProgramNode::default()
+        .add_defined_type(DefinedTypeNode::new("bar", NumberTypeNode::le(U32)));
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -53,13 +50,11 @@ fn it_merges_defined_types_inside_programs_into_root_nodes() {
                 .add_node(program_b)
         ),
         Some(
-            RootNode::new(ProgramNode {
-                defined_types: vec![
-                    DefinedTypeNode::new("foo", NumberTypeNode::le(U32)),
-                    DefinedTypeNode::new("bar", NumberTypeNode::le(U32))
-                ],
-                ..Default::default()
-            })
+            RootNode::new(
+                ProgramNode::default()
+                    .add_defined_type(DefinedTypeNode::new("foo", NumberTypeNode::le(U32)))
+                    .add_defined_type(DefinedTypeNode::new("bar", NumberTypeNode::le(U32)))
+            )
             .into()
         )
     );
