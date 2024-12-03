@@ -70,37 +70,83 @@ fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Opti
     // Create the new RootNode to bind all items together.
     // If there is already a node that is not a RootNode nor a ProgramNode,
     // return it without combining the items.
-    let mut root_node = match initial_node {
-        Some(Node::Root(root)) => root.clone(),
-        Some(Node::Program(program)) => RootNode::new(program.clone()),
-        None => RootNode::default(),
+    let mut this_root_node = match initial_node {
+        Some(Node::Root(root)) => Some(root.clone()),
+        Some(Node::Program(program)) => Some(RootNode::new(program.clone())),
+        None => None,
         _ => return initial_node.clone(),
     };
 
     // Merge each node into the root node one by one.
-    for item_node in nodes_to_merge {
-        merge_into_root_node(&mut root_node, item_node);
+    for that_root_node in get_root_nodes_to_merge(nodes_to_merge) {
+        merge_root_nodes(&mut this_root_node, that_root_node);
     }
 
-    Some(root_node.into())
+    this_root_node.map(Into::into)
 }
 
-fn merge_into_root_node(root: &mut RootNode, node: Node) {
-    match node {
-        Node::Root(node) => merge_root_nodes(root, node),
-        Node::Program(node) => merge_root_nodes(root, RootNode::new(node)),
-        Node::Account(node) => root.program.accounts.push(node),
-        // TODO: Check if instruction needs merging instead of pushing.
-        // E.g. InstructionNode with accounts only and InstructionNode with arguments only, with the same name.
-        Node::Instruction(node) => root.program.instructions.push(node),
-        Node::DefinedType(node) => root.program.defined_types.push(node),
-        Node::Error(node) => root.program.errors.push(node),
-        Node::Pda(node) => root.program.pdas.push(node),
-        _ => (),
+fn get_root_nodes_to_merge(nodes: Vec<Node>) -> Vec<RootNode> {
+    let (roots_and_programs, scraps) = nodes
+        .into_iter()
+        .partition::<Vec<Node>, _>(|node| matches!(node, Node::Root(_) | Node::Program(_)));
+
+    let mut roots = roots_and_programs
+        .into_iter()
+        .filter_map(|node| match node {
+            Node::Root(node) => Some(node),
+            Node::Program(node) => Some(RootNode::new(node)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    match get_scraps_root_node(scraps) {
+        Some(root) => roots.push(root),
+        None => (),
     }
+
+    roots
 }
 
-fn merge_root_nodes(this: &mut RootNode, that: RootNode) {
+fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
+    let mut has_scraps = false;
+    let mut root = RootNode::default();
+
+    for node in nodes {
+        match node {
+            Node::Account(node) => {
+                root.program.accounts.push(node);
+                has_scraps = true
+            }
+            Node::Instruction(node) => {
+                root.program.instructions.push(node);
+                has_scraps = true
+            }
+            Node::DefinedType(node) => {
+                root.program.defined_types.push(node);
+                has_scraps = true
+            }
+            Node::Error(node) => {
+                root.program.errors.push(node);
+                has_scraps = true
+            }
+            Node::Pda(node) => {
+                root.program.pdas.push(node);
+                has_scraps = true
+            }
+            _ => (),
+        }
+    }
+
+    has_scraps.then(|| root)
+}
+
+fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
+    // If there is no root node yet, set it to the one provided.
+    let Some(this) = this else {
+        *this = Some(that);
+        return;
+    };
+
     // Get an array of all programs to merge.
     let mut those_programs = Vec::new();
     those_programs.push(that.program);
