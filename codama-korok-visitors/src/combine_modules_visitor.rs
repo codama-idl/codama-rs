@@ -44,7 +44,7 @@ fn combine_crates(
     initial_node: &Option<Node>,
     crates: &Vec<codama_koroks::CrateKorok>,
 ) -> Option<Node> {
-    // Get all available nodes from the items.
+    // Get all available nodes from crates.
     let crate_nodes = crates
         .iter()
         .filter_map(|item| item.node.clone())
@@ -57,7 +57,7 @@ fn combine_items(
     initial_node: &Option<Node>,
     items: &Vec<codama_koroks::ItemKorok>,
 ) -> Option<Node> {
-    // Get all available nodes from the items.
+    // Get all available nodes from items.
     let item_nodes = items
         .iter()
         .filter_map(|item| item.node())
@@ -66,10 +66,12 @@ fn combine_items(
     combine_nodes(initial_node, item_nodes)
 }
 
+/// Create a single RootNode from an initial node and a list of nodes to merge.
 fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Option<Node> {
-    // Create the new RootNode to bind all items together.
-    // If there is already a node that is not a RootNode nor a ProgramNode,
-    // return it without combining the items.
+    // Create the new RootNode to bind all items together from the exisiting node, in any.
+    // - If there is already a RootNode or ProgramNode, use this as a starting point.
+    // - If there is no existing node, use None and let the merging create a new one if needed.
+    // - If there is any other node, return it as-is without combining the nodes.
     let mut this_root_node = match initial_node {
         Some(Node::Root(root)) => Some(root.clone()),
         Some(Node::Program(program)) => Some(RootNode::new(program.clone())),
@@ -77,7 +79,7 @@ fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Opti
         _ => return initial_node.clone(),
     };
 
-    // Merge each node into the root node one by one.
+    // Convert all nodes into RootNodes and merge them with the binding root node.
     for that_root_node in get_root_nodes_to_merge(nodes_to_merge) {
         merge_root_nodes(&mut this_root_node, that_root_node);
     }
@@ -85,11 +87,16 @@ fn combine_nodes(initial_node: &Option<Node>, nodes_to_merge: Vec<Node>) -> Opti
     this_root_node.map(Into::into)
 }
 
+/// Convert all nodes to merge into RootNodes.
 fn get_root_nodes_to_merge(nodes: Vec<Node>) -> Vec<RootNode> {
+    // Split the nodes into:
+    // - Nodes that can be converted into RootNodes (Root, Program).
+    // - All other nodes that we will refer to as scraps.
     let (roots_and_programs, scraps) = nodes
         .into_iter()
         .partition::<Vec<Node>, _>(|node| matches!(node, Node::Root(_) | Node::Program(_)));
 
+    // Convert all "rootable" nodes into RootNodes.
     let mut roots = roots_and_programs
         .into_iter()
         .filter_map(|node| match node {
@@ -99,6 +106,7 @@ fn get_root_nodes_to_merge(nodes: Vec<Node>) -> Vec<RootNode> {
         })
         .collect::<Vec<_>>();
 
+    // Try to get a RootNode from all the scraps.
     match get_scraps_root_node(scraps) {
         Some(root) => roots.push(root),
         None => (),
@@ -107,6 +115,7 @@ fn get_root_nodes_to_merge(nodes: Vec<Node>) -> Vec<RootNode> {
     roots
 }
 
+/// Go through all "scraps" nodes and try to get a shared RootNode from them.
 fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
     let mut has_scraps = false;
     let mut root = RootNode::default();
@@ -140,6 +149,7 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
     has_scraps.then(|| root)
 }
 
+/// Merge `that` RootNode into `this` RootNode.
 fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
     // If there is no root node yet, set it to the one provided.
     let Some(this) = this else {
@@ -155,7 +165,7 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
     // For each program to merge.
     for that_program in those_programs {
         // Check if it can be merged with the main root program.
-        if is_same_program(&this.program, &that_program) {
+        if should_merge_program_nodes(&this.program, &that_program) {
             merge_program_nodes(&mut this.program, that_program);
             continue;
         }
@@ -164,7 +174,7 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
         let found = this
             .additional_programs
             .iter_mut()
-            .find(|p| is_same_program(p, &that_program));
+            .find(|p| should_merge_program_nodes(p, &that_program));
 
         if let Some(additional_program) = found {
             // If so, merge it with the additional program found.
@@ -176,10 +186,12 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
     }
 }
 
-fn is_same_program(this: &ProgramNode, that: &ProgramNode) -> bool {
+/// Check if two ProgramNodes should be merged together.
+fn should_merge_program_nodes(this: &ProgramNode, that: &ProgramNode) -> bool {
     this.public_key == that.public_key
 }
 
+/// Merge `that` ProgramNode into `this` ProgramNode.
 fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     if this.name.is_empty() {
         this.name = that.name;
