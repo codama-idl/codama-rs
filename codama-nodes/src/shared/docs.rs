@@ -9,6 +9,11 @@ impl Docs {
         Self(Vec::new())
     }
 
+    pub fn add<T: Into<String>>(mut self, value: T) -> Self {
+        self.0.push(value.into());
+        self
+    }
+
     pub fn push<T: Into<String>>(&mut self, value: T) {
         self.0.push(value.into());
     }
