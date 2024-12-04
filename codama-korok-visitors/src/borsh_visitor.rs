@@ -16,6 +16,9 @@ impl BorshVisitor {
 
 impl KorokVisitor for BorshVisitor {
     fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
+        if korok.node.is_some() {
+            return;
+        }
         korok.node = match self.get_type_node(&korok.ast) {
             Some(node) => Some(node.into()),
             None => None,

@@ -5,6 +5,7 @@ mod enum_struct_variant_type_node;
 mod enum_tuple_variant_type_node;
 mod enum_type_node;
 mod map_type_node;
+mod no_override;
 mod number_type_node;
 mod public_key_type_node;
 mod set_type_node;
