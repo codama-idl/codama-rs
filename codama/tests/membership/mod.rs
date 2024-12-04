@@ -43,6 +43,48 @@ fn get_idl() {
             "endian": "le"
           }
         }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "person",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "name",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "age",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "membership",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "membership"
+              }
+            }
+          ]
+        }
       }
     ]
   },

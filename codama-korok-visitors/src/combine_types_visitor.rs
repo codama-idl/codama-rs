@@ -150,15 +150,12 @@ impl KorokVisitor for CombineTypesVisitor {
             return;
         }
 
-        korok.node = match &korok.r#type.node {
-            Some(Node::Type(node)) => match &korok.ast.ident {
-                Some(ident) => match TypeNode::try_from(node.clone()) {
-                    Ok(node) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
-                    Err(_) => None,
-                },
-                None => Some(node.clone().into()),
+        korok.node = match TypeNode::try_from(korok.r#type.node.clone()) {
+            Ok(node) => match &korok.ast.ident {
+                Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
+                None => Some(node.into()),
             },
-            _ => None,
+            Err(_) => None,
         }
     }
 }

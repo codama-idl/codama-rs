@@ -2,7 +2,7 @@ use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     DefinedTypeLinkNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
     EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode, HiddenPrefixTypeNode,
-    HiddenSuffixTypeNode, MapTypeNode, Node, NodeTrait, NodeUnionTrait, NumberTypeNode,
+    HiddenSuffixTypeNode, LinkNode, MapTypeNode, Node, NodeTrait, NodeUnionTrait, NumberTypeNode,
     OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
@@ -84,6 +84,7 @@ impl TryFrom<Node> for TypeNode {
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         match node {
             Node::Type(node) => Self::try_from(node),
+            Node::Link(LinkNode::DefinedType(node)) => Ok(Self::Link(node)),
             _ => Err(CodamaError::InvalidNodeConversion {
                 from: node.kind().to_string(),
                 into: "TypeNode".to_string(),
