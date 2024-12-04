@@ -28,9 +28,9 @@ pub trait KorokPlugin {
 /// Plugin C - after
 /// ```
 pub fn resolve_plugins(plugins: Vec<Box<dyn KorokPlugin>>) -> Box<dyn Fn(&mut dyn KorokVisitable)> {
-    // We fold from the right to ensure that any code before the
+    // We fold from the left to ensure that any code before the
     // `next` call is run before the previous plugin on the list.
-    plugins.into_iter().rfold(
+    plugins.into_iter().fold(
         // Base case: a no-op `next` function.
         Box::new(|_: &mut dyn KorokVisitable| {}) as Box<dyn Fn(&mut dyn KorokVisitable)>,
         // Wrap each plugin with a closure that calls the next plugin in the chain.
@@ -44,17 +44,16 @@ pub fn resolve_plugins(plugins: Vec<Box<dyn KorokPlugin>>) -> Box<dyn Fn(&mut dy
 
 #[cfg(test)]
 mod tests {
-    use std::cell::RefCell;
-
     use super::*;
     use codama_korok_visitors::KorokVisitor;
+    use std::{cell::RefCell, sync::Arc};
 
     struct LoggingPluging {
         id: String,
-        logs: RefCell<Vec<String>>,
+        logs: Arc<RefCell<Vec<String>>>,
     }
     impl LoggingPluging {
-        fn new(id: &str, logs: RefCell<Vec<String>>) -> Self {
+        fn new(id: &str, logs: Arc<RefCell<Vec<String>>>) -> Self {
             Self {
                 id: id.into(),
                 logs,
@@ -83,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_resolve_plugins() {
-        let logs = RefCell::new(Vec::new());
+        let logs = Arc::new(RefCell::new(Vec::new()));
         let plugins: Vec<Box<dyn KorokPlugin>> = vec![
             Box::new(LoggingPluging::new("A", logs.clone())),
             Box::new(LoggingPluging::new("B", logs.clone())),
