@@ -6,15 +6,15 @@ use codama_nodes::{
 };
 use codama_syn_helpers::syn_traits::*;
 
-pub struct DefineBorshTypesVisitor;
+pub struct SetBorshTypesVisitor;
 
-impl DefineBorshTypesVisitor {
+impl SetBorshTypesVisitor {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl KorokVisitor for DefineBorshTypesVisitor {
+impl KorokVisitor for SetBorshTypesVisitor {
     fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
         if korok.node.is_some() {
             return;
@@ -26,7 +26,7 @@ impl KorokVisitor for DefineBorshTypesVisitor {
     }
 }
 
-impl DefineBorshTypesVisitor {
+impl SetBorshTypesVisitor {
     fn get_type_node(&self, ty: &syn::Type) -> Option<TypeNode> {
         match ty {
             syn::Type::Path(syn::TypePath { path, .. }) => {

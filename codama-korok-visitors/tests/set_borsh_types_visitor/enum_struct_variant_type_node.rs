@@ -1,4 +1,4 @@
-use crate::define_borsh_types_visitor::utils::get_node_from_enum_variant;
+use crate::set_borsh_types_visitor::utils::get_node_from_enum_variant;
 use codama_nodes::{
     EnumStructVariantTypeNode, Node, NumberTypeNode, RegisteredTypeNode, StructFieldTypeNode,
     StructTypeNode, I32,

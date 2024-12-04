@@ -1,4 +1,4 @@
-use crate::define_borsh_types_visitor::utils::get_node_from_type;
+use crate::set_borsh_types_visitor::utils::get_node_from_type;
 use codama_nodes::PublicKeyTypeNode;
 use quote::quote;
 
