@@ -5,7 +5,7 @@ use codama_stores::RootStore;
 #[test]
 fn load_nested_modules() {
     let path = get_path("nested_modules/crate");
-    let root_store = RootStore::load_from(&vec![&path]).unwrap();
+    let root_store = RootStore::load_from(&[&path]).unwrap();
     let root_korok = RootKorok::parse(&root_store).unwrap();
 
     // Check the root korok.

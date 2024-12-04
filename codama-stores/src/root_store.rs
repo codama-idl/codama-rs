@@ -8,7 +8,7 @@ pub struct RootStore {
 }
 
 impl RootStore {
-    pub fn load_from(paths: &Vec<&Path>) -> CodamaResult<Self> {
+    pub fn load_from(paths: &[&Path]) -> CodamaResult<Self> {
         Ok(Self {
             crates: paths
                 .iter()

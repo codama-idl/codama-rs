@@ -5,7 +5,7 @@ use codama_stores::RootStore;
 #[test]
 fn load_single_crate() {
     let path = get_path("single_crate/crate");
-    let root_store: RootStore = RootStore::load_from(&vec![&path]).unwrap();
+    let root_store: RootStore = RootStore::load_from(&[&path]).unwrap();
     let root_korok = RootKorok::parse(&root_store).unwrap();
 
     // Check the root korok.
