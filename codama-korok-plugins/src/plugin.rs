@@ -33,10 +33,12 @@ pub trait KorokPlugin {
 /// Plugin B - after
 /// Plugin C - after
 /// ```
-pub fn resolve_plugins(plugins: Vec<Box<dyn KorokPlugin>>) -> Box<dyn Fn(&mut dyn KorokVisitable)> {
+pub fn resolve_plugins<'a>(
+    plugins: &'a [Box<dyn KorokPlugin + 'a>],
+) -> Box<dyn Fn(&mut dyn KorokVisitable) + 'a> {
     // We fold from the left to ensure that any code before the
     // `next` call is run before the previous plugin on the list.
-    plugins.into_iter().fold(
+    plugins.iter().fold(
         // Base case: a no-op `next` function.
         Box::new(|_: &mut dyn KorokVisitable| {}) as Box<dyn Fn(&mut dyn KorokVisitable)>,
         // Wrap each plugin with a closure that calls the next plugin in the chain.
@@ -94,7 +96,7 @@ mod tests {
             Box::new(LoggingPluging::new("B", logs.clone())),
         ];
 
-        let run_plugins = resolve_plugins(plugins);
+        let run_plugins = resolve_plugins(&plugins);
         run_plugins(&mut MockVisitable);
 
         assert_eq!(

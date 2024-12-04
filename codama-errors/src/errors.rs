@@ -11,6 +11,10 @@ pub enum CodamaError {
     Compilation(#[from] syn::Error),
     #[error("Could not convert node from `{from}` into `{into}`")]
     InvalidNodeConversion { from: String, into: String },
+    #[error("Unexpected node: expected `{expected}`, found `{actual}`")]
+    UnexpectedNode { expected: String, actual: String },
+    #[error("Node not found")]
+    NodeNotFound,
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

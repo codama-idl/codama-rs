@@ -1,0 +1,12 @@
+[package]
+name = "codama"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+codama-errors = { path = "../codama-errors" }
+codama-korok-plugins = { path = "../codama-korok-plugins" }
+codama-korok-visitors = { path = "../codama-korok-visitors" }
+codama-koroks = { path = "../codama-koroks" }
+codama-nodes = { path = "../codama-nodes" }
+codama-stores = { path = "../codama-stores" }
