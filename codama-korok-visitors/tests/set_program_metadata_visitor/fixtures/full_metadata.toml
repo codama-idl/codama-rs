@@ -1,0 +1,8 @@
+[package]
+name = "my-crate-name"
+version = "1.2.3"
+edition = "2021"
+publish = false
+
+[package.metadata.solana]
+program-id = "MyProgramAddress1111111111111111111111111"
