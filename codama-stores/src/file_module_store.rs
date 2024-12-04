@@ -9,14 +9,14 @@ pub struct FileModuleStore {
 }
 
 impl FileModuleStore {
-    pub fn load_all_from(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
+    pub fn load_all(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
         find_nested_file_modules(items)
             .iter()
-            .map(|&item| FileModuleStore::load_from(&path, item))
+            .map(|&item| FileModuleStore::load(&path, item))
             .collect::<CodamaResult<Vec<_>>>()
     }
 
-    pub fn load_from(path: &Path, item: &syn::ItemMod) -> CodamaResult<Self> {
+    pub fn load(path: &Path, item: &syn::ItemMod) -> CodamaResult<Self> {
         let parent_directory = path.parent().unwrap();
         let filename = path.file_stem().unwrap().to_str().unwrap();
         let current_directory = parent_directory.join(filename);
@@ -36,7 +36,7 @@ impl FileModuleStore {
             .ok_or_else(|| syn::Error::new_spanned(&item, "could not read file"))?;
         let content = std::fs::read_to_string(&path)?;
         let file = syn::parse_file(&content)?;
-        let modules = Self::load_all_from(&path, &file.items)?;
+        let modules = Self::load_all(&path, &file.items)?;
 
         Ok(Self {
             file,

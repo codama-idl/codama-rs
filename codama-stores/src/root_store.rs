@@ -8,18 +8,22 @@ pub struct RootStore {
 }
 
 impl RootStore {
-    pub fn load_from(paths: &[&Path]) -> CodamaResult<Self> {
+    pub fn load(path: &Path) -> CodamaResult<Self> {
+        Self::load_all(&[path])
+    }
+
+    pub fn load_all(paths: &[&Path]) -> CodamaResult<Self> {
         Ok(Self {
             crates: paths
                 .iter()
-                .map(|path| CrateStore::load_from(path))
+                .map(|path| CrateStore::load(path))
                 .collect::<CodamaResult<_>>()?,
         })
     }
 
-    pub fn populate_from(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
+    pub fn hydrate(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
         Ok(Self {
-            crates: vec![CrateStore::populate_from(tt)?],
+            crates: vec![CrateStore::hydrate(tt)?],
         })
     }
 }

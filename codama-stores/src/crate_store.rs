@@ -16,7 +16,7 @@ pub struct CrateStore {
 }
 
 impl CrateStore {
-    pub fn load_from(path: &Path) -> CodamaResult<Self> {
+    pub fn load(path: &Path) -> CodamaResult<Self> {
         // Find and load the closest Cargo.toml file — a.k.a. the crate's manifest.
         let manifest_path = get_closest_manifest_path(path)?;
         let mut manifest = Manifest::from_path(&manifest_path)?;
@@ -31,7 +31,7 @@ impl CrateStore {
         let file = syn::parse_file(&content)?;
 
         // Load all external modules from the crate's content.
-        let modules = FileModuleStore::load_all_from(&product_path, &file.items)?;
+        let modules = FileModuleStore::load_all(&product_path, &file.items)?;
 
         Ok(Self {
             file,
@@ -41,7 +41,7 @@ impl CrateStore {
         })
     }
 
-    pub fn populate_from(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
+    pub fn hydrate(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
         Ok(Self {
             file: syn::parse2::<syn::File>(tt)?,
             manifest: None,

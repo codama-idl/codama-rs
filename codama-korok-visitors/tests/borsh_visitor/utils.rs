@@ -6,7 +6,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> Option<Node> {
-    let store = RootStore::populate_from(tt).unwrap();
+    let store = RootStore::hydrate(tt).unwrap();
     let mut korok = RootKorok::parse(&store).unwrap();
     korok.accept(&mut BorshVisitor::new());
     korok.accept(&mut CombineTypesVisitor::new());

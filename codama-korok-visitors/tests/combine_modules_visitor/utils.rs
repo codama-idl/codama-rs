@@ -39,7 +39,7 @@ impl CombineModulesInput {
 
 pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
     let name = format_ident!("{}", input.name);
-    let crate_store = CrateStore::populate_from(quote! {
+    let crate_store = CrateStore::hydrate(quote! {
         mod #name {
             type Foo = ();
         }

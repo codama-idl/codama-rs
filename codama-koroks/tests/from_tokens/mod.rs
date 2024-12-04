@@ -13,7 +13,7 @@ fn root_from_tokens() {
         }
     };
 
-    let store = RootStore::populate_from(tt).unwrap();
+    let store = RootStore::hydrate(tt).unwrap();
     let korok = RootKorok::parse(&store).unwrap();
     assert_eq!(korok.store, &store);
     assert_eq!(korok.crates.len(), 1);
@@ -30,7 +30,7 @@ fn crate_from_tokens() {
         }
     };
 
-    let store = CrateStore::populate_from(tt).unwrap();
+    let store = CrateStore::hydrate(tt).unwrap();
     let korok = CrateKorok::parse(&store).unwrap();
     assert_eq!(korok.store, &store);
     assert_eq!(korok.node, None);

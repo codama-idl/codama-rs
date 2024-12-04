@@ -12,7 +12,7 @@ fn root_from_tokens() {
         }
     };
 
-    let store = RootStore::populate_from(tt).unwrap();
+    let store = RootStore::hydrate(tt).unwrap();
     assert_eq!(store.crates.len(), 1);
     assert!(matches!(store.crates[0].file, syn::File { .. }));
 }
@@ -28,7 +28,7 @@ fn crate_from_tokens() {
         }
     };
 
-    let store = CrateStore::populate_from(tt).unwrap();
+    let store = CrateStore::hydrate(tt).unwrap();
     assert!(matches!(store.file, syn::File { .. }));
     assert!(matches!(store.manifest, None));
     assert_eq!(store.file_modules.len(), 0);
