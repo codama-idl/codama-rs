@@ -22,6 +22,7 @@ dependencies = [
  "codama-koroks",
  "codama-nodes",
  "codama-stores",
+ "proc-macro2",
 ]
 
 [[package]]

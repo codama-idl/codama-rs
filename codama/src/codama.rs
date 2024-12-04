@@ -1,8 +1,9 @@
 use codama_errors::{CodamaError, CodamaResult};
-use codama_korok_plugins::{resolve_plugins, KorokPlugin};
+use codama_korok_plugins::{resolve_plugins, DefaultPlugin, KorokPlugin};
 use codama_koroks::RootKorok;
 use codama_nodes::{Node, NodeTrait, NodeUnionTrait, RootNode};
 use codama_stores::RootStore;
+use std::path::Path;
 
 pub struct Codama {
     store: RootStore,
@@ -15,6 +16,19 @@ impl Codama {
             store,
             plugins: Vec::new(),
         }
+        .add_plugin(DefaultPlugin)
+    }
+
+    pub fn load(path: &Path) -> CodamaResult<Self> {
+        Ok(Self::new(RootStore::load(path)?))
+    }
+
+    pub fn load_all(paths: &[&Path]) -> CodamaResult<Self> {
+        Ok(Self::new(RootStore::load_all(paths)?))
+    }
+
+    pub fn hydrate(tt: proc_macro2::TokenStream) -> CodamaResult<Self> {
+        Ok(Self::new(RootStore::hydrate(tt)?))
     }
 
     pub fn add_plugin<T: KorokPlugin + 'static>(mut self, plugin: T) -> Self {
