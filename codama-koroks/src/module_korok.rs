@@ -13,7 +13,7 @@ pub struct ModuleKorok<'a> {
 impl<'a> ModuleKorok<'a> {
     pub fn parse(
         ast: &'a syn::ItemMod,
-        file_modules: &'a Vec<FileModuleStore>,
+        file_modules: &'a [FileModuleStore],
         file_module_index: &mut usize,
     ) -> CodamaResult<Self> {
         match &ast.content {

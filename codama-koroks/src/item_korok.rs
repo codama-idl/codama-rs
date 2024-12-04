@@ -16,7 +16,7 @@ pub enum ItemKorok<'a> {
 impl<'a> ItemKorok<'a> {
     pub fn parse(
         item: &'a syn::Item,
-        file_modules: &'a Vec<FileModuleStore>,
+        file_modules: &'a [FileModuleStore],
         file_module_index: &mut usize,
     ) -> CodamaResult<Self> {
         match item {
@@ -45,7 +45,7 @@ impl<'a> ItemKorok<'a> {
 
     pub fn parse_all(
         items: &'a Vec<syn::Item>,
-        file_modules: &'a Vec<FileModuleStore>,
+        file_modules: &'a [FileModuleStore],
         file_module_index: &mut usize,
     ) -> CodamaResult<Vec<Self>> {
         items
