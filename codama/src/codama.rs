@@ -1,7 +1,7 @@
 use codama_errors::{CodamaError, CodamaResult};
 use codama_korok_plugins::{resolve_plugins, KorokPlugin};
 use codama_koroks::RootKorok;
-use codama_nodes::{Node, NodeUnionTrait, RootNode};
+use codama_nodes::{Node, NodeTrait, NodeUnionTrait, RootNode};
 use codama_stores::RootStore;
 
 pub struct Codama {
@@ -47,5 +47,9 @@ impl Codama {
                 actual: node.kind().to_string(),
             }),
         }
+    }
+
+    pub fn get_json_idl(&self) -> CodamaResult<String> {
+        self.get_idl()?.to_json()
     }
 }

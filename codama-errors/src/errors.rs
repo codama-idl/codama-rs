@@ -5,14 +5,22 @@ use thiserror::Error;
 pub enum CodamaError {
     #[error("IO error: {0}")]
     Filesystem(#[from] std::io::Error),
+
     #[error("Could not parse Cargo.toml files: {0}")]
     Manifest(#[from] cargo_toml::Error),
+
     #[error("A compilation error was identified via Syn: {0}")]
     Compilation(#[from] syn::Error),
+
+    #[error("Could not parse JSON files: {0}")]
+    Json(#[from] serde_json::Error),
+
     #[error("Could not convert node from `{from}` into `{into}`")]
     InvalidNodeConversion { from: String, into: String },
+
     #[error("Unexpected node: expected `{expected}`, found `{actual}`")]
     UnexpectedNode { expected: String, actual: String },
+
     #[error("Node not found")]
     NodeNotFound,
 }

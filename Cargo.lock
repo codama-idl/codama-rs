@@ -30,6 +30,7 @@ version = "0.1.0"
 dependencies = [
  "cargo_toml",
  "proc-macro2",
+ "serde_json",
  "syn",
  "thiserror",
 ]

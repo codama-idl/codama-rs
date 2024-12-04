@@ -1,3 +1,4 @@
+use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
 pub trait NodeTrait:
@@ -7,6 +8,18 @@ pub trait NodeTrait:
 
     fn kind(&self) -> &'static str {
         Self::KIND
+    }
+
+    fn to_json(&self) -> CodamaResult<String> {
+        serde_json::to_string(&self).map_err(Into::into)
+    }
+
+    fn to_json_pretty(&self) -> CodamaResult<String> {
+        serde_json::to_string_pretty(&self).map_err(Into::into)
+    }
+
+    fn from_json(json: &str) -> CodamaResult<Self> {
+        serde_json::from_str(json).map_err(Into::into)
     }
 }
 
