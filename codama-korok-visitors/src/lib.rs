@@ -5,6 +5,7 @@ mod define_borsh_types_visitor;
 mod define_link_types_visitor;
 mod filter_items_visitor;
 mod map_visitor;
+mod set_program_metadata_visitor;
 mod visitable;
 mod visitor;
 
@@ -15,5 +16,6 @@ pub use define_borsh_types_visitor::*;
 pub use define_link_types_visitor::*;
 pub use filter_items_visitor::*;
 pub use map_visitor::*;
+pub use set_program_metadata_visitor::*;
 pub use visitable::*;
 pub use visitor::*;

@@ -9,6 +9,7 @@ quote = "1.0"
 codama-stores = { path = "../codama-stores" }
 
 [dependencies]
+cargo_toml = "0.20"
 codama-nodes = { path = "../codama-nodes" }
 codama-koroks = { path = "../codama-koroks" }
 codama-syn-helpers = { path = "../codama-syn-helpers" }

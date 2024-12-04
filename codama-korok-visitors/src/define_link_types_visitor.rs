@@ -2,7 +2,7 @@ use crate::KorokVisitor;
 use codama_nodes::DefinedTypeLinkNode;
 use codama_syn_helpers::syn_traits::*;
 
-pub struct DefineLinkTypesVisitor {}
+pub struct DefineLinkTypesVisitor;
 
 impl DefineLinkTypesVisitor {
     pub fn new() -> Self {

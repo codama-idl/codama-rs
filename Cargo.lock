@@ -47,6 +47,7 @@ dependencies = [
 name = "codama-korok-visitors"
 version = "0.1.0"
 dependencies = [
+ "cargo_toml",
  "codama-koroks",
  "codama-nodes",
  "codama-stores",

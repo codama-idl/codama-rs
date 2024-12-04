@@ -6,7 +6,7 @@ use codama_nodes::{
 };
 use codama_syn_helpers::syn_traits::*;
 
-pub struct DefineBorshTypesVisitor {}
+pub struct DefineBorshTypesVisitor;
 
 impl DefineBorshTypesVisitor {
     pub fn new() -> Self {

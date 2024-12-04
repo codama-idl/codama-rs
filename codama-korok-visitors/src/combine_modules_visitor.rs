@@ -3,7 +3,7 @@ use codama_koroks::Korok;
 use codama_nodes::{Node, ProgramNode, RootNode};
 
 #[derive(Default)]
-pub struct CombineModulesVisitor {}
+pub struct CombineModulesVisitor;
 
 impl CombineModulesVisitor {
     pub fn new() -> Self {
