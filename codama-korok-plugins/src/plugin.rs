@@ -9,10 +9,16 @@ pub trait KorokPlugin {
 /// For instance, imagine we have a list of plugins [A, B, C] implemented as:
 ///
 /// ```rust
-/// fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
-///     println!("Plugin X - before");
-///     next(visitable);
-///     println!("Plugin X - after");
+/// use codama_korok_plugins::KorokPlugin;
+/// use codama_korok_visitors::KorokVisitable;
+///
+/// struct LoggingPluging;
+/// impl KorokPlugin for LoggingPluging {
+///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
+///         println!("Plugin X - before");
+///         next(visitable);
+///         println!("Plugin X - after");
+///     }
 /// }
 /// ```
 ///
