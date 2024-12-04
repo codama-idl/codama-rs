@@ -1,4 +1,4 @@
-use crate::borsh_visitor::utils::get_node_from_enum_variant;
+use crate::define_borsh_types_visitor::utils::get_node_from_enum_variant;
 use codama_nodes::{
     BooleanTypeNode, EnumTupleVariantTypeNode, Node, NumberTypeNode, RegisteredTypeNode,
     TupleTypeNode, U8,
