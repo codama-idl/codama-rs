@@ -1,16 +1,16 @@
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
-    EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode,
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, Node, NodeTrait,
-    NodeUnionTrait, NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode,
-    PublicKeyTypeNode, RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode,
-    SolAmountTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNodeUnionTrait, ZeroableOptionTypeNode,
+    DefinedTypeLinkNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
+    EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode, HiddenPrefixTypeNode,
+    HiddenSuffixTypeNode, MapTypeNode, Node, NodeTrait, NodeUnionTrait, NumberTypeNode,
+    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
+    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
+    ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
-use codama_nodes_derive::{node_union, RegisteredNodes};
+use codama_nodes_derive::node_union;
 
-#[derive(RegisteredNodes)]
 #[node_union]
 pub enum RegisteredTypeNode {
     Amount(AmountTypeNode),
@@ -38,14 +38,42 @@ pub enum RegisteredTypeNode {
     Tuple(TupleTypeNode),
     ZeroableOption(Box<ZeroableOptionTypeNode>),
 
-    #[registered]
+    // Registered only.
     EnumEmptyVariant(EnumEmptyVariantTypeNode),
-    #[registered]
     EnumStructVariant(EnumStructVariantTypeNode),
-    #[registered]
     EnumTupleVariant(EnumTupleVariantTypeNode),
-    #[registered]
     StructField(StructFieldTypeNode),
+}
+
+#[node_union]
+pub enum TypeNode {
+    Amount(AmountTypeNode),
+    Array(Box<ArrayTypeNode>),
+    Boolean(BooleanTypeNode),
+    Bytes(BytesTypeNode),
+    DateTime(DateTimeTypeNode),
+    Enum(EnumTypeNode),
+    FixedSize(Box<FixedSizeTypeNode<TypeNode>>),
+    HiddenPrefix(Box<HiddenPrefixTypeNode<TypeNode>>),
+    HiddenSuffix(Box<HiddenSuffixTypeNode<TypeNode>>),
+    Map(Box<MapTypeNode>),
+    Number(NumberTypeNode),
+    Option(Box<OptionTypeNode>),
+    PostOffset(Box<PostOffsetTypeNode<TypeNode>>),
+    PreOffset(Box<PreOffsetTypeNode<TypeNode>>),
+    PublicKey(PublicKeyTypeNode),
+    RemainderOption(Box<RemainderOptionTypeNode>),
+    Sentinel(Box<SentinelTypeNode<TypeNode>>),
+    Set(Box<SetTypeNode>),
+    SizePrefix(Box<SizePrefixTypeNode<TypeNode>>),
+    SolAmount(SolAmountTypeNode),
+    String(StringTypeNode),
+    Struct(StructTypeNode),
+    Tuple(TupleTypeNode),
+    ZeroableOption(Box<ZeroableOptionTypeNode>),
+
+    // Standalone only.
+    Link(DefinedTypeLinkNode),
 }
 
 impl TypeNodeUnionTrait for TypeNode {}
@@ -76,6 +104,80 @@ where
             _ => Err(CodamaError::InvalidNodeConversion {
                 from: "None".to_string(),
                 into: "TypeNode".to_string(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<RegisteredTypeNode> for TypeNode {
+    type Error = CodamaError;
+
+    fn try_from(node: RegisteredTypeNode) -> Result<Self, Self::Error> {
+        match node {
+            RegisteredTypeNode::Amount(node) => Ok(Self::Amount(node)),
+            RegisteredTypeNode::Array(node) => Ok(Self::Array(node)),
+            RegisteredTypeNode::Boolean(node) => Ok(Self::Boolean(node)),
+            RegisteredTypeNode::Bytes(node) => Ok(Self::Bytes(node)),
+            RegisteredTypeNode::DateTime(node) => Ok(Self::DateTime(node)),
+            RegisteredTypeNode::Enum(node) => Ok(Self::Enum(node)),
+            RegisteredTypeNode::FixedSize(node) => Ok(Self::FixedSize(node)),
+            RegisteredTypeNode::HiddenPrefix(node) => Ok(Self::HiddenPrefix(node)),
+            RegisteredTypeNode::HiddenSuffix(node) => Ok(Self::HiddenSuffix(node)),
+            RegisteredTypeNode::Map(node) => Ok(Self::Map(node)),
+            RegisteredTypeNode::Number(node) => Ok(Self::Number(node)),
+            RegisteredTypeNode::Option(node) => Ok(Self::Option(node)),
+            RegisteredTypeNode::PostOffset(node) => Ok(Self::PostOffset(node)),
+            RegisteredTypeNode::PreOffset(node) => Ok(Self::PreOffset(node)),
+            RegisteredTypeNode::PublicKey(node) => Ok(Self::PublicKey(node)),
+            RegisteredTypeNode::RemainderOption(node) => Ok(Self::RemainderOption(node)),
+            RegisteredTypeNode::Sentinel(node) => Ok(Self::Sentinel(node)),
+            RegisteredTypeNode::Set(node) => Ok(Self::Set(node)),
+            RegisteredTypeNode::SizePrefix(node) => Ok(Self::SizePrefix(node)),
+            RegisteredTypeNode::SolAmount(node) => Ok(Self::SolAmount(node)),
+            RegisteredTypeNode::String(node) => Ok(Self::String(node)),
+            RegisteredTypeNode::Struct(node) => Ok(Self::Struct(node)),
+            RegisteredTypeNode::Tuple(node) => Ok(Self::Tuple(node)),
+            RegisteredTypeNode::ZeroableOption(node) => Ok(Self::ZeroableOption(node)),
+            _ => Err(CodamaError::InvalidNodeConversion {
+                from: node.kind().to_string(),
+                into: "TypeNode".to_string(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<TypeNode> for RegisteredTypeNode {
+    type Error = CodamaError;
+
+    fn try_from(node: TypeNode) -> Result<Self, Self::Error> {
+        match node {
+            TypeNode::Amount(node) => Ok(Self::Amount(node)),
+            TypeNode::Array(node) => Ok(Self::Array(node)),
+            TypeNode::Boolean(node) => Ok(Self::Boolean(node)),
+            TypeNode::Bytes(node) => Ok(Self::Bytes(node)),
+            TypeNode::DateTime(node) => Ok(Self::DateTime(node)),
+            TypeNode::Enum(node) => Ok(Self::Enum(node)),
+            TypeNode::FixedSize(node) => Ok(Self::FixedSize(node)),
+            TypeNode::HiddenPrefix(node) => Ok(Self::HiddenPrefix(node)),
+            TypeNode::HiddenSuffix(node) => Ok(Self::HiddenSuffix(node)),
+            TypeNode::Map(node) => Ok(Self::Map(node)),
+            TypeNode::Number(node) => Ok(Self::Number(node)),
+            TypeNode::Option(node) => Ok(Self::Option(node)),
+            TypeNode::PostOffset(node) => Ok(Self::PostOffset(node)),
+            TypeNode::PreOffset(node) => Ok(Self::PreOffset(node)),
+            TypeNode::PublicKey(node) => Ok(Self::PublicKey(node)),
+            TypeNode::RemainderOption(node) => Ok(Self::RemainderOption(node)),
+            TypeNode::Sentinel(node) => Ok(Self::Sentinel(node)),
+            TypeNode::Set(node) => Ok(Self::Set(node)),
+            TypeNode::SizePrefix(node) => Ok(Self::SizePrefix(node)),
+            TypeNode::SolAmount(node) => Ok(Self::SolAmount(node)),
+            TypeNode::String(node) => Ok(Self::String(node)),
+            TypeNode::Struct(node) => Ok(Self::Struct(node)),
+            TypeNode::Tuple(node) => Ok(Self::Tuple(node)),
+            TypeNode::ZeroableOption(node) => Ok(Self::ZeroableOption(node)),
+            _ => Err(CodamaError::InvalidNodeConversion {
+                from: node.kind().to_string(),
+                into: "RegisteredTypeNode".to_string(),
             }),
         }
     }

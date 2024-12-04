@@ -42,7 +42,10 @@ impl From<ContextualValueNode> for Node {
 
 impl From<TypeNode> for Node {
     fn from(node: TypeNode) -> Self {
-        Node::Type(node.into())
+        match node {
+            TypeNode::Link(link) => link.into(),
+            _ => Node::Type(node.try_into().unwrap()),
+        }
     }
 }
 
