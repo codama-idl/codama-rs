@@ -23,6 +23,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-korok-plugins"
+version = "0.1.0"
+dependencies = [
+ "codama-korok-visitors",
+]
+
+[[package]]
 name = "codama-korok-visitors"
 version = "0.1.0"
 dependencies = [

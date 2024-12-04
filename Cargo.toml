@@ -3,6 +3,7 @@ resolver = "2"
 members = [
   "codama-errors",
   "codama-koroks",
+  "codama-korok-plugins",
   "codama-korok-visitors",
   "codama-nodes",
   "codama-nodes/derive",
