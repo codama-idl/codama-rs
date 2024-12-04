@@ -1,4 +1,4 @@
-use crate::membership::Membership;
+use super::Membership;
 
 pub struct Person {
     pub name: String,
