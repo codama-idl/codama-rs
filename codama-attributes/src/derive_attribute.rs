@@ -22,7 +22,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
         let attr = unfeatured.as_ref().unwrap_or(ast);
 
         // Check if the attribute is a #[derive(...)] attribute.
-        let list = attr.as_list()?;
+        let list = attr.meta.require_list()?;
         if !list.path.is_strict("derive") {
             return Err(syn::Error::new_spanned(&list.path, "expected #[derive(...)]").into());
         };
