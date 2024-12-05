@@ -58,6 +58,7 @@ name = "codama-korok-visitors"
 version = "0.1.0"
 dependencies = [
  "cargo_toml",
+ "codama-attributes",
  "codama-koroks",
  "codama-nodes",
  "codama-stores",
@@ -75,6 +76,7 @@ dependencies = [
  "codama-errors",
  "codama-nodes",
  "codama-stores",
+ "codama-syn-helpers",
  "proc-macro2",
  "quote",
  "syn",

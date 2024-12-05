@@ -1,4 +1,5 @@
 use crate::{EnumKorok, FileModuleKorok, Korok, ModuleKorok, StructKorok, UnsupportedItemKorok};
+use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
@@ -36,10 +37,7 @@ impl<'a> ItemKorok<'a> {
             )),
             syn::Item::Struct(ast) => Ok(ItemKorok::Struct(StructKorok::parse(ast)?)),
             syn::Item::Enum(ast) => Ok(ItemKorok::Enum(EnumKorok::parse(ast)?)),
-            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok {
-                ast: item,
-                node: None,
-            })),
+            _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok::parse(item)?)),
         }
     }
 
@@ -52,6 +50,18 @@ impl<'a> ItemKorok<'a> {
             .iter()
             .map(|item| Self::parse(item, file_modules, file_module_index))
             .collect()
+    }
+}
+
+impl<'a> ItemKorok<'a> {
+    pub fn attribute(&self) -> &Attributes<'a> {
+        match self {
+            ItemKorok::Struct(k) => &k.attributes,
+            ItemKorok::Enum(k) => &k.attributes,
+            ItemKorok::FileModule(k) => &k.attributes,
+            ItemKorok::Module(k) => &k.attributes,
+            ItemKorok::Unsupported(k) => &k.attributes,
+        }
     }
 }
 

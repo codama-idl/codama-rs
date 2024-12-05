@@ -1,3 +1,4 @@
+use codama_attributes::Attributes;
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, ModuleKorok, UnsupportedItemKorok};
 use codama_nodes::{DefinedTypeNode, Node, PublicKeyTypeNode};
@@ -62,6 +63,7 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
         .map(|node| {
             ItemKorok::Unsupported(UnsupportedItemKorok {
                 ast: inner_item,
+                attributes: Attributes::parse(&item_mod.attrs).unwrap(),
                 node: node.clone(),
             })
         })
@@ -69,6 +71,7 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
 
     let mut module_korok = ModuleKorok {
         ast: item_mod,
+        attributes: Attributes::parse(&item_mod.attrs).unwrap(),
         items,
         node: None,
     };

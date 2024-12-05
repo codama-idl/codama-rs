@@ -7,10 +7,18 @@ use codama_errors::{CodamaError, CodamaResult};
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
 impl<'a> Attributes<'a> {
-    pub fn parse(attrs: &'a Vec<syn::Attribute>) -> CodamaResult<Self> {
+    pub fn parse<T: TryInto<Self, Error = CodamaError>>(attrs: T) -> CodamaResult<Self> {
+        attrs.try_into()
+    }
+}
+
+impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
+    type Error = CodamaError;
+
+    fn try_from(attrs: Vec<&'a syn::Attribute>) -> CodamaResult<Self> {
         let attributes = attrs
             .iter()
-            .map(Attribute::parse)
+            .map(|attr| Attribute::parse(attr))
             .collect::<CodamaResult<Vec<_>>>()?;
         Ok(Self(attributes))
     }
@@ -20,7 +28,11 @@ impl<'a> TryFrom<&'a Vec<syn::Attribute>> for Attributes<'a> {
     type Error = CodamaError;
 
     fn try_from(attrs: &'a Vec<syn::Attribute>) -> CodamaResult<Self> {
-        Self::parse(attrs)
+        let attributes = attrs
+            .iter()
+            .map(Attribute::parse)
+            .collect::<CodamaResult<Vec<_>>>()?;
+        Ok(Self(attributes))
     }
 }
 

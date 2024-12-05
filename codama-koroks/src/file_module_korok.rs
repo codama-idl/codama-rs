@@ -1,4 +1,5 @@
 use crate::{ItemKorok, Korok};
+use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
@@ -6,6 +7,7 @@ use codama_stores::FileModuleStore;
 #[derive(Debug, PartialEq)]
 pub struct FileModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
+    pub attributes: Attributes<'a>,
     pub items: Vec<ItemKorok<'a>>,
     pub node: Option<Node>,
     pub store: &'a FileModuleStore,
@@ -23,6 +25,7 @@ impl<'a> FileModuleKorok<'a> {
 
         Ok(Self {
             ast,
+            attributes: Attributes::parse(&ast.attrs)?,
             items: ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0)?,
             node: None,
             store,
