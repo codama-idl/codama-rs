@@ -53,8 +53,9 @@ fn combine_koroks<T: Korok>(initial_node: &Option<Node>, koroks: &Vec<T>) -> Opt
         .collect::<Vec<_>>();
 
     // Convert all nodes into RootNodes and merge them with the binding root node.
+    let from_parent = this_root_node.is_some();
     for that_root_node in get_root_nodes_to_merge(nodes_to_merge) {
-        merge_root_nodes(&mut this_root_node, that_root_node);
+        merge_root_nodes(&mut this_root_node, that_root_node, from_parent);
     }
 
     this_root_node.map(Into::into)
@@ -123,7 +124,7 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
 }
 
 /// Merge `that` RootNode into `this` RootNode.
-fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
+fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode, from_parent: bool) {
     // If there is no root node yet, set it to the one provided.
     let Some(this) = this else {
         *this = Some(that);
@@ -138,7 +139,7 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
     // For each program to merge.
     for that_program in those_programs {
         // Check if it can be merged with the main root program.
-        if should_merge_program_nodes(&this.program, &that_program) {
+        if should_merge_program_nodes(&this.program, &that_program, from_parent) {
             merge_program_nodes(&mut this.program, that_program);
             continue;
         }
@@ -147,7 +148,7 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
         let found = this
             .additional_programs
             .iter_mut()
-            .find(|p| should_merge_program_nodes(p, &that_program));
+            .find(|p| should_merge_program_nodes(p, &that_program, from_parent));
 
         if let Some(additional_program) = found {
             // If so, merge it with the additional program found.
@@ -160,8 +161,8 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode) {
 }
 
 /// Check if two ProgramNodes should be merged together.
-fn should_merge_program_nodes(this: &ProgramNode, that: &ProgramNode) -> bool {
-    this.public_key == that.public_key
+fn should_merge_program_nodes(this: &ProgramNode, that: &ProgramNode, from_parent: bool) -> bool {
+    this.public_key == that.public_key || (from_parent && that.public_key.is_empty())
 }
 
 /// Merge `that` ProgramNode into `this` ProgramNode.

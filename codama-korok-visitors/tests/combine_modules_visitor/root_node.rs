@@ -281,6 +281,33 @@ fn exisiting_roots_with_different_pubkeys() {
 }
 
 #[test]
+fn exisiting_root_with_pubkey_less_child_root() {
+    assert_eq!(
+        combine_modules(
+            CombineModulesInput::new()
+                .set_initial_node(RootNode::new(
+                    ProgramNode::new("my_program", "1234").add_defined_type(get_type("type_1"))
+                ))
+                .add_node(RootNode::new(
+                    ProgramNode::default().add_defined_type(get_type("type_2"))
+                ))
+                .add_node(RootNode::new(
+                    ProgramNode::default().add_defined_type(get_type("type_3"))
+                ))
+        ),
+        Some(
+            RootNode::new(
+                ProgramNode::new("my_program", "1234")
+                    .add_defined_type(get_type("type_1"))
+                    .add_defined_type(get_type("type_2"))
+                    .add_defined_type(get_type("type_3"))
+            )
+            .into()
+        )
+    );
+}
+
+#[test]
 fn existing_defined_root_with_scraps() {
     assert_eq!(
         combine_modules(
@@ -296,14 +323,12 @@ fn existing_defined_root_with_scraps() {
         ),
         Some(
             RootNode::new(
-                ProgramNode::new("program_a", "1111").add_defined_type(get_type("type_1"))
-            )
-            .add_program(ProgramNode::new("program_b", "2222").add_defined_type(get_type("type_2")))
-            .add_program(
-                ProgramNode::default()
+                ProgramNode::new("program_a", "1111")
+                    .add_defined_type(get_type("type_1"))
                     .add_defined_type(get_type("scraps_1"))
                     .add_defined_type(get_type("scraps_2"))
             )
+            .add_program(ProgramNode::new("program_b", "2222").add_defined_type(get_type("type_2")))
             .into()
         )
     );
