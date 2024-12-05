@@ -2,6 +2,7 @@ use crate::{
     DeriveAttribute, NumberAttribute, StringAttribute, TypeAttribute, UnsupportedAttribute,
 };
 use codama_errors::{CodamaError, CodamaResult};
+use codama_syn_helpers::syn_traits::Path;
 
 #[derive(Debug, PartialEq)]
 pub enum Attribute<'a> {
@@ -26,7 +27,25 @@ impl<'a> Attribute<'a> {
 impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
     type Error = CodamaError;
 
-    fn try_from(_attr: &'a syn::Attribute) -> CodamaResult<Self> {
-        unimplemented!()
+    fn try_from(attr: &'a syn::Attribute) -> CodamaResult<Self> {
+        let path = attr.path();
+        match (path.prefix().as_str(), path.last_str().as_str()) {
+            ("", "derive") => DeriveAttribute::parse(attr).map(Self::Derive),
+            ("" | "codama", "type") => TypeAttribute::parse(attr).map(Self::Type),
+            ("" | "codama", "string") => StringAttribute::parse(attr).map(Self::StringModifier),
+            ("" | "codama", "number") => NumberAttribute::parse(attr).map(Self::NumberModifier),
+            _ => Ok(Self::Unsupported(UnsupportedAttribute::new(attr))),
+        }
+    }
+}
+
+// Do we need this? Or should we be more strict with path recognition?
+fn _fallback_to_unsupported<'a>(
+    attr: &'a syn::Attribute,
+    result: CodamaResult<Attribute<'a>>,
+) -> CodamaResult<Attribute<'a>> {
+    match result {
+        Ok(attr) => Ok(attr),
+        Err(_) => Ok(Attribute::Unsupported(UnsupportedAttribute::new(attr))),
     }
 }
