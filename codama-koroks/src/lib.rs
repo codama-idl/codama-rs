@@ -1,5 +1,3 @@
-pub mod attributes;
-
 mod crate_korok;
 mod enum_korok;
 mod enum_variant_korok;

@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
   "codama",
+  "codama-attributes",
   "codama-errors",
   "codama-koroks",
   "codama-korok-plugins",

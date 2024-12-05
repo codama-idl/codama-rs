@@ -26,6 +26,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-attributes"
+version = "0.1.0"
+dependencies = [
+ "codama-errors",
+ "codama-nodes",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "codama-errors"
 version = "0.1.0"
 dependencies = [
@@ -61,6 +71,7 @@ dependencies = [
 name = "codama-koroks"
 version = "0.1.0"
 dependencies = [
+ "codama-attributes",
  "codama-errors",
  "codama-nodes",
  "codama-stores",
