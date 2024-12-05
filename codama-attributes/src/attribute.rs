@@ -18,15 +18,15 @@ pub enum Attribute<'a> {
 }
 
 impl<'a> Attribute<'a> {
-    pub fn parse(_attr: &'a syn::Attribute) -> CodamaResult<Self> {
-        unimplemented!()
+    pub fn parse<T: TryInto<Self, Error = CodamaError>>(attr: T) -> CodamaResult<Self> {
+        attr.try_into()
     }
 }
 
 impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
     type Error = CodamaError;
 
-    fn try_from(attr: &'a syn::Attribute) -> CodamaResult<Self> {
-        Self::parse(attr)
+    fn try_from(_attr: &'a syn::Attribute) -> CodamaResult<Self> {
+        unimplemented!()
     }
 }

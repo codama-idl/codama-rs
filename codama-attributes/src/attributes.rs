@@ -18,7 +18,7 @@ impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
     fn try_from(attrs: Vec<&'a syn::Attribute>) -> CodamaResult<Self> {
         let attributes = attrs
             .iter()
-            .map(|attr| Attribute::parse(attr))
+            .map(|attr| Attribute::parse(*attr))
             .collect::<CodamaResult<Vec<_>>>()?;
         Ok(Self(attributes))
     }
