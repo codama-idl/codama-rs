@@ -1,6 +1,7 @@
 use codama_nodes_derive::type_node;
 
 #[type_node]
+#[derive(Default)]
 pub struct PublicKeyTypeNode {}
 
 impl Into<crate::Node> for PublicKeyTypeNode {
@@ -11,7 +12,7 @@ impl Into<crate::Node> for PublicKeyTypeNode {
 
 impl PublicKeyTypeNode {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

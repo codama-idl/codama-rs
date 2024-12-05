@@ -13,7 +13,7 @@ pub struct CombineTypesVisitor {
 
 impl CombineTypesVisitor {
     pub fn new() -> Self {
-        Self { r#override: false }
+        Self::default()
     }
 }
 

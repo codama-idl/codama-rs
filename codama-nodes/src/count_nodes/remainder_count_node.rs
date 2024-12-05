@@ -1,6 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct RemainderCountNode {}
 
 impl Into<crate::Node> for RemainderCountNode {
@@ -11,7 +12,7 @@ impl Into<crate::Node> for RemainderCountNode {
 
 impl RemainderCountNode {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

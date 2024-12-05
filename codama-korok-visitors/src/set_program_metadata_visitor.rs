@@ -6,15 +6,14 @@ use codama_syn_helpers::syn_traits::Path;
 use crate::KorokVisitor;
 
 /// Use the same callback function on all koroks visited.
+#[derive(Default)]
 pub struct SetProgramMetadataVisitor {
     identified_public_key: Option<String>,
 }
 
 impl SetProgramMetadataVisitor {
     pub fn new() -> Self {
-        Self {
-            identified_public_key: None,
-        }
+        Self::default()
     }
 }
 

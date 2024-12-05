@@ -7,7 +7,7 @@ pub struct CombineModulesVisitor;
 
 impl CombineModulesVisitor {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

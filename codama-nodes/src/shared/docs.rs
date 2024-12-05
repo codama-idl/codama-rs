@@ -6,7 +6,7 @@ pub struct Docs(Vec<String>);
 
 impl Docs {
     pub fn new() -> Self {
-        Self(Vec::new())
+        Self::default()
     }
 
     pub fn add<T: Into<String>>(mut self, value: T) -> Self {

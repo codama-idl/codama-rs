@@ -6,11 +6,12 @@ use codama_nodes::{
 };
 use codama_syn_helpers::syn_traits::*;
 
+#[derive(Default)]
 pub struct SetBorshTypesVisitor;
 
 impl SetBorshTypesVisitor {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

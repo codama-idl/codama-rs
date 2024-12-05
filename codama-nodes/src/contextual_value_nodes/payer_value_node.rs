@@ -1,6 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct PayerValueNode {}
 
 impl Into<crate::Node> for PayerValueNode {
@@ -11,7 +12,7 @@ impl Into<crate::Node> for PayerValueNode {
 
 impl PayerValueNode {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

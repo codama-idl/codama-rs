@@ -1,15 +1,14 @@
 use crate::KorokVisitor;
 
 /// Compose multiple visitors into one.
+#[derive(Default)]
 pub struct ComposeVisitor<'a> {
     pub visitors: Vec<Box<dyn KorokVisitor + 'a>>,
 }
 
 impl<'a> ComposeVisitor<'a> {
     pub fn new() -> Self {
-        Self {
-            visitors: Vec::new(),
-        }
+        Self::default()
     }
 
     /// Add a new visitor to the composition.
