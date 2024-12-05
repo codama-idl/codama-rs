@@ -54,7 +54,7 @@ impl<'a> ItemKorok<'a> {
 }
 
 impl<'a> ItemKorok<'a> {
-    pub fn attribute(&self) -> &Attributes<'a> {
+    pub fn attributes(&self) -> &Attributes<'a> {
         match self {
             ItemKorok::Struct(k) => &k.attributes,
             ItemKorok::Enum(k) => &k.attributes,

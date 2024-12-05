@@ -2,6 +2,7 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 use crate::Attribute;
 use codama_errors::{CodamaError, CodamaResult};
+use codama_syn_helpers::syn_traits::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
@@ -9,6 +10,13 @@ pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 impl<'a> Attributes<'a> {
     pub fn parse<T: TryInto<Self, Error = CodamaError>>(attrs: T) -> CodamaResult<Self> {
         attrs.try_into()
+    }
+
+    pub fn has_derive(&self, derive: &str) -> bool {
+        self.iter().any(|attr| match attr {
+            Attribute::Derive(a) => a.derives.iter().any(|p| p.is_strict(derive)),
+            _ => false,
+        })
     }
 }
 

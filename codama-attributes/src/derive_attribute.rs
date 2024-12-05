@@ -18,6 +18,10 @@ impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
     type Error = CodamaError;
 
     fn try_from(attr: &'a syn::Attribute) -> CodamaResult<Self> {
+        // TODO: unfeature the attribute.
+        // E.g. `#[cfg_attr(feature = "some_feature", derive(Debug))]`
+        // becomes `#[derive(Debug)]`
+
         let list = attr.as_list()?;
         if !list.path.is_strict("derive") {
             return Err(syn::Error::new_spanned(&list.path, "expected #[derive(...)]").into());
