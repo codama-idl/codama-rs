@@ -1,3 +1,4 @@
+mod attribute;
 mod derive_input;
 mod expr;
 mod fields;
@@ -6,6 +7,7 @@ mod item;
 mod path;
 mod r#type;
 
+pub use attribute::*;
 pub use derive_input::*;
 pub use expr::*;
 pub use fields::*;
