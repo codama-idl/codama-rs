@@ -12,9 +12,9 @@ fn get_idl() {
   "kind": "rootNode",
   "program": {
     "kind": "programNode",
-    "name": "",
-    "publicKey": "",
-    "version": "",
+    "name": "membership",
+    "publicKey": "Membership1111111111111111111111111",
+    "version": "1.2.3",
     "accounts": [],
     "instructions": [],
     "definedTypes": [

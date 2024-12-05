@@ -1,5 +1,8 @@
 [package]
 name = "membership"
-version = "0.0.0"
+version = "1.2.3"
 edition = "2021"
 publish = false
+
+[package.metadata.solana]
+program-id = "Membership1111111111111111111111111"
