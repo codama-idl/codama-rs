@@ -5,40 +5,20 @@ pub trait Attribute {
 
     /// Ensure the attribute meta is a path.
     fn as_path(&self) -> CodamaResult<&syn::Path> {
-        let this = self.get_self();
-        match &this.meta {
-            syn::Meta::Path(path) => Ok(path),
-            _ => Err(
-                syn::Error::new_spanned(this, "expected a Path attribute — e.g. `#[serde]`.")
-                    .into(),
-            ),
-        }
+        self.get_self().meta.require_path_only().map_err(Into::into)
     }
 
     /// Ensure the attribute meta is a path.
     fn as_list(&self) -> CodamaResult<&syn::MetaList> {
-        let this = self.get_self();
-        match &this.meta {
-            syn::Meta::List(list) => Ok(list),
-            _ => Err(syn::Error::new_spanned(
-                this,
-                "expected a MetaList attribute — e.g. `#[derive(Debug, PartialEq)]`.",
-            )
-            .into()),
-        }
+        self.get_self().meta.require_list().map_err(Into::into)
     }
 
     /// Ensure the attribute meta is a path.
     fn as_name_value(&self) -> CodamaResult<&syn::MetaNameValue> {
-        let this = self.get_self();
-        match &this.meta {
-            syn::Meta::NameValue(name_value) => Ok(name_value),
-            _ => Err(syn::Error::new_spanned(
-                this,
-                "expected a MetaNameValue attribute — e.g. `#[foo = 42]`.",
-            )
-            .into()),
-        }
+        self.get_self()
+            .meta
+            .require_name_value()
+            .map_err(Into::into)
     }
 }
 
