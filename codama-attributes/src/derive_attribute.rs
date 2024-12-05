@@ -1,6 +1,5 @@
 use codama_errors::{CodamaError, CodamaResult};
 use codama_syn_helpers::syn_traits::*;
-use syn::punctuated::Punctuated;
 
 #[derive(Debug, PartialEq)]
 pub struct DeriveAttribute<'a> {
@@ -17,22 +16,20 @@ impl<'a> DeriveAttribute<'a> {
 impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
     type Error = CodamaError;
 
-    fn try_from(attr: &'a syn::Attribute) -> CodamaResult<Self> {
-        // TODO: unfeature the attribute.
-        // E.g. `#[cfg_attr(feature = "some_feature", derive(Debug))]`
-        // becomes `#[derive(Debug)]`
+    fn try_from(ast: &'a syn::Attribute) -> CodamaResult<Self> {
+        // Check if the attribute is feature-gated.
+        let unfeatured = ast.unfeatured();
+        let attr = unfeatured.as_ref().unwrap_or(ast);
 
+        // Check if the attribute is a #[derive(...)] attribute.
         let list = attr.as_list()?;
         if !list.path.is_strict("derive") {
             return Err(syn::Error::new_spanned(&list.path, "expected #[derive(...)]").into());
         };
 
-        let derives = attr
-            .parse_args_with(Punctuated::<syn::Path, syn::Token![,]>::parse_terminated)?
-            .into_iter()
-            .collect();
-
-        Ok(Self { ast: attr, derives })
+        // Parse the list of derives.
+        let derives = attr.parse_comma_args::<syn::Path>()?;
+        Ok(Self { ast, derives })
     }
 }
 
@@ -45,6 +42,23 @@ mod tests {
     #[test]
     fn test_derive_attribute() {
         let ast = syn_build::attribute(quote! { #[derive(Debug, PartialEq)] });
+        let attribute = DeriveAttribute::parse(&ast).unwrap();
+
+        assert_eq!(attribute.ast, &ast);
+        assert_eq!(
+            attribute.derives,
+            [
+                syn_build::parse(quote! { Debug }),
+                syn_build::parse(quote! { PartialEq }),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_feature_gated_derive_attribute() {
+        let ast = syn_build::attribute(
+            quote! { #[cfg_attr(feature = "some_feature", derive(Debug, PartialEq))] },
+        );
         let attribute = DeriveAttribute::parse(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
