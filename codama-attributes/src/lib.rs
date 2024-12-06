@@ -1,3 +1,5 @@
+mod parse_node_attribute;
+
 mod attribute;
 mod attributes;
 mod derive_attribute;
