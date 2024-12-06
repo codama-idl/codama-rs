@@ -1,5 +1,5 @@
 use crate::{
-    DeriveAttribute, NumberAttribute, StringAttribute, TypeAttribute, UnsupportedAttribute,
+    DeriveAttribute, NodeAttribute, NumberAttribute, StringAttribute, UnsupportedAttribute,
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_syn_helpers::syn_traits::Path;
@@ -9,7 +9,7 @@ pub enum Attribute<'a> {
     // E.g. #[derive(Debug, CodamaType)]
     Derive(DeriveAttribute<'a>),
     // E.g. #[type(numberTypeNode(u8, le))]
-    Type(TypeAttribute<'a>),
+    Type(NodeAttribute<'a>),
     // E.g. #[string(base64)]
     StringModifier(StringAttribute<'a>),
     // E.g. #[number(be)]
@@ -31,7 +31,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
         let path = attr.path();
         match (path.prefix().as_str(), path.last_str().as_str()) {
             ("", "derive") => DeriveAttribute::parse(attr).map(Self::Derive),
-            ("" | "codama", "type") => TypeAttribute::parse(attr).map(Self::Type),
+            ("" | "codama", "type") => NodeAttribute::parse(attr).map(Self::Type),
             ("" | "codama", "string") => StringAttribute::parse(attr).map(Self::StringModifier),
             ("" | "codama", "number") => NumberAttribute::parse(attr).map(Self::NumberModifier),
             _ => Ok(Self::Unsupported(UnsupportedAttribute::new(attr))),
