@@ -1,4 +1,4 @@
-use super::number_type_node;
+use crate::NodeAttributeParse;
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_syn_helpers::syn_traits::*;
@@ -27,7 +27,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for NodeAttribute<'a> {
         let mut node: CodamaResult<Node> =
             Err(syn::Error::new_spanned(&list.tokens, "empty node").into());
         attr.parse_nested_meta(|meta| {
-            node = Self::parse_node(&meta);
+            node = Node::from_meta(&meta);
             Ok(())
         })?;
         Ok(Self { ast, node: node? })
@@ -37,13 +37,6 @@ impl<'a> TryFrom<&'a syn::Attribute> for NodeAttribute<'a> {
 impl<'a> NodeAttribute<'a> {
     pub fn parse<T: TryInto<Self, Error = CodamaError>>(attr: T) -> CodamaResult<Self> {
         attr.try_into()
-    }
-
-    pub fn parse_node(meta: &syn::meta::ParseNestedMeta) -> CodamaResult<Node> {
-        match meta.path.last_str().as_str() {
-            "numberTypeNode" => number_type_node(&meta),
-            _ => return Err(meta.error("unrecognized node").into()),
-        }
     }
 }
 
