@@ -32,6 +32,7 @@ dependencies = [
  "codama-errors",
  "codama-nodes",
  "codama-syn-helpers",
+ "proc-macro2",
  "quote",
  "syn",
 ]

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dev-dependencies]
 quote = "1.0"
+proc-macro2 = "1.0"
 
 [dependencies]
 codama-errors = { path = "../codama-errors" }

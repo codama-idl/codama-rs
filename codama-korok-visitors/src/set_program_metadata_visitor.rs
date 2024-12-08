@@ -5,7 +5,7 @@ use codama_syn_helpers::syn_traits::Path;
 
 use crate::KorokVisitor;
 
-/// Use the same callback function on all koroks visited.
+/// Fill program metadata using the Cargo.toml manifest and the `solana_program::declare_id!` macro.
 #[derive(Default)]
 pub struct SetProgramMetadataVisitor {
     identified_public_key: Option<String>,
