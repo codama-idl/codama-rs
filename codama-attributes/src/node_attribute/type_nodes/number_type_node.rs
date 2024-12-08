@@ -23,7 +23,7 @@ impl NodeAttributeParse for NumberTypeNode {
             "shortU16" => format.set(NumberFormat::ShortU16),
             "le" => endian.set(Endian::Little),
             "be" => endian.set(Endian::Big),
-            _ => Err(meta.error("numberTypeNode: unrecognized attribute")),
+            _ => Err(meta.error("unrecognized attribute")),
         })?;
         Ok(NumberTypeNode::new(format.take()?, endian.take()?).into())
     }
@@ -64,5 +64,10 @@ mod tests {
     #[test]
     fn endian_already_set() {
         assert_node_err!(#[node(numberTypeNode(le, be))], "endian is already set");
+    }
+
+    #[test]
+    fn unrecognized_attribute() {
+        assert_node_err!(#[node(numberTypeNode(u16, le, unknown))], "unrecognized attribute");
     }
 }
