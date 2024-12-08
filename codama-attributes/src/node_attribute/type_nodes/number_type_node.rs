@@ -30,22 +30,37 @@ pub fn number_type_node(meta: &syn::meta::ParseNestedMeta) -> CodamaResult<Node>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeAttribute;
+    use crate::{assert_node, assert_node_err, NodeAttribute};
     use codama_syn_helpers::syn_build;
     use quote::quote;
-    use NumberFormat::U16;
-
-    pub fn get_node(tt: proc_macro2::TokenStream) -> CodamaResult<Node> {
-        let ast = syn_build::attribute(tt);
-        let attribute = NodeAttribute::parse(&ast)?;
-        Ok(attribute.node)
-    }
+    use NumberFormat::{U16, U64};
 
     #[test]
     fn ok() {
-        assert_eq!(
-            get_node(quote! { #[node(numberTypeNode(u16, le))] }).unwrap(),
-            NumberTypeNode::le(U16).into()
-        );
+        assert_node!(#[node(numberTypeNode(u16, le))], NumberTypeNode::le(U16).into());
+        assert_node!(#[node(numberTypeNode(u64, le))], NumberTypeNode::le(U64).into());
+        assert_node!(#[node(numberTypeNode(u16, be))], NumberTypeNode::be(U16).into());
+        assert_node!(#[node(numberTypeNode(u64, be))], NumberTypeNode::be(U64).into());
+        assert_node!(#[node(numberTypeNode(le, u16))], NumberTypeNode::le(U16).into());
+    }
+
+    #[test]
+    fn missing_format() {
+        assert_node_err!(#[node(numberTypeNode(le))], "format is missing");
+    }
+
+    #[test]
+    fn format_already_set() {
+        assert_node_err!(#[node(numberTypeNode(u8, u16))], "format is already set");
+    }
+
+    #[test]
+    fn missing_endian() {
+        assert_node_err!(#[node(numberTypeNode(u16))], "endian is missing");
+    }
+
+    #[test]
+    fn endian_already_set() {
+        assert_node_err!(#[node(numberTypeNode(le, be))], "endian is already set");
     }
 }
