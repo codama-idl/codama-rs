@@ -1,4 +1,4 @@
-use crate::parse_node_attribute::*;
+use super::number_type_node;
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_syn_helpers::syn_traits::*;

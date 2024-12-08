@@ -1,48 +1,7 @@
+use crate::utils::SetOnce;
 use codama_errors::CodamaResult;
 use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::syn_traits::*;
-
-pub struct SetOnce<'a, T> {
-    value: Option<T>,
-    ident: &'static str,
-    meta: &'a syn::meta::ParseNestedMeta<'a>,
-    is_set: bool,
-}
-
-impl<'a, T> SetOnce<'a, T> {
-    fn new(ident: &'static str, meta: &'a syn::meta::ParseNestedMeta<'a>) -> Self {
-        Self {
-            value: None,
-            ident,
-            meta,
-            is_set: false,
-        }
-    }
-
-    pub fn initial_value(&mut self, value: T) {
-        self.value = Some(value);
-    }
-
-    pub fn set(&mut self, value: T) -> syn::Result<()> {
-        if self.is_set {
-            return Err(self.meta.error(format!("{} is already set", self.ident)));
-        }
-        self.is_set = true;
-        self.value = Some(value);
-        Ok(())
-    }
-
-    pub fn option(&self) -> &Option<T> {
-        &self.value
-    }
-
-    pub fn take(&mut self) -> syn::Result<T> {
-        match self.value.take() {
-            Some(value) => Ok(value),
-            None => Err(self.meta.error(format!("{} is missing", self.ident))),
-        }
-    }
-}
 
 pub fn number_type_node(meta: &syn::meta::ParseNestedMeta) -> CodamaResult<Node> {
     let mut format = SetOnce::<NumberFormat>::new("format", meta);
