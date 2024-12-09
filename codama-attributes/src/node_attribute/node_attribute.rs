@@ -47,7 +47,7 @@ mod tests {
     use quote::quote;
 
     #[test]
-    fn test_node_attribute() {
+    fn single_input() {
         let ast = syn_build::attribute(quote! { #[node(numberTypeNode(u16, le))] });
         let attribute = NodeAttribute::parse(&ast).unwrap();
 
@@ -56,22 +56,7 @@ mod tests {
     }
 
     #[test]
-    fn test_node_attribute_no_input() {
-        let ast = syn_build::attribute(quote! { #[node()] });
-        let error = NodeAttribute::parse(&ast).unwrap_err();
-        assert!(error.to_string().contains("node is missing"));
-    }
-
-    #[test]
-    fn test_node_attribute_multiple_inputs() {
-        let ast =
-            syn_build::attribute(quote! { #[node(numberTypeNode(u16, le), publicKeyTypeNode())] });
-        let error = NodeAttribute::parse(&ast).unwrap_err();
-        assert!(error.to_string().contains("node is already set"));
-    }
-
-    #[test]
-    fn test_feature_gated_node_attribute() {
+    fn feature_gated() {
         let ast = syn_build::attribute(
             quote! { #[cfg_attr(feature = "some_feature", node(numberTypeNode(u16, le)))] },
         );
@@ -79,5 +64,27 @@ mod tests {
 
         assert_eq!(attribute.ast, &ast);
         assert_eq!(attribute.node, NumberTypeNode::le(U16).into());
+    }
+
+    #[test]
+    fn no_input() {
+        let ast = syn_build::attribute(quote! { #[node()] });
+        let error = NodeAttribute::parse(&ast).unwrap_err();
+        assert!(error.to_string().contains("node is missing"));
+    }
+
+    #[test]
+    fn multiple_inputs() {
+        let ast =
+            syn_build::attribute(quote! { #[node(numberTypeNode(u16, le), publicKeyTypeNode())] });
+        let error = NodeAttribute::parse(&ast).unwrap_err();
+        assert!(error.to_string().contains("node is already set"));
+    }
+
+    #[test]
+    fn unrecognized_attribute() {
+        let ast = syn_build::attribute(quote! { #[node(wrongNode = 42)] });
+        let error = NodeAttribute::parse(&ast).unwrap_err();
+        assert!(error.to_string().contains("unrecognized node"));
     }
 }
