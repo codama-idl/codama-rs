@@ -1,0 +1,5 @@
+error: node is already set
+ --> tests/node_attribute/double_node.fail.rs:3:33
+  |
+3 | #[node(numberTypeNode(u32, le), publicKeyTypeNode())]
+  |                                 ^^^^^^^^^^^^^^^^^^^

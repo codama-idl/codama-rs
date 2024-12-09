@@ -85,6 +85,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-macros"
+version = "0.1.0"
+dependencies = [
+ "codama-attributes",
+ "codama-errors",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "trybuild",
+]
+
+[[package]]
 name = "codama-nodes"
 version = "0.1.0"
 dependencies = [

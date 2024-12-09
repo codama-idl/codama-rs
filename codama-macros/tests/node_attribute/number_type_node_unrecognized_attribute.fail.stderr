@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/node_attribute/number_type_node_unrecognized_attribute.fail.rs:3:28
+  |
+3 | #[node(numberTypeNode(u32, unrecognized = 42, le))]
+  |                            ^^^^^^^^^^^^

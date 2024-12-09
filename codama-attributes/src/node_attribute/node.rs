@@ -8,7 +8,7 @@ impl NodeAttributeParse for Node {
             // Type nodes.
             "numberTypeNode" => NumberTypeNode::from_meta(&meta),
             "publicKeyTypeNode" => PublicKeyTypeNode::from_meta(&meta),
-            _ => return Err(meta.error("unrecognized node").into()),
+            _ => return Err(meta.error("unrecognized node")),
         }
     }
 }

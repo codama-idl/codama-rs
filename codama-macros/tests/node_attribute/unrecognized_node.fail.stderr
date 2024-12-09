@@ -1,0 +1,5 @@
+error: unrecognized node
+ --> tests/node_attribute/unrecognized_node.fail.rs:3:8
+  |
+3 | #[node(unrecognizedNode(foo = 42))]
+  |        ^^^^^^^^^^^^^^^^

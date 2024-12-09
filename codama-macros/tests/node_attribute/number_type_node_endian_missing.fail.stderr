@@ -1,0 +1,5 @@
+error: endian is missing
+ --> tests/node_attribute/number_type_node_endian_missing.fail.rs:3:8
+  |
+3 | #[node(numberTypeNode(u32))]
+  |        ^^^^^^^^^^^^^^^^^^^
