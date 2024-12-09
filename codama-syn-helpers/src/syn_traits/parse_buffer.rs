@@ -35,8 +35,8 @@ pub trait ParseBuffer<'a> {
     }
 
     /// Check if the next token is an empty group.
-    fn is_empty_group(&self) -> bool {
-        match self.get_self().fork().parse::<proc_macro2::Group>() {
+    fn consume_empty_group(&self) -> bool {
+        match self.get_self().parse::<proc_macro2::Group>() {
             Ok(group) => group.stream().is_empty(),
             Err(_) => false,
         }
@@ -119,10 +119,12 @@ mod tests {
     }
 
     #[test]
-    fn is_empty_group() {
+    fn consume_empty_group() {
         let test = test_buffer!(
             bool,
-            |input: syn::parse::ParseStream| -> syn::Result<bool> { Ok(input.is_empty_group()) }
+            |input: syn::parse::ParseStream| -> syn::Result<bool> {
+                Ok(input.consume_empty_group())
+            }
         );
 
         assert_eq!(test("()").unwrap(), true);
