@@ -16,19 +16,17 @@ impl IntoSynError for &syn::Attribute {
     }
 }
 
-pub struct SetOnce<T, U: IntoSynError> {
+pub struct SetOnce<T> {
     value: Option<T>,
     ident: &'static str,
-    tokens: U,
     is_set: bool,
 }
 
-impl<T, U: IntoSynError> SetOnce<T, U> {
-    pub fn new(ident: &'static str, tokens: U) -> Self {
+impl<T> SetOnce<T> {
+    pub fn new(ident: &'static str) -> Self {
         Self {
             value: None,
             ident,
-            tokens,
             is_set: false,
         }
     }
@@ -38,11 +36,9 @@ impl<T, U: IntoSynError> SetOnce<T, U> {
     //     self
     // }
 
-    pub fn set(&mut self, value: T) -> syn::Result<()> {
+    pub fn set<U: IntoSynError>(&mut self, value: T, tokens: U) -> syn::Result<()> {
         if self.is_set {
-            return Err(self
-                .tokens
-                .get_syn_error(format!("{} is already set", self.ident)));
+            return Err(tokens.get_syn_error(format!("{} is already set", self.ident)));
         }
         self.is_set = true;
         self.value = Some(value);
@@ -53,12 +49,10 @@ impl<T, U: IntoSynError> SetOnce<T, U> {
     //     &self.value
     // }
 
-    pub fn take(&mut self) -> syn::Result<T> {
+    pub fn take<U: IntoSynError>(&mut self, tokens: U) -> syn::Result<T> {
         match self.value.take() {
             Some(value) => Ok(value),
-            None => Err(self
-                .tokens
-                .get_syn_error(format!("{} is missing", self.ident))),
+            None => Err(tokens.get_syn_error(format!("{} is missing", self.ident))),
         }
     }
 }

@@ -24,11 +24,11 @@ impl<'a> TryFrom<&'a syn::Attribute> for NodeAttribute<'a> {
         };
 
         // Parse the node from the token stream.
-        let mut node = SetOnce::<Node, _>::new("node", attr);
-        attr.parse_nested_meta(|meta| node.set(Node::from_meta(&meta)?))?;
+        let mut node = SetOnce::<Node>::new("node");
+        attr.parse_nested_meta(|meta| node.set(Node::from_meta(&meta)?, &meta))?;
         Ok(Self {
             ast,
-            node: node.take()?,
+            node: node.take(attr)?,
         })
     }
 }
