@@ -6,24 +6,24 @@ impl NodeAttributeParse for NumberTypeNode {
     fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian");
-        meta.parse_nested_meta(|meta| {
+        meta.parse_nested_meta(|ref meta| {
             meta.input.consume_arg()?;
             match meta.path.last_str().as_str() {
-                "u8" => format.set(NumberFormat::U8, &meta),
-                "u16" => format.set(NumberFormat::U16, &meta),
-                "u32" => format.set(NumberFormat::U32, &meta),
-                "u64" => format.set(NumberFormat::U64, &meta),
-                "u128" => format.set(NumberFormat::U128, &meta),
-                "i8" => format.set(NumberFormat::I8, &meta),
-                "i16" => format.set(NumberFormat::I16, &meta),
-                "i32" => format.set(NumberFormat::I32, &meta),
-                "i64" => format.set(NumberFormat::I64, &meta),
-                "i128" => format.set(NumberFormat::I128, &meta),
-                "f32" => format.set(NumberFormat::F32, &meta),
-                "f64" => format.set(NumberFormat::F64, &meta),
-                "shortU16" => format.set(NumberFormat::ShortU16, &meta),
-                "le" => endian.set(Endian::Little, &meta),
-                "be" => endian.set(Endian::Big, &meta),
+                "u8" => format.set(NumberFormat::U8, meta),
+                "u16" => format.set(NumberFormat::U16, meta),
+                "u32" => format.set(NumberFormat::U32, meta),
+                "u64" => format.set(NumberFormat::U64, meta),
+                "u128" => format.set(NumberFormat::U128, meta),
+                "i8" => format.set(NumberFormat::I8, meta),
+                "i16" => format.set(NumberFormat::I16, meta),
+                "i32" => format.set(NumberFormat::I32, meta),
+                "i64" => format.set(NumberFormat::I64, meta),
+                "i128" => format.set(NumberFormat::I128, meta),
+                "f32" => format.set(NumberFormat::F32, meta),
+                "f64" => format.set(NumberFormat::F64, meta),
+                "shortU16" => format.set(NumberFormat::ShortU16, meta),
+                "le" => endian.set(Endian::Little, meta),
+                "be" => endian.set(Endian::Big, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             }
         })?;
