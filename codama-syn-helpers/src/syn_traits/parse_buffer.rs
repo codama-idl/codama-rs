@@ -5,7 +5,7 @@ pub trait ParseBuffer<'a> {
     fn get_self(&self) -> &syn::parse::ParseBuffer<'a>;
 
     /// Advance the buffer until we reach a comma or the end of the buffer.
-    fn parse_end_of_arg(&self) -> syn::Result<()> {
+    fn consume_arg(&self) -> syn::Result<()> {
         self.get_self().step(|cursor| {
             let mut rest = *cursor;
             while let Some((tt, next)) = rest.token_tree() {
@@ -20,6 +20,14 @@ pub trait ParseBuffer<'a> {
         })
     }
 
+    /// Fork the current buffer and move the original buffer to the end of the argument.
+    fn fork_arg(&self) -> syn::Result<syn::parse::ParseBuffer<'a>> {
+        let this = self.get_self();
+        let fork = this.fork();
+        this.consume_arg()?;
+        Ok(fork)
+    }
+
     // Check if the buffer is empty or the next token is a comma.
     fn is_end_of_arg(&self) -> bool {
         let this = self.get_self();
@@ -28,7 +36,7 @@ pub trait ParseBuffer<'a> {
 
     /// Check if the next token is an empty group.
     fn is_empty_group(&self) -> bool {
-        match self.get_self().parse::<proc_macro2::Group>() {
+        match self.get_self().fork().parse::<proc_macro2::Group>() {
             Ok(group) => group.stream().is_empty(),
             Err(_) => false,
         }
@@ -62,11 +70,11 @@ mod tests {
     }
 
     #[test]
-    fn parse_end_of_arg() {
+    fn consume_arg() {
         let test = test_buffer!(
             String,
             |input: syn::parse::ParseStream| -> syn::Result<String> {
-                input.parse_end_of_arg()?;
+                input.consume_arg()?;
                 Ok(input.to_string())
             }
         );
@@ -76,6 +84,26 @@ mod tests {
         assert_eq!(test("(foo , bar), baz").unwrap(), ", baz");
         assert!(test("foo bar baz").unwrap().is_empty());
         assert!(test("").unwrap().is_empty());
+    }
+
+    #[test]
+    fn fork_arg() {
+        let test = test_buffer!(
+            (String, String),
+            |input: syn::parse::ParseStream| -> syn::Result<(String, String)> {
+                let arg = input.fork_arg()?;
+                Ok((arg.to_string(), input.to_string()))
+            }
+        );
+
+        assert_eq!(
+            test("foo , bar , baz").unwrap(),
+            ("foo , bar , baz".to_string(), ", bar , baz".to_string())
+        );
+        assert_eq!(
+            test("foo bar baz").unwrap(),
+            ("foo bar baz".to_string(), "".to_string())
+        );
     }
 
     #[test]
