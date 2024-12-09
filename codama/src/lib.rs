@@ -7,3 +7,6 @@ pub use codama_korok_visitors::*;
 pub use codama_koroks::*;
 pub use codama_nodes::*;
 pub use codama_stores::*;
+
+extern crate codama_macros;
+pub use codama_macros::*;

@@ -20,6 +20,7 @@ dependencies = [
  "codama-korok-plugins",
  "codama-korok-visitors",
  "codama-koroks",
+ "codama-macros",
  "codama-nodes",
  "codama-stores",
  "proc-macro2",
@@ -88,6 +89,7 @@ dependencies = [
 name = "codama-macros"
 version = "0.1.0"
 dependencies = [
+ "codama",
  "codama-attributes",
  "codama-errors",
  "proc-macro2",

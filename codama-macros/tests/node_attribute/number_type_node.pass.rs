@@ -1,9 +1,12 @@
-use codama_macros::node;
+use codama::node;
 
 #[node(number_type(u32, be))]
-pub struct Foo(usize);
+pub struct FooA(usize);
+
+#[codama::node(number_type(u32, be))]
+pub struct FooB(usize);
 
 #[codama_macros::node(number_type(u32, be))]
-pub struct Bar(usize);
+pub struct FooC(usize);
 
 fn main() {}

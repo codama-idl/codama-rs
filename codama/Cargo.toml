@@ -8,6 +8,7 @@ codama-errors = { path = "../codama-errors" }
 codama-korok-plugins = { path = "../codama-korok-plugins" }
 codama-korok-visitors = { path = "../codama-korok-visitors" }
 codama-koroks = { path = "../codama-koroks" }
+codama-macros = { path = "../codama-macros" }
 codama-nodes = { path = "../codama-nodes" }
 codama-stores = { path = "../codama-stores" }
 proc-macro2 = "1.0"
