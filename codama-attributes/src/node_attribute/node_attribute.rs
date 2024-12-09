@@ -1,4 +1,4 @@
-use crate::NodeAttributeParse;
+use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_syn_helpers::syn_traits::*;
@@ -24,13 +24,12 @@ impl<'a> TryFrom<&'a syn::Attribute> for NodeAttribute<'a> {
         };
 
         // Parse the node from the token stream.
-        let mut node: CodamaResult<Node> =
-            Err(syn::Error::new_spanned(&list.tokens, "empty node").into());
-        attr.parse_nested_meta(|meta| {
-            node = Node::from_meta(&meta);
-            Ok(())
-        })?;
-        Ok(Self { ast, node: node? })
+        let mut node = SetOnce::<Node, _>::new("node", attr);
+        attr.parse_nested_meta(|meta| node.set(Node::from_meta(&meta)?))?;
+        Ok(Self {
+            ast,
+            node: node.take()?,
+        })
     }
 }
 
@@ -48,7 +47,7 @@ mod tests {
     use quote::quote;
 
     #[test]
-    fn test_type_attribute() {
+    fn test_node_attribute() {
         let ast = syn_build::attribute(quote! { #[node(numberTypeNode(u16, le))] });
         let attribute = NodeAttribute::parse(&ast).unwrap();
 
@@ -57,7 +56,22 @@ mod tests {
     }
 
     #[test]
-    fn test_feature_gated_type_attribute() {
+    fn test_node_attribute_no_input() {
+        let ast = syn_build::attribute(quote! { #[node()] });
+        let error = NodeAttribute::parse(&ast).unwrap_err();
+        assert!(error.to_string().contains("node is missing"));
+    }
+
+    #[test]
+    fn test_node_attribute_multiple_inputs() {
+        let ast =
+            syn_build::attribute(quote! { #[node(numberTypeNode(u16, le), publicKeyTypeNode())] });
+        let error = NodeAttribute::parse(&ast).unwrap_err();
+        assert!(error.to_string().contains("node is already set"));
+    }
+
+    #[test]
+    fn test_feature_gated_node_attribute() {
         let ast = syn_build::attribute(
             quote! { #[cfg_attr(feature = "some_feature", node(numberTypeNode(u16, le)))] },
         );

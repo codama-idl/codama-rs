@@ -1,10 +1,9 @@
 use crate::NodeAttributeParse;
-use codama_errors::CodamaResult;
 use codama_nodes::{Node, PublicKeyTypeNode};
 use codama_syn_helpers::syn_traits::*;
 
 impl NodeAttributeParse for PublicKeyTypeNode {
-    fn from_meta(meta: &syn::meta::ParseNestedMeta) -> CodamaResult<Node> {
+    fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
         let arg = meta.input.fork_arg()?;
         if !arg.is_end_of_arg() && !arg.is_empty_group() {
             return Err(meta

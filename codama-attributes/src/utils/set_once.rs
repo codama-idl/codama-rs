@@ -1,16 +1,34 @@
-pub struct SetOnce<'a, T> {
+use std::fmt::Display;
+
+pub trait IntoSynError {
+    fn get_syn_error(&self, msg: impl Display) -> syn::Error;
+}
+
+impl IntoSynError for &syn::meta::ParseNestedMeta<'_> {
+    fn get_syn_error(&self, msg: impl Display) -> syn::Error {
+        self.error(msg)
+    }
+}
+
+impl IntoSynError for &syn::Attribute {
+    fn get_syn_error(&self, msg: impl Display) -> syn::Error {
+        syn::Error::new_spanned(self, msg)
+    }
+}
+
+pub struct SetOnce<T, U: IntoSynError> {
     value: Option<T>,
     ident: &'static str,
-    meta: &'a syn::meta::ParseNestedMeta<'a>,
+    tokens: U,
     is_set: bool,
 }
 
-impl<'a, T> SetOnce<'a, T> {
-    pub fn new(ident: &'static str, meta: &'a syn::meta::ParseNestedMeta<'a>) -> Self {
+impl<T, U: IntoSynError> SetOnce<T, U> {
+    pub fn new(ident: &'static str, tokens: U) -> Self {
         Self {
             value: None,
             ident,
-            meta,
+            tokens,
             is_set: false,
         }
     }
@@ -22,7 +40,9 @@ impl<'a, T> SetOnce<'a, T> {
 
     pub fn set(&mut self, value: T) -> syn::Result<()> {
         if self.is_set {
-            return Err(self.meta.error(format!("{} is already set", self.ident)));
+            return Err(self
+                .tokens
+                .get_syn_error(format!("{} is already set", self.ident)));
         }
         self.is_set = true;
         self.value = Some(value);
@@ -36,7 +56,9 @@ impl<'a, T> SetOnce<'a, T> {
     pub fn take(&mut self) -> syn::Result<T> {
         match self.value.take() {
             Some(value) => Ok(value),
-            None => Err(self.meta.error(format!("{} is missing", self.ident))),
+            None => Err(self
+                .tokens
+                .get_syn_error(format!("{} is missing", self.ident))),
         }
     }
 }
