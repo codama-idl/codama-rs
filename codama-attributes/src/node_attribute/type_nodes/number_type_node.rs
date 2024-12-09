@@ -38,36 +38,36 @@ mod tests {
 
     #[test]
     fn ok() {
-        assert_node!(#[node(numberTypeNode(u16, le))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(numberTypeNode(u64, le))], NumberTypeNode::le(U64).into());
-        assert_node!(#[node(numberTypeNode(u16, be))], NumberTypeNode::be(U16).into());
-        assert_node!(#[node(numberTypeNode(u64, be))], NumberTypeNode::be(U64).into());
-        assert_node!(#[node(numberTypeNode(le, u16))], NumberTypeNode::le(U16).into());
+        assert_node!(#[node(number_type(u16, le))], NumberTypeNode::le(U16).into());
+        assert_node!(#[node(number_type(u64, le))], NumberTypeNode::le(U64).into());
+        assert_node!(#[node(number_type(u16, be))], NumberTypeNode::be(U16).into());
+        assert_node!(#[node(number_type(u64, be))], NumberTypeNode::be(U64).into());
+        assert_node!(#[node(number_type(le, u16))], NumberTypeNode::le(U16).into());
     }
 
     #[test]
     fn missing_format() {
-        assert_node_err!(#[node(numberTypeNode(le))], "format is missing");
+        assert_node_err!(#[node(number_type(le))], "format is missing");
     }
 
     #[test]
     fn format_already_set() {
-        assert_node_err!(#[node(numberTypeNode(u8, u16))], "format is already set");
+        assert_node_err!(#[node(number_type(u8, u16))], "format is already set");
     }
 
     #[test]
     fn missing_endian() {
-        assert_node_err!(#[node(numberTypeNode(u16))], "endian is missing");
+        assert_node_err!(#[node(number_type(u16))], "endian is missing");
     }
 
     #[test]
     fn endian_already_set() {
-        assert_node_err!(#[node(numberTypeNode(le, be))], "endian is already set");
+        assert_node_err!(#[node(number_type(le, be))], "endian is already set");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!(#[node(numberTypeNode(u16, le, unknown))], "unrecognized attribute");
-        assert_node_err!(#[node(numberTypeNode(u16, le, unknown = 42))], "unrecognized attribute");
+        assert_node_err!(#[node(number_type(u16, le, unknown))], "unrecognized attribute");
+        assert_node_err!(#[node(number_type(u16, le, unknown = 42))], "unrecognized attribute");
     }
 }

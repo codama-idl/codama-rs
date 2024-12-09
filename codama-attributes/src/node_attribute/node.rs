@@ -6,8 +6,8 @@ impl NodeAttributeParse for Node {
     fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
         match meta.path.last_str().as_str() {
             // Type nodes.
-            "numberTypeNode" => NumberTypeNode::from_meta(&meta),
-            "publicKeyTypeNode" => PublicKeyTypeNode::from_meta(&meta),
+            "number_type" => NumberTypeNode::from_meta(&meta),
+            "public_key_type" => PublicKeyTypeNode::from_meta(&meta),
             _ => return Err(meta.error("unrecognized node")),
         }
     }

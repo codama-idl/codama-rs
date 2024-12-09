@@ -8,7 +8,7 @@ use codama_syn_helpers::syn_traits::Path;
 pub enum Attribute<'a> {
     // E.g. #[derive(Debug, CodamaType)]
     Derive(DeriveAttribute<'a>),
-    // E.g. #[node(numberTypeNode(u8, le))]
+    // E.g. #[node(number_type(u8, le))]
     Node(NodeAttribute<'a>),
     // E.g. #[string(base64)]
     StringModifier(StringAttribute<'a>),

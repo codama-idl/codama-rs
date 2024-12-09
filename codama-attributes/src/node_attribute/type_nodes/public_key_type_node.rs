@@ -5,7 +5,7 @@ use codama_syn_helpers::syn_traits::*;
 impl NodeAttributeParse for PublicKeyTypeNode {
     fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
         if !meta.input.is_end_of_arg() && !meta.input.consume_empty_group() {
-            return Err(meta.error("publicKeyTypeNode does not accept any input"));
+            return Err(meta.error("public_key_type does not accept any input"));
         }
         Ok(PublicKeyTypeNode::new().into())
     }
@@ -20,13 +20,13 @@ mod tests {
 
     #[test]
     fn ok() {
-        assert_node!(#[node(publicKeyTypeNode)], PublicKeyTypeNode::new().into());
-        assert_node!(#[node(publicKeyTypeNode())], PublicKeyTypeNode::new().into());
+        assert_node!(#[node(public_key_type)], PublicKeyTypeNode::new().into());
+        assert_node!(#[node(public_key_type())], PublicKeyTypeNode::new().into());
     }
 
     #[test]
     fn unexpected_input() {
-        assert_node_err!(#[node(publicKeyTypeNode(unexpected))], "publicKeyTypeNode does not accept any input");
-        assert_node_err!(#[node(publicKeyTypeNode(foo = 42))], "publicKeyTypeNode does not accept any input");
+        assert_node_err!(#[node(public_key_type(unexpected))], "public_key_type does not accept any input");
+        assert_node_err!(#[node(public_key_type(foo = 42))], "public_key_type does not accept any input");
     }
 }

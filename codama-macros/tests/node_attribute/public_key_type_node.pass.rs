@@ -1,12 +1,12 @@
 use codama_macros::node;
 
-#[node(publicKeyTypeNode)]
+#[node(public_key_type)]
 pub struct FooA(usize);
 
-#[node(publicKeyTypeNode())]
+#[node(public_key_type())]
 pub struct FooB(usize);
 
-#[codama_macros::node(publicKeyTypeNode)]
+#[codama_macros::node(public_key_type)]
 pub struct FooC(usize);
 
 fn main() {}

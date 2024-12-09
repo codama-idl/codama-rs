@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn single_input() {
-        let ast = syn_build::attribute(quote! { #[node(numberTypeNode(u16, le))] });
+        let ast = syn_build::attribute(quote! { #[node(number_type(u16, le))] });
         let attribute = NodeAttribute::parse(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn feature_gated() {
         let ast = syn_build::attribute(
-            quote! { #[cfg_attr(feature = "some_feature", node(numberTypeNode(u16, le)))] },
+            quote! { #[cfg_attr(feature = "some_feature", node(number_type(u16, le)))] },
         );
         let attribute = NodeAttribute::parse(&ast).unwrap();
 
@@ -75,8 +75,7 @@ mod tests {
 
     #[test]
     fn multiple_inputs() {
-        let ast =
-            syn_build::attribute(quote! { #[node(numberTypeNode(u16, le), publicKeyTypeNode())] });
+        let ast = syn_build::attribute(quote! { #[node(number_type(u16, le), public_key_type())] });
         let error = NodeAttribute::parse(&ast).unwrap_err();
         assert!(error.to_string().contains("node is already set"));
     }

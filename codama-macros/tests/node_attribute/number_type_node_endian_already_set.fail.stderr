@@ -1,5 +1,5 @@
 error: endian is already set
- --> tests/node_attribute/number_type_node_endian_already_set.fail.rs:3:27
+ --> tests/node_attribute/number_type_node_endian_already_set.fail.rs:3:24
   |
-3 | #[node(numberTypeNode(be, le, u32))]
-  |                           ^^
+3 | #[node(number_type(be, le, u32))]
+  |                        ^^
