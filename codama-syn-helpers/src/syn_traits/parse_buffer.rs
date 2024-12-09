@@ -1,3 +1,4 @@
+use proc_macro2::TokenTree;
 use syn::Token;
 
 pub trait ParseBuffer<'a> {
@@ -5,11 +6,18 @@ pub trait ParseBuffer<'a> {
 
     /// Advance the buffer until we reach a comma or the end of the buffer.
     fn parse_end_of_arg(&self) -> syn::Result<()> {
-        let this = self.get_self();
-        while !this.is_empty() && !this.peek(Token![,]) {
-            this.parse::<proc_macro2::TokenTree>()?;
-        }
-        Ok(())
+        self.get_self().step(|cursor| {
+            let mut rest = *cursor;
+            while let Some((tt, next)) = rest.token_tree() {
+                match &tt {
+                    TokenTree::Punct(punct) if punct.as_char() == ',' => {
+                        return Ok(((), rest));
+                    }
+                    _ => rest = next,
+                }
+            }
+            Ok(((), rest))
+        })
     }
 
     // Check if the buffer is empty or the next token is a comma.
@@ -64,8 +72,10 @@ mod tests {
         );
 
         assert_eq!(test("foo , bar , baz").unwrap(), ", bar , baz");
+        assert_eq!(test(", bar , baz").unwrap(), ", bar , baz");
         assert_eq!(test("(foo , bar), baz").unwrap(), ", baz");
         assert!(test("foo bar baz").unwrap().is_empty());
+        assert!(test("").unwrap().is_empty());
     }
 
     #[test]
