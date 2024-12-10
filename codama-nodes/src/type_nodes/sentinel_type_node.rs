@@ -1,7 +1,7 @@
-use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeUnionTrait, TypeNodeTrait};
-use codama_nodes_derive::type_node;
+use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
+use codama_nodes_derive::nestable_type_node;
 
-#[type_node]
+#[nestable_type_node]
 pub struct SentinelTypeNode<T: TypeNodeUnionTrait> {
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]

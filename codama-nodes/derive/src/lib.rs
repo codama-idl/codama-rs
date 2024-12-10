@@ -3,6 +3,7 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
 mod into_enum;
+mod nestable_type_node;
 mod node;
 mod node_union;
 mod registered_nodes;
@@ -38,6 +39,22 @@ pub fn type_node(_attr: TokenStream, input: TokenStream) -> TokenStream {
 pub fn derive_type_node(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     type_node::expand_derive_type_node(&mut input)
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+#[proc_macro_attribute]
+pub fn nestable_type_node(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    nestable_type_node::expand_attribute_nestable_type_node(&mut input)
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+#[proc_macro_derive(NestableTypeNode)]
+pub fn derive_nestable_type_node(input: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    nestable_type_node::expand_derive_nestable_type_node(&mut input)
         .unwrap_or_else(CodamaError::into_compile_error)
         .into()
 }

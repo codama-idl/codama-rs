@@ -1,7 +1,7 @@
 use crate::{NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
-use codama_nodes_derive::type_node;
+use codama_nodes_derive::nestable_type_node;
 
-#[type_node]
+#[nestable_type_node]
 pub struct FixedSizeTypeNode<T: TypeNodeUnionTrait> {
     // Data.
     pub size: usize,

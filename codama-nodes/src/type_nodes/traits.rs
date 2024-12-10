@@ -1,7 +1,15 @@
-use crate::{NodeTrait, NodeUnionTrait};
+use crate::{NodeTrait, NodeUnionTrait, TypeNode};
+use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
-pub trait TypeNodeTrait: NodeTrait {}
+pub trait TypeNodeTrait: NodeTrait {
+    fn from_type_node(_node: TypeNode) -> CodamaResult<Self> {
+        Err(codama_errors::CodamaError::InvalidNodeConversion {
+            from: "TypeNode".into(),
+            into: Self::KIND.into(),
+        })
+    }
+}
 
 pub trait TypeNodeUnionTrait: NodeUnionTrait {}
 
