@@ -98,11 +98,11 @@ mod tests {
 
         assert_eq!(
             test("foo , bar , baz").unwrap(),
-            ("foo , bar , baz".to_string(), ", bar , baz".to_string())
+            ("foo , bar , baz".into(), ", bar , baz".into())
         );
         assert_eq!(
             test("foo bar baz").unwrap(),
-            ("foo bar baz".to_string(), "".to_string())
+            ("foo bar baz".into(), "".into())
         );
     }
 

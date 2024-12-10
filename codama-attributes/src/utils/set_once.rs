@@ -1,10 +1,12 @@
 use std::fmt::Display;
 
+use codama_syn_helpers::AttributeMeta;
+
 pub trait IntoSynError {
     fn get_syn_error(&self, msg: impl Display) -> syn::Error;
 }
 
-impl IntoSynError for &syn::meta::ParseNestedMeta<'_> {
+impl IntoSynError for &AttributeMeta<'_> {
     fn get_syn_error(&self, msg: impl Display) -> syn::Error {
         self.error(msg)
     }

@@ -1,12 +1,12 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::{syn_traits::*, AttributeMeta};
 
 impl NodeAttributeParse for NumberTypeNode {
-    fn from_meta(_path: &syn::Path, meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
+    fn from_meta(meta: &AttributeMeta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian");
-        meta.parse_nested_meta(|ref meta| match meta.path.last_str().as_str() {
+        meta.parse_metas(|ref meta| match meta.parse_path()?.last_str().as_str() {
             "u8" => format.set(NumberFormat::U8, meta),
             "u16" => format.set(NumberFormat::U16, meta),
             "u32" => format.set(NumberFormat::U32, meta),
