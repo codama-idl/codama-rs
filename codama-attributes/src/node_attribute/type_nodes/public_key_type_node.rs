@@ -4,7 +4,8 @@ use codama_syn_helpers::syn_traits::*;
 
 impl NodeAttributeParse for PublicKeyTypeNode {
     fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
-        if !meta.input.is_end_of_arg() && !meta.input.consume_empty_group() {
+        let arg = meta.input.fork_arg()?;
+        if !arg.is_end_of_arg() && !arg.is_empty_group() {
             return Err(meta.error("public_key_type does not accept any input"));
         }
         Ok(PublicKeyTypeNode::new().into())
