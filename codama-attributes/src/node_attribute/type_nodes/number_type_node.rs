@@ -3,7 +3,7 @@ use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::syn_traits::*;
 
 impl NodeAttributeParse for NumberTypeNode {
-    fn from_meta(meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
+    fn from_meta(_path: &syn::Path, meta: &syn::meta::ParseNestedMeta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian");
         meta.parse_nested_meta(|ref meta| match meta.path.last_str().as_str() {
