@@ -6,15 +6,25 @@ use syn::{
     parse::discouraged::Speculative,
     spanned::Spanned,
     token::{Brace, Bracket, Paren},
-    MetaList, MetaNameValue, Path, Token,
+    Expr, MetaList, MetaNameValue, Path, Token,
 };
 
 #[derive(Debug, From)]
 pub enum Meta {
+    /// A path — e.g. `my_attribute` or `a::b::my_attribute`.
     Path(Path),
+    /// A list of Metas — e.g. `my_attribute(one, two, three)`.
     List(MetaList),
-    NameValue(MetaNameValue),
+    /// A name-list pair where list is a list of Metas — e.g. `my_attribute = my_value(one, two, three)`.
     NameList(MetaNameList),
+    /// A name-value pair where value is an expression — e.g. `my_attribute = 42`.
+    /// In case of ambiguity with `NameList`, `NameList` is preferred.
+    NameValue(MetaNameValue),
+    /// An expression — e.g. `42`, `"hello"` or `a + b`.
+    /// In case of ambiguity with `Path`, `Path` is preferred.
+    Expr(Expr),
+    /// A verbatim token stream — e.g. `[<=>]`.
+    /// In case of ambiguity with `Expr`, `Expr` is preferred.
     Verbatim(TokenStream),
 }
 
@@ -32,6 +42,10 @@ impl Meta {
             Meta::List(meta) => Ok(&meta.path),
             Meta::NameValue(meta) => Ok(&meta.path),
             Meta::NameList(meta) => Ok(&meta.path),
+            Meta::Expr(expr) => match expr {
+                Expr::Path(expr) => Ok(&expr.path),
+                _ => Err(expr.error("expected a path")),
+            },
             Meta::Verbatim(tokens) => Err(tokens.error("expected a path")),
         }
     }
@@ -50,6 +64,7 @@ impl Meta {
             Meta::List(meta) => meta.delimiter.span().open(),
             Meta::NameValue(meta) => meta.eq_token.span,
             Meta::NameList(meta) => meta.eq_token.span,
+            Meta::Expr(expr) => expr.span(),
             Meta::Verbatim(tokens) => tokens.span(),
         };
         Err(syn::Error::new(error_span, "unexpected token in attribute"))
@@ -64,6 +79,10 @@ impl Meta {
             ))),
             Meta::NameValue(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
             Meta::NameList(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
+            Meta::Expr(expr) => Err(syn::Error::new(
+                expr.span(),
+                "expected a path followed by `(`",
+            )),
             Meta::Verbatim(tokens) => Err(syn::Error::new(
                 tokens.span(),
                 "expected a path followed by `(`",
@@ -86,6 +105,7 @@ impl Meta {
                 meta.list.delimiter.span().join(),
                 "expected a valid expression",
             )),
+            Meta::Expr(expr) => Err(expr.error("expected a path followed by `=`")),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
         }
     }
@@ -111,8 +131,29 @@ impl Meta {
                     meta.path.to_string(),
                 ),
             )),
+            Meta::Expr(expr) => Err(expr.error("expected a named list: `... = ...(...)`")),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a named list: `... = ...(...)`")),
         }
+    }
+
+    pub fn as_expr(&self) -> syn::Result<&Expr> {
+        let span = match self {
+            Meta::Expr(expr) => return Ok(expr),
+            Meta::Path(path) => path.span(),
+            Meta::List(meta) => meta.delimiter.span().join(),
+            Meta::NameList(meta) => meta
+                .path
+                .span()
+                .join(meta.list.delimiter.span().close())
+                .unwrap_or(meta.path.span()),
+            Meta::NameValue(meta) => meta
+                .path
+                .span()
+                .join(meta.value.span())
+                .unwrap_or(meta.path.span()),
+            Meta::Verbatim(tokens) => tokens.span(),
+        };
+        Err(syn::Error::new(span, "expected a valid expression"))
     }
 
     pub fn as_verbatim(&self, msg: impl std::fmt::Display) -> syn::Result<&TokenStream> {
@@ -130,6 +171,7 @@ impl Meta {
                 .span()
                 .join(meta.value.span())
                 .unwrap_or(meta.path.span()),
+            Meta::Expr(expr) => expr.span(),
         };
         Err(syn::Error::new(span, msg))
     }
@@ -171,7 +213,13 @@ impl syn::parse::Parse for Meta {
                     Ok(Self::Path(path))
                 }
             }
-            Err(_) => Ok(Self::Verbatim(input.parse()?)),
+            Err(_) => match fork.parse::<Expr>() {
+                Ok(expr) => {
+                    input.advance_to(&fork);
+                    Ok(Self::Expr(expr))
+                }
+                _ => Ok(Self::Verbatim(input.parse()?)),
+            },
         }
     }
 }
@@ -193,6 +241,7 @@ impl quote::ToTokens for Meta {
             Meta::List(list) => list.to_tokens(tokens),
             Meta::NameValue(name_value) => name_value.to_tokens(tokens),
             Meta::NameList(name_list) => name_list.to_tokens(tokens),
+            Meta::Expr(expr) => expr.to_tokens(tokens),
             Meta::Verbatim(verbatim) => verbatim.to_tokens(tokens),
         }
     }
@@ -255,6 +304,15 @@ mod tests {
         assert!(name_list.path.is_strict("foo"));
         assert!(name_list.list.path.is_strict("bar"));
         assert_eq!(name_list.list.tokens.to_string(), "1 , 2 , 3");
+    }
+
+    #[test]
+    fn parse_expr() {
+        let meta = meta! { "hello" };
+        let Meta::Expr(expr) = meta else {
+            panic!("expected Meta::Expr");
+        };
+        assert_eq!(expr.to_token_stream().to_string(), "\"hello\"");
     }
 
     #[test]
