@@ -4,34 +4,23 @@ use codama_syn_helpers::{syn_traits::*, Meta};
 
 impl NodeAttributeParse for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
-        let mut size: SetOnce<NestedTypeNode<NumberTypeNode>> =
-            SetOnce::<NestedTypeNode<NumberTypeNode>>::new("size");
+        let mut size: SetOnce<Node> = SetOnce::<Node>::new("size");
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default().into());
         }
         meta.as_list()?
             .parse_metas(|ref meta| match meta.path()?.last_str().as_str() {
                 "size" => {
-                    let list = &meta.as_name_list()?.list;
-                    let node = Node::from_meta(&list.clone().into())?;
-                    let node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
-                        Ok(node) => node,
-                        Err(_) => return Err(list.error("size must be a NumberTypeNode")),
-                    };
-                    size.set(node, meta)?;
-                    Ok(())
+                    let node = Node::from_meta(&meta.as_name_list()?.list.clone().into())?;
+                    size.set(node, meta)
                 }
-                _ => {
-                    let node = Node::from_meta(meta)?;
-                    let node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
-                        Ok(node) => node,
-                        Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
-                    };
-                    size.set(node, meta)?;
-                    Ok(())
-                }
+                _ => size.set(Node::from_meta(meta)?, meta),
             })?;
-        Ok(BooleanTypeNode::new(size.take(meta)?).into())
+        let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {
+            Ok(node) => node,
+            Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
+        };
+        Ok(BooleanTypeNode::new(size).into())
     }
 }
 
