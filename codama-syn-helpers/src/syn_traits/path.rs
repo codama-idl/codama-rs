@@ -4,15 +4,26 @@ use codama_errors::CodamaResult;
 pub trait Path {
     fn get_self(&self) -> &syn::Path;
 
-    /// Returns all segment idents joined by "::" except the last one.
-    /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
-    fn prefix(&self) -> String {
+    /// Returns all segment idents as strings
+    fn idents(&self) -> Vec<String> {
         let this = self.get_self();
         this.segments
             .iter()
             .map(|segment| segment.ident.to_string())
-            .collect::<Vec<_>>()[..this.segments.len() - 1]
-            .join("::")
+            .collect::<Vec<_>>()
+    }
+
+    /// Returns all segment idents joined by "::".
+    /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c::Option`.
+    fn to_string(&self) -> String {
+        self.idents().join("::")
+    }
+
+    /// Returns all segment idents joined by "::" except the last one.
+    /// E.g. for `a::b<B>::c::Option<T>` it returns `a::b::c`.
+    fn prefix(&self) -> String {
+        let idents = self.idents();
+        idents[..idents.len() - 1].join("::")
     }
 
     /// Returns the last segment.
@@ -40,11 +51,6 @@ pub trait Path {
         let last = segments.pop().unwrap();
         let prefix = segments.join("::");
         prefix == self.prefix() && last == self.last_str()
-    }
-
-    /// Formats the path as a string.
-    fn display(&self) -> DisplayPath {
-        DisplayPath(self.get_self())
     }
 
     /// Returns the generic arguments of the last segment.
@@ -99,20 +105,6 @@ impl Path for syn::Path {
     }
 }
 
-pub struct DisplayPath<'a>(pub &'a syn::Path);
-
-impl<'a> std::fmt::Display for DisplayPath<'a> {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        for (i, segment) in self.0.segments.iter().enumerate() {
-            if i > 0 || self.0.leading_colon.is_some() {
-                formatter.write_str("::")?;
-            }
-            write!(formatter, "{}", segment.ident)?;
-        }
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,8 +112,20 @@ mod tests {
     use quote::quote;
 
     #[test]
+    fn idents() {
+        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
+        assert_eq!(path.idents(), vec!["std", "option", "Option"]);
+    }
+
+    #[test]
+    fn to_string() {
+        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
+        assert_eq!(path.to_string(), "std::option::Option");
+    }
+
+    #[test]
     fn prefix() {
-        let path: syn::Path = syn_build::parse(quote! { std::option::Option<String> });
+        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
         assert_eq!(path.prefix(), "std::option");
     }
 

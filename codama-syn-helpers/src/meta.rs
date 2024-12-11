@@ -58,7 +58,7 @@ impl Meta {
             Meta::List(meta) => Ok(meta),
             Meta::Path(path) => Err(path.error(format!(
                 "expected attribute arguments in parentheses: `{}(...)`",
-                path.display(),
+                path.to_string(),
             ))),
             Meta::NameValue(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
             Meta::NameList(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
@@ -74,7 +74,7 @@ impl Meta {
             Meta::NameValue(meta) => Ok(meta),
             Meta::Path(path) => Err(path.error(format!(
                 "expected a value for this attribute: `{} = ...`",
-                path.display(),
+                path.to_string(),
             ))),
             Meta::List(meta) => Err(syn::Error::new(
                 meta.delimiter.span().open(),
@@ -93,20 +93,20 @@ impl Meta {
             Meta::NameList(meta) => Ok(meta),
             Meta::Path(path) => Err(path.error(format!(
                 "expected a value for this attribute: `{} = ...(...)`",
-                path.display(),
+                path.to_string(),
             ))),
             Meta::List(meta) => Err(syn::Error::new(
                 meta.delimiter.span().open(),
                 format!(
                     "expected a name for this list: `... = {}(...)`",
-                    meta.path.display(),
+                    meta.path.to_string(),
                 ),
             )),
             Meta::NameValue(meta) => Err(syn::Error::new(
                 meta.value.span(),
                 format!(
                     "expected a list as value: `{} = ...(...)`",
-                    meta.path.display(),
+                    meta.path.to_string(),
                 ),
             )),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a named list: `... = ...(...)`")),
