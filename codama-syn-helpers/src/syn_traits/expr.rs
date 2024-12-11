@@ -1,11 +1,10 @@
 use super::ToTokens as _;
-use codama_errors::CodamaResult;
 
 pub trait Expr {
     fn get_self(&self) -> &syn::Expr;
 
     /// Returns the integer value of the expression if it is a literal integer.
-    fn as_literal_integer<T>(&self) -> CodamaResult<T>
+    fn as_literal_integer<T>(&self) -> syn::Result<T>
     where
         T: std::str::FromStr,
         T::Err: std::fmt::Display,
@@ -15,10 +14,8 @@ pub trait Expr {
             syn::Expr::Lit(syn::ExprLit {
                 lit: syn::Lit::Int(value),
                 ..
-            }) => value.base10_parse::<T>().map_err(Into::into),
-            _ => Err(this
-                .error("Could not evaluate expression as a literal integer")
-                .into()),
+            }) => value.base10_parse::<T>(),
+            _ => Err(this.error("Could not evaluate expression as a literal integer")),
         }
     }
 }
@@ -33,7 +30,6 @@ impl Expr for syn::Expr {
 mod tests {
     use super::*;
     use crate::syn_build;
-    use codama_errors::CodamaError;
     use quote::quote;
 
     #[test]
@@ -47,6 +43,6 @@ mod tests {
     fn as_literal_integer_err() {
         let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
         let result = expr.as_literal_integer::<usize>();
-        assert!(matches!(result, Err(CodamaError::Compilation(_))));
+        assert!(matches!(result, Err(syn::Error { .. })));
     }
 }

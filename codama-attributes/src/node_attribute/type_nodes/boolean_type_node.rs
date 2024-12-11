@@ -11,7 +11,7 @@ impl NodeAttributeParse for BooleanTypeNode {
         meta.as_list()?
             .parse_metas(|ref meta| match meta.path()?.to_string().as_str() {
                 "size" => {
-                    let node = Node::from_meta(&meta.as_name_list()?.list.clone().into())?;
+                    let node = Node::from_meta(&meta.value_as_meta()?)?;
                     size.set(node, meta)
                 }
                 _ => size.set(Node::from_meta(meta)?, meta),

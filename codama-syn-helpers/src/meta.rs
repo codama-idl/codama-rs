@@ -1,6 +1,7 @@
 use crate::syn_traits::{Path as _, ToTokens as _};
 use derive_more::From;
 use proc_macro2::TokenStream;
+use quote::ToTokens;
 use syn::{
     parse::discouraged::Speculative,
     spanned::Spanned,
@@ -131,6 +132,17 @@ impl Meta {
                 .unwrap_or(meta.path.span()),
         };
         Err(syn::Error::new(span, msg))
+    }
+
+    pub fn value_as_meta(&self) -> syn::Result<Meta> {
+        match self {
+            Meta::NameList(meta) => Ok(Meta::List(meta.list.clone())),
+            Meta::NameValue(meta) => match &meta.value {
+                syn::Expr::Path(expr) => Ok(Meta::Path(expr.path.clone())),
+                _ => Ok(Meta::Verbatim(meta.value.to_token_stream())),
+            },
+            _ => Err(self.error("expected a name-value or name-list attribute")),
+        }
     }
 }
 
