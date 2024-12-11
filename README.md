@@ -1,3 +1,14 @@
 # Codama Rust Libraries
 
-TODO
+This project is still a work in progress but here's a super rough overview of what each crate does:
+
+- `codama-errors`: Defines the Result/Error items for all crates.
+- `codama-nodes`: Implements the Codama IDL in Rust.
+- `codama-syn-helpers`: Helpers that boost `syn` items by using traits.
+- `codama-stores`: A small tree structure that parses crates and files inside crates (recursively) and "owns" the `syn::File` for each traversed file.
+- `codama-koroks`: A higher-level tree structure that represents things in your Rust code (modules, structs, enums, variants, types, etc.) You can think of it like a specialized `syn` tree. We call a "thing in your Rust code", a `Korok` (Japanese tree spirits). Each korok keeps track of a `Option<Node>` which is the currently resolved node for this piece of Rust code. Note that the korok tree uses `syn` references from stores mentioned above. So first you get a store that owns all the `syn` files, then you get a Korok tree that's essentially a parsed "view" of your stores.
+- `codama-korok-visitors`: Each Korok can be visited by Korok visitors. This allows you to traverse the entire Rust code and adjust the `Option<Node>` as you wish. There is a `RootKorok` that is the entry point of the tree. Whichever node is associated with this `RootKorok` will become the `RootNode` of the Codama IDL. Therefore, you have visitors like `CombineTypesVisitor` and `CombineModulesVisitor` that go up the tree and combine nodes together until we reach the `RootKorok`.
+- `codama-korok-plugins`: A plugin is trait (`KorokPlugin`) that defines a `run` function that accepts a mutable Korok and a `next` function to run the next plugin on the list. This means any visitor you call on the Korok before the `next` function will be executed before the other plugins, anything after the `next` function will override the other plugins (kinda like a middleware pipeline). There is a DefaultPlugin that calls a default visitor. This visitor does things like, setting base types, link nodes, program metadata, applying Codama macros and combining everything up the tree so the `RootNode` is set on the `RootKorok`. This is the first plugin on the list so you can run anything before or after it based on where you call the `next` function on your plugin. Note that most visitors in the default plugins won't override any existing `Option<Node>` in a Korok, so it's mostly there to fill as many gaps as possible. Also note that all visitors are composable so you can always re-use a visitor used in the default plugin for your own plugin — e.g. the `MapVisitor` to pass a function that applies on all koroks.
+- `codama-attributes`: Parses Codama-specific attributes into structured items so they can then be used by visitors and `codama-macros`.
+- `codama-macros`: A super small procedural macro crate that registers the Codama-specific attributes mentioned above.
+- `codama`: The final library that re-exports most of the ones above and provide a super high level API for parsing IDL from paths to your Rust code.
