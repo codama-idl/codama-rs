@@ -41,6 +41,11 @@ pub trait Path {
         prefix == self.prefix() && last == self.last_str()
     }
 
+    /// Formats the path as a string.
+    fn display(&self) -> DisplayPath {
+        DisplayPath(self.get_self())
+    }
+
     /// Returns the generic arguments of the last segment.
     /// E.g. for `a::b::c::Option<'a, T, U>` it returns `GenericArguments(Some(['a, T, U]))`.
     /// E.g. for `a::b::c::u32` it returns `GenericArguments(None)`.
@@ -91,6 +96,20 @@ pub trait Path {
 impl Path for syn::Path {
     fn get_self(&self) -> &syn::Path {
         self
+    }
+}
+
+pub struct DisplayPath<'a>(pub &'a syn::Path);
+
+impl<'a> std::fmt::Display for DisplayPath<'a> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        for (i, segment) in self.0.segments.iter().enumerate() {
+            if i > 0 || self.0.leading_colon.is_some() {
+                formatter.write_str("::")?;
+            }
+            write!(formatter, "{}", segment.ident)?;
+        }
+        Ok(())
     }
 }
 

@@ -1,23 +1,29 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{BooleanTypeNode, NestedTypeNode, Node, NumberTypeNode};
-use codama_syn_helpers::{syn_traits::*, AttributeMeta};
+use codama_syn_helpers::{
+    syn_traits::{MetaList, Path},
+    Meta,
+};
 
 impl NodeAttributeParse for BooleanTypeNode {
-    fn from_meta(meta: &AttributeMeta) -> syn::Result<Node> {
+    fn from_meta(meta: &Meta) -> syn::Result<Node> {
         let mut size = SetOnce::<NestedTypeNode<NumberTypeNode>>::new("size");
-        if meta.input.is_end_of_arg() || meta.input.is_empty_group() {
-            meta.input.consume_arg()?;
+        if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default().into());
         }
-        meta.parse_metas(|ref meta| {
-            match meta.input.fork().parse::<syn::Path>()?.last_str().as_str() {
+        meta.as_list()?
+            .parse_metas(|ref meta| match meta.path()?.last_str().as_str() {
                 "size" => {
-                    meta.input.parse::<syn::Path>()?;
-                    meta.input.parse::<syn::Token![=]>()?;
-                    let node = Node::from_meta(meta)?;
+                    let name_list = meta.as_name_list()?;
+                    let node = Node::from_meta(&Meta::List(name_list.list.clone()))?;
                     let node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
                         Ok(node) => node,
-                        Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
+                        Err(_) => {
+                            return Err(syn::Error::new_spanned(
+                                &name_list.list,
+                                "size must be a NumberTypeNode",
+                            ))
+                        }
                     };
                     size.set(node, meta)?;
                     Ok(())
@@ -26,13 +32,17 @@ impl NodeAttributeParse for BooleanTypeNode {
                     let node = Node::from_meta(meta)?;
                     let node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
                         Ok(node) => node,
-                        Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
+                        Err(_) => {
+                            return Err(syn::Error::new_spanned(
+                                meta,
+                                "size must be a NumberTypeNode",
+                            ))
+                        }
                     };
                     size.set(node, meta)?;
                     Ok(())
                 }
-            }
-        })?;
+            })?;
         Ok(BooleanTypeNode::new(size.take(meta)?).into())
     }
 }

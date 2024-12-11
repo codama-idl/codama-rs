@@ -1,16 +1,16 @@
+use super::Path;
+use crate::Meta;
 use codama_errors::CodamaResult;
 use syn::punctuated::Punctuated;
-
-use crate::AttributeMeta;
-
-use super::Path;
 
 pub trait Attribute {
     fn get_self(&self) -> &syn::Attribute;
 
-    fn parse_metas(&self, logic: impl FnMut(AttributeMeta) -> syn::Result<()>) -> CodamaResult<()> {
-        self.get_self()
-            .parse_args_with(AttributeMeta::parser(logic))
+    /// Parse all nested metas in the list.
+    fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> CodamaResult<()> {
+        self.parse_comma_args::<Meta>()?
+            .into_iter()
+            .try_for_each(logic)
             .map_err(Into::into)
     }
 

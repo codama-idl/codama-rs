@@ -1,28 +1,32 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
-use codama_syn_helpers::{syn_traits::*, AttributeMeta};
+use codama_syn_helpers::{syn_traits::*, Meta};
 
 impl NodeAttributeParse for NumberTypeNode {
-    fn from_meta(meta: &AttributeMeta) -> syn::Result<Node> {
+    fn from_meta(meta: &Meta) -> syn::Result<Node> {
+        let list = meta.as_list()?;
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian");
-        meta.parse_metas(|ref meta| match meta.parse_path()?.last_str().as_str() {
-            "u8" => format.set(NumberFormat::U8, meta),
-            "u16" => format.set(NumberFormat::U16, meta),
-            "u32" => format.set(NumberFormat::U32, meta),
-            "u64" => format.set(NumberFormat::U64, meta),
-            "u128" => format.set(NumberFormat::U128, meta),
-            "i8" => format.set(NumberFormat::I8, meta),
-            "i16" => format.set(NumberFormat::I16, meta),
-            "i32" => format.set(NumberFormat::I32, meta),
-            "i64" => format.set(NumberFormat::I64, meta),
-            "i128" => format.set(NumberFormat::I128, meta),
-            "f32" => format.set(NumberFormat::F32, meta),
-            "f64" => format.set(NumberFormat::F64, meta),
-            "shortU16" => format.set(NumberFormat::ShortU16, meta),
-            "le" => endian.set(Endian::Little, meta),
-            "be" => endian.set(Endian::Big, meta),
-            _ => Err(meta.error("unrecognized attribute")),
+        list.parse_metas(|ref meta| {
+            let path = meta.path()?;
+            match path.last_str().as_str() {
+                "u8" => format.set(NumberFormat::U8, meta),
+                "u16" => format.set(NumberFormat::U16, meta),
+                "u32" => format.set(NumberFormat::U32, meta),
+                "u64" => format.set(NumberFormat::U64, meta),
+                "u128" => format.set(NumberFormat::U128, meta),
+                "i8" => format.set(NumberFormat::I8, meta),
+                "i16" => format.set(NumberFormat::I16, meta),
+                "i32" => format.set(NumberFormat::I32, meta),
+                "i64" => format.set(NumberFormat::I64, meta),
+                "i128" => format.set(NumberFormat::I128, meta),
+                "f32" => format.set(NumberFormat::F32, meta),
+                "f64" => format.set(NumberFormat::F64, meta),
+                "shortU16" => format.set(NumberFormat::ShortU16, meta),
+                "le" => endian.set(Endian::Little, meta),
+                "be" => endian.set(Endian::Big, meta),
+                _ => Err(syn::Error::new_spanned(path, "unrecognized attribute")),
+            }
         })?;
         Ok(NumberTypeNode::new(format.take(meta)?, endian.take(meta)?).into())
     }
