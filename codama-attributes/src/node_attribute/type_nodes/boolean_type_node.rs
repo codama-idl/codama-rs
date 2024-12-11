@@ -9,12 +9,13 @@ impl NodeAttributeParse for BooleanTypeNode {
             return Ok(BooleanTypeNode::default().into());
         }
         meta.as_list()?
-            .parse_metas(|ref meta| match meta.path()?.to_string().as_str() {
-                "size" => {
+            .parse_metas(|ref meta| match (meta.path_str().as_str(), meta) {
+                ("size", _) => {
                     let node = Node::from_meta(&meta.value_as_meta()?)?;
                     size.set(node, meta)
                 }
-                _ => size.set(Node::from_meta(meta)?, meta),
+                (_, Meta::List(_) | Meta::Path(_)) => size.set(Node::from_meta(meta)?, meta),
+                _ => Err(meta.error("unrecognized attribute")),
             })?;
         let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {
             Ok(node) => node,
@@ -33,20 +34,28 @@ mod tests {
     use quote::quote;
 
     #[test]
-    fn default_size() {
+    fn default() {
         assert_node!(#[node(boolean_type)], BooleanTypeNode::default().into());
         assert_node!(#[node(boolean_type())], BooleanTypeNode::default().into());
     }
 
     #[test]
-    fn custom_size() {
+    fn implicit() {
         assert_node!(#[node(boolean_type(number_type(u32, be)))], BooleanTypeNode::new(NumberTypeNode::be(U32)).into());
+    }
+
+    #[test]
+    fn explicit() {
         assert_node!(#[node(boolean_type(size = number_type(u32, be)))], BooleanTypeNode::new(NumberTypeNode::be(U32)).into());
     }
 
     #[test]
     fn unrecognized_node() {
         assert_node_err!(#[node(boolean_type(unrecognized))], "unrecognized node");
-        assert_node_err!(#[node(boolean_type(foo = 42))], "unrecognized node");
+    }
+
+    #[test]
+    fn unrecognized_attribute() {
+        assert_node_err!(#[node(boolean_type(foo = 42))], "unrecognized attribute");
     }
 }
