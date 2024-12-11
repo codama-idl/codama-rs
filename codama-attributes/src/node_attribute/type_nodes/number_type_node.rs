@@ -9,7 +9,7 @@ impl NodeAttributeParse for NumberTypeNode {
         let mut endian = SetOnce::<Endian>::new("endian");
         list.parse_metas(|ref meta| {
             let path = meta.path()?;
-            match path.last_str().as_str() {
+            match path.to_string().as_str() {
                 "u8" => format.set(NumberFormat::U8, meta),
                 "u16" => format.set(NumberFormat::U16, meta),
                 "u32" => format.set(NumberFormat::U32, meta),
