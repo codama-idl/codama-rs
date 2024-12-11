@@ -195,23 +195,28 @@ impl quote::ToTokens for MetaNameList {
 
 #[cfg(test)]
 mod tests {
-    use crate::syn_traits::{Expr as _, Path as _};
-
     use super::*;
+    use crate::syn_traits::Expr as _;
+
+    macro_rules! meta {
+        ($($attr:tt)*) => {{
+            syn::parse_str::<Meta>(stringify!($($attr)*)).unwrap()
+        }};
+    }
 
     #[test]
-    fn path() {
-        let meta = syn::parse_str::<Meta>("foo");
-        let Ok(Meta::Path(path)) = meta else {
+    fn parse_path() {
+        let meta = meta! { foo };
+        let Meta::Path(path) = meta else {
             panic!("expected Meta::Path");
         };
         assert!(path.is_strict("foo"));
     }
 
     #[test]
-    fn list() {
-        let meta = syn::parse_str::<Meta>("foo(1, 2, 3)");
-        let Ok(Meta::List(list)) = meta else {
+    fn parse_list() {
+        let meta = meta! { foo(1, 2, 3) };
+        let Meta::List(list) = meta else {
             panic!("expected Meta::List");
         };
         assert!(list.path.is_strict("foo"));
@@ -219,9 +224,9 @@ mod tests {
     }
 
     #[test]
-    fn name_value() {
-        let meta = syn::parse_str::<Meta>("foo = 42");
-        let Ok(Meta::NameValue(name_value)) = meta else {
+    fn parse_name_value() {
+        let meta = meta! { foo = 42 };
+        let Meta::NameValue(name_value) = meta else {
             panic!("expected Meta::NameValue");
         };
         assert!(name_value.path.is_strict("foo"));
@@ -229,9 +234,9 @@ mod tests {
     }
 
     #[test]
-    fn name_list() {
-        let meta = syn::parse_str::<Meta>("foo = bar(1, 2, 3)");
-        let Ok(Meta::NameList(name_list)) = meta else {
+    fn parse_name_list() {
+        let meta = meta! { foo = bar(1, 2, 3) };
+        let Meta::NameList(name_list) = meta else {
             panic!("expected Meta::NameList");
         };
         assert!(name_list.path.is_strict("foo"));
@@ -240,11 +245,77 @@ mod tests {
     }
 
     #[test]
-    fn verbatim() {
-        let meta = syn::parse_str::<Meta>("[==> 42 <==]");
-        let Ok(Meta::Verbatim(verbatim)) = meta else {
+    fn parse_verbatim() {
+        let meta = meta! { [==> 42 <==] };
+        let Meta::Verbatim(verbatim) = meta else {
             panic!("expected Meta::Verbatim");
         };
         assert_eq!(verbatim.to_string(), "[==> 42 <==]");
+    }
+
+    #[test]
+    fn path() -> syn::Result<()> {
+        assert_eq!(meta! { foo }.path()?.to_string(), "foo");
+        assert_eq!(meta! { foo(42) }.path()?.to_string(), "foo");
+        assert_eq!(meta! { foo = 42 }.path()?.to_string(), "foo");
+        assert_eq!(meta! { foo = bar(42) }.path()?.to_string(), "foo");
+        assert_eq!(
+            meta! { [verbatim] }.path().unwrap_err().to_string(),
+            "expected a path"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn is_path_or_empty_list() {
+        assert_eq!(meta! { foo }.is_path_or_empty_list(), true);
+        assert_eq!(meta! { some_node }.is_path_or_empty_list(), true);
+        assert_eq!(meta! { foo() }.is_path_or_empty_list(), true);
+        assert_eq!(meta! { some_node() }.is_path_or_empty_list(), true);
+        assert_eq!(meta! { foo = 42 }.is_path_or_empty_list(), false);
+        assert_eq!(meta! { foo = bar(1, 2, 3) }.is_path_or_empty_list(), false);
+        assert_eq!(meta! { foo(answer = 42) }.is_path_or_empty_list(), false);
+        assert_eq!(meta! { some_node(hello) }.is_path_or_empty_list(), false);
+        assert_eq!(meta! { 42 }.is_path_or_empty_list(), false);
+        assert_eq!(meta! { [verbatim] }.is_path_or_empty_list(), false);
+    }
+
+    #[test]
+    fn as_path() {
+        assert_eq!(meta! { foo }.as_path().unwrap().to_string(), "foo");
+
+        let msg = "unexpected token in attribute";
+        assert_eq!(meta! { foo(42) }.as_path().unwrap_err().to_string(), msg);
+        assert_eq!(meta! { foo = 42 }.as_path().unwrap_err().to_string(), msg);
+        assert_eq!(
+            meta! { foo = bar(42) }.as_path().unwrap_err().to_string(),
+            msg
+        );
+        assert_eq!(meta! { [verbatim] }.as_path().unwrap_err().to_string(), msg);
+    }
+
+    #[test]
+    fn as_list() {
+        let meta = meta! { foo(1, 2, 3) };
+        let list = meta.as_list().unwrap();
+        assert!(list.path.is_strict("foo"));
+        assert_eq!(list.tokens.to_string(), "1 , 2 , 3");
+
+        assert_eq!(
+            meta! { foo }.as_list().unwrap_err().to_string(),
+            "expected attribute arguments in parentheses: `foo(...)`"
+        );
+        assert_eq!(
+            meta! { foo = 42 }.as_list().unwrap_err().to_string(),
+            "expected `(`"
+        );
+        assert_eq!(
+            meta! { foo = bar(42) }.as_list().unwrap_err().to_string(),
+            "expected `(`"
+        );
+        assert_eq!(
+            meta! { [verbatim] }.as_list().unwrap_err().to_string(),
+            "expected a path followed by `(`"
+        );
     }
 }
