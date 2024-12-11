@@ -1,4 +1,5 @@
 use crate::syn_traits::{Path as _, ToTokens as _};
+use derive_more::From;
 use proc_macro2::TokenStream;
 use syn::{
     parse::discouraged::Speculative,
@@ -7,7 +8,7 @@ use syn::{
     MetaList, MetaNameValue, Path, Token,
 };
 
-#[derive(Debug)]
+#[derive(Debug, From)]
 pub enum Meta {
     Path(Path),
     List(MetaList),

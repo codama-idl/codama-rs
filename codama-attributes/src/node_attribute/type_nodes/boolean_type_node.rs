@@ -13,7 +13,7 @@ impl NodeAttributeParse for BooleanTypeNode {
             .parse_metas(|ref meta| match meta.path()?.last_str().as_str() {
                 "size" => {
                     let list = &meta.as_name_list()?.list;
-                    let node = Node::from_meta(&Meta::List(list.clone()))?;
+                    let node = Node::from_meta(&list.clone().into())?;
                     let node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
                         Ok(node) => node,
                         Err(_) => return Err(list.error("size must be a NumberTypeNode")),
