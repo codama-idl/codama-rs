@@ -1,3 +1,4 @@
+use super::ToTokens as _;
 use codama_errors::CodamaResult;
 
 pub trait DeriveInput {
@@ -8,7 +9,7 @@ pub trait DeriveInput {
         let this = self.get_self();
         match &this.data {
             syn::Data::Struct(data) => Ok(data),
-            _ => Err(syn::Error::new_spanned(this, "expected a struct").into()),
+            _ => Err(this.error("expected a struct").into()),
         }
     }
 
@@ -17,7 +18,7 @@ pub trait DeriveInput {
         let this = self.get_self();
         match &this.data {
             syn::Data::Enum(data) => Ok(data),
-            _ => Err(syn::Error::new_spanned(this, "expected an enum").into()),
+            _ => Err(this.error("expected an enum").into()),
         }
     }
 }

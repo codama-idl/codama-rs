@@ -1,4 +1,4 @@
-use crate::syn_traits::Path as _;
+use crate::syn_traits::{Path as _, ToTokens as _};
 use proc_macro2::TokenStream;
 use syn::{
     parse::discouraged::Speculative,
@@ -30,7 +30,7 @@ impl Meta {
             Meta::List(meta) => Ok(&meta.path),
             Meta::NameValue(meta) => Ok(&meta.path),
             Meta::NameList(meta) => Ok(&meta.path),
-            Meta::Verbatim(tokens) => Err(syn::Error::new_spanned(tokens, "expected a path")),
+            Meta::Verbatim(tokens) => Err(tokens.error("expected a path")),
         }
     }
 
@@ -56,13 +56,10 @@ impl Meta {
     pub fn as_list(&self) -> syn::Result<&MetaList> {
         match self {
             Meta::List(meta) => Ok(meta),
-            Meta::Path(path) => Err(syn::Error::new_spanned(
-                path,
-                format!(
-                    "expected attribute arguments in parentheses: `{}(...)`",
-                    path.display(),
-                ),
-            )),
+            Meta::Path(path) => Err(path.error(format!(
+                "expected attribute arguments in parentheses: `{}(...)`",
+                path.display(),
+            ))),
             Meta::NameValue(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
             Meta::NameList(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
             Meta::Verbatim(tokens) => Err(syn::Error::new(
@@ -75,13 +72,10 @@ impl Meta {
     pub fn as_name_value(&self) -> syn::Result<&MetaNameValue> {
         match self {
             Meta::NameValue(meta) => Ok(meta),
-            Meta::Path(path) => Err(syn::Error::new_spanned(
-                path,
-                format!(
-                    "expected a value for this attribute: `{} = ...`",
-                    path.display(),
-                ),
-            )),
+            Meta::Path(path) => Err(path.error(format!(
+                "expected a value for this attribute: `{} = ...`",
+                path.display(),
+            ))),
             Meta::List(meta) => Err(syn::Error::new(
                 meta.delimiter.span().open(),
                 "expected `=`",
@@ -90,23 +84,17 @@ impl Meta {
                 meta.list.delimiter.span().join(),
                 "expected a valid expression",
             )),
-            Meta::Verbatim(tokens) => Err(syn::Error::new_spanned(
-                tokens,
-                "expected a path followed by `=`",
-            )),
+            Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
         }
     }
 
     pub fn as_name_list(&self) -> syn::Result<&MetaNameList> {
         match self {
             Meta::NameList(meta) => Ok(meta),
-            Meta::Path(path) => Err(syn::Error::new_spanned(
-                path,
-                format!(
-                    "expected a value for this attribute: `{} = ...(...)`",
-                    path.display(),
-                ),
-            )),
+            Meta::Path(path) => Err(path.error(format!(
+                "expected a value for this attribute: `{} = ...(...)`",
+                path.display(),
+            ))),
             Meta::List(meta) => Err(syn::Error::new(
                 meta.delimiter.span().open(),
                 format!(
@@ -121,10 +109,7 @@ impl Meta {
                     meta.path.display(),
                 ),
             )),
-            Meta::Verbatim(tokens) => Err(syn::Error::new_spanned(
-                tokens,
-                "expected a named list: `... = ...(...)`",
-            )),
+            Meta::Verbatim(tokens) => Err(tokens.error("expected a named list: `... = ...(...)`")),
         }
     }
 

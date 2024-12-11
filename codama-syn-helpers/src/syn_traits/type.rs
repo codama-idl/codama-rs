@@ -1,4 +1,4 @@
-use super::Path;
+use super::{Path, ToTokens as _};
 use codama_errors::CodamaResult;
 
 pub trait Type {
@@ -8,7 +8,7 @@ pub trait Type {
         let this = self.get_self();
         match this {
             syn::Type::Path(path) => Ok(&path.path),
-            _ => Err(syn::Error::new_spanned(this, "expected a path").into()),
+            _ => Err(this.error("expected a path").into()),
         }
     }
 
@@ -16,7 +16,7 @@ pub trait Type {
         let this = self.as_path()?;
         match this.is(path) {
             true => this.single_generic_type(),
-            false => Err(syn::Error::new_spanned(this, format!("expected path: {}", path)).into()),
+            false => Err(this.error(format!("expected path: {}", path)).into()),
         }
     }
 }

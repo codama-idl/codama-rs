@@ -1,3 +1,4 @@
+use super::ToTokens as _;
 use codama_errors::CodamaResult;
 
 pub trait Path {
@@ -75,9 +76,10 @@ pub trait Path {
     /// E.g. for `Vec<'a, T, U>` it returns `Ok(T)`.
     fn first_generic_type(&self) -> CodamaResult<&syn::Type> {
         let this = self.get_self();
-        self.generic_types().first().copied().ok_or_else(|| {
-            syn::Error::new_spanned(this, "expected at least one generic type").into()
-        })
+        self.generic_types()
+            .first()
+            .copied()
+            .ok_or_else(|| this.error("expected at least one generic type").into())
     }
 
     /// Returns the first generic type argument if there is exactly one.
@@ -85,9 +87,7 @@ pub trait Path {
     fn single_generic_type(&self) -> CodamaResult<&syn::Type> {
         let this = self.get_self();
         if self.generic_types().len() != 1 {
-            return Err(
-                syn::Error::new_spanned(this, format!("expected a single generic type")).into(),
-            );
+            return Err(this.error(format!("expected a single generic type")).into());
         }
         self.first_generic_type()
     }

@@ -1,3 +1,4 @@
+use super::ToTokens as _;
 use codama_errors::CodamaResult;
 
 pub trait Fields {
@@ -7,11 +8,9 @@ pub trait Fields {
         let this = self.get_self();
         match this {
             syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => Ok(&fields.unnamed[0]),
-            _ => Err(syn::Error::new_spanned(
-                this,
-                "expected a single unnamed field in the variant",
-            )
-            .into()),
+            _ => Err(this
+                .error("expected a single unnamed field in the variant")
+                .into()),
         }
     }
 }

@@ -1,3 +1,4 @@
+use super::ToTokens as _;
 use codama_errors::CodamaResult;
 
 pub trait Expr {
@@ -15,11 +16,9 @@ pub trait Expr {
                 lit: syn::Lit::Int(value),
                 ..
             }) => value.base10_parse::<T>().map_err(Into::into),
-            _ => Err(syn::Error::new_spanned(
-                this,
-                "Could not evaluate expression as a literal integer",
-            )
-            .into()),
+            _ => Err(this
+                .error("Could not evaluate expression as a literal integer")
+                .into()),
         }
     }
 }
