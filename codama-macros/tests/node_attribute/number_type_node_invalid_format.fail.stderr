@@ -1,0 +1,5 @@
+error: invalid format
+ --> tests/node_attribute/number_type_node_invalid_format.fail.rs:3:29
+  |
+3 | #[node(number_type(format = invalid))]
+  |                             ^^^^^^^
