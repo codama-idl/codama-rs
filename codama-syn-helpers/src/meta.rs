@@ -50,6 +50,12 @@ impl Meta {
         }
     }
 
+    /// Returns the path as a string if it is a valid path
+    /// or an empty string if it is not a path.
+    pub fn path_str(&self) -> String {
+        self.path().map_or("".into(), |path| path.to_string())
+    }
+
     pub fn is_path_or_empty_list(&self) -> bool {
         match self {
             Meta::Path(_) => true,

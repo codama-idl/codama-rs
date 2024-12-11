@@ -1,23 +1,20 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{FixedSizeTypeNode, Node, TypeNode, TypeNodeUnionTrait};
 use codama_syn_helpers::{syn_traits::*, Meta};
-use syn::MetaNameValue;
 
 impl<T: TypeNodeUnionTrait> NodeAttributeParse for FixedSizeTypeNode<T> {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
         let mut r#type: SetOnce<Node> = SetOnce::<Node>::new("type");
         let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
         meta.as_list()?
-            .parse_metas(|ref meta| match (meta, meta.path().ok()) {
-                (Meta::NameList(_) | Meta::NameValue(_), Some(p)) if p.is_strict("node") => {
+            .parse_metas(|ref meta| match (meta.path_str().as_str(), meta) {
+                ("node", _) => {
                     let node = Node::from_meta(&meta.value_as_meta()?)?;
                     r#type.set(node, meta)
                 }
-                (Meta::NameValue(MetaNameValue { value, .. }), Some(p)) if p.is_strict("size") => {
-                    size.set(value.as_literal_integer()?, meta)
-                }
-                (Meta::List(_) | Meta::Path(_), _) => r#type.set(Node::from_meta(meta)?, meta),
-                (Meta::Expr(expr), _) => size.set(expr.as_literal_integer()?, meta),
+                ("size", _) => size.set(meta.as_name_value()?.value.as_literal_integer()?, meta),
+                (_, Meta::List(_) | Meta::Path(_)) => r#type.set(Node::from_meta(meta)?, meta),
+                (_, Meta::Expr(expr)) => size.set(expr.as_literal_integer()?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
         let r#type = match TypeNode::try_from(r#type.take(meta)?) {
