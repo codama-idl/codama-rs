@@ -15,7 +15,19 @@ pub trait Expr {
                 lit: syn::Lit::Int(value),
                 ..
             }) => value.base10_parse::<T>(),
-            _ => Err(this.error("Could not evaluate expression as a literal integer")),
+            _ => Err(this.error("expected a literal integer")),
+        }
+    }
+
+    /// Returns the string value of the expression if it is a literal string.
+    fn as_literal_string(&self) -> syn::Result<String> {
+        let this = self.get_self();
+        match this {
+            syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Str(value),
+                ..
+            }) => Ok(value.value()),
+            _ => Err(this.error("expected a literal string")),
         }
     }
 }
@@ -42,7 +54,21 @@ mod tests {
     #[test]
     fn as_literal_integer_err() {
         let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
-        let result = expr.as_literal_integer::<usize>();
-        assert!(matches!(result, Err(syn::Error { .. })));
+        let error = expr.as_literal_integer::<usize>().unwrap_err();
+        assert_eq!(error.to_string(), "expected a literal integer");
+    }
+
+    #[test]
+    fn as_literal_string_ok() {
+        let expr: syn::Expr = syn_build::parse(quote! { "hello" });
+        let result = expr.as_literal_string().unwrap();
+        assert_eq!(result, "hello");
+    }
+
+    #[test]
+    fn as_literal_string_err() {
+        let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
+        let error = expr.as_literal_string().unwrap_err();
+        assert_eq!(error.to_string(), "expected a literal string");
     }
 }
