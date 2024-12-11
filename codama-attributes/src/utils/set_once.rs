@@ -16,10 +16,10 @@ impl<T> SetOnce<T> {
         }
     }
 
-    // pub fn initial_value(mut self, value: T) -> Self {
-    //     self.value = Some(value);
-    //     self
-    // }
+    pub fn initial_value(mut self, value: T) -> Self {
+        self.value = Some(value);
+        self
+    }
 
     pub fn set<U: ToTokens>(&mut self, value: T, tokens: U) -> syn::Result<()> {
         if self.is_set {

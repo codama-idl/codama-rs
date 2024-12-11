@@ -5,7 +5,7 @@ use codama_syn_helpers::{syn_traits::*, Meta};
 impl NodeAttributeParse for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
-        let mut endian = SetOnce::<Endian>::new("endian");
+        let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
         meta.as_list()?.parse_metas(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
@@ -78,6 +78,12 @@ mod tests {
         assert_node!(#[node(number_type(format = u16, endian = be))], NumberTypeNode::be(U16).into());
         assert_node!(#[node(number_type(format = u64, endian = be))], NumberTypeNode::be(U64).into());
         assert_node!(#[node(number_type(endian = le, format = u16))], NumberTypeNode::le(U16).into());
+    }
+
+    #[test]
+    fn defaults_to_little_endian() {
+        assert_node!(#[node(number_type(u16))], NumberTypeNode::le(U16).into());
+        assert_node!(#[node(number_type(format = u16))], NumberTypeNode::le(U16).into());
     }
 
     #[test]
