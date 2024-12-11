@@ -25,7 +25,7 @@ impl NodeAttributeParse for NumberTypeNode {
                 "shortU16" => format.set(NumberFormat::ShortU16, meta),
                 "le" => endian.set(Endian::Little, meta),
                 "be" => endian.set(Endian::Big, meta),
-                _ => Err(syn::Error::new_spanned(path, "unrecognized attribute")),
+                _ => Err(path.error("unrecognized attribute")),
             }
         })?;
         Ok(NumberTypeNode::new(format.take(meta)?, endian.take(meta)?).into())

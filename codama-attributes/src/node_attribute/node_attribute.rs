@@ -20,7 +20,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for NodeAttribute<'a> {
         // Check if the attribute is a #[node(...)] attribute.
         let list = attr.meta.require_list()?;
         if !list.path.is_strict("node") {
-            return Err(syn::Error::new_spanned(&list.path, "expected #[node(...)]").into());
+            return Err(list.path.error("expected #[node(...)]").into());
         };
 
         // Parse the node from the token stream.

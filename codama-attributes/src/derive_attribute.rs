@@ -24,7 +24,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
         // Check if the attribute is a #[derive(...)] attribute.
         let list = attr.meta.require_list()?;
         if !list.path.is_strict("derive") {
-            return Err(syn::Error::new_spanned(&list.path, "expected #[derive(...)]").into());
+            return Err(list.path.error("expected #[derive(...)]").into());
         };
 
         // Parse the list of derives.

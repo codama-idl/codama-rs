@@ -1,3 +1,4 @@
+use codama_syn_helpers::syn_traits::ToTokens as _;
 use quote::ToTokens;
 
 pub struct SetOnce<T> {
@@ -22,10 +23,7 @@ impl<T> SetOnce<T> {
 
     pub fn set<U: ToTokens>(&mut self, value: T, tokens: U) -> syn::Result<()> {
         if self.is_set {
-            return Err(syn::Error::new_spanned(
-                tokens,
-                format!("{} is already set", self.ident),
-            ));
+            return Err(tokens.error(format!("{} is already set", self.ident)));
         }
         self.is_set = true;
         self.value = Some(value);
@@ -39,10 +37,7 @@ impl<T> SetOnce<T> {
     pub fn take<U: ToTokens>(&mut self, tokens: U) -> syn::Result<T> {
         match self.value.take() {
             Some(value) => Ok(value),
-            None => Err(syn::Error::new_spanned(
-                tokens,
-                format!("{} is missing", self.ident),
-            )),
+            None => Err(tokens.error(format!("{} is missing", self.ident))),
         }
     }
 }

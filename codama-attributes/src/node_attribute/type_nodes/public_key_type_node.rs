@@ -1,14 +1,11 @@
 use crate::NodeAttributeParse;
 use codama_nodes::{Node, PublicKeyTypeNode};
-use codama_syn_helpers::Meta;
+use codama_syn_helpers::{syn_traits::*, Meta};
 
 impl NodeAttributeParse for PublicKeyTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
         if !meta.is_path_or_empty_list() {
-            return Err(syn::Error::new_spanned(
-                meta,
-                "public_key_type does not accept any input",
-            ));
+            return Err(meta.error("public_key_type does not accept any input"));
         }
         Ok(PublicKeyTypeNode::new().into())
     }
