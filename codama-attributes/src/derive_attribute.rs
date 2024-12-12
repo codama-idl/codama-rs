@@ -21,7 +21,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
         };
 
         // Parse the list of derives.
-        let derives = attr.parse_comma_args::<syn::Path>()?;
+        let derives = list.parse_comma_args::<syn::Path>()?;
         Ok(Self { ast, derives })
     }
 }

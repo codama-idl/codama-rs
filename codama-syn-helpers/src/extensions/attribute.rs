@@ -1,16 +1,8 @@
 use super::PathExtension;
-use crate::Meta;
 use syn::{punctuated::Punctuated, Attribute};
 
 pub trait AttributeExtension {
     fn get_self(&self) -> &Attribute;
-
-    /// Parse all nested metas in the list.
-    fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
-        self.parse_comma_args::<Meta>()?
-            .into_iter()
-            .try_for_each(logic)
-    }
 
     /// Parse all arguments as comma-separated types.
     fn parse_comma_args<T: syn::parse::Parse>(&self) -> syn::Result<Vec<T>> {
