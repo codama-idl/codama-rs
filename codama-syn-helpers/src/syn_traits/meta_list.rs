@@ -4,12 +4,14 @@ use syn::punctuated::Punctuated;
 pub trait MetaList {
     fn get_self(&self) -> &syn::MetaList;
 
+    /// Iterate over all metas in the list.
+    fn each(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
+        self.parse_metas()?.into_iter().try_for_each(logic)
+    }
+
     /// Parse all metas in the list.
-    fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
-        self.parse_comma_args::<Meta>()?
-            .into_iter()
-            .try_for_each(logic)
-            .map_err(Into::into)
+    fn parse_metas(&self) -> syn::Result<Vec<Meta>> {
+        self.parse_comma_args::<Meta>()
     }
 
     /// Parse all arguments as comma-separated types.
@@ -17,7 +19,6 @@ pub trait MetaList {
         self.get_self()
             .parse_args_with(Punctuated::<T, syn::Token![,]>::parse_terminated)
             .map(|metas| metas.into_iter().collect::<Vec<_>>())
-            .map_err(Into::into)
     }
 }
 
@@ -33,10 +34,10 @@ mod tests {
     use crate::syn_traits::{Expr, Path};
 
     #[test]
-    fn parse_metas() {
+    fn each() {
         let list = syn::parse_str::<syn::MetaList>("foo(one, two, three = 42)").unwrap();
         let mut items = Vec::new();
-        list.parse_metas(|meta| {
+        list.each(|meta| {
             items.push(meta);
             Ok(())
         })

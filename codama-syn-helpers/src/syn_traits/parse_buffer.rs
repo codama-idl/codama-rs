@@ -1,22 +1,27 @@
-use proc_macro2::TokenTree;
+use proc_macro2::{TokenStream, TokenTree};
 use syn::Token;
 
 pub trait ParseBuffer<'a> {
     fn get_self(&self) -> &syn::parse::ParseBuffer<'a>;
 
     /// Advance the buffer until we reach a comma or the end of the buffer.
-    fn consume_arg(&self) -> syn::Result<()> {
+    /// Returns the consumed tokens as a `TokenStream`.
+    fn parse_arg(&self) -> syn::Result<TokenStream> {
         self.get_self().step(|cursor| {
+            let mut tts = Vec::new();
             let mut rest = *cursor;
             while let Some((tt, next)) = rest.token_tree() {
                 match &tt {
                     TokenTree::Punct(punct) if punct.as_char() == ',' => {
-                        return Ok(((), rest));
+                        return Ok((tts.into_iter().collect(), rest));
                     }
-                    _ => rest = next,
+                    _ => {
+                        tts.push(tt);
+                        rest = next
+                    }
                 }
             }
-            Ok(((), rest))
+            Ok((tts.into_iter().collect(), rest))
         })
     }
 
@@ -24,7 +29,7 @@ pub trait ParseBuffer<'a> {
     fn fork_arg(&self) -> syn::Result<syn::parse::ParseBuffer<'a>> {
         let this = self.get_self();
         let fork = this.fork();
-        this.consume_arg()?;
+        this.parse_arg()?;
         Ok(fork)
     }
 
@@ -70,20 +75,32 @@ mod tests {
     }
 
     #[test]
-    fn consume_arg() {
+    fn parse_arg() {
         let test = test_buffer!(
-            String,
-            |input: syn::parse::ParseStream| -> syn::Result<String> {
-                input.consume_arg()?;
-                Ok(input.to_string())
+            (String, String),
+            |input: syn::parse::ParseStream| -> syn::Result<(String, String)> {
+                let arg = input.parse_arg()?;
+                Ok((arg.to_string(), input.to_string()))
             }
         );
 
-        assert_eq!(test("foo , bar , baz").unwrap(), ", bar , baz");
-        assert_eq!(test(", bar , baz").unwrap(), ", bar , baz");
-        assert_eq!(test("(foo , bar), baz").unwrap(), ", baz");
-        assert!(test("foo bar baz").unwrap().is_empty());
-        assert!(test("").unwrap().is_empty());
+        assert_eq!(
+            test("foo , bar , baz").unwrap(),
+            ("foo".into(), ", bar , baz".into())
+        );
+        assert_eq!(
+            test(", bar , baz").unwrap(),
+            ("".into(), ", bar , baz".into())
+        );
+        assert_eq!(
+            test("(foo , bar), baz").unwrap(),
+            ("(foo , bar)".into(), ", baz".into())
+        );
+        assert_eq!(
+            test("foo bar baz").unwrap(),
+            ("foo bar baz".into(), "".into())
+        );
+        assert_eq!(test("").unwrap(), ("".into(), "".into()));
     }
 
     #[test]

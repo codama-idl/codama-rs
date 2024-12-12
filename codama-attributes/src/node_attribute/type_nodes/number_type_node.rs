@@ -6,7 +6,7 @@ impl NodeAttributeParse for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
-        meta.as_list()?.parse_metas(|ref meta| {
+        meta.as_list()?.each(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
                 ("format", Meta::NameValue(m)) => match m.value.as_path()?.to_string().as_str() {

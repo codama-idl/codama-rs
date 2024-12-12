@@ -1,4 +1,4 @@
-use crate::syn_traits::{Path as _, ToTokens as _};
+use crate::syn_traits::{ParseBuffer as _, Path as _, ToTokens as _};
 use derive_more::From;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use quote::ToTokens;
@@ -163,7 +163,7 @@ impl Meta {
         Err(syn::Error::new(span, "expected a valid expression"))
     }
 
-    pub fn as_verbatim(&self, msg: impl std::fmt::Display) -> syn::Result<&TokenStream> {
+    pub fn as_verbatim(&self) -> syn::Result<&TokenStream> {
         let span = match self {
             Meta::Verbatim(tokens) => return Ok(tokens),
             Meta::Path(path) => path.span(),
@@ -180,7 +180,7 @@ impl Meta {
                 .unwrap_or(meta.path.span()),
             Meta::Expr(expr) => expr.span(),
         };
-        Err(syn::Error::new(span, msg))
+        Err(syn::Error::new(span, "expected a custom token stream"))
     }
 
     pub fn value_as_meta(&self) -> syn::Result<Meta> {
@@ -225,7 +225,7 @@ impl syn::parse::Parse for Meta {
                     input.advance_to(&fork);
                     Ok(Self::Expr(expr))
                 }
-                _ => Ok(Self::Verbatim(input.parse()?)),
+                _ => Ok(Self::Verbatim(input.parse_arg()?)),
             },
         }
     }
@@ -316,7 +316,7 @@ impl quote::ToTokens for MetaNameList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_traits::Expr as _;
+    use crate::syn_traits::{Expr as _, MetaList as _};
 
     macro_rules! meta {
         ($($attr:tt)*) => {{
@@ -380,6 +380,18 @@ mod tests {
             panic!("expected Meta::Verbatim");
         };
         assert_eq!(verbatim.to_string(), "[==> 42 <==]");
+    }
+
+    #[test]
+    fn parse_verbatim_list() -> syn::Result<()> {
+        let meta = meta! { foo([==> 1 <==], [==> 2 <==]) };
+        let list = meta.as_list()?;
+        assert_eq!(list.path.to_string(), "foo");
+        let metas = list.parse_metas()?;
+        assert_eq!(metas.len(), 2);
+        assert_eq!(metas[0].as_verbatim()?.to_string(), "[==> 1 <==]");
+        assert_eq!(metas[1].as_verbatim()?.to_string(), "[==> 2 <==]");
+        Ok(())
     }
 
     #[test]

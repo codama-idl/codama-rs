@@ -9,7 +9,7 @@ impl NodeAttributeParse for BooleanTypeNode {
             return Ok(BooleanTypeNode::default().into());
         }
         meta.as_list()?
-            .parse_metas(|ref meta| match (meta.path_str().as_str(), meta) {
+            .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("size", _) => {
                     let node = Node::from_meta(&meta.value_as_meta()?)?;
                     size.set(node, meta)

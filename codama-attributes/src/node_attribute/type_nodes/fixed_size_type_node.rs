@@ -7,7 +7,7 @@ impl<T: TypeNodeUnionTrait> NodeAttributeParse for FixedSizeTypeNode<T> {
         let mut r#type: SetOnce<Node> = SetOnce::<Node>::new("type");
         let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
         meta.as_list()?
-            .parse_metas(|ref meta| match (meta.path_str().as_str(), meta) {
+            .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("type", _) => {
                     let node = Node::from_meta(&meta.value_as_meta()?)?;
                     r#type.set(node, meta)
