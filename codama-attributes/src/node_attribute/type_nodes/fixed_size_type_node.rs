@@ -8,7 +8,7 @@ impl<T: TypeNodeUnionTrait> NodeAttributeParse for FixedSizeTypeNode<T> {
         let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
         meta.as_list()?
             .parse_metas(|ref meta| match (meta.path_str().as_str(), meta) {
-                ("node", _) => {
+                ("type", _) => {
                     let node = Node::from_meta(&meta.value_as_meta()?)?;
                     r#type.set(node, meta)
                 }
@@ -36,11 +36,11 @@ mod tests {
     #[test]
     fn explicit() {
         assert_node!(
-            #[node(fixed_size_type(node = boolean_type, size = 42))],
+            #[node(fixed_size_type(type = boolean_type, size = 42))],
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
         assert_node!(
-            #[node(fixed_size_type(size = 42, node = boolean_type))],
+            #[node(fixed_size_type(size = 42, type = boolean_type))],
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
     }

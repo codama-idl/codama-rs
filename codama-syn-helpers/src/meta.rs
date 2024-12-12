@@ -270,9 +270,7 @@ fn parse_meta_list(input: syn::parse::ParseStream) -> syn::Result<MetaList> {
                 Delimiter::Parenthesis => MacroDelimiter::Paren(Paren(span)),
                 Delimiter::Brace => MacroDelimiter::Brace(Brace(span)),
                 Delimiter::Bracket => MacroDelimiter::Bracket(Bracket(span)),
-                Delimiter::None => {
-                    return Err(cursor.error("expected delimiter"));
-                }
+                _ => return Err(cursor.error("expected delimiter")),
             };
             Ok(((delimiter, g.stream()), rest))
         }
