@@ -1,12 +1,10 @@
 use codama_korok_visitors::{KorokVisitable, MapVisitor};
 use codama_koroks::StructKorok;
 use codama_nodes::PublicKeyTypeNode;
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_can_set_a_node_on_all_koroks() {
-    let ast: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+    let ast: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
     let mut korok = StructKorok::parse(&ast).unwrap();
 
     korok.accept(&mut MapVisitor::new(|k| {
@@ -22,7 +20,7 @@ fn it_can_set_a_node_on_all_koroks() {
 
 #[test]
 fn it_can_reset_all_nodes() {
-    let ast: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+    let ast: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
     let mut korok = StructKorok::parse(&ast).unwrap();
     korok.node = Some(PublicKeyTypeNode::new().into());
     korok.fields.node = Some(PublicKeyTypeNode::new().into());

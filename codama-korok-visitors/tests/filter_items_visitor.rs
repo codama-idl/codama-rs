@@ -1,12 +1,10 @@
 use codama_korok_visitors::{FilterItemsVisitor, KorokVisitable, MapVisitor};
 use codama_koroks::ItemKorok;
 use codama_nodes::PublicKeyTypeNode;
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_only_starts_the_child_visitor_on_filtered_items() {
-    let ast: syn::Item = syn_build::parse(quote! {
+    let ast: syn::Item = syn::parse_quote! {
         mod parent {
             mod foo {
                 pub struct Foo(u32);
@@ -15,7 +13,7 @@ fn it_only_starts_the_child_visitor_on_filtered_items() {
                 pub struct Bar(u32);
             }
         }
-    });
+    };
     let mut korok = ItemKorok::parse(&ast, &[], &mut 0).unwrap();
 
     korok.accept(&mut FilterItemsVisitor::new(

@@ -37,15 +37,13 @@ impl Item for syn::Item {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
-    use quote::quote;
 
     #[test]
     fn attributes() {
-        let r#struct: syn::Item = syn_build::parse(quote! {
+        let r#struct: syn::Item = syn::parse_quote! {
             #[derive(Debug)]
             struct Foo(u32);
-        });
+        };
         assert!(matches!(
             r#struct.attributes().as_slice(),
             [syn::Attribute { .. }]

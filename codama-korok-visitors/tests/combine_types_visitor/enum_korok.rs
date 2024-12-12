@@ -5,18 +5,16 @@ use codama_nodes::{
     EnumTypeNode, Node, NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
     TupleTypeNode, I32,
 };
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_creates_a_defined_type_enum_from_variants() {
-    let ast: syn::ItemEnum = syn_build::parse(quote! {
+    let ast: syn::ItemEnum = syn::parse_quote! {
         enum Message {
             Quit,
             Move { x: i32, y: i32 },
             Write(String),
         }
-    });
+    };
     let mut korok = EnumKorok::parse(&ast).unwrap();
     let variant_quit = EnumEmptyVariantTypeNode::new("quit");
     let variant_move = EnumStructVariantTypeNode::new(
@@ -54,7 +52,7 @@ fn it_creates_a_defined_type_enum_from_variants() {
 
 #[test]
 fn it_does_not_override_existing_nodes_by_default() {
-    let ast: syn::ItemEnum = syn_build::parse(quote! { enum Direction { Left } });
+    let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left } };
     let mut korok = EnumKorok::parse(&ast).unwrap();
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
 

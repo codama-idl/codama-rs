@@ -30,30 +30,28 @@ impl Type for syn::Type {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
-    use quote::quote;
 
     #[test]
     fn as_path_ok() {
-        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(r#type.as_path(), Ok(_)));
     }
 
     #[test]
     fn as_path_err() {
-        let r#type: syn::Type = syn_build::parse(quote! { [u8; 32] });
+        let r#type: syn::Type = syn::parse_quote! { [u8; 32] };
         assert!(matches!(r#type.as_path(), Err(_)));
     }
 
     #[test]
     fn single_generic_type_from_path_ok() {
-        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("std::option::Option"),
             Ok(_)
         ));
 
-        let r#type: syn::Type = syn_build::parse(quote! { Option<String> });
+        let r#type: syn::Type = syn::parse_quote! { Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("std::option::Option"),
             Ok(_)
@@ -66,13 +64,13 @@ mod tests {
 
     #[test]
     fn single_generic_type_from_path_err() {
-        let r#type: syn::Type = syn_build::parse(quote! { [u8; 32] });
+        let r#type: syn::Type = syn::parse_quote! { [u8; 32] };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)
         ));
 
-        let r#type: syn::Type = syn_build::parse(quote! { std::option::Option<String> });
+        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)
@@ -82,7 +80,7 @@ mod tests {
             Err(_)
         ));
 
-        let r#type: syn::Type = syn_build::parse(quote! { Option<String, u32> });
+        let r#type: syn::Type = syn::parse_quote! { Option<String, u32> };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)

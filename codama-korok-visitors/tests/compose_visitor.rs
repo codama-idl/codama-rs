@@ -1,12 +1,10 @@
 use codama_korok_visitors::{ComposeVisitor, KorokVisitable, KorokVisitor, MapVisitor};
 use codama_koroks::{StructKorok, TypeKorok};
 use codama_nodes::PublicKeyTypeNode;
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_returns_a_single_visitor_from_multiple_visitors() {
-    let ast: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+    let ast: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
     let mut korok = StructKorok::parse(&ast).unwrap();
 
     struct ResetStructAndTypeKoroksVisitor;

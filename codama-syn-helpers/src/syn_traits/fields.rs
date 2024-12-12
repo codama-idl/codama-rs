@@ -24,18 +24,16 @@ impl Fields for syn::Fields {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
-    use quote::quote;
 
     #[test]
     fn single_unnamed_field_ok() {
-        let r#struct: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+        let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
         assert!(matches!(r#struct.fields.single_unnamed_field(), Ok(_)));
     }
 
     #[test]
     fn single_unnamed_field_err() {
-        let r#struct: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32, u64); });
+        let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32, u64); };
         assert!(matches!(r#struct.fields.single_unnamed_field(), Err(_)));
     }
 }

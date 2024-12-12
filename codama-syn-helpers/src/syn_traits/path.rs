@@ -108,48 +108,46 @@ impl Path for syn::Path {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
-    use quote::quote;
 
     #[test]
     fn idents() {
-        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
+        let path: syn::Path = syn::parse_quote! { std::option<Foo>::Option<String> };
         assert_eq!(path.idents(), vec!["std", "option", "Option"]);
     }
 
     #[test]
     fn to_string() {
-        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
+        let path: syn::Path = syn::parse_quote! { std::option<Foo>::Option<String> };
         assert_eq!(path.to_string(), "std::option::Option");
     }
 
     #[test]
     fn prefix() {
-        let path: syn::Path = syn_build::parse(quote! { std::option<Foo>::Option<String> });
+        let path: syn::Path = syn::parse_quote! { std::option<Foo>::Option<String> };
         assert_eq!(path.prefix(), "std::option");
     }
 
     #[test]
     fn prefix_with_inner_generics() {
-        let path: syn::Path = syn_build::parse(quote! { a<A>::b<B>::c::Final });
+        let path: syn::Path = syn::parse_quote! { a<A>::b<B>::c::Final };
         assert_eq!(path.prefix(), "a::b::c");
     }
 
     #[test]
     fn prefix_empty() {
-        let path: syn::Path = syn_build::parse(quote! { Foo });
+        let path: syn::Path = syn::parse_quote! { Foo };
         assert_eq!(path.prefix(), "");
     }
 
     #[test]
     fn is() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a, T> };
         assert_eq!(path.is("prefix::Foo"), true);
         assert_eq!(path.is("Foo"), false);
         assert_eq!(path.is("wrong::prefix::Foo"), false);
         assert_eq!(path.is("Bar"), false);
 
-        let path: syn::Path = syn_build::parse(quote! { Foo<T> });
+        let path: syn::Path = syn::parse_quote! { Foo<T> };
         assert_eq!(path.is("Foo"), true);
         assert_eq!(path.is("prefix::Foo"), true);
         assert_eq!(path.is("Bar"), false);
@@ -157,13 +155,13 @@ mod tests {
 
     #[test]
     fn is_strict() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a, T> };
         assert_eq!(path.is_strict("prefix::Foo"), true);
         assert_eq!(path.is_strict("Foo"), false);
         assert_eq!(path.is_strict("wrong::prefix::Foo"), false);
         assert_eq!(path.is_strict("Bar"), false);
 
-        let path: syn::Path = syn_build::parse(quote! { Foo<T> });
+        let path: syn::Path = syn::parse_quote! { Foo<T> };
         assert_eq!(path.is_strict("Foo"), true);
         assert_eq!(path.is_strict("prefix::Foo"), false);
         assert_eq!(path.is_strict("Bar"), false);
@@ -171,40 +169,40 @@ mod tests {
 
     #[test]
     fn generic_arguments() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a, T, U> };
         assert_eq!(path.generic_arguments().len(), 3);
     }
 
     #[test]
     fn generic_types() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a, T, U> };
         assert_eq!(path.generic_types().len(), 2);
     }
 
     #[test]
     fn first_generic_type_ok() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a, T, U> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a, T, U> };
         assert!(matches!(path.first_generic_type(), Ok(syn::Type::Path(_))));
     }
 
     #[test]
     fn first_generic_type_err() {
-        let path: syn::Path = syn_build::parse(quote! { prefix::Foo<'a> });
+        let path: syn::Path = syn::parse_quote! { prefix::Foo<'a> };
         assert!(matches!(path.first_generic_type(), Err(_)));
     }
 
     #[test]
     fn single_generic_type_ok() {
-        let path: syn::Path = syn_build::parse(quote! { Foo<'a, String> });
+        let path: syn::Path = syn::parse_quote! { Foo<'a, String> };
         assert!(matches!(path.single_generic_type(), Ok(syn::Type::Path(_))));
     }
 
     #[test]
     fn single_generic_type_err() {
-        let path: syn::Path = syn_build::parse(quote! { Foo<'a, String, u32> });
+        let path: syn::Path = syn::parse_quote! { Foo<'a, String, u32> };
         assert!(matches!(path.single_generic_type(), Err(_)));
 
-        let path: syn::Path = syn_build::parse(quote! { Foo<'a> });
+        let path: syn::Path = syn::parse_quote! { Foo<'a> };
         assert!(matches!(path.single_generic_type(), Err(_)));
     }
 }

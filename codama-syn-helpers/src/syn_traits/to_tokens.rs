@@ -17,12 +17,10 @@ impl<T: quote::ToTokens> ToTokens<T> for T {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
-    use quote::quote;
 
     #[test]
     fn error() {
-        let path: syn::Path = syn_build::parse(quote! { foo::bar });
+        let path: syn::Path = syn::parse_quote! { foo::bar };
         let error = path.error("expected a single segment");
         assert_eq!(error.to_string(), "expected a single segment");
     }

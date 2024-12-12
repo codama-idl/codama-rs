@@ -52,19 +52,18 @@ impl Generics for syn::Generics {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
     use quote::quote;
 
     #[test]
     fn param_idents() {
-        let r#struct: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+        let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
         assert_eq!(
             r#struct.generics.param_idents().to_string(),
             quote! {}.to_string()
         );
 
         let r#struct: syn::ItemStruct =
-            syn_build::parse(quote! { struct Foo<'a, T: Clone, U: PartialEq> where U: Eq (T); });
+            syn::parse_quote! { struct Foo<'a, T: Clone, U: PartialEq> where U: Eq (T); };
         assert_eq!(
             r#struct.generics.param_idents().to_string(),
             quote! { <'a, T, U> }.to_string()
@@ -73,7 +72,7 @@ mod tests {
 
     #[test]
     fn block_wrappers() {
-        let r#struct: syn::ItemStruct = syn_build::parse(quote! { struct Foo(u32); });
+        let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
         let (pre, post) = r#struct.generics.block_wrappers();
         assert_eq!(
             quote! { impl #pre Bar for Foo #post {} }.to_string(),
@@ -81,7 +80,7 @@ mod tests {
         );
 
         let r#struct: syn::ItemStruct =
-            syn_build::parse(quote! { struct Foo<'a, T: Clone, U: PartialEq> where U: Eq (T); });
+            syn::parse_quote! { struct Foo<'a, T: Clone, U: PartialEq> where U: Eq (T); };
         let (pre, post) = r#struct.generics.block_wrappers();
         assert_eq!(
             quote! { impl #pre Bar for Foo #post {} }.to_string(),

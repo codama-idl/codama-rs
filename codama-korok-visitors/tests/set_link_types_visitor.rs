@@ -1,12 +1,10 @@
 use codama_korok_visitors::{KorokVisitable, SetLinkTypesVisitor};
 use codama_koroks::{StructKorok, TypeKorok};
 use codama_nodes::{DefinedTypeLinkNode, NumberFormat::U32, NumberTypeNode};
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_sets_link_nodes_using_the_type_path() {
-    let ast: syn::Type = syn_build::parse(quote! { Membership });
+    let ast: syn::Type = syn::parse_quote! { Membership };
     let mut korok = TypeKorok::new(&ast);
 
     assert_eq!(korok.node, None);
@@ -19,7 +17,7 @@ fn it_sets_link_nodes_using_the_type_path() {
 
 #[test]
 fn it_ignores_the_path_prefix() {
-    let ast: syn::Type = syn_build::parse(quote! { some::prefix::Membership });
+    let ast: syn::Type = syn::parse_quote! { some::prefix::Membership };
     let mut korok = TypeKorok::new(&ast);
 
     korok.accept(&mut SetLinkTypesVisitor::new());
@@ -31,7 +29,7 @@ fn it_ignores_the_path_prefix() {
 
 #[test]
 fn it_ignores_non_path_types() {
-    let ast: syn::Type = syn_build::parse(quote! { [u32; 8] });
+    let ast: syn::Type = syn::parse_quote! { [u32; 8] };
     let mut korok = TypeKorok::new(&ast);
 
     korok.accept(&mut SetLinkTypesVisitor::new());
@@ -40,7 +38,7 @@ fn it_ignores_non_path_types() {
 
 #[test]
 fn it_ignores_types_that_already_have_nodes() {
-    let ast: syn::Type = syn_build::parse(quote! { u32 });
+    let ast: syn::Type = syn::parse_quote! { u32 };
     let mut korok = TypeKorok::new(&ast);
     korok.node = Some(NumberTypeNode::le(U32).into());
 
@@ -50,13 +48,13 @@ fn it_ignores_types_that_already_have_nodes() {
 
 #[test]
 fn it_works_in_any_parent_koroks() {
-    let ast: syn::ItemStruct = syn_build::parse(quote! {
+    let ast: syn::ItemStruct = syn::parse_quote! {
         pub struct Person {
             pub name: String,
             pub age: u8,
             pub membership: Membership,
         }
-    });
+    };
     let mut korok = StructKorok::parse(&ast).unwrap();
 
     korok.accept(&mut SetLinkTypesVisitor::new());

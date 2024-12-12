@@ -50,47 +50,46 @@ impl Expr for syn::Expr {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{syn_build, syn_traits::Path};
-    use quote::quote;
+    use crate::syn_traits::Path;
 
     #[test]
     fn as_literal_integer_ok() {
-        let expr: syn::Expr = syn_build::parse(quote! { 42 });
+        let expr: syn::Expr = syn::parse_quote! { 42 };
         let result = expr.as_literal_integer::<usize>();
         assert!(matches!(result, Ok(42usize)));
     }
 
     #[test]
     fn as_literal_integer_err() {
-        let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
+        let expr: syn::Expr = syn::parse_quote! { 40 + 2 };
         let error = expr.as_literal_integer::<usize>().unwrap_err();
         assert_eq!(error.to_string(), "expected a literal integer");
     }
 
     #[test]
     fn as_literal_string_ok() {
-        let expr: syn::Expr = syn_build::parse(quote! { "hello" });
+        let expr: syn::Expr = syn::parse_quote! { "hello" };
         let result = expr.as_literal_string().unwrap();
         assert_eq!(result, "hello");
     }
 
     #[test]
     fn as_literal_string_err() {
-        let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
+        let expr: syn::Expr = syn::parse_quote! { 40 + 2 };
         let error = expr.as_literal_string().unwrap_err();
         assert_eq!(error.to_string(), "expected a literal string");
     }
 
     #[test]
     fn as_path_ok() {
-        let expr: syn::Expr = syn_build::parse(quote! { hello::world });
+        let expr: syn::Expr = syn::parse_quote! { hello::world };
         let result = expr.as_path().unwrap().to_string();
         assert_eq!(result, "hello::world");
     }
 
     #[test]
     fn as_path_err() {
-        let expr: syn::Expr = syn_build::parse(quote! { 40 + 2 });
+        let expr: syn::Expr = syn::parse_quote! { 40 + 2 };
         let error = expr.as_path().unwrap_err();
         assert_eq!(error.to_string(), "expected a path");
     }

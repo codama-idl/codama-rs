@@ -4,12 +4,10 @@ use codama_nodes::{
     EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, NumberTypeNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
 };
-use codama_syn_helpers::syn_build;
-use quote::quote;
 
 #[test]
 fn it_creates_enum_empty_variants() {
-    let ast: syn::Variant = syn_build::parse(quote! { Foo });
+    let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
@@ -23,7 +21,7 @@ fn it_creates_enum_empty_variants() {
 
 #[test]
 fn it_creates_enum_struct_variants() {
-    let ast: syn::Variant = syn_build::parse(quote! { Foo { x: i32, y: i32 } });
+    let ast: syn::Variant = syn::parse_quote! { Foo { x: i32, y: i32 } };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = Some(
         StructTypeNode::new(vec![
@@ -52,7 +50,7 @@ fn it_creates_enum_struct_variants() {
 
 #[test]
 fn it_creates_enum_tuple_variants() {
-    let ast: syn::Variant = syn_build::parse(quote! { Foo (u64, String) });
+    let ast: syn::Variant = syn::parse_quote! { Foo (u64, String) };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = Some(
         TupleTypeNode::new(vec![
@@ -81,7 +79,7 @@ fn it_creates_enum_tuple_variants() {
 
 #[test]
 fn it_keeps_track_of_the_variant_discriminant() {
-    let ast: syn::Variant = syn_build::parse(quote! { Foo = 42 });
+    let ast: syn::Variant = syn::parse_quote! { Foo = 42 };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
@@ -101,7 +99,7 @@ fn it_keeps_track_of_the_variant_discriminant() {
 
 #[test]
 fn it_does_not_override_existing_nodes_by_default() {
-    let ast: syn::Variant = syn_build::parse(quote! { Foo });
+    let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
