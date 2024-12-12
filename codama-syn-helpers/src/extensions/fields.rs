@@ -1,13 +1,14 @@
-use super::ToTokens as _;
+use super::ToTokensExtension;
 use codama_errors::CodamaResult;
+use syn::Fields;
 
-pub trait Fields {
-    fn get_self(&self) -> &syn::Fields;
+pub trait FieldsExtension {
+    fn get_self(&self) -> &Fields;
 
     fn single_unnamed_field(&self) -> CodamaResult<&syn::Field> {
         let this = self.get_self();
         match this {
-            syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => Ok(&fields.unnamed[0]),
+            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => Ok(&fields.unnamed[0]),
             _ => Err(this
                 .error("expected a single unnamed field in the variant")
                 .into()),
@@ -15,8 +16,8 @@ pub trait Fields {
     }
 }
 
-impl Fields for syn::Fields {
-    fn get_self(&self) -> &syn::Fields {
+impl FieldsExtension for Fields {
+    fn get_self(&self) -> &Fields {
         self
     }
 }

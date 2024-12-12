@@ -1,9 +1,9 @@
-use crate::syn_traits::{ParseBuffer as _, Path as _, ToTokens as _};
+use crate::extensions::*;
 use derive_more::From;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use quote::ToTokens;
 use syn::{
-    ext::IdentExt as _,
+    ext::IdentExt,
     parse::discouraged::Speculative,
     spanned::Spanned,
     token::{Brace, Bracket, Paren},
@@ -316,7 +316,6 @@ impl quote::ToTokens for MetaNameList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_traits::{Expr as _, MetaList as _};
 
     macro_rules! meta {
         ($($attr:tt)*) => {{

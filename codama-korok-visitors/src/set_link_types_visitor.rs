@@ -1,6 +1,6 @@
 use crate::KorokVisitor;
 use codama_nodes::DefinedTypeLinkNode;
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Default)]
 pub struct SetLinkTypesVisitor;

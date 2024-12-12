@@ -1,6 +1,6 @@
 use crate::{CodamaAttribute, DeriveAttribute, UnsupportedAttribute};
 use codama_errors::{CodamaError, CodamaResult};
-use codama_syn_helpers::syn_traits::Path;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub enum Attribute<'a> {

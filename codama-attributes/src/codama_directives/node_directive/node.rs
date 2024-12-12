@@ -1,6 +1,6 @@
 use super::NodeAttributeParse;
 use codama_nodes::*;
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 impl NodeAttributeParse for Node {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {

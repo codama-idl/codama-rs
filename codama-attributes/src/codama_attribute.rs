@@ -1,6 +1,6 @@
 use crate::{utils::SetOnce, CodamaDirective};
 use codama_errors::{CodamaError, CodamaResult};
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct CodamaAttribute<'a> {

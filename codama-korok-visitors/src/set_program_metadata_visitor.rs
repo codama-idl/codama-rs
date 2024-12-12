@@ -1,7 +1,7 @@
 use cargo_toml::{Inheritable, Manifest, Package, Value};
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Node, ProgramNode};
-use codama_syn_helpers::syn_traits::Path;
+use codama_syn_helpers::extensions::*;
 
 use crate::KorokVisitor;
 

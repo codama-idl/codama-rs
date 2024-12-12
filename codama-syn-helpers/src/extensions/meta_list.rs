@@ -1,8 +1,8 @@
 use crate::Meta;
-use syn::punctuated::Punctuated;
+use syn::{punctuated::Punctuated, MetaList};
 
-pub trait MetaList {
-    fn get_self(&self) -> &syn::MetaList;
+pub trait MetaListExtension {
+    fn get_self(&self) -> &MetaList;
 
     /// Iterate over all metas in the list.
     fn each(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
@@ -22,8 +22,8 @@ pub trait MetaList {
     }
 }
 
-impl MetaList for syn::MetaList {
-    fn get_self(&self) -> &syn::MetaList {
+impl MetaListExtension for MetaList {
+    fn get_self(&self) -> &MetaList {
         self
     }
 }
@@ -31,11 +31,11 @@ impl MetaList for syn::MetaList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_traits::{Expr, Path};
+    use crate::extensions::*;
 
     #[test]
     fn each() {
-        let list = syn::parse_str::<syn::MetaList>("foo(one, two, three = 42)").unwrap();
+        let list = syn::parse_str::<MetaList>("foo(one, two, three = 42)").unwrap();
         let mut items = Vec::new();
         list.each(|meta| {
             items.push(meta);

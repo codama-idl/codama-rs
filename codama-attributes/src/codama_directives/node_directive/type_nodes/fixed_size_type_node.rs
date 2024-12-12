@@ -1,6 +1,6 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{FixedSizeTypeNode, Node, TypeNode, TypeNodeUnionTrait};
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 impl<T: TypeNodeUnionTrait> NodeAttributeParse for FixedSizeTypeNode<T> {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {

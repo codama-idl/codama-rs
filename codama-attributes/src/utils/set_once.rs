@@ -1,4 +1,4 @@
-use codama_syn_helpers::syn_traits::ToTokens as _;
+use codama_syn_helpers::extensions::*;
 use quote::ToTokens;
 
 pub struct SetOnce<T> {

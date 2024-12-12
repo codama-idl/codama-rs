@@ -1,10 +1,10 @@
-use super::Path;
+use super::PathExtension;
 use crate::Meta;
 use codama_errors::CodamaResult;
-use syn::punctuated::Punctuated;
+use syn::{punctuated::Punctuated, Attribute};
 
-pub trait Attribute {
-    fn get_self(&self) -> &syn::Attribute;
+pub trait AttributeExtension {
+    fn get_self(&self) -> &Attribute;
 
     /// Parse all nested metas in the list.
     fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> CodamaResult<()> {
@@ -25,7 +25,7 @@ pub trait Attribute {
     /// Unwrap the feature flag from the attribute.
     /// E.g. `#[cfg_attr(feature = "some_feature", derive(Debug))]`
     /// becomes the syn::Meta defined as `derive(Debug)`.
-    fn unfeatured(&self) -> Option<syn::Attribute> {
+    fn unfeatured(&self) -> Option<Attribute> {
         let this = self.get_self();
         if !this.path().is_strict("cfg_attr") {
             return None;
@@ -38,7 +38,7 @@ pub trait Attribute {
             syn::Meta::NameValue(m) if m.path.is_strict("feature") => (),
             _ => return None,
         }
-        Some(syn::Attribute {
+        Some(Attribute {
             pound_token: this.pound_token,
             style: this.style,
             bracket_token: this.bracket_token,
@@ -47,8 +47,8 @@ pub trait Attribute {
     }
 }
 
-impl Attribute for syn::Attribute {
-    fn get_self(&self) -> &syn::Attribute {
+impl AttributeExtension for Attribute {
+    fn get_self(&self) -> &Attribute {
         self
     }
 }
@@ -61,21 +61,21 @@ mod tests {
 
     #[test]
     fn parse_comma_args_ok() {
-        let attribute: syn::Attribute = parse_quote! { #[foo(42, "bar")] };
+        let attribute: Attribute = parse_quote! { #[foo(42, "bar")] };
         let args = attribute.parse_comma_args::<syn::Lit>().unwrap();
         assert_eq!(args.len(), 2);
     }
 
     #[test]
     fn parse_comma_args_err() {
-        let attribute: syn::Attribute = parse_quote! { #[foo] };
+        let attribute: Attribute = parse_quote! { #[foo] };
         let args = attribute.parse_comma_args::<syn::Path>();
         assert!(matches!(args, Err(_)));
     }
 
     #[test]
     fn unfeatured() {
-        let attribute: syn::Attribute =
+        let attribute: Attribute =
             parse_quote! { #[cfg_attr(feature = "some_feature", derive(Debug))] };
         let unfeatured = attribute.unfeatured();
         assert_eq!(
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn unfeatured_unchanged() {
-        let attribute: syn::Attribute = parse_quote! { #[derive(Debug)] };
+        let attribute: Attribute = parse_quote! { #[derive(Debug)] };
         let unfeatured = attribute.unfeatured();
         assert_eq!(unfeatured, None);
     }

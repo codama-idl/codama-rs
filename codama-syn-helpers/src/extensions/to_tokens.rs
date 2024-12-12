@@ -1,6 +1,7 @@
+use quote::ToTokens;
 use std::fmt::Display;
 
-pub trait ToTokens<T: quote::ToTokens> {
+pub trait ToTokensExtension<T: ToTokens> {
     fn get_self(&self) -> &T;
 
     fn error(&self, message: impl Display) -> syn::Error {
@@ -8,7 +9,7 @@ pub trait ToTokens<T: quote::ToTokens> {
     }
 }
 
-impl<T: quote::ToTokens> ToTokens<T> for T {
+impl<T: ToTokens> ToTokensExtension<T> for T {
     fn get_self(&self) -> &T {
         self
     }

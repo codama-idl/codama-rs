@@ -4,7 +4,7 @@ use codama_nodes::{
     EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
     StructTypeNode, TupleTypeNode, TypeNode,
 };
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Default)]
 pub struct CombineTypesVisitor {

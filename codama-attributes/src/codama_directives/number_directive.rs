@@ -1,5 +1,5 @@
 use codama_nodes::{Endian, NumberFormat};
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct NumberDirective {

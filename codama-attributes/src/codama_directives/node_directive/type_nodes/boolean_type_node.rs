@@ -1,6 +1,6 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::{BooleanTypeNode, NestedTypeNode, Node, NumberTypeNode};
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 impl NodeAttributeParse for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {

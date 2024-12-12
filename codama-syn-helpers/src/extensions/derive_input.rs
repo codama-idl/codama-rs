@@ -1,8 +1,9 @@
-use super::ToTokens as _;
+use super::ToTokensExtension;
 use codama_errors::CodamaResult;
+use syn::DeriveInput;
 
-pub trait DeriveInput {
-    fn get_self(&self) -> &syn::DeriveInput;
+pub trait DeriveInputExtension {
+    fn get_self(&self) -> &DeriveInput;
 
     /// Ensure the derive input is a struct and return the data.
     fn as_struct(&self) -> CodamaResult<&syn::DataStruct> {
@@ -23,8 +24,8 @@ pub trait DeriveInput {
     }
 }
 
-impl DeriveInput for syn::DeriveInput {
-    fn get_self(&self) -> &syn::DeriveInput {
+impl DeriveInputExtension for DeriveInput {
+    fn get_self(&self) -> &DeriveInput {
         self
     }
 }
@@ -35,25 +36,25 @@ mod tests {
 
     #[test]
     fn as_struct_ok() {
-        let derive_input: syn::DeriveInput = syn::parse_quote! { struct Foo(u32); };
+        let derive_input: DeriveInput = syn::parse_quote! { struct Foo(u32); };
         assert!(matches!(derive_input.as_struct(), Ok(_)));
     }
 
     #[test]
     fn as_struct_err() {
-        let derive_input: syn::DeriveInput = syn::parse_quote! { enum Foo { Bar } };
+        let derive_input: DeriveInput = syn::parse_quote! { enum Foo { Bar } };
         assert!(matches!(derive_input.as_struct(), Err(_)));
     }
 
     #[test]
     fn as_enum_ok() {
-        let derive_input: syn::DeriveInput = syn::parse_quote! { enum Foo { Bar } };
+        let derive_input: DeriveInput = syn::parse_quote! { enum Foo { Bar } };
         assert!(matches!(derive_input.as_enum(), Ok(_)));
     }
 
     #[test]
     fn as_enum_err() {
-        let derive_input: syn::DeriveInput = syn::parse_quote! { struct Foo(u32); };
+        let derive_input: DeriveInput = syn::parse_quote! { struct Foo(u32); };
         assert!(matches!(derive_input.as_enum(), Err(_)));
     }
 }

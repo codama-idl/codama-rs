@@ -1,8 +1,5 @@
 use crate::{NodeDirective, NumberDirective, StringDirective};
-use codama_syn_helpers::{
-    syn_traits::{Path, ToTokens as _},
-    Meta,
-};
+use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
 
 #[derive(Debug, PartialEq, From)]

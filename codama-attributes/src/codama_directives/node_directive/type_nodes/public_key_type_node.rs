@@ -1,6 +1,6 @@
 use crate::NodeAttributeParse;
 use codama_nodes::{Node, PublicKeyTypeNode};
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 impl NodeAttributeParse for PublicKeyTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {

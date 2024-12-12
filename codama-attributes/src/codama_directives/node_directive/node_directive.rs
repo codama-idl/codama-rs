@@ -1,6 +1,6 @@
 use crate::{utils::SetOnce, NodeAttributeParse};
 use codama_nodes::Node;
-use codama_syn_helpers::{syn_traits::*, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct NodeDirective {

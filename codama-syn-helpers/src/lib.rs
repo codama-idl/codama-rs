@@ -1,4 +1,4 @@
-pub mod syn_traits;
+pub mod extensions;
 
 mod meta;
 pub use meta::*;

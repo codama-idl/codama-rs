@@ -2,7 +2,7 @@ use crate::Korok;
 use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct UnsupportedItemKorok<'a> {

@@ -1,8 +1,8 @@
 use proc_macro2::{TokenStream, TokenTree};
-use syn::Token;
+use syn::{parse::ParseBuffer, Token};
 
-pub trait ParseBuffer<'a> {
-    fn get_self(&self) -> &syn::parse::ParseBuffer<'a>;
+pub trait ParseBufferExtension<'a> {
+    fn get_self(&self) -> &ParseBuffer<'a>;
 
     /// Advance the buffer until we reach a comma or the end of the buffer.
     /// Returns the consumed tokens as a `TokenStream`.
@@ -26,7 +26,7 @@ pub trait ParseBuffer<'a> {
     }
 
     /// Fork the current buffer and move the original buffer to the end of the argument.
-    fn fork_arg(&self) -> syn::Result<syn::parse::ParseBuffer<'a>> {
+    fn fork_arg(&self) -> syn::Result<ParseBuffer<'a>> {
         let this = self.get_self();
         let fork = this.fork();
         this.parse_arg()?;
@@ -48,8 +48,8 @@ pub trait ParseBuffer<'a> {
     }
 }
 
-impl<'a> ParseBuffer<'a> for syn::parse::ParseBuffer<'a> {
-    fn get_self(&self) -> &syn::parse::ParseBuffer<'a> {
+impl<'a> ParseBufferExtension<'a> for ParseBuffer<'a> {
+    fn get_self(&self) -> &ParseBuffer<'a> {
         self
     }
 }

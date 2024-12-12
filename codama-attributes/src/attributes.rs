@@ -2,7 +2,7 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 use crate::Attribute;
 use codama_errors::{CodamaError, CodamaResult};
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);

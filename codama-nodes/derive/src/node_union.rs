@@ -1,6 +1,6 @@
 use crate::lowercase_first_letter;
 use codama_errors::CodamaResult;
-use codama_syn_helpers::syn_traits::*;
+use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 

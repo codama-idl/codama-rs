@@ -1,8 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::Generics;
 
-pub trait Generics {
-    fn get_self(&self) -> &syn::Generics;
+pub trait GenericsExtension {
+    fn get_self(&self) -> &Generics;
 
     fn param_idents(&self) -> TokenStream {
         let this = self.get_self();
@@ -43,8 +44,8 @@ pub trait Generics {
     }
 }
 
-impl Generics for syn::Generics {
-    fn get_self(&self) -> &syn::Generics {
+impl GenericsExtension for Generics {
+    fn get_self(&self) -> &Generics {
         self
     }
 }

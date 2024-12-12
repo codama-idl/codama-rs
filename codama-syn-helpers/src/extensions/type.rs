@@ -1,18 +1,19 @@
-use super::{Path, ToTokens as _};
+use super::{PathExtension, ToTokensExtension};
 use codama_errors::CodamaResult;
+use syn::Type;
 
-pub trait Type {
-    fn get_self(&self) -> &syn::Type;
+pub trait TypeExtension {
+    fn get_self(&self) -> &Type;
 
     fn as_path(&self) -> CodamaResult<&syn::Path> {
         let this = self.get_self();
         match this {
-            syn::Type::Path(path) => Ok(&path.path),
+            Type::Path(path) => Ok(&path.path),
             _ => Err(this.error("expected a path").into()),
         }
     }
 
-    fn single_generic_type_from_path(&self, path: &str) -> CodamaResult<&syn::Type> {
+    fn single_generic_type_from_path(&self, path: &str) -> CodamaResult<&Type> {
         let this = self.as_path()?;
         match this.is(path) {
             true => this.single_generic_type(),
@@ -21,8 +22,8 @@ pub trait Type {
     }
 }
 
-impl Type for syn::Type {
-    fn get_self(&self) -> &syn::Type {
+impl TypeExtension for Type {
+    fn get_self(&self) -> &Type {
         self
     }
 }
@@ -33,25 +34,25 @@ mod tests {
 
     #[test]
     fn as_path_ok() {
-        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
+        let r#type: Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(r#type.as_path(), Ok(_)));
     }
 
     #[test]
     fn as_path_err() {
-        let r#type: syn::Type = syn::parse_quote! { [u8; 32] };
+        let r#type: Type = syn::parse_quote! { [u8; 32] };
         assert!(matches!(r#type.as_path(), Err(_)));
     }
 
     #[test]
     fn single_generic_type_from_path_ok() {
-        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
+        let r#type: Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("std::option::Option"),
             Ok(_)
         ));
 
-        let r#type: syn::Type = syn::parse_quote! { Option<String> };
+        let r#type: Type = syn::parse_quote! { Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("std::option::Option"),
             Ok(_)
@@ -64,13 +65,13 @@ mod tests {
 
     #[test]
     fn single_generic_type_from_path_err() {
-        let r#type: syn::Type = syn::parse_quote! { [u8; 32] };
+        let r#type: Type = syn::parse_quote! { [u8; 32] };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)
         ));
 
-        let r#type: syn::Type = syn::parse_quote! { std::option::Option<String> };
+        let r#type: Type = syn::parse_quote! { std::option::Option<String> };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)
@@ -80,7 +81,7 @@ mod tests {
             Err(_)
         ));
 
-        let r#type: syn::Type = syn::parse_quote! { Option<String, u32> };
+        let r#type: Type = syn::parse_quote! { Option<String, u32> };
         assert!(matches!(
             r#type.single_generic_type_from_path("Option"),
             Err(_)
