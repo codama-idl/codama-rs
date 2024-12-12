@@ -1,5 +1,5 @@
 error: node is missing
- --> tests/node_attribute/no_node.fail.rs:3:10
+ --> tests/codama_attribute/node_directive/no_node.fail.rs:3:10
   |
 3 | #[codama(node())]
   |          ^^^^^^

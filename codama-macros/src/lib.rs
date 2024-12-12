@@ -1,6 +1,7 @@
 use codama_attributes::CodamaAttribute;
 use codama_errors::{CodamaError, CodamaResult};
 use proc_macro::TokenStream;
+use proc_macro2::TokenStream as TokenStream2;
 
 #[proc_macro_attribute]
 pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -9,10 +10,7 @@ pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
-fn codama_attribute(
-    attr: proc_macro2::TokenStream,
-    input: proc_macro2::TokenStream,
-) -> CodamaResult<proc_macro2::TokenStream> {
+fn codama_attribute(attr: TokenStream2, input: TokenStream2) -> CodamaResult<TokenStream2> {
     let attr: syn::Attribute = syn::parse_quote! { #[codama(#attr)] };
     CodamaAttribute::try_from(&attr)?;
     Ok(input.into())

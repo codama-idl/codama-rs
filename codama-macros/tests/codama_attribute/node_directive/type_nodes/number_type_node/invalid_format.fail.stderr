@@ -1,5 +1,5 @@
 error: invalid format
- --> tests/node_attribute/number_type_node_invalid_format.fail.rs:3:36
+ --> tests/codama_attribute/node_directive/type_nodes/number_type_node/invalid_format.fail.rs:3:36
   |
 3 | #[codama(node(number_type(format = invalid)))]
   |                                    ^^^^^^^
