@@ -1,15 +1,15 @@
-use codama::node;
+use codama::codama;
 
-#[node(public_key_type)]
+#[codama(node(public_key_type))]
 pub struct A(usize);
 
-#[node(public_key_type())]
+#[codama(node(public_key_type()))]
 pub struct B(usize);
 
-#[codama::node(public_key_type)]
+#[codama::codama(node(public_key_type))]
 pub struct C(usize);
 
-#[codama_macros::node(public_key_type)]
+#[codama_macros::codama(node(public_key_type))]
 pub struct D(usize);
 
 fn main() {}

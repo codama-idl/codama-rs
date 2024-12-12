@@ -1,6 +1,6 @@
-use codama_macros::node;
+use codama::codama;
 
-#[node()]
+#[codama(node())]
 pub struct Foo(usize);
 
 fn main() {}

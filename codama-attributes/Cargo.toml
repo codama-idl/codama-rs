@@ -7,6 +7,7 @@ edition = "2021"
 codama-errors = { path = "../codama-errors" }
 codama-nodes = { path = "../codama-nodes" }
 codama-syn-helpers = { path = "../codama-syn-helpers" }
+derive_more = { version = "1.0", features = ["from"] }
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }

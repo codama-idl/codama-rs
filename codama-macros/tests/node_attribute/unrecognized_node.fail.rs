@@ -1,6 +1,6 @@
-use codama_macros::node;
+use codama::codama;
 
-#[node(unrecognized_node(foo = 42))]
+#[codama(node(unrecognized_node(foo = 42)))]
 pub struct Foo(usize);
 
 fn main() {}

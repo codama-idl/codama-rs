@@ -1,6 +1,6 @@
-use codama_macros::node;
+use codama::codama;
 
-#[node(number_type(format = invalid))]
+#[codama(node(number_type(format = invalid)))]
 pub struct Foo(usize);
 
 fn main() {}

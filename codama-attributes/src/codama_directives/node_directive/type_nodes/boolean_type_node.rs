@@ -28,34 +28,38 @@ impl NodeAttributeParse for BooleanTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err, NodeAttribute};
+    use crate::{assert_node, assert_node_err};
     use codama_nodes::NumberFormat::U32;
-    use codama_syn_helpers::syn_build;
-    use quote::quote;
 
     #[test]
     fn default() {
-        assert_node!(#[node(boolean_type)], BooleanTypeNode::default().into());
-        assert_node!(#[node(boolean_type())], BooleanTypeNode::default().into());
+        assert_node!({ boolean_type }, BooleanTypeNode::default().into());
+        assert_node!({ boolean_type() }, BooleanTypeNode::default().into());
     }
 
     #[test]
     fn implicit() {
-        assert_node!(#[node(boolean_type(number_type(u32, be)))], BooleanTypeNode::new(NumberTypeNode::be(U32)).into());
+        assert_node!(
+            { boolean_type(number_type(u32, be)) },
+            BooleanTypeNode::new(NumberTypeNode::be(U32)).into()
+        );
     }
 
     #[test]
     fn explicit() {
-        assert_node!(#[node(boolean_type(size = number_type(u32, be)))], BooleanTypeNode::new(NumberTypeNode::be(U32)).into());
+        assert_node!(
+            { boolean_type(size = number_type(u32, be)) },
+            BooleanTypeNode::new(NumberTypeNode::be(U32)).into()
+        );
     }
 
     #[test]
     fn unrecognized_node() {
-        assert_node_err!(#[node(boolean_type(unrecognized))], "unrecognized node");
+        assert_node_err!({ boolean_type(unrecognized) }, "unrecognized node");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!(#[node(boolean_type(foo = 42))], "unrecognized attribute");
+        assert_node_err!({ boolean_type(foo = 42) }, "unrecognized attribute");
     }
 }

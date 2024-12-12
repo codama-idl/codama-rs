@@ -55,61 +55,83 @@ impl NodeAttributeParse for NumberTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err, NodeAttribute};
-    use codama_syn_helpers::syn_build;
-    use quote::quote;
+    use crate::{assert_node, assert_node_err};
     use NumberFormat::{U16, U64};
 
     #[test]
     fn implicit() {
-        assert_node!(#[node(number_type(u16, le))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(number_type(u16, le))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(number_type(u64, le))], NumberTypeNode::le(U64).into());
-        assert_node!(#[node(number_type(u16, be))], NumberTypeNode::be(U16).into());
-        assert_node!(#[node(number_type(u64, be))], NumberTypeNode::be(U64).into());
-        assert_node!(#[node(number_type(le, u16))], NumberTypeNode::le(U16).into());
+        assert_node!({ number_type(u16, le) }, NumberTypeNode::le(U16).into());
+        assert_node!({ number_type(u16, le) }, NumberTypeNode::le(U16).into());
+        assert_node!({ number_type(u64, le) }, NumberTypeNode::le(U64).into());
+        assert_node!({ number_type(u16, be) }, NumberTypeNode::be(U16).into());
+        assert_node!({ number_type(u64, be) }, NumberTypeNode::be(U64).into());
+        assert_node!({ number_type(le, u16) }, NumberTypeNode::le(U16).into());
     }
 
     #[test]
     fn explicit() {
-        assert_node!(#[node(number_type(format = u16, endian = le))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(number_type(format = u16, endian = le))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(number_type(format = u64, endian = le))], NumberTypeNode::le(U64).into());
-        assert_node!(#[node(number_type(format = u16, endian = be))], NumberTypeNode::be(U16).into());
-        assert_node!(#[node(number_type(format = u64, endian = be))], NumberTypeNode::be(U64).into());
-        assert_node!(#[node(number_type(endian = le, format = u16))], NumberTypeNode::le(U16).into());
+        assert_node!(
+            { number_type(format = u16, endian = le) },
+            NumberTypeNode::le(U16).into()
+        );
+        assert_node!(
+            { number_type(format = u16, endian = le) },
+            NumberTypeNode::le(U16).into()
+        );
+        assert_node!(
+            { number_type(format = u64, endian = le) },
+            NumberTypeNode::le(U64).into()
+        );
+        assert_node!(
+            { number_type(format = u16, endian = be) },
+            NumberTypeNode::be(U16).into()
+        );
+        assert_node!(
+            { number_type(format = u64, endian = be) },
+            NumberTypeNode::be(U64).into()
+        );
+        assert_node!(
+            { number_type(endian = le, format = u16) },
+            NumberTypeNode::le(U16).into()
+        );
     }
 
     #[test]
     fn defaults_to_little_endian() {
-        assert_node!(#[node(number_type(u16))], NumberTypeNode::le(U16).into());
-        assert_node!(#[node(number_type(format = u16))], NumberTypeNode::le(U16).into());
+        assert_node!({ number_type(u16) }, NumberTypeNode::le(U16).into());
+        assert_node!(
+            { number_type(format = u16) },
+            NumberTypeNode::le(U16).into()
+        );
     }
 
     #[test]
     fn missing_format() {
-        assert_node_err!(#[node(number_type(le))], "format is missing");
+        assert_node_err!({ number_type(le) }, "format is missing");
     }
 
     #[test]
     fn format_already_set() {
-        assert_node_err!(#[node(number_type(u8, u16))], "format is already set");
+        assert_node_err!({ number_type(u8, u16) }, "format is already set");
     }
 
     #[test]
     fn endian_already_set() {
-        assert_node_err!(#[node(number_type(le, be))], "endian is already set");
+        assert_node_err!({ number_type(le, be) }, "endian is already set");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!(#[node(number_type(u16, le, unknown))], "unrecognized attribute");
-        assert_node_err!(#[node(number_type(u16, le, unknown = 42))], "unrecognized attribute");
-        assert_node_err!(#[node(number_type(u16 = what?, le))], "unrecognized attribute");
+        assert_node_err!({ number_type(u16, le, unknown) }, "unrecognized attribute");
+        assert_node_err!(
+            { number_type(u16, le, unknown = 42) },
+            "unrecognized attribute"
+        );
+        assert_node_err!({ number_type(u16 = what?, le) }, "unrecognized attribute");
     }
 
     #[test]
     fn expected_a_path() {
-        assert_node_err!(#[node(number_type(42))], "expected a path");
+        assert_node_err!({ number_type(42) }, "expected a path");
     }
 }

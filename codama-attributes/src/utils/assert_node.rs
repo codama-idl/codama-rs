@@ -1,9 +1,9 @@
 #[macro_export]
 macro_rules! assert_node {
-    (#[node($($attr:tt)*)], $expected:expr) => {
+    ({$($attr:tt)*}, $expected:expr) => {
         {
-            let ast = syn_build::attribute(quote! { #[node($($attr)*)] });
-            let node = NodeAttribute::parse(&ast).unwrap().node;
+            let meta: codama_syn_helpers::Meta = syn::parse_quote! { node($($attr)*) };
+            let node = crate::NodeDirective::try_from(&meta).unwrap().node;
             assert_eq!(node, $expected);
         }
     };
@@ -11,10 +11,10 @@ macro_rules! assert_node {
 
 #[macro_export]
 macro_rules! assert_node_err {
-    (#[node($($attr:tt)*)], $expected:expr) => {
+    ({$($attr:tt)*}, $expected:expr) => {
         {
-            let ast = syn_build::attribute(quote! { #[node($($attr)*)] });
-            let message = NodeAttribute::parse(&ast).unwrap_err().to_string();
+            let meta: codama_syn_helpers::Meta = syn::parse_quote! { node($($attr)*) };
+            let message = crate::NodeDirective::try_from(&meta).unwrap_err().to_string();
             assert!(message.contains($expected), "Expected error containing '{}', but got '{}'", $expected, message);
         }
     };

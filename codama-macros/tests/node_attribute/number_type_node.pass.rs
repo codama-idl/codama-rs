@@ -1,15 +1,15 @@
-use codama::node;
+use codama::codama;
 
-#[node(number_type(u32, be))]
+#[codama(node(number_type(u32, be)))]
 pub struct A(usize);
 
-#[codama::node(number_type(u32, be))]
+#[codama::codama(node(number_type(u32, be)))]
 pub struct B(usize);
 
-#[codama_macros::node(number_type(u32, be))]
+#[codama_macros::codama(node(number_type(u32, be)))]
 pub struct C(usize);
 
-#[node(number_type(u32))]
+#[codama(node(number_type(u32)))]
 pub struct D(usize);
 
 fn main() {}

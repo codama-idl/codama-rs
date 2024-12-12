@@ -1,5 +1,5 @@
 error: unrecognized attribute
- --> tests/node_attribute/number_type_node_unrecognized_attribute.fail.rs:3:25
+ --> tests/node_attribute/number_type_node_unrecognized_attribute.fail.rs:3:32
   |
-3 | #[node(number_type(u32, unrecognized = 42, le))]
-  |                         ^^^^^^^^^^^^
+3 | #[codama(node(number_type(u32, unrecognized = 42, le)))]
+  |                                ^^^^^^^^^^^^

@@ -1,7 +1,5 @@
 error: node is missing
- --> tests/node_attribute/no_node.fail.rs:3:1
+ --> tests/node_attribute/no_node.fail.rs:3:10
   |
-3 | #[node()]
-  | ^^^^^^^^^
-  |
-  = note: this error originates in the attribute macro `node` (in Nightly builds, run with -Z macro-backtrace for more info)
+3 | #[codama(node())]
+  |          ^^^^^^

@@ -1,6 +1,6 @@
-use codama_macros::node;
+use codama::codama;
 
-#[node(public_key_type(foo = 42))]
+#[codama(node(public_key_type(foo = 42)))]
 pub struct Foo;
 
 fn main() {}

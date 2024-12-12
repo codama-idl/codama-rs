@@ -1,5 +1,5 @@
 error: unrecognized node
- --> tests/node_attribute/unrecognized_node.fail.rs:3:8
+ --> tests/node_attribute/unrecognized_node.fail.rs:3:15
   |
-3 | #[node(unrecognized_node(foo = 42))]
-  |        ^^^^^^^^^^^^^^^^^
+3 | #[codama(node(unrecognized_node(foo = 42)))]
+  |               ^^^^^^^^^^^^^^^^^

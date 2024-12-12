@@ -7,12 +7,6 @@ pub struct DeriveAttribute<'a> {
     pub derives: Vec<syn::Path>,
 }
 
-impl<'a> DeriveAttribute<'a> {
-    pub fn parse<T: TryInto<Self, Error = CodamaError>>(attr: T) -> CodamaResult<Self> {
-        attr.try_into()
-    }
-}
-
 impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
     type Error = CodamaError;
 
@@ -36,38 +30,29 @@ impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_syn_helpers::syn_build;
-    use quote::quote;
+    use syn::parse_quote;
 
     #[test]
     fn test_derive_attribute() {
-        let ast = syn_build::attribute(quote! { #[derive(Debug, PartialEq)] });
-        let attribute = DeriveAttribute::parse(&ast).unwrap();
+        let ast = parse_quote! { #[derive(Debug, PartialEq)] };
+        let attribute = DeriveAttribute::try_from(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert_eq!(
             attribute.derives,
-            [
-                syn_build::parse(quote! { Debug }),
-                syn_build::parse(quote! { PartialEq }),
-            ]
+            [(parse_quote! { Debug }), (parse_quote! { PartialEq }),]
         );
     }
 
     #[test]
     fn test_feature_gated_derive_attribute() {
-        let ast = syn_build::attribute(
-            quote! { #[cfg_attr(feature = "some_feature", derive(Debug, PartialEq))] },
-        );
-        let attribute = DeriveAttribute::parse(&ast).unwrap();
+        let ast = parse_quote! { #[cfg_attr(feature = "some_feature", derive(Debug, PartialEq))] };
+        let attribute = DeriveAttribute::try_from(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert_eq!(
             attribute.derives,
-            [
-                syn_build::parse(quote! { Debug }),
-                syn_build::parse(quote! { PartialEq }),
-            ]
+            [(parse_quote! { Debug }), (parse_quote! { PartialEq })]
         );
     }
 }

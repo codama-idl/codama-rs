@@ -28,19 +28,17 @@ impl<T: TypeNodeUnionTrait> NodeAttributeParse for FixedSizeTypeNode<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err, NodeAttribute};
+    use crate::{assert_node, assert_node_err};
     use codama_nodes::BooleanTypeNode;
-    use codama_syn_helpers::syn_build;
-    use quote::quote;
 
     #[test]
     fn explicit() {
         assert_node!(
-            #[node(fixed_size_type(type = boolean_type, size = 42))],
+            { fixed_size_type(type = boolean_type, size = 42)},
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
         assert_node!(
-            #[node(fixed_size_type(size = 42, type = boolean_type))],
+            { fixed_size_type(size = 42, type = boolean_type)},
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
     }
@@ -48,22 +46,22 @@ mod tests {
     #[test]
     fn implicit() {
         assert_node!(
-            #[node(fixed_size_type(boolean_type, 42))],
+            { fixed_size_type(boolean_type, 42) },
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
         assert_node!(
-            #[node(fixed_size_type(42, boolean_type))],
+            { fixed_size_type(42, boolean_type) },
             FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into()
         );
     }
 
     #[test]
     fn unrecognized_node() {
-        assert_node_err!(#[node(fixed_size_type(unrecognized))], "unrecognized node");
+        assert_node_err!({ fixed_size_type(unrecognized) }, "unrecognized node");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!(#[node(fixed_size_type(foo = 42))], "unrecognized attribute");
+        assert_node_err!({ fixed_size_type(foo = 42) }, "unrecognized attribute");
     }
 }

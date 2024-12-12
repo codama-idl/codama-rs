@@ -1,6 +1,6 @@
-use codama_macros::node;
+use codama::codama;
 
-#[node(number_type(u32, le), public_key_type())]
+#[codama(node(number_type(u32, le), public_key_type()))]
 pub struct Foo(usize);
 
 fn main() {}

@@ -33,6 +33,7 @@ dependencies = [
  "codama-errors",
  "codama-nodes",
  "codama-syn-helpers",
+ "derive_more",
  "proc-macro2",
  "quote",
  "syn",
