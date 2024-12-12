@@ -1,13 +1,12 @@
 use super::PathExtension;
 use crate::Meta;
-use codama_errors::CodamaResult;
 use syn::{punctuated::Punctuated, Attribute};
 
 pub trait AttributeExtension {
     fn get_self(&self) -> &Attribute;
 
     /// Parse all nested metas in the list.
-    fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> CodamaResult<()> {
+    fn parse_metas(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
         self.parse_comma_args::<Meta>()?
             .into_iter()
             .try_for_each(logic)
@@ -15,7 +14,7 @@ pub trait AttributeExtension {
     }
 
     /// Parse all arguments as comma-separated types.
-    fn parse_comma_args<T: syn::parse::Parse>(&self) -> CodamaResult<Vec<T>> {
+    fn parse_comma_args<T: syn::parse::Parse>(&self) -> syn::Result<Vec<T>> {
         self.get_self()
             .parse_args_with(Punctuated::<T, syn::Token![,]>::parse_terminated)
             .map(|metas| metas.into_iter().collect::<Vec<_>>())

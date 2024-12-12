@@ -1,5 +1,4 @@
 use crate::{CodamaAttribute, DeriveAttribute, UnsupportedAttribute};
-use codama_errors::{CodamaError, CodamaResult};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -13,15 +12,15 @@ pub enum Attribute<'a> {
 }
 
 impl<'a> Attribute<'a> {
-    pub fn parse<T: TryInto<Self, Error = CodamaError>>(attr: T) -> CodamaResult<Self> {
+    pub fn parse<T: TryInto<Self, Error = syn::Error>>(attr: T) -> syn::Result<Self> {
         attr.try_into()
     }
 }
 
 impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
-    type Error = CodamaError;
+    type Error = syn::Error;
 
-    fn try_from(attr: &'a syn::Attribute) -> CodamaResult<Self> {
+    fn try_from(attr: &'a syn::Attribute) -> syn::Result<Self> {
         let path = attr.path();
         match (path.prefix().as_str(), path.last_str().as_str()) {
             ("", "derive") => Ok(Attribute::Derive(attr.try_into()?)),

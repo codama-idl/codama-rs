@@ -1,4 +1,3 @@
-use codama_errors::{CodamaError, CodamaResult};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -8,9 +7,9 @@ pub struct DeriveAttribute<'a> {
 }
 
 impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
-    type Error = CodamaError;
+    type Error = syn::Error;
 
-    fn try_from(ast: &'a syn::Attribute) -> CodamaResult<Self> {
+    fn try_from(ast: &'a syn::Attribute) -> syn::Result<Self> {
         // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
         let attr = unfeatured.as_ref().unwrap_or(ast);

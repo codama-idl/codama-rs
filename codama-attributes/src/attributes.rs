@@ -1,14 +1,12 @@
-use std::ops::{Deref, DerefMut, Index, IndexMut};
-
 use crate::Attribute;
-use codama_errors::{CodamaError, CodamaResult};
-use codama_syn_helpers::extensions::*;
+use codama_syn_helpers::{collect_and_combine_errors, extensions::*};
+use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
 impl<'a> Attributes<'a> {
-    pub fn parse<T: TryInto<Self, Error = CodamaError>>(attrs: T) -> CodamaResult<Self> {
+    pub fn parse<T: TryInto<Self, Error = syn::Error>>(attrs: T) -> syn::Result<Self> {
         attrs.try_into()
     }
 
@@ -21,25 +19,26 @@ impl<'a> Attributes<'a> {
 }
 
 impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
-    type Error = CodamaError;
+    type Error = syn::Error;
 
-    fn try_from(attrs: Vec<&'a syn::Attribute>) -> CodamaResult<Self> {
+    fn try_from(attrs: Vec<&'a syn::Attribute>) -> syn::Result<Self> {
         let attributes = attrs
             .iter()
-            .map(|attr| Attribute::parse(*attr))
-            .collect::<CodamaResult<Vec<_>>>()?;
+            .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
+            .fold::<syn::Result<_>, _>(Ok(Vec::new()), collect_and_combine_errors)?;
+
         Ok(Self(attributes))
     }
 }
 
 impl<'a> TryFrom<&'a Vec<syn::Attribute>> for Attributes<'a> {
-    type Error = CodamaError;
+    type Error = syn::Error;
 
-    fn try_from(attrs: &'a Vec<syn::Attribute>) -> CodamaResult<Self> {
+    fn try_from(attrs: &'a Vec<syn::Attribute>) -> syn::Result<Self> {
         let attributes = attrs
             .iter()
             .map(Attribute::parse)
-            .collect::<CodamaResult<Vec<_>>>()?;
+            .collect::<syn::Result<Vec<_>>>()?;
         Ok(Self(attributes))
     }
 }

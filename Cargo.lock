@@ -30,7 +30,6 @@ dependencies = [
 name = "codama-attributes"
 version = "0.1.0"
 dependencies = [
- "codama-errors",
  "codama-nodes",
  "codama-syn-helpers",
  "derive_more",
@@ -93,6 +92,8 @@ dependencies = [
  "codama",
  "codama-attributes",
  "codama-errors",
+ "codama-koroks",
+ "codama-stores",
  "proc-macro2",
  "quote",
  "syn",
