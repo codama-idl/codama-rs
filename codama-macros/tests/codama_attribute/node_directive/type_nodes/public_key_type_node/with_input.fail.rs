@@ -1,6 +1,6 @@
 use codama::codama;
 
 #[codama(node(public_key_type(foo = 42)))]
-pub struct Foo;
+pub struct Test;
 
 fn main() {}
