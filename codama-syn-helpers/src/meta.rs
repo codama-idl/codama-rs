@@ -1,12 +1,13 @@
 use crate::syn_traits::{Path as _, ToTokens as _};
 use derive_more::From;
-use proc_macro2::TokenStream;
+use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use quote::ToTokens;
 use syn::{
+    ext::IdentExt as _,
     parse::discouraged::Speculative,
     spanned::Spanned,
     token::{Brace, Bracket, Paren},
-    Expr, MetaList, MetaNameValue, Path, Token,
+    Expr, MacroDelimiter, MetaList, MetaNameValue, Path, Token,
 };
 
 #[derive(Debug, From)]
@@ -197,13 +198,13 @@ impl Meta {
 impl syn::parse::Parse for Meta {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let fork = input.fork();
-        match fork.parse::<Path>() {
+        match fork.call(parse_meta_path) {
             Ok(path) => {
                 if fork.peek(Paren) || fork.peek(Bracket) || fork.peek(Brace) {
-                    Ok(Self::List(input.parse()?))
+                    Ok(Self::List(input.call(parse_meta_list)?))
                 } else if fork.peek(Token![=]) {
                     let eq_token = fork.parse::<Token![=]>()?;
-                    match fork.parse::<MetaList>() {
+                    match fork.call(parse_meta_list) {
                         Ok(list) => {
                             input.advance_to(&fork);
                             Ok(Self::NameList(MetaNameList {
@@ -212,7 +213,7 @@ impl syn::parse::Parse for Meta {
                                 list,
                             }))
                         }
-                        Err(_) => Ok(Self::NameValue(input.parse()?)),
+                        Err(_) => Ok(Self::NameValue(input.call(parse_meta_name_value)?)),
                     }
                 } else {
                     input.advance_to(&fork);
@@ -233,11 +234,64 @@ impl syn::parse::Parse for Meta {
 impl syn::parse::Parse for MetaNameList {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            path: input.parse()?,
+            path: input.call(parse_meta_path)?,
             eq_token: input.parse()?,
             list: input.parse()?,
         })
     }
+}
+
+/// Parse a path without segment arguments and allowing any reserved keyword.
+fn parse_meta_path(input: syn::parse::ParseStream) -> syn::Result<Path> {
+    Ok(Path {
+        leading_colon: input.parse()?,
+        segments: {
+            let mut segments = syn::punctuated::Punctuated::new();
+            let ident = syn::Ident::parse_any(input)?;
+            segments.push_value(syn::PathSegment::from(ident));
+            while input.peek(Token![::]) {
+                let punct = input.parse()?;
+                segments.push_punct(punct);
+                let ident = syn::Ident::parse_any(input)?;
+                segments.push_value(syn::PathSegment::from(ident));
+            }
+            segments
+        },
+    })
+}
+
+/// Custom implementation of `syn::parse::Parse` for `MetaList`.
+fn parse_meta_list(input: syn::parse::ParseStream) -> syn::Result<MetaList> {
+    let path = input.call(parse_meta_path)?;
+    let (delimiter, tokens) = input.step(|cursor| match cursor.token_tree() {
+        Some((TokenTree::Group(g), rest)) => {
+            let span = g.delim_span();
+            let delimiter = match g.delimiter() {
+                Delimiter::Parenthesis => MacroDelimiter::Paren(Paren(span)),
+                Delimiter::Brace => MacroDelimiter::Brace(Brace(span)),
+                Delimiter::Bracket => MacroDelimiter::Bracket(Bracket(span)),
+                Delimiter::None => {
+                    return Err(cursor.error("expected delimiter"));
+                }
+            };
+            Ok(((delimiter, g.stream()), rest))
+        }
+        _ => Err(cursor.error("expected delimiter")),
+    })?;
+    Ok(MetaList {
+        path,
+        delimiter,
+        tokens,
+    })
+}
+
+/// Custom implementation of `syn::parse::Parse` for `MetaNameValue`.
+fn parse_meta_name_value(input: syn::parse::ParseStream) -> syn::Result<MetaNameValue> {
+    Ok(MetaNameValue {
+        path: input.call(parse_meta_path)?,
+        eq_token: input.parse()?,
+        value: input.parse()?,
+    })
 }
 
 impl quote::ToTokens for Meta {
