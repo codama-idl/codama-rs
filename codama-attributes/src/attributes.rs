@@ -1,5 +1,6 @@
 use crate::Attribute;
-use codama_syn_helpers::{collect_and_combine_errors, extensions::*};
+use codama_errors::IteratorCombineErrors;
+use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 #[derive(Debug, PartialEq)]
@@ -25,7 +26,7 @@ impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
         let attributes = attrs
             .iter()
             .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
-            .fold::<syn::Result<_>, _>(Ok(Vec::new()), collect_and_combine_errors)?;
+            .collect_and_combine_errors()?;
 
         Ok(Self(attributes))
     }
