@@ -1,6 +1,6 @@
 use crate::{EnumKorok, FileModuleKorok, Korok, ModuleKorok, StructKorok, UnsupportedItemKorok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 use std::ops::AddAssign;
@@ -49,7 +49,7 @@ impl<'a> ItemKorok<'a> {
         items
             .iter()
             .map(|item| Self::parse(item, file_modules, file_module_index))
-            .collect()
+            .collect_and_combine_errors()
     }
 }
 

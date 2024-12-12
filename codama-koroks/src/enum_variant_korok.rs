@@ -1,6 +1,6 @@
 use crate::{FieldsKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
@@ -24,7 +24,10 @@ impl<'a> EnumVariantKorok<'a> {
     pub fn parse_all(
         variants: &'a syn::punctuated::Punctuated<syn::Variant, syn::Token![,]>,
     ) -> CodamaResult<Vec<Self>> {
-        variants.iter().map(Self::parse).collect()
+        variants
+            .iter()
+            .map(Self::parse)
+            .collect_and_combine_errors()
     }
 }
 

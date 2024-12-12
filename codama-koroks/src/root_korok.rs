@@ -1,5 +1,5 @@
 use crate::{CrateKorok, Korok};
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 use codama_stores::RootStore;
 
@@ -17,7 +17,7 @@ impl<'a> RootKorok<'a> {
                 .crates
                 .iter()
                 .map(CrateKorok::parse)
-                .collect::<CodamaResult<_>>()?,
+                .collect_and_combine_errors()?,
             node: None,
             store: root_store,
         })

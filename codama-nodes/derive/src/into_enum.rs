@@ -1,4 +1,4 @@
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -30,7 +30,7 @@ pub fn expand_derive_into_enum(input: &syn::DeriveInput) -> CodamaResult<TokenSt
                 }
             })
         })
-        .collect::<CodamaResult<Vec<_>>>()?;
+        .collect_and_combine_errors()?;
 
     // Render the macro output.
     Ok(quote! {

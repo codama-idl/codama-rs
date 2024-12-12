@@ -1,5 +1,5 @@
 use crate::{FieldKorok, Korok};
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
@@ -14,8 +14,16 @@ impl<'a> FieldsKorok<'a> {
         Ok(Self {
             ast,
             all: match ast {
-                syn::Fields::Named(f) => f.named.iter().map(FieldKorok::parse).collect(),
-                syn::Fields::Unnamed(f) => f.unnamed.iter().map(FieldKorok::parse).collect(),
+                syn::Fields::Named(f) => f
+                    .named
+                    .iter()
+                    .map(FieldKorok::parse)
+                    .collect_and_combine_errors(),
+                syn::Fields::Unnamed(f) => f
+                    .unnamed
+                    .iter()
+                    .map(FieldKorok::parse)
+                    .collect_and_combine_errors(),
                 syn::Fields::Unit => Ok(vec![]),
             }?,
             node: None,

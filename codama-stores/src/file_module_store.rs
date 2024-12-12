@@ -1,4 +1,4 @@
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, PartialEq)]
@@ -13,7 +13,7 @@ impl FileModuleStore {
         find_nested_file_modules(items)
             .iter()
             .map(|&item| FileModuleStore::load(&path, item))
-            .collect::<CodamaResult<Vec<_>>>()
+            .collect_and_combine_errors()
     }
 
     pub fn load(path: &Path, item: &syn::ItemMod) -> CodamaResult<Self> {

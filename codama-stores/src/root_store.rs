@@ -1,5 +1,5 @@
 use crate::CrateStore;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use std::path::Path;
 
 #[derive(Debug, PartialEq)]
@@ -17,7 +17,7 @@ impl RootStore {
             crates: paths
                 .iter()
                 .map(|path| CrateStore::load(path))
-                .collect::<CodamaResult<_>>()?,
+                .collect_and_combine_errors()?,
         })
     }
 

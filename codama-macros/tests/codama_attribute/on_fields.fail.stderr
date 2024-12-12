@@ -5,6 +5,12 @@ error: node is missing
   |              ^^^^^^
 
 error: node is missing
+ --> tests/codama_attribute/on_fields.fail.rs:7:14
+  |
+7 |     #[codama(node())]
+  |              ^^^^^^
+
+error: node is missing
   --> tests/codama_attribute/on_fields.fail.rs:12:31
    |
 12 | pub struct TupleTest(#[codama(node())] u8);
@@ -15,3 +21,9 @@ error: node is missing
    |
 17 |         #[codama(node())]
    |                  ^^^^^^
+
+error: node is missing
+  --> tests/codama_attribute/on_fields.fail.rs:20:20
+   |
+20 |     Tuple(#[codama(node())] u8),
+   |                    ^^^^^^

@@ -10,7 +10,6 @@ pub trait AttributeExtension {
         self.parse_comma_args::<Meta>()?
             .into_iter()
             .try_for_each(logic)
-            .map_err(Into::into)
     }
 
     /// Parse all arguments as comma-separated types.
@@ -18,7 +17,6 @@ pub trait AttributeExtension {
         self.get_self()
             .parse_args_with(Punctuated::<T, syn::Token![,]>::parse_terminated)
             .map(|metas| metas.into_iter().collect::<Vec<_>>())
-            .map_err(Into::into)
     }
 
     /// Unwrap the feature flag from the attribute.

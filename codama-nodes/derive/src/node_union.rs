@@ -1,5 +1,5 @@
 use crate::lowercase_first_letter;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -67,7 +67,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 )),
             })
         })
-        .collect::<CodamaResult<Vec<_>>>()?;
+        .collect_and_combine_errors()?;
 
     let fallback_deserialize_pattern = match fallback_variant {
         Some(fallback_variant) => {
