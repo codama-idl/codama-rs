@@ -56,27 +56,27 @@ impl Attribute for syn::Attribute {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::syn_build;
     use quote::{quote, ToTokens};
+    use syn::parse_quote;
 
     #[test]
     fn parse_comma_args_ok() {
-        let attribute = syn_build::attribute(quote! { #[foo(42, "bar")] });
+        let attribute: syn::Attribute = parse_quote! { #[foo(42, "bar")] };
         let args = attribute.parse_comma_args::<syn::Lit>().unwrap();
         assert_eq!(args.len(), 2);
     }
 
     #[test]
     fn parse_comma_args_err() {
-        let attribute = syn_build::attribute(quote! { #[foo] });
+        let attribute: syn::Attribute = parse_quote! { #[foo] };
         let args = attribute.parse_comma_args::<syn::Path>();
         assert!(matches!(args, Err(_)));
     }
 
     #[test]
     fn unfeatured() {
-        let attribute =
-            syn_build::attribute(quote! { #[cfg_attr(feature = "some_feature", derive(Debug))] });
+        let attribute: syn::Attribute =
+            parse_quote! { #[cfg_attr(feature = "some_feature", derive(Debug))] };
         let unfeatured = attribute.unfeatured();
         assert_eq!(
             unfeatured.to_token_stream().to_string(),
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn unfeatured_unchanged() {
-        let attribute = syn_build::attribute(quote! { #[derive(Debug)] });
+        let attribute: syn::Attribute = parse_quote! { #[derive(Debug)] };
         let unfeatured = attribute.unfeatured();
         assert_eq!(unfeatured, None);
     }
