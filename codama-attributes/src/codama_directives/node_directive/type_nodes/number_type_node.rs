@@ -1,9 +1,9 @@
 use crate::{utils::SetOnce, FromMeta};
-use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
+use codama_nodes::{Endian, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for NumberTypeNode {
-    fn from_meta(meta: &Meta) -> syn::Result<Node> {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
         meta.as_list()?.each(|ref meta| {
@@ -48,7 +48,7 @@ impl FromMeta for NumberTypeNode {
                 _ => Err(path.error("unrecognized attribute")),
             }
         })?;
-        Ok(NumberTypeNode::new(format.take(meta)?, endian.take(meta)?).into())
+        Ok(Self::new(format.take(meta)?, endian.take(meta)?))
     }
 }
 

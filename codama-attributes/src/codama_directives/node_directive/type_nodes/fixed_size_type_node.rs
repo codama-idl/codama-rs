@@ -1,9 +1,9 @@
 use crate::{utils::SetOnce, FromMeta};
-use codama_nodes::{FixedSizeTypeNode, Node, TypeNode, TypeNodeUnionTrait};
+use codama_nodes::{FixedSizeTypeNode, Node, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl<T: TypeNodeUnionTrait> FromMeta for FixedSizeTypeNode<T> {
-    fn from_meta(meta: &Meta) -> syn::Result<Node> {
+impl FromMeta for FixedSizeTypeNode<TypeNode> {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut r#type: SetOnce<Node> = SetOnce::<Node>::new("type");
         let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
         meta.as_list()?
@@ -21,7 +21,7 @@ impl<T: TypeNodeUnionTrait> FromMeta for FixedSizeTypeNode<T> {
             Ok(node) => node,
             Err(_) => return Err(meta.error("type must be a TypeNode")),
         };
-        Ok(FixedSizeTypeNode::new(r#type, size.take(meta)?).into())
+        Ok(Self::new(r#type, size.take(meta)?))
     }
 }
 
