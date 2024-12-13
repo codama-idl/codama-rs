@@ -11,9 +11,22 @@ impl<'a> Attributes<'a> {
         attrs.try_into()
     }
 
-    pub fn has_derive(&self, derive: &str) -> bool {
+    pub fn has_any_codama_derive(&self) -> bool {
+        self.has_codama_derive("CodamaAccount")
+            || self.has_codama_derive("CodamaInstruction")
+            || self.has_codama_derive("CodamaType")
+    }
+
+    pub fn has_codama_derive(&self, derive: &str) -> bool {
+        self.has_derive(&["", "codama", "codama_macros"], derive)
+    }
+
+    pub fn has_derive(&self, prefixes: &[&str], last: &str) -> bool {
         self.iter().any(|attr| match attr {
-            Attribute::Derive(a) => a.derives.iter().any(|p| p.is_strict(derive)),
+            Attribute::Derive(a) => a
+                .derives
+                .iter()
+                .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last),
             _ => false,
         })
     }

@@ -15,11 +15,7 @@ impl KorokPlugin for DefaultPlugin {
 pub fn get_default_visitor<'a>() -> ComposeVisitor<'a> {
     ComposeVisitor::new()
         .add(FilterItemsVisitor::new(
-            |item| {
-                item.attributes().has_derive("CodamaType")
-                    || item.attributes().has_derive("CodamaAccount")
-                    || item.attributes().has_derive("CodamaInstruction")
-            },
+            |item| item.attributes().has_any_codama_derive(),
             ComposeVisitor::new()
                 .add(SetBorshTypesVisitor::new())
                 .add(SetLinkTypesVisitor::new())
