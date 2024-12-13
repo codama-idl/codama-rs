@@ -6,14 +6,28 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-#[proc_macro_derive(CodamaType, attributes(codama))]
-pub fn derive_codama_type(input: TokenStream) -> TokenStream {
-    codama_type_derive(input.into())
+#[proc_macro_derive(CodamaAccount, attributes(codama))]
+pub fn codama_account_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input.into())
         .unwrap_or_else(CodamaError::into_compile_error)
         .into()
 }
 
-fn codama_type_derive(input: TokenStream2) -> CodamaResult<TokenStream2> {
+#[proc_macro_derive(CodamaInstruction, attributes(codama))]
+pub fn codama_instruction_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input.into())
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+#[proc_macro_derive(CodamaType, attributes(codama))]
+pub fn codama_type_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input.into())
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+fn codama_derive(input: TokenStream2) -> CodamaResult<TokenStream2> {
     let store = CrateStore::hydrate(input)?;
     CrateKorok::parse(&store)?;
     Ok(quote! {})
