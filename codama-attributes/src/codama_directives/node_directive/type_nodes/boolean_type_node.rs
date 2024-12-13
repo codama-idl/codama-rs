@@ -1,9 +1,9 @@
-use crate::{utils::SetOnce, NodeAttributeParse};
+use crate::{utils::SetOnce, FromMeta};
 use codama_nodes::{BooleanTypeNode, NestedTypeNode, Node, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl NodeAttributeParse for BooleanTypeNode {
-    fn from_meta(meta: &Meta) -> syn::Result<Node> {
+impl FromMeta for BooleanTypeNode {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut size: SetOnce<Node> = SetOnce::<Node>::new("size");
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default().into());
@@ -21,7 +21,7 @@ impl NodeAttributeParse for BooleanTypeNode {
             Ok(node) => node,
             Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
         };
-        Ok(BooleanTypeNode::new(size).into())
+        Ok(BooleanTypeNode::new(size))
     }
 }
 

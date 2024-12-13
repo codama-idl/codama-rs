@@ -1,4 +1,4 @@
-use crate::{utils::SetOnce, NodeAttributeParse};
+use crate::{utils::SetOnce, FromMeta};
 use codama_nodes::Node;
 use codama_syn_helpers::{extensions::*, Meta};
 
