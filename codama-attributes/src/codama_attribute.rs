@@ -1,10 +1,17 @@
-use crate::{utils::SetOnce, CodamaDirective};
+use crate::{utils::SetOnce, ApplyToNode, CodamaDirective};
+use codama_nodes::Node;
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct CodamaAttribute<'a> {
     pub ast: &'a syn::Attribute,
     pub directive: CodamaDirective,
+}
+
+impl ApplyToNode for CodamaAttribute<'_> {
+    fn apply(&self, node: Option<Node>) -> Option<Node> {
+        self.directive.apply(node)
+    }
 }
 
 impl<'a> TryFrom<&'a syn::Attribute> for CodamaAttribute<'a> {

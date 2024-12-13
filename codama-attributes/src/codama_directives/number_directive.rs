@@ -1,3 +1,4 @@
+use crate::ApplyToNode;
 use codama_nodes::{Endian, NumberFormat};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -6,6 +7,8 @@ pub struct NumberDirective {
     pub endian: Option<Endian>,
     pub format: Option<NumberFormat>,
 }
+
+impl ApplyToNode for NumberDirective {}
 
 impl TryFrom<&Meta> for NumberDirective {
     type Error = syn::Error;
