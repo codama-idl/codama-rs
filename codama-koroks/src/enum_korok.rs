@@ -1,4 +1,4 @@
-use crate::{EnumVariantKorok, Korok};
+use crate::{EnumVariantKorok, KorokTrait};
 use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
@@ -26,7 +26,7 @@ impl<'a> EnumKorok<'a> {
     }
 }
 
-impl Korok for EnumKorok<'_> {
+impl KorokTrait for EnumKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

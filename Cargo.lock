@@ -81,6 +81,7 @@ dependencies = [
  "codama-nodes",
  "codama-stores",
  "codama-syn-helpers",
+ "derive_more",
  "proc-macro2",
  "quote",
  "syn",

@@ -1,4 +1,4 @@
-use crate::{FieldsKorok, Korok};
+use crate::{FieldsKorok, KorokTrait};
 use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
@@ -26,7 +26,7 @@ impl<'a> StructKorok<'a> {
     }
 }
 
-impl Korok for StructKorok<'_> {
+impl KorokTrait for StructKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

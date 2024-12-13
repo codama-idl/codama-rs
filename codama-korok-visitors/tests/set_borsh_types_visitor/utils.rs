@@ -1,5 +1,5 @@
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable, SetBorshTypesVisitor};
-use codama_koroks::{ItemKorok, Korok, RootKorok};
+use codama_koroks::{ItemKorok, KorokTrait, RootKorok};
 use codama_nodes::Node;
 use codama_stores::RootStore;
 use proc_macro2::TokenStream;

@@ -1,6 +1,5 @@
 use crate::KorokVisitor;
 use codama_attributes::{ApplyToNode, Attribute, Attributes};
-use codama_koroks::Korok;
 use codama_nodes::Node;
 
 #[derive(Default)]
@@ -19,66 +18,42 @@ impl KorokVisitor for ApplyCodamaAttributesVisitor {
 
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_unsupported_item(&mut self, korok: &mut codama_koroks::UnsupportedItemKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
         self.visit_children(korok);
-        korok.set_node(apply_codama_attributes(
-            &korok.attributes,
-            korok.node().clone(),
-        ));
+        korok.node = apply_codama_attributes(&korok.attributes, korok.node.clone());
     }
 }
 

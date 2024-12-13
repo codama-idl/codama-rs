@@ -1,4 +1,4 @@
-use crate::Korok;
+use crate::KorokTrait;
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
@@ -13,7 +13,7 @@ impl<'a> TypeKorok<'a> {
     }
 }
 
-impl Korok for TypeKorok<'_> {
+impl KorokTrait for TypeKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

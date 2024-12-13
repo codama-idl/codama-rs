@@ -1,4 +1,4 @@
-use crate::Korok;
+use crate::KorokTrait;
 use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
 use codama_nodes::Node;
@@ -21,7 +21,7 @@ impl<'a> UnsupportedItemKorok<'a> {
     }
 }
 
-impl Korok for UnsupportedItemKorok<'_> {
+impl KorokTrait for UnsupportedItemKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

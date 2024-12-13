@@ -1,13 +1,13 @@
 use crate::KorokVisitor;
-use codama_koroks::Korok;
+use codama_koroks::KorokTrait;
 
 /// Use the same callback function on all koroks visited.
 pub struct MapVisitor {
-    pub callback: fn(korok: &mut dyn Korok) -> (),
+    pub callback: fn(korok: &mut dyn KorokTrait) -> (),
 }
 
 impl MapVisitor {
-    pub fn new(callback: fn(korok: &mut dyn Korok) -> ()) -> Self {
+    pub fn new(callback: fn(korok: &mut dyn KorokTrait) -> ()) -> Self {
         Self { callback }
     }
 }

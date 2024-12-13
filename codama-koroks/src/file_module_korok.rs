@@ -1,4 +1,4 @@
-use crate::{ItemKorok, Korok};
+use crate::{ItemKorok, KorokTrait};
 use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
@@ -37,7 +37,7 @@ impl<'a> FileModuleKorok<'a> {
     }
 }
 
-impl Korok for FileModuleKorok<'_> {
+impl KorokTrait for FileModuleKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

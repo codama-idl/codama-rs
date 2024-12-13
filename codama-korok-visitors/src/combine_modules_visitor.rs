@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_koroks::Korok;
+use codama_koroks::KorokTrait;
 use codama_nodes::{Node, ProgramNode, RootNode};
 
 #[derive(Default)]
@@ -34,7 +34,7 @@ impl KorokVisitor for CombineModulesVisitor {
 }
 
 /// Create a single RootNode from an initial node and a list of nodes to merge.
-fn combine_koroks<T: Korok>(initial_node: &Option<Node>, koroks: &[T]) -> Option<Node> {
+fn combine_koroks<T: KorokTrait>(initial_node: &Option<Node>, koroks: &[T]) -> Option<Node> {
     // Create the new RootNode to bind all items together from the exisiting node, in any.
     // - If there is already a RootNode or ProgramNode, use this as a starting point.
     // - If there is no existing node, use None and let the merging create a new one if needed.
