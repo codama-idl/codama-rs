@@ -1,4 +1,4 @@
-use crate::Attribute;
+use crate::{Attribute, CodamaDirective};
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
@@ -9,6 +9,37 @@ pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 impl<'a> Attributes<'a> {
     pub fn parse<T: TryInto<Self, Error = syn::Error>>(attrs: T) -> syn::Result<Self> {
         attrs.try_into()
+    }
+
+    pub fn validate_codama_attributes(&self) -> syn::Result<()> {
+        let mut errors = Vec::<syn::Error>::new();
+        let mut has_seen_node = false;
+
+        for attribute in &self.0 {
+            if let Attribute::Codama(attribute) = attribute {
+                match &attribute.directive {
+                    CodamaDirective::Node(_) if !has_seen_node => has_seen_node = true,
+                    _ if has_seen_node => {
+                        errors.push(syn::Error::new_spanned(
+                            attribute.ast,
+                            "This attribute is overridden by a `#[codama(node(...))]` attribute above",
+                        ));
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            // Combine all errors into one
+            let mut combined_error = errors.remove(0);
+            for error in errors {
+                combined_error.combine(error);
+            }
+            Err(combined_error)
+        }
     }
 
     pub fn has_any_codama_derive(&self) -> bool {
@@ -36,12 +67,14 @@ impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
     type Error = syn::Error;
 
     fn try_from(attrs: Vec<&'a syn::Attribute>) -> syn::Result<Self> {
-        let attributes = attrs
-            .iter()
-            .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
-            .collect_and_combine_errors()?;
-
-        Ok(Self(attributes))
+        let attributes = Self(
+            attrs
+                .iter()
+                .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
+                .collect_and_combine_errors()?,
+        );
+        attributes.validate_codama_attributes()?;
+        Ok(attributes)
     }
 }
 
@@ -49,11 +82,14 @@ impl<'a> TryFrom<&'a Vec<syn::Attribute>> for Attributes<'a> {
     type Error = syn::Error;
 
     fn try_from(attrs: &'a Vec<syn::Attribute>) -> syn::Result<Self> {
-        let attributes = attrs
-            .iter()
-            .map(Attribute::parse)
-            .collect::<syn::Result<Vec<_>>>()?;
-        Ok(Self(attributes))
+        let attributes = Self(
+            attrs
+                .iter()
+                .map(Attribute::parse)
+                .collect_and_combine_errors()?,
+        );
+        attributes.validate_codama_attributes()?;
+        Ok(attributes)
     }
 }
 
