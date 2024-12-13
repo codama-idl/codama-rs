@@ -1,6 +1,6 @@
 use crate::{ItemKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 
@@ -23,10 +23,14 @@ impl<'a> FileModuleKorok<'a> {
             .into());
         }
 
+        let (attributes, items) = combine_errors!(
+            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0),
+        )?;
         Ok(Self {
             ast,
-            attributes: Attributes::parse(&ast.attrs)?,
-            items: ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0)?,
+            attributes,
+            items,
             node: None,
             store,
         })

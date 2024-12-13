@@ -1,6 +1,6 @@
 use crate::{FieldsKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::{CodamaResult, IteratorCombineErrors};
+use codama_errors::{combine_errors, CodamaError, CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
@@ -13,10 +13,14 @@ pub struct EnumVariantKorok<'a> {
 
 impl<'a> EnumVariantKorok<'a> {
     pub fn parse(ast: &'a syn::Variant) -> CodamaResult<Self> {
+        let (attributes, fields) = combine_errors!(
+            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            FieldsKorok::parse(&ast.fields),
+        )?;
         Ok(Self {
             ast,
-            attributes: Attributes::parse(&ast.attrs)?,
-            fields: FieldsKorok::parse(&ast.fields)?,
+            attributes,
+            fields,
             node: None,
         })
     }

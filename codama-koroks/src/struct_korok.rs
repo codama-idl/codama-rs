@@ -1,6 +1,6 @@
 use crate::{FieldsKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
@@ -13,10 +13,14 @@ pub struct StructKorok<'a> {
 
 impl<'a> StructKorok<'a> {
     pub fn parse(ast: &'a syn::ItemStruct) -> CodamaResult<Self> {
+        let (attributes, fields) = combine_errors!(
+            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            FieldsKorok::parse(&ast.fields),
+        )?;
         Ok(Self {
             ast,
-            attributes: Attributes::parse(&ast.attrs)?,
-            fields: FieldsKorok::parse(&ast.fields)?,
+            attributes,
+            fields,
             node: None,
         })
     }

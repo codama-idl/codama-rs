@@ -11,25 +11,25 @@ error: This attribute is overridden by a `#[codama(node(...))]` attribute above
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: This attribute is overridden by a `#[codama(node(...))]` attribute above
-  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:13:1
+  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:11:5
    |
-13 | #[codama(node(public_key_type))]
+11 |     #[codama(node(public_key_type))]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: This attribute is overridden by a `#[codama(node(...))]` attribute above
+  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:17:1
+   |
+17 | #[codama(node(public_key_type))]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: This attribute is overridden by a `#[codama(node(...))]` attribute above
-  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:19:5
+  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:20:5
    |
-19 |     #[codama(node(public_key_type))]
+20 |     #[codama(node(public_key_type))]
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: This attribute is overridden by a `#[codama(node(...))]` attribute above
-  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:26:5
+  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:23:9
    |
-26 |     #[codama(node(public_key_type))]
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: This attribute is overridden by a `#[codama(node(...))]` attribute above
-  --> tests/codama_instruction_derive/multiple_nodes.fail.rs:34:9
-   |
-34 |         #[codama(node(public_key_type))]
+23 |         #[codama(node(public_key_type))]
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

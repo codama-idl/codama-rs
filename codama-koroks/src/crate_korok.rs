@@ -1,6 +1,6 @@
 use crate::{ItemKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_stores::CrateStore;
 
@@ -14,13 +14,13 @@ pub struct CrateKorok<'a> {
 
 impl<'a> CrateKorok<'a> {
     pub fn parse(crate_store: &'a CrateStore) -> CodamaResult<Self> {
+        let (attributes, items) = combine_errors!(
+            Attributes::parse(&crate_store.file.attrs).map_err(CodamaError::from),
+            ItemKorok::parse_all(&crate_store.file.items, &crate_store.file_modules, &mut 0,),
+        )?;
         Ok(Self {
-            attributes: Attributes::parse(&crate_store.file.attrs)?,
-            items: ItemKorok::parse_all(
-                &crate_store.file.items,
-                &crate_store.file_modules,
-                &mut 0,
-            )?,
+            attributes,
+            items,
             node: None,
             store: crate_store,
         })

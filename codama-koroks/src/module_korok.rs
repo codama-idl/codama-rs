@@ -1,6 +1,6 @@
 use crate::{ItemKorok, Korok};
 use codama_attributes::Attributes;
-use codama_errors::CodamaResult;
+use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 
@@ -18,19 +18,24 @@ impl<'a> ModuleKorok<'a> {
         file_modules: &'a [FileModuleStore],
         file_module_index: &mut usize,
     ) -> CodamaResult<Self> {
-        match &ast.content {
-            Some(content) => Ok(Self {
-                ast,
-                attributes: Attributes::parse(&ast.attrs)?,
-                items: ItemKorok::parse_all(&content.1, file_modules, file_module_index)?,
-                node: None,
-            }),
-            None => Err(syn::Error::new_spanned(
+        let Some(content) = &ast.content else {
+            return Err(syn::Error::new_spanned(
                 ast,
                 "Module has no content, it should be parsed with FileModuleKorok",
             )
-            .into()),
-        }
+            .into());
+        };
+
+        let (attributes, items) = combine_errors!(
+            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            ItemKorok::parse_all(&content.1, file_modules, file_module_index),
+        )?;
+        Ok(Self {
+            ast,
+            attributes,
+            items,
+            node: None,
+        })
     }
 }
 
