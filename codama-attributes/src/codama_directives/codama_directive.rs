@@ -18,7 +18,7 @@ impl TryFrom<&Meta> for CodamaDirective {
             "node" => Ok(CodamaDirective::Node(meta.try_into()?)),
             "number" => Ok(CodamaDirective::Number(meta.try_into()?)),
             "string" => Ok(CodamaDirective::String(meta.try_into()?)),
-            _ => Err(list.path.error("unrecognized codama directive").into()),
+            _ => Err(list.path.error("unrecognized codama directive")),
         }
     }
 }

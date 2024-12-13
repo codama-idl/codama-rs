@@ -43,21 +43,20 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         // Update the program name using the Cargo.toml package name.
         // E.g. `name = "my-program"`
         if program.name.is_empty() {
-            match get_package(&korok.store.manifest) {
-                Some(p) => program.name = p.name.clone().into(),
-                _ => (),
+            if let Some(p) = get_package(&korok.store.manifest) {
+                program.name = p.name.clone().into()
             }
         }
 
         // Update the version using the Cargo.toml package version.
         // E.g. `version = "0.1.0"`
         if program.version.is_empty() {
-            match get_package(&korok.store.manifest) {
-                Some(Package {
-                    version: Inheritable::Set(version),
-                    ..
-                }) => program.version = version.clone().into(),
-                _ => (),
+            if let Some(Package {
+                version: Inheritable::Set(version),
+                ..
+            }) = get_package(&korok.store.manifest)
+            {
+                program.version = version.clone()
             }
         }
 
@@ -66,18 +65,16 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         // [package.metadata.solana]
         // program-id = "AddressLookupTab1e1111111111111111111111111"
         if program.public_key.is_empty() {
-            match get_metadata_solana_program_id(&korok.store.manifest) {
-                Some(public_key) => program.public_key = public_key.into(),
-                _ => (),
+            if let Some(public_key) = get_metadata_solana_program_id(&korok.store.manifest) {
+                program.public_key = public_key.into()
             }
         }
 
         // Update the program ID using the `solana_program::declare_id!` macro.
         // E.g. `solana_program::declare_id!("AddressLookupTab1e1111111111111111111111111");`
         if program.public_key.is_empty() {
-            match &self.identified_public_key {
-                Some(public_key) => program.public_key = public_key.into(),
-                _ => (),
+            if let Some(public_key) = &self.identified_public_key {
+                program.public_key = public_key.into()
             }
         }
     }
@@ -87,30 +84,29 @@ impl KorokVisitor for SetProgramMetadataVisitor {
             return;
         };
 
-        match (mac.path.prefix().as_str(), mac.path.last_str().as_str()) {
-            ("" | "solana_program", "declare_id") => {
-                self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
-            }
-            _ => (),
+        if let ("" | "solana_program", "declare_id") =
+            (mac.path.prefix().as_str(), mac.path.last_str().as_str())
+        {
+            self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
         };
     }
 }
 
-fn get_package<'a>(manifest: &'a Option<Manifest>) -> Option<&'a Package> {
+fn get_package(manifest: &Option<Manifest>) -> Option<&Package> {
     match &manifest {
         Some(Manifest { package, .. }) => package.as_ref(),
         _ => None,
     }
 }
 
-fn get_metadata<'a>(manifest: &'a Option<Manifest>) -> Option<&'a Value> {
+fn get_metadata(manifest: &Option<Manifest>) -> Option<&Value> {
     match get_package(manifest) {
         Some(Package { metadata, .. }) => metadata.as_ref(),
         _ => None,
     }
 }
 
-fn get_metadata_solana_program_id<'a>(manifest: &'a Option<Manifest>) -> Option<&str> {
+fn get_metadata_solana_program_id(manifest: &Option<Manifest>) -> Option<&str> {
     match get_metadata(manifest) {
         Some(metadata) => metadata.get("solana")?.get("program-id")?.as_str(),
         _ => None,

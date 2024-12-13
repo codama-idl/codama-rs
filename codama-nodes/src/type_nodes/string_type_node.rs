@@ -7,9 +7,9 @@ pub struct StringTypeNode {
     pub encoding: BytesEncoding,
 }
 
-impl Into<crate::Node> for StringTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<StringTypeNode> for crate::Node {
+    fn from(val: StringTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

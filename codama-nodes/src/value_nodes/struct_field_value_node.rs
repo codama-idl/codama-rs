@@ -10,9 +10,9 @@ pub struct StructFieldValueNode {
     pub value: ValueNode,
 }
 
-impl Into<crate::Node> for StructFieldValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<StructFieldValueNode> for crate::Node {
+    fn from(val: StructFieldValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

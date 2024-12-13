@@ -11,7 +11,7 @@ pub enum Attribute<'a> {
     Unsupported(UnsupportedAttribute<'a>),
 }
 
-impl<'a> Attribute<'a> {
+impl Attribute<'_> {
     pub fn parse<T: TryInto<Self, Error = syn::Error>>(attr: T) -> syn::Result<Self> {
         attr.try_into()
     }

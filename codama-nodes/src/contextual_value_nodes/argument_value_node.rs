@@ -7,9 +7,9 @@ pub struct ArgumentValueNode {
     pub name: CamelCaseString,
 }
 
-impl Into<crate::Node> for ArgumentValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::ContextualValue(self.into())
+impl From<ArgumentValueNode> for crate::Node {
+    fn from(val: ArgumentValueNode) -> Self {
+        crate::Node::ContextualValue(val.into())
     }
 }
 

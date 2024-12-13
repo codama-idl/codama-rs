@@ -13,7 +13,7 @@ impl TryFrom<&Meta> for NodeDirective {
     fn try_from(meta: &Meta) -> syn::Result<Self> {
         let list = meta.as_list()?;
         if !list.path.is_strict("node") {
-            return Err(list.path.error("expected #[node(...)]").into());
+            return Err(list.path.error("expected #[node(...)]"));
         };
 
         let mut node = SetOnce::<Node>::new("node");

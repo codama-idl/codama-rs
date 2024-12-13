@@ -7,9 +7,9 @@ pub struct RemainderOptionTypeNode {
     pub item: TypeNode,
 }
 
-impl Into<crate::Node> for RemainderOptionTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<RemainderOptionTypeNode> for crate::Node {
+    fn from(val: RemainderOptionTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

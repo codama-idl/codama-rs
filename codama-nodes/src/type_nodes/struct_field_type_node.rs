@@ -17,9 +17,9 @@ pub struct StructFieldTypeNode {
     pub default_value: Option<ValueNode>,
 }
 
-impl Into<crate::Node> for StructFieldTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<StructFieldTypeNode> for crate::Node {
+    fn from(val: StructFieldTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

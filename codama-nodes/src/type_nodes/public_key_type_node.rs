@@ -4,9 +4,9 @@ use codama_nodes_derive::type_node;
 #[derive(Default)]
 pub struct PublicKeyTypeNode {}
 
-impl Into<crate::Node> for PublicKeyTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<PublicKeyTypeNode> for crate::Node {
+    fn from(val: PublicKeyTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

@@ -14,7 +14,7 @@ pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> 
 }
 
 pub fn get_node_from_item(tt: TokenStream) -> Option<Node> {
-    get_node(tt, |k| (&k.crates[0].items[0]).node().clone())
+    get_node(tt, |k| k.crates[0].items[0].node().clone())
 }
 
 pub fn get_node_from_enum_variant(tt: TokenStream) -> Option<Node> {

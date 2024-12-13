@@ -13,9 +13,9 @@ pub struct OptionTypeNode {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for OptionTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<OptionTypeNode> for crate::Node {
+    fn from(val: OptionTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 
@@ -53,7 +53,7 @@ mod tests {
         let node = OptionTypeNode::new(NumberTypeNode::le(U64));
         assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
-        assert_eq!(node.fixed, false);
+        assert!(!node.fixed);
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
         let node = OptionTypeNode::fixed(NumberTypeNode::le(U64));
         assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
-        assert_eq!(node.fixed, true);
+        assert!(node.fixed);
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod tests {
 
         assert_eq!(node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U64)));
-        assert_eq!(node.fixed, true);
+        assert!(node.fixed);
     }
 
     #[test]

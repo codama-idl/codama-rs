@@ -38,9 +38,9 @@ mod tests {
             docs: vec!["This is a test".to_string()].into(),
             value: ArgumentValueNode::new("myArgument").into(),
         };
-        assert_eq!(node.is_optional, false);
+        assert!(!node.is_optional);
         assert_eq!(node.is_signer, IsAccountSigner::Either);
-        assert_eq!(node.is_writable, true);
+        assert!(node.is_writable);
         assert_eq!(node.docs, vec!["This is a test".to_string()].into());
         assert_eq!(
             node.value,

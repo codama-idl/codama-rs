@@ -7,9 +7,9 @@ pub struct StructValueNode {
     pub fields: Vec<StructFieldValueNode>,
 }
 
-impl Into<crate::Node> for StructValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<StructValueNode> for crate::Node {
+    fn from(val: StructValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

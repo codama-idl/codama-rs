@@ -10,9 +10,9 @@ impl BytesTypeNode {
     }
 }
 
-impl Into<crate::Node> for BytesTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<BytesTypeNode> for crate::Node {
+    fn from(val: BytesTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

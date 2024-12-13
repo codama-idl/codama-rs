@@ -408,16 +408,16 @@ mod tests {
 
     #[test]
     fn is_path_or_empty_list() {
-        assert_eq!(meta! { foo }.is_path_or_empty_list(), true);
-        assert_eq!(meta! { some_node }.is_path_or_empty_list(), true);
-        assert_eq!(meta! { foo() }.is_path_or_empty_list(), true);
-        assert_eq!(meta! { some_node() }.is_path_or_empty_list(), true);
-        assert_eq!(meta! { foo = 42 }.is_path_or_empty_list(), false);
-        assert_eq!(meta! { foo = bar(1, 2, 3) }.is_path_or_empty_list(), false);
-        assert_eq!(meta! { foo(answer = 42) }.is_path_or_empty_list(), false);
-        assert_eq!(meta! { some_node(hello) }.is_path_or_empty_list(), false);
-        assert_eq!(meta! { 42 }.is_path_or_empty_list(), false);
-        assert_eq!(meta! { [verbatim] }.is_path_or_empty_list(), false);
+        assert!(meta! { foo }.is_path_or_empty_list());
+        assert!(meta! { some_node }.is_path_or_empty_list());
+        assert!(meta! { foo() }.is_path_or_empty_list());
+        assert!(meta! { some_node() }.is_path_or_empty_list());
+        assert!(!meta! { foo = 42 }.is_path_or_empty_list());
+        assert!(!meta! { foo = bar(1, 2, 3) }.is_path_or_empty_list());
+        assert!(!meta! { foo(answer = 42) }.is_path_or_empty_list());
+        assert!(!meta! { some_node(hello) }.is_path_or_empty_list());
+        assert!(!meta! { 42 }.is_path_or_empty_list());
+        assert!(!meta! { [verbatim] }.is_path_or_empty_list());
     }
 
     #[test]

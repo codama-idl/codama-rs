@@ -8,9 +8,9 @@ pub struct ConstantPdaSeedNode {
     pub value: ValueNode,
 }
 
-impl Into<crate::Node> for ConstantPdaSeedNode {
-    fn into(self) -> crate::Node {
-        crate::Node::PdaSeed(self.into())
+impl From<ConstantPdaSeedNode> for crate::Node {
+    fn from(val: ConstantPdaSeedNode) -> Self {
+        crate::Node::PdaSeed(val.into())
     }
 }
 

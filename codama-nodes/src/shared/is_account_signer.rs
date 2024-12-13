@@ -36,7 +36,7 @@ impl<'de> Deserialize<'de> for IsAccountSigner {
     {
         struct IsAccountSignerVisitor;
 
-        impl<'de> serde::de::Visitor<'de> for IsAccountSignerVisitor {
+        impl serde::de::Visitor<'_> for IsAccountSignerVisitor {
             type Value = IsAccountSigner;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

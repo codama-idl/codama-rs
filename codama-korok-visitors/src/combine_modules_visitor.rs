@@ -7,7 +7,7 @@ pub struct CombineModulesVisitor;
 
 impl CombineModulesVisitor {
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 }
 
@@ -34,7 +34,7 @@ impl KorokVisitor for CombineModulesVisitor {
 }
 
 /// Create a single RootNode from an initial node and a list of nodes to merge.
-fn combine_koroks<T: Korok>(initial_node: &Option<Node>, koroks: &Vec<T>) -> Option<Node> {
+fn combine_koroks<T: Korok>(initial_node: &Option<Node>, koroks: &[T]) -> Option<Node> {
     // Create the new RootNode to bind all items together from the exisiting node, in any.
     // - If there is already a RootNode or ProgramNode, use this as a starting point.
     // - If there is no existing node, use None and let the merging create a new one if needed.
@@ -81,9 +81,8 @@ fn get_root_nodes_to_merge(nodes: Vec<Node>) -> Vec<RootNode> {
         .collect::<Vec<_>>();
 
     // Try to get a RootNode from all the scraps.
-    match get_scraps_root_node(scraps) {
-        Some(root) => roots.push(root),
-        None => (),
+    if let Some(root) = get_scraps_root_node(scraps) {
+        roots.push(root)
     }
 
     roots
@@ -120,7 +119,7 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
         }
     }
 
-    has_scraps.then(|| root)
+    has_scraps.then_some(root)
 }
 
 /// Merge `that` RootNode into `this` RootNode.

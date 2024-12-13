@@ -8,9 +8,9 @@ pub struct ConstantValueNode {
     pub value: ValueNode,
 }
 
-impl Into<crate::Node> for ConstantValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<ConstantValueNode> for crate::Node {
+    fn from(val: ConstantValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

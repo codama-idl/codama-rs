@@ -9,9 +9,9 @@ pub struct ZeroableOptionTypeNode {
     pub zero_value: Option<ConstantValueNode>,
 }
 
-impl Into<crate::Node> for ZeroableOptionTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<ZeroableOptionTypeNode> for crate::Node {
+    fn from(val: ZeroableOptionTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

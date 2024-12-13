@@ -59,8 +59,8 @@ mod tests {
             node.value,
             InstructionByteDeltaNodeValue::Argument(ArgumentValueNode::new("myArgument"))
         );
-        assert_eq!(node.with_header, true);
-        assert_eq!(node.subtract, false);
+        assert!(node.with_header);
+        assert!(!node.subtract);
     }
 
     #[test]
@@ -70,8 +70,8 @@ mod tests {
             node.value,
             InstructionByteDeltaNodeValue::Number(NumberValueNode::new(42))
         );
-        assert_eq!(node.with_header, true);
-        assert_eq!(node.subtract, true);
+        assert!(node.with_header);
+        assert!(node.subtract);
     }
 
     #[test]

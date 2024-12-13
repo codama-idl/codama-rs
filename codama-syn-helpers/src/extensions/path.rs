@@ -43,7 +43,7 @@ pub trait PathExtension {
         let last = segments.pop().unwrap();
         let prefix = segments.join("::");
         let this_prefix = self.prefix();
-        (this_prefix == prefix || this_prefix == "") && last == self.last_str()
+        (this_prefix == prefix || this_prefix.is_empty()) && last == self.last_str()
     }
 
     /// Returns true if the path is equal to the given path including the prefix.
@@ -93,7 +93,7 @@ pub trait PathExtension {
     fn single_generic_type(&self) -> CodamaResult<&syn::Type> {
         let this = self.get_self();
         if self.generic_types().len() != 1 {
-            return Err(this.error(format!("expected a single generic type")).into());
+            return Err(this.error("expected a single generic type".to_string()).into());
         }
         self.first_generic_type()
     }
@@ -142,29 +142,29 @@ mod tests {
     #[test]
     fn is() {
         let path: Path = syn::parse_quote! { prefix::Foo<'a, T> };
-        assert_eq!(path.is("prefix::Foo"), true);
-        assert_eq!(path.is("Foo"), false);
-        assert_eq!(path.is("wrong::prefix::Foo"), false);
-        assert_eq!(path.is("Bar"), false);
+        assert!(path.is("prefix::Foo"));
+        assert!(!path.is("Foo"));
+        assert!(!path.is("wrong::prefix::Foo"));
+        assert!(!path.is("Bar"));
 
         let path: Path = syn::parse_quote! { Foo<T> };
-        assert_eq!(path.is("Foo"), true);
-        assert_eq!(path.is("prefix::Foo"), true);
-        assert_eq!(path.is("Bar"), false);
+        assert!(path.is("Foo"));
+        assert!(path.is("prefix::Foo"));
+        assert!(!path.is("Bar"));
     }
 
     #[test]
     fn is_strict() {
         let path: Path = syn::parse_quote! { prefix::Foo<'a, T> };
-        assert_eq!(path.is_strict("prefix::Foo"), true);
-        assert_eq!(path.is_strict("Foo"), false);
-        assert_eq!(path.is_strict("wrong::prefix::Foo"), false);
-        assert_eq!(path.is_strict("Bar"), false);
+        assert!(path.is_strict("prefix::Foo"));
+        assert!(!path.is_strict("Foo"));
+        assert!(!path.is_strict("wrong::prefix::Foo"));
+        assert!(!path.is_strict("Bar"));
 
         let path: Path = syn::parse_quote! { Foo<T> };
-        assert_eq!(path.is_strict("Foo"), true);
-        assert_eq!(path.is_strict("prefix::Foo"), false);
-        assert_eq!(path.is_strict("Bar"), false);
+        assert!(path.is_strict("Foo"));
+        assert!(!path.is_strict("prefix::Foo"));
+        assert!(!path.is_strict("Bar"));
     }
 
     #[test]
@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn first_generic_type_err() {
         let path: Path = syn::parse_quote! { prefix::Foo<'a> };
-        assert!(matches!(path.first_generic_type(), Err(_)));
+        assert!(path.first_generic_type().is_err());
     }
 
     #[test]
@@ -200,9 +200,9 @@ mod tests {
     #[test]
     fn single_generic_type_err() {
         let path: Path = syn::parse_quote! { Foo<'a, String, u32> };
-        assert!(matches!(path.single_generic_type(), Err(_)));
+        assert!(path.single_generic_type().is_err());
 
         let path: Path = syn::parse_quote! { Foo<'a> };
-        assert!(matches!(path.single_generic_type(), Err(_)));
+        assert!(path.single_generic_type().is_err());
     }
 }

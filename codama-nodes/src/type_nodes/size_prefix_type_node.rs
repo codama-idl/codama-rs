@@ -11,9 +11,9 @@ pub struct SizePrefixTypeNode<T: TypeNodeUnionTrait> {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for SizePrefixTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<SizePrefixTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: SizePrefixTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

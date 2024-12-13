@@ -4,9 +4,9 @@ use codama_nodes_derive::node;
 #[derive(Default)]
 pub struct RemainderCountNode {}
 
-impl Into<crate::Node> for RemainderCountNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Count(self.into())
+impl From<RemainderCountNode> for crate::Node {
+    fn from(val: RemainderCountNode) -> Self {
+        crate::Node::Count(val.into())
     }
 }
 

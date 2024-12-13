@@ -4,9 +4,9 @@ use codama_nodes_derive::node;
 #[derive(Default)]
 pub struct NoneValueNode {}
 
-impl Into<crate::Node> for NoneValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<NoneValueNode> for crate::Node {
+    fn from(val: NoneValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

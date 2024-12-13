@@ -6,7 +6,7 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
-impl<'a> Attributes<'a> {
+impl Attributes<'_> {
     pub fn parse<T: TryInto<Self, Error = syn::Error>>(attrs: T) -> syn::Result<Self> {
         attrs.try_into()
     }
@@ -101,7 +101,7 @@ impl<'a> Deref for Attributes<'a> {
     }
 }
 
-impl<'a> DerefMut for Attributes<'a> {
+impl DerefMut for Attributes<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -127,7 +127,7 @@ impl<'a> Index<usize> for Attributes<'a> {
     }
 }
 
-impl<'a> IndexMut<usize> for Attributes<'a> {
+impl IndexMut<usize> for Attributes<'_> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.0[index]
     }

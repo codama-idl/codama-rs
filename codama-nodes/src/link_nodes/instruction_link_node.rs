@@ -11,9 +11,9 @@ pub struct InstructionLinkNode {
     pub program: Option<ProgramLinkNode>,
 }
 
-impl Into<crate::Node> for InstructionLinkNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Link(self.into())
+impl From<InstructionLinkNode> for crate::Node {
+    fn from(val: InstructionLinkNode) -> Self {
+        crate::Node::Link(val.into())
     }
 }
 

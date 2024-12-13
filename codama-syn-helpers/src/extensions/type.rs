@@ -35,56 +35,35 @@ mod tests {
     #[test]
     fn as_path_ok() {
         let r#type: Type = syn::parse_quote! { std::option::Option<String> };
-        assert!(matches!(r#type.as_path(), Ok(_)));
+        assert!(r#type.as_path().is_ok());
     }
 
     #[test]
     fn as_path_err() {
         let r#type: Type = syn::parse_quote! { [u8; 32] };
-        assert!(matches!(r#type.as_path(), Err(_)));
+        assert!(r#type.as_path().is_err());
     }
 
     #[test]
     fn single_generic_type_from_path_ok() {
         let r#type: Type = syn::parse_quote! { std::option::Option<String> };
-        assert!(matches!(
-            r#type.single_generic_type_from_path("std::option::Option"),
-            Ok(_)
-        ));
+        assert!(r#type.single_generic_type_from_path("std::option::Option").is_ok());
 
         let r#type: Type = syn::parse_quote! { Option<String> };
-        assert!(matches!(
-            r#type.single_generic_type_from_path("std::option::Option"),
-            Ok(_)
-        ));
-        assert!(matches!(
-            r#type.single_generic_type_from_path("Option"),
-            Ok(_)
-        ));
+        assert!(r#type.single_generic_type_from_path("std::option::Option").is_ok());
+        assert!(r#type.single_generic_type_from_path("Option").is_ok());
     }
 
     #[test]
     fn single_generic_type_from_path_err() {
         let r#type: Type = syn::parse_quote! { [u8; 32] };
-        assert!(matches!(
-            r#type.single_generic_type_from_path("Option"),
-            Err(_)
-        ));
+        assert!(r#type.single_generic_type_from_path("Option").is_err());
 
         let r#type: Type = syn::parse_quote! { std::option::Option<String> };
-        assert!(matches!(
-            r#type.single_generic_type_from_path("Option"),
-            Err(_)
-        ));
-        assert!(matches!(
-            r#type.single_generic_type_from_path("wrong::prefix::Option"),
-            Err(_)
-        ));
+        assert!(r#type.single_generic_type_from_path("Option").is_err());
+        assert!(r#type.single_generic_type_from_path("wrong::prefix::Option").is_err());
 
         let r#type: Type = syn::parse_quote! { Option<String, u32> };
-        assert!(matches!(
-            r#type.single_generic_type_from_path("Option"),
-            Err(_)
-        ));
+        assert!(r#type.single_generic_type_from_path("Option").is_err());
     }
 }

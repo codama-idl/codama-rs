@@ -7,7 +7,7 @@ use quote::quote;
 #[test]
 fn it_gets_program_metadata_from_the_manifest() {
     let mut store = CrateStore::hydrate(quote! {}).unwrap();
-    let manifest = cargo_toml::Manifest::from_path(&get_path("full_metadata.toml")).unwrap();
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store).unwrap();
@@ -49,7 +49,7 @@ fn it_prioritises_the_program_id_from_the_manifest() {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
     })
     .unwrap();
-    let manifest = cargo_toml::Manifest::from_path(&get_path("full_metadata.toml")).unwrap();
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store).unwrap();
@@ -121,7 +121,7 @@ fn it_does_not_override_existing_values() {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
     })
     .unwrap();
-    let manifest = cargo_toml::Manifest::from_path(&get_path("full_metadata.toml")).unwrap();
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store).unwrap();

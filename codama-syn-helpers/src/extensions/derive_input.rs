@@ -37,24 +37,24 @@ mod tests {
     #[test]
     fn as_struct_ok() {
         let derive_input: DeriveInput = syn::parse_quote! { struct Foo(u32); };
-        assert!(matches!(derive_input.as_struct(), Ok(_)));
+        assert!(derive_input.as_struct().is_ok());
     }
 
     #[test]
     fn as_struct_err() {
         let derive_input: DeriveInput = syn::parse_quote! { enum Foo { Bar } };
-        assert!(matches!(derive_input.as_struct(), Err(_)));
+        assert!(derive_input.as_struct().is_err());
     }
 
     #[test]
     fn as_enum_ok() {
         let derive_input: DeriveInput = syn::parse_quote! { enum Foo { Bar } };
-        assert!(matches!(derive_input.as_enum(), Ok(_)));
+        assert!(derive_input.as_enum().is_ok());
     }
 
     #[test]
     fn as_enum_err() {
         let derive_input: DeriveInput = syn::parse_quote! { struct Foo(u32); };
-        assert!(matches!(derive_input.as_enum(), Err(_)));
+        assert!(derive_input.as_enum().is_err());
     }
 }

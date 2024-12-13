@@ -13,7 +13,7 @@ impl TryFrom<&Meta> for NumberDirective {
     fn try_from(meta: &Meta) -> syn::Result<Self> {
         let list = meta.as_list()?;
         if !list.path.is_strict("number") {
-            return Err(list.path.error("expected #[number(...)]").into());
+            return Err(list.path.error("expected #[number(...)]"));
         };
 
         // TODO

@@ -6,9 +6,9 @@ pub struct BooleanValueNode {
     pub boolean: bool,
 }
 
-impl Into<crate::Node> for BooleanValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<BooleanValueNode> for crate::Node {
+    fn from(val: BooleanValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 
@@ -24,8 +24,8 @@ mod tests {
 
     #[test]
     fn new() {
-        assert_eq!(BooleanValueNode::new(true).boolean, true);
-        assert_eq!(BooleanValueNode::new(false).boolean, false);
+        assert!(BooleanValueNode::new(true).boolean);
+        assert!(!BooleanValueNode::new(false).boolean);
     }
 
     #[test]

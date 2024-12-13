@@ -18,7 +18,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for CodamaAttribute<'a> {
         // Check if the attribute is a #[codama(...)] attribute.
         let list = attr.meta.require_list()?;
         if !list.path.is_strict("codama") {
-            return Err(list.path.error("expected #[codama(...)]").into());
+            return Err(list.path.error("expected #[codama(...)]"));
         };
 
         let mut directive = SetOnce::<CodamaDirective>::new("codama");

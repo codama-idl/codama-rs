@@ -11,9 +11,9 @@ pub struct InstructionAccountLinkNode {
     pub instruction: Option<InstructionLinkNode>,
 }
 
-impl Into<crate::Node> for InstructionAccountLinkNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Link(self.into())
+impl From<InstructionAccountLinkNode> for crate::Node {
+    fn from(val: InstructionAccountLinkNode) -> Self {
+        crate::Node::Link(val.into())
     }
 }
 

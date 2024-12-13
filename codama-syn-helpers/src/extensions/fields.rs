@@ -29,12 +29,12 @@ mod tests {
     #[test]
     fn single_unnamed_field_ok() {
         let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
-        assert!(matches!(r#struct.fields.single_unnamed_field(), Ok(_)));
+        assert!(r#struct.fields.single_unnamed_field().is_ok());
     }
 
     #[test]
     fn single_unnamed_field_err() {
         let r#struct: syn::ItemStruct = syn::parse_quote! { struct Foo(u32, u64); };
-        assert!(matches!(r#struct.fields.single_unnamed_field(), Err(_)));
+        assert!(r#struct.fields.single_unnamed_field().is_err());
     }
 }

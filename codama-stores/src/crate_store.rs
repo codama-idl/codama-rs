@@ -84,10 +84,7 @@ pub fn get_closest_manifest_path(path: &Path) -> CodamaResult<PathBuf> {
 fn get_product_path(manifest: &Manifest) -> CodamaResult<PathBuf> {
     let product = get_product_candidates(manifest)
         .iter()
-        .filter_map(|product| match product.path {
-            Some(ref path) => Some(path),
-            None => None,
-        })
+        .filter_map(|product| product.path.as_ref())
         .next();
 
     match product {
