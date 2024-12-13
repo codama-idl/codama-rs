@@ -1,8 +1,8 @@
-use crate::{utils::SetOnce, NodeAttributeParse};
+use crate::{utils::SetOnce, FromMeta};
 use codama_nodes::{Endian, Node, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl NodeAttributeParse for NumberTypeNode {
+impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Node> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);

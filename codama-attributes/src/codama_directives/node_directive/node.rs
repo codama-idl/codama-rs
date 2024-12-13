@@ -1,9 +1,9 @@
-use super::NodeAttributeParse;
+use super::FromMeta;
 use codama_nodes::*;
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl NodeAttributeParse for Node {
-    fn from_meta(meta: &Meta) -> syn::Result<Node> {
+impl FromMeta for Node {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let path = meta.path()?;
         match path.to_string().as_str() {
             // Type nodes.
