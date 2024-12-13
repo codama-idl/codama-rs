@@ -12,7 +12,7 @@ impl FileModuleStore {
     pub fn load_all(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
         find_nested_file_modules(items)
             .iter()
-            .map(|&item| FileModuleStore::load(&path, item))
+            .map(|&item| FileModuleStore::load(path, item))
             .collect_and_combine_errors()
     }
 
@@ -33,7 +33,7 @@ impl FileModuleStore {
         let path = candidates
             .into_iter()
             .find(|p| p.exists())
-            .ok_or_else(|| syn::Error::new_spanned(&item, "could not read file"))?;
+            .ok_or_else(|| syn::Error::new_spanned(item, "could not read file"))?;
         let content = std::fs::read_to_string(&path)?;
         let file = syn::parse_file(&content)?;
         let modules = Self::load_all(&path, &file.items)?;
@@ -46,7 +46,7 @@ impl FileModuleStore {
     }
 }
 
-fn find_nested_file_modules(items: &Vec<syn::Item>) -> Vec<&syn::ItemMod> {
+fn find_nested_file_modules(items: &[syn::Item]) -> Vec<&syn::ItemMod> {
     items
         .iter()
         .filter_map(|item| match item {

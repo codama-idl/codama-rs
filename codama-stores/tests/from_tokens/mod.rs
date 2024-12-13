@@ -30,7 +30,7 @@ fn crate_from_tokens() {
 
     let store = CrateStore::hydrate(tt).unwrap();
     assert!(matches!(store.file, syn::File { .. }));
-    assert!(matches!(store.manifest, None));
+    assert!(store.manifest.is_none());
     assert_eq!(store.file_modules.len(), 0);
     assert_eq!(store.path.to_str(), Some(""));
 }

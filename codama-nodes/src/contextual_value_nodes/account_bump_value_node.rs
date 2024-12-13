@@ -7,9 +7,9 @@ pub struct AccountBumpValueNode {
     pub name: CamelCaseString,
 }
 
-impl Into<crate::Node> for AccountBumpValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::ContextualValue(self.into())
+impl From<AccountBumpValueNode> for crate::Node {
+    fn from(val: AccountBumpValueNode) -> Self {
+        crate::Node::ContextualValue(val.into())
     }
 }
 

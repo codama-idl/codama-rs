@@ -4,9 +4,9 @@ use codama_nodes_derive::node;
 #[derive(Default)]
 pub struct IdentityValueNode {}
 
-impl Into<crate::Node> for IdentityValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::ContextualValue(self.into())
+impl From<IdentityValueNode> for crate::Node {
+    fn from(val: IdentityValueNode) -> Self {
+        crate::Node::ContextualValue(val.into())
     }
 }
 

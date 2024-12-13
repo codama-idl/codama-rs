@@ -8,9 +8,9 @@ pub struct PdaValueNode {
     pub seeds: Vec<PdaSeedValueNode>,
 }
 
-impl Into<crate::Node> for PdaValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::ContextualValue(self.into())
+impl From<PdaValueNode> for crate::Node {
+    fn from(val: PdaValueNode) -> Self {
+        crate::Node::ContextualValue(val.into())
     }
 }
 

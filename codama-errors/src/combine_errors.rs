@@ -1,20 +1,19 @@
 use crate::CodamaError;
 
 pub trait CombineErrors {
-    fn combine(&mut self, other: Self) -> ();
+    fn combine(&mut self, other: Self);
 }
 
 impl CombineErrors for CodamaError {
-    fn combine(&mut self, other: Self) -> () {
-        match (self, other) {
-            (CodamaError::Compilation(this), CodamaError::Compilation(that)) => this.combine(that),
-            _ => (),
+    fn combine(&mut self, other: Self) {
+        if let (CodamaError::Compilation(this), CodamaError::Compilation(that)) = (self, other) {
+            this.combine(that)
         }
     }
 }
 
 impl CombineErrors for syn::Error {
-    fn combine(&mut self, other: Self) -> () {
+    fn combine(&mut self, other: Self) {
         syn::Error::combine(self, other)
     }
 }

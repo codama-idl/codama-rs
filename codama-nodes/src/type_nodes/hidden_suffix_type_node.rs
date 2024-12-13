@@ -9,9 +9,9 @@ pub struct HiddenSuffixTypeNode<T: TypeNodeUnionTrait> {
     pub suffix: Vec<ConstantValueNode>,
 }
 
-impl Into<crate::Node> for HiddenSuffixTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<HiddenSuffixTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: HiddenSuffixTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

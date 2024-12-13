@@ -16,9 +16,9 @@ pub struct ResolverValueNode {
     pub depends_on: Option<Vec<ResolverDependency>>,
 }
 
-impl Into<crate::Node> for ResolverValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::ContextualValue(self.into())
+impl From<ResolverValueNode> for crate::Node {
+    fn from(val: ResolverValueNode) -> Self {
+        crate::Node::ContextualValue(val.into())
     }
 }
 

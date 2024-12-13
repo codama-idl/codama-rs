@@ -130,9 +130,9 @@ mod tests {
             |input: syn::parse::ParseStream| -> syn::Result<bool> { Ok(input.is_end_of_arg()) }
         );
 
-        assert_eq!(test("").unwrap(), true);
-        assert_eq!(test(", bar").unwrap(), true);
-        assert_eq!(test("foo").unwrap(), false);
+        assert!(test("").unwrap());
+        assert!(test(", bar").unwrap());
+        assert!(!test("foo").unwrap());
     }
 
     #[test]
@@ -142,11 +142,11 @@ mod tests {
             |input: syn::parse::ParseStream| -> syn::Result<bool> { Ok(input.is_empty_group()) }
         );
 
-        assert_eq!(test("()").unwrap(), true);
-        assert_eq!(test("[]").unwrap(), true);
-        assert_eq!(test("{}").unwrap(), true);
-        assert_eq!(test("").unwrap(), false);
-        assert_eq!(test("foo").unwrap(), false);
-        assert_eq!(test("(foo)").unwrap(), false);
+        assert!(test("()").unwrap());
+        assert!(test("[]").unwrap());
+        assert!(test("{}").unwrap());
+        assert!(!test("").unwrap());
+        assert!(!test("foo").unwrap());
+        assert!(!test("(foo)").unwrap());
     }
 }

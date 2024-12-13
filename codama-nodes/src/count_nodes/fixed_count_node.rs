@@ -6,9 +6,9 @@ pub struct FixedCountNode {
     pub value: usize,
 }
 
-impl Into<crate::Node> for FixedCountNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Count(self.into())
+impl From<FixedCountNode> for crate::Node {
+    fn from(val: FixedCountNode) -> Self {
+        crate::Node::Count(val.into())
     }
 }
 

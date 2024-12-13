@@ -24,7 +24,7 @@ impl PdaNode {
             name: name.into(),
             docs: Docs::default(),
             program_id: None,
-            seeds: seeds.into(),
+            seeds,
         }
     }
 }

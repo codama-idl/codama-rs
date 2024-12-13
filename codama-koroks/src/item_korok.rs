@@ -22,7 +22,7 @@ impl<'a> ItemKorok<'a> {
     ) -> CodamaResult<Self> {
         match item {
             syn::Item::Mod(ast) if ast.content.is_none() => {
-                match file_modules.iter().nth(*file_module_index) {
+                match file_modules.get(*file_module_index) {
                     Some(module) => {
                         file_module_index.add_assign(1);
                         Ok(ItemKorok::FileModule(FileModuleKorok::parse(ast, module)?))
@@ -42,7 +42,7 @@ impl<'a> ItemKorok<'a> {
     }
 
     pub fn parse_all(
-        items: &'a Vec<syn::Item>,
+        items: &'a [syn::Item],
         file_modules: &'a [FileModuleStore],
         file_module_index: &mut usize,
     ) -> CodamaResult<Vec<Self>> {

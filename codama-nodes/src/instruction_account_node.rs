@@ -45,9 +45,9 @@ mod tests {
     fn new() {
         let node = InstructionAccountNode::new("my_account", false, true);
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
-        assert_eq!(node.is_writable, false);
+        assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsAccountSigner::True);
-        assert_eq!(node.is_optional, false);
+        assert!(!node.is_optional);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.default_value, None);
     }
@@ -63,9 +63,9 @@ mod tests {
             default_value: Some(AccountValueNode::new("myOtherAccount").into()),
         };
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
-        assert_eq!(node.is_writable, false);
+        assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsAccountSigner::Either);
-        assert_eq!(node.is_optional, true);
+        assert!(node.is_optional);
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(
             node.default_value,

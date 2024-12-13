@@ -7,9 +7,9 @@ pub struct PrefixedCountNode {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for PrefixedCountNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Count(self.into())
+impl From<PrefixedCountNode> for crate::Node {
+    fn from(val: PrefixedCountNode) -> Self {
+        crate::Node::Count(val.into())
     }
 }
 

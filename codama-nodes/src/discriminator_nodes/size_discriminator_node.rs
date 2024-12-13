@@ -6,9 +6,9 @@ pub struct SizeDiscriminatorNode {
     pub size: usize,
 }
 
-impl Into<crate::Node> for SizeDiscriminatorNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Discriminator(self.into())
+impl From<SizeDiscriminatorNode> for crate::Node {
+    fn from(val: SizeDiscriminatorNode) -> Self {
+        crate::Node::Discriminator(val.into())
     }
 }
 

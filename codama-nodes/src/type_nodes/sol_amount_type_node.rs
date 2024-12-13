@@ -7,9 +7,9 @@ pub struct SolAmountTypeNode {
     pub number: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for SolAmountTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<SolAmountTypeNode> for crate::Node {
+    fn from(val: SolAmountTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

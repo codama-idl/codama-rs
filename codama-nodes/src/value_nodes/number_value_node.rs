@@ -8,9 +8,9 @@ pub struct NumberValueNode {
     pub number: Number,
 }
 
-impl Into<crate::Node> for NumberValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<NumberValueNode> for crate::Node {
+    fn from(val: NumberValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 
@@ -87,9 +87,9 @@ impl From<JsonNumber> for Number {
     }
 }
 
-impl Into<JsonNumber> for Number {
-    fn into(self) -> JsonNumber {
-        match self {
+impl From<Number> for JsonNumber {
+    fn from(val: Number) -> Self {
+        match val {
             Number::UnsignedInteger(number) => JsonNumber::from(number),
             Number::SignedInteger(number) => JsonNumber::from(number),
             Number::Float(number) => JsonNumber::from_f64(number).unwrap(),

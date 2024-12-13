@@ -15,9 +15,9 @@ pub struct EnumValueNode {
     pub value: Option<EnumVariantData>,
 }
 
-impl Into<crate::Node> for EnumValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<EnumValueNode> for crate::Node {
+    fn from(val: EnumValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

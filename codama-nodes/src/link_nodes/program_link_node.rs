@@ -7,9 +7,9 @@ pub struct ProgramLinkNode {
     pub name: CamelCaseString,
 }
 
-impl Into<crate::Node> for ProgramLinkNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Link(self.into())
+impl From<ProgramLinkNode> for crate::Node {
+    fn from(val: ProgramLinkNode) -> Self {
+        crate::Node::Link(val.into())
     }
 }
 

@@ -7,9 +7,9 @@ pub struct SomeValueNode {
     pub value: ValueNode,
 }
 
-impl Into<crate::Node> for SomeValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<SomeValueNode> for crate::Node {
+    fn from(val: SomeValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

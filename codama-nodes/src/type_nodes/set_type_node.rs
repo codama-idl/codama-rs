@@ -11,9 +11,9 @@ pub struct SetTypeNode {
     pub count: CountNode,
 }
 
-impl Into<crate::Node> for SetTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<SetTypeNode> for crate::Node {
+    fn from(val: SetTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

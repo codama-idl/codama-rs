@@ -8,9 +8,9 @@ pub struct MapEntryValueNode {
     pub value: ValueNode,
 }
 
-impl Into<crate::Node> for MapEntryValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<MapEntryValueNode> for crate::Node {
+    fn from(val: MapEntryValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

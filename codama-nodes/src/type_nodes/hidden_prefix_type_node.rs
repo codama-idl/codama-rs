@@ -9,9 +9,9 @@ pub struct HiddenPrefixTypeNode<T: TypeNodeUnionTrait> {
     pub prefix: Vec<ConstantValueNode>,
 }
 
-impl Into<crate::Node> for HiddenPrefixTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<HiddenPrefixTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: HiddenPrefixTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

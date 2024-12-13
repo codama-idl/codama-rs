@@ -13,9 +13,9 @@ pub struct VariablePdaSeedNode {
     pub r#type: TypeNode,
 }
 
-impl Into<crate::Node> for VariablePdaSeedNode {
-    fn into(self) -> crate::Node {
-        crate::Node::PdaSeed(self.into())
+impl From<VariablePdaSeedNode> for crate::Node {
+    fn from(val: VariablePdaSeedNode) -> Self {
+        crate::Node::PdaSeed(val.into())
     }
 }
 

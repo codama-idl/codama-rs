@@ -8,9 +8,9 @@ pub struct EnumTypeNode {
     pub size: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for EnumTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<EnumTypeNode> for crate::Node {
+    fn from(val: EnumTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

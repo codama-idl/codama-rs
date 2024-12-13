@@ -10,9 +10,9 @@ pub struct NumberTypeNode {
     pub endian: Endian,
 }
 
-impl Into<crate::Node> for NumberTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<NumberTypeNode> for crate::Node {
+    fn from(val: NumberTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

@@ -6,9 +6,9 @@ pub struct StringValueNode {
     pub string: String,
 }
 
-impl Into<crate::Node> for StringValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<StringValueNode> for crate::Node {
+    fn from(val: StringValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

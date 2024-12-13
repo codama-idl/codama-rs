@@ -7,9 +7,9 @@ pub struct TupleValueNode {
     pub items: Vec<ValueNode>,
 }
 
-impl Into<crate::Node> for TupleValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<TupleValueNode> for crate::Node {
+    fn from(val: TupleValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

@@ -15,7 +15,7 @@ pub struct FileModuleKorok<'a> {
 
 impl<'a> FileModuleKorok<'a> {
     pub fn parse(ast: &'a syn::ItemMod, store: &'a FileModuleStore) -> CodamaResult<Self> {
-        if let Some(_) = ast.content {
+        if ast.content.is_some() {
             return Err(syn::Error::new_spanned(
                 ast,
                 "Module has content, it should be parsed with ModuleKorok",

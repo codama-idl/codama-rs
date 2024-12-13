@@ -15,7 +15,7 @@ impl<'a> FilterItemsVisitor<'a> {
     }
 }
 
-impl<'a> KorokVisitor for FilterItemsVisitor<'a> {
+impl KorokVisitor for FilterItemsVisitor<'_> {
     fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) {
         if (self.filter)(korok) {
             self.visitor.visit_item(korok);

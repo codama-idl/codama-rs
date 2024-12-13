@@ -8,9 +8,9 @@ pub struct StructTypeNode {
     pub fields: Vec<StructFieldTypeNode>,
 }
 
-impl Into<crate::Node> for StructTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<StructTypeNode> for crate::Node {
+    fn from(val: StructTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

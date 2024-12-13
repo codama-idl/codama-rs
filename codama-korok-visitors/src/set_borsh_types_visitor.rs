@@ -11,7 +11,7 @@ pub struct SetBorshTypesVisitor;
 
 impl SetBorshTypesVisitor {
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 }
 
@@ -20,10 +20,7 @@ impl KorokVisitor for SetBorshTypesVisitor {
         if korok.node.is_some() {
             return;
         }
-        korok.node = match self.get_type_node(&korok.ast) {
-            Some(node) => Some(node.into()),
-            None => None,
-        };
+        korok.node = self.get_type_node(korok.ast).map(|node| node.into());
     }
 }
 
@@ -67,27 +64,17 @@ impl SetBorshTypesVisitor {
                         SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
                             .into(),
                     ),
-                    ("" | "std::vec", "Vec", [t]) => match self.get_type_node(t) {
-                        Some(item) => Some(
-                            ArrayTypeNode::new(
+                    ("" | "std::vec", "Vec", [t]) => self.get_type_node(t).map(|item| ArrayTypeNode::new(
                                 item,
                                 PrefixedCountNode::new(NumberTypeNode::le(U32)),
                             )
-                            .into(),
-                        ),
-                        None => None,
-                    },
+                            .into()),
                     ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
-                        match self.get_type_node(t) {
-                            Some(item) => Some(
-                                SetTypeNode::new(
+                        self.get_type_node(t).map(|item| SetTypeNode::new(
                                     item,
                                     PrefixedCountNode::new(NumberTypeNode::le(U32)),
                                 )
-                                .into(),
-                            ),
-                            None => None,
-                        }
+                                .into())
                     }
                     ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
                         match (self.get_type_node(k), self.get_type_node(v)) {
@@ -109,10 +96,7 @@ impl SetBorshTypesVisitor {
                 let Ok(size) = len.as_literal_integer::<usize>() else {
                     return None;
                 };
-                match self.get_type_node(elem) {
-                    Some(item) => Some(ArrayTypeNode::new(item, FixedCountNode::new(size)).into()),
-                    None => None,
-                }
+                self.get_type_node(elem).map(|item| ArrayTypeNode::new(item, FixedCountNode::new(size)).into())
             }
             _ => None,
         }

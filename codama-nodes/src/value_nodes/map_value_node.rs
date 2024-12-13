@@ -7,9 +7,9 @@ pub struct MapValueNode {
     pub entries: Vec<MapEntryValueNode>,
 }
 
-impl Into<crate::Node> for MapValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<MapValueNode> for crate::Node {
+    fn from(val: MapValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

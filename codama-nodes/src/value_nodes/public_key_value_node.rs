@@ -9,9 +9,9 @@ pub struct PublicKeyValueNode {
     pub identifier: Option<CamelCaseString>,
 }
 
-impl Into<crate::Node> for PublicKeyValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<PublicKeyValueNode> for crate::Node {
+    fn from(val: PublicKeyValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 

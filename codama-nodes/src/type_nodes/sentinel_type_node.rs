@@ -9,9 +9,9 @@ pub struct SentinelTypeNode<T: TypeNodeUnionTrait> {
     pub sentinel: ConstantValueNode,
 }
 
-impl Into<crate::Node> for SentinelTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<SentinelTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: SentinelTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

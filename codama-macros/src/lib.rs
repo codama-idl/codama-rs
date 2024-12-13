@@ -29,5 +29,5 @@ pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
 fn codama_attribute(attr: TokenStream2, input: TokenStream2) -> CodamaResult<TokenStream2> {
     let attr: syn::Attribute = syn::parse_quote! { #[codama(#attr)] };
     CodamaAttribute::try_from(&attr)?;
-    Ok(input.into())
+    Ok(input)
 }

@@ -8,9 +8,9 @@ pub struct FieldDiscriminatorNode {
     pub offset: usize,
 }
 
-impl Into<crate::Node> for FieldDiscriminatorNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Discriminator(self.into())
+impl From<FieldDiscriminatorNode> for crate::Node {
+    fn from(val: FieldDiscriminatorNode) -> Self {
+        crate::Node::Discriminator(val.into())
     }
 }
 

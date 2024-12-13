@@ -13,9 +13,9 @@ pub struct PreOffsetTypeNode<T: TypeNodeUnionTrait> {
     pub r#type: T,
 }
 
-impl Into<crate::Node> for PreOffsetTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<PreOffsetTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: PreOffsetTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

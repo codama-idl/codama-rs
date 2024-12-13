@@ -14,18 +14,9 @@ fn it_identifies_set_types() {
             .into()
         ))
     );
-    assert!(matches!(
-        get_node_from_type(quote! { std::collections::HashSet<u64> }),
-        Some(_)
-    ));
-    assert!(matches!(
-        get_node_from_type(quote! { BTreeSet<u64> }),
-        Some(_)
-    ));
-    assert!(matches!(
-        get_node_from_type(quote! { std::collections::BTreeSet<u64> }),
-        Some(_)
-    ));
+    assert!(get_node_from_type(quote! { std::collections::HashSet<u64> }).is_some());
+    assert!(get_node_from_type(quote! { BTreeSet<u64> }).is_some());
+    assert!(get_node_from_type(quote! { std::collections::BTreeSet<u64> }).is_some());
     assert_eq!(
         get_node_from_type(quote! { some::wrong::HashSet<u64> }),
         None

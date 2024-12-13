@@ -12,9 +12,9 @@ pub struct AmountTypeNode {
     pub number: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for AmountTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<AmountTypeNode> for crate::Node {
+    fn from(val: AmountTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

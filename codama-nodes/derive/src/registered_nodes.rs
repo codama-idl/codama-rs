@@ -12,11 +12,10 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> CodamaResult<
 
     // Remove the "Registered" prefix from the enum variants.
     standalone_enum.ident = syn::Ident::new(
-        &standalone_enum
+        standalone_enum
             .ident
             .to_string()
-            .trim_start_matches("Registered")
-            .to_string(),
+            .trim_start_matches("Registered"),
         standalone_enum.ident.span(),
     );
     let standalone_enum_name = &standalone_enum.ident;

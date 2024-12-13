@@ -7,9 +7,9 @@ pub struct BooleanTypeNode {
     pub size: NestedTypeNode<NumberTypeNode>,
 }
 
-impl Into<crate::Node> for BooleanTypeNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<BooleanTypeNode> for crate::Node {
+    fn from(val: BooleanTypeNode) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

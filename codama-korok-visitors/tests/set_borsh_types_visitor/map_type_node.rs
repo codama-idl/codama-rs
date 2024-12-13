@@ -17,18 +17,9 @@ fn it_identifies_map_types() {
             .into()
         ))
     );
-    assert!(matches!(
-        get_node_from_type(quote! { std::collections::HashMap<u64, bool> }),
-        Some(_)
-    ));
-    assert!(matches!(
-        get_node_from_type(quote! { BTreeMap<u64, bool> }),
-        Some(_)
-    ));
-    assert!(matches!(
-        get_node_from_type(quote! { std::collections::BTreeMap<u64, bool> }),
-        Some(_)
-    ));
+    assert!(get_node_from_type(quote! { std::collections::HashMap<u64, bool> }).is_some());
+    assert!(get_node_from_type(quote! { BTreeMap<u64, bool> }).is_some());
+    assert!(get_node_from_type(quote! { std::collections::BTreeMap<u64, bool> }).is_some());
     assert_eq!(
         get_node_from_type(quote! { some::wrong::HashMap<u64, bool> }),
         None

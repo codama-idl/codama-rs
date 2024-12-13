@@ -11,9 +11,9 @@ pub struct FixedSizeTypeNode<T: TypeNodeUnionTrait> {
     pub r#type: T,
 }
 
-impl Into<crate::Node> for FixedSizeTypeNode<crate::TypeNode> {
-    fn into(self) -> crate::Node {
-        crate::Node::Type(self.into())
+impl From<FixedSizeTypeNode<crate::TypeNode>> for crate::Node {
+    fn from(val: FixedSizeTypeNode<crate::TypeNode>) -> Self {
+        crate::Node::Type(val.into())
     }
 }
 

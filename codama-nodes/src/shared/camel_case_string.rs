@@ -13,9 +13,9 @@ impl CamelCaseString {
     }
 }
 
-impl Into<String> for CamelCaseString {
-    fn into(self) -> String {
-        self.0
+impl From<CamelCaseString> for String {
+    fn from(val: CamelCaseString) -> Self {
+        val.0
     }
 }
 

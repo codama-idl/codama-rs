@@ -59,7 +59,7 @@ mod tests {
     fn parse_comma_args_err() {
         let attribute: Attribute = parse_quote! { #[foo] };
         let args = attribute.parse_comma_args::<syn::Path>();
-        assert!(matches!(args, Err(_)));
+        assert!(args.is_err());
     }
 
     #[test]

@@ -8,9 +8,9 @@ pub struct BytesValueNode {
     pub encoding: BytesEncoding,
 }
 
-impl Into<crate::Node> for BytesValueNode {
-    fn into(self) -> crate::Node {
-        crate::Node::Value(self.into())
+impl From<BytesValueNode> for crate::Node {
+    fn from(val: BytesValueNode) -> Self {
+        crate::Node::Value(val.into())
     }
 }
 
