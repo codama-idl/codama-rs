@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+codama-koroks = { path = "../codama-koroks" }
 codama-korok-visitors = { path = "../codama-korok-visitors" }

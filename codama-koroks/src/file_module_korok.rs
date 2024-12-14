@@ -45,4 +45,8 @@ impl KorokTrait for FileModuleKorok<'_> {
     fn set_node(&mut self, node: Option<Node>) {
         self.node = node;
     }
+
+    fn attributes(&self) -> Option<&Attributes> {
+        Some(&self.attributes)
+    }
 }

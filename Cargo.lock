@@ -55,6 +55,7 @@ name = "codama-korok-plugins"
 version = "0.1.0"
 dependencies = [
  "codama-korok-visitors",
+ "codama-koroks",
 ]
 
 [[package]]

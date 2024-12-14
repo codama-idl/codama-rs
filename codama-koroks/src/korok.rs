@@ -1,3 +1,4 @@
+use codama_attributes::Attributes;
 use codama_nodes::Node;
 use derive_more::derive::From;
 use std::fmt::Debug;
@@ -5,6 +6,9 @@ use std::fmt::Debug;
 pub trait KorokTrait: Debug {
     fn node(&self) -> &Option<Node>;
     fn set_node(&mut self, node: Option<Node>);
+    fn attributes(&self) -> Option<&Attributes> {
+        None
+    }
 }
 
 #[derive(From, Debug, PartialEq)]
@@ -71,6 +75,23 @@ impl KorokTrait for KorokMut<'_, '_> {
             Self::Struct(k) => k.set_node(node),
             Self::Type(k) => k.set_node(node),
             Self::UnsupportedItem(k) => k.set_node(node),
+        }
+    }
+
+    fn attributes(&self) -> Option<&Attributes> {
+        match self {
+            Self::Crate(k) => k.attributes(),
+            Self::Enum(k) => k.attributes(),
+            Self::EnumVariant(k) => k.attributes(),
+            Self::Field(k) => k.attributes(),
+            Self::Fields(k) => k.attributes(),
+            Self::FileModule(k) => k.attributes(),
+            Self::Item(k) => k.attributes(),
+            Self::Module(k) => k.attributes(),
+            Self::Root(k) => k.attributes(),
+            Self::Struct(k) => k.attributes(),
+            Self::Type(k) => k.attributes(),
+            Self::UnsupportedItem(k) => k.attributes(),
         }
     }
 }

@@ -55,18 +55,6 @@ impl<'a> ItemKorok<'a> {
     }
 }
 
-impl<'a> ItemKorok<'a> {
-    pub fn attributes(&self) -> &Attributes<'a> {
-        match self {
-            ItemKorok::Struct(k) => &k.attributes,
-            ItemKorok::Enum(k) => &k.attributes,
-            ItemKorok::FileModule(k) => &k.attributes,
-            ItemKorok::Module(k) => &k.attributes,
-            ItemKorok::Unsupported(k) => &k.attributes,
-        }
-    }
-}
-
 impl KorokTrait for ItemKorok<'_> {
     fn node(&self) -> &Option<Node> {
         match self {
@@ -85,6 +73,16 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::FileModule(k) => k.set_node(node),
             ItemKorok::Module(k) => k.set_node(node),
             ItemKorok::Unsupported(k) => k.set_node(node),
+        }
+    }
+
+    fn attributes(&self) -> Option<&Attributes> {
+        match self {
+            ItemKorok::Struct(k) => k.attributes(),
+            ItemKorok::Enum(k) => k.attributes(),
+            ItemKorok::FileModule(k) => k.attributes(),
+            ItemKorok::Module(k) => k.attributes(),
+            ItemKorok::Unsupported(k) => k.attributes(),
         }
     }
 }
