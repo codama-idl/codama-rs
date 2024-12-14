@@ -1,16 +1,10 @@
-use crate::{utils::SetOnce, ApplyToNode, FromMeta};
+use crate::{utils::SetOnce, FromMeta};
 use codama_nodes::Node;
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct NodeDirective {
     pub node: Node,
-}
-
-impl ApplyToNode for NodeDirective {
-    fn apply(&self, _: Option<Node>) -> Option<Node> {
-        Some(self.node.clone())
-    }
 }
 
 impl TryFrom<&Meta> for NodeDirective {

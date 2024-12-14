@@ -1,4 +1,3 @@
-use crate::ApplyToNode;
 use codama_nodes::BytesEncoding;
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -6,8 +5,6 @@ use codama_syn_helpers::{extensions::*, Meta};
 pub struct StringDirective {
     pub encoding: BytesEncoding,
 }
-
-impl ApplyToNode for StringDirective {}
 
 impl TryFrom<&Meta> for StringDirective {
     type Error = syn::Error;

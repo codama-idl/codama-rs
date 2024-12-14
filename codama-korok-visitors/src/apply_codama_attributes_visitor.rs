@@ -1,6 +1,7 @@
 use crate::KorokVisitor;
-use codama_attributes::{ApplyToNode, Attribute};
+use codama_attributes::{Attribute, CodamaAttribute, CodamaDirective, NodeDirective};
 use codama_koroks::{KorokMut, KorokTrait};
+use codama_nodes::Node;
 
 #[derive(Default)]
 pub struct ApplyCodamaAttributesVisitor;
@@ -71,8 +72,27 @@ fn apply_codama_attributes(mut korok: KorokMut) {
             _ => None,
         })
         .fold(korok.node().clone(), |current_node, attribute| {
-            attribute.apply(current_node)
+            apply_codama_attribute(current_node, attribute, &korok)
         });
 
     korok.set_node(node);
+}
+
+fn apply_codama_attribute(
+    node: Option<Node>,
+    attribute: &CodamaAttribute,
+    korok: &KorokMut,
+) -> Option<Node> {
+    match &attribute.directive {
+        CodamaDirective::Node(directive) => apply_node_directive(directive, korok),
+        _ => node,
+    }
+}
+
+fn apply_node_directive(directive: &NodeDirective, korok: &KorokMut) -> Option<Node> {
+    let node = directive.node.clone();
+    match korok {
+        KorokMut::Field(_) => Some(node), // TODO: Wrap in StructFieldTypeNode if necessary.
+        _ => Some(node),
+    }
 }

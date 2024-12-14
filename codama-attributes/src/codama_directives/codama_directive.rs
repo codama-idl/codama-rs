@@ -1,5 +1,4 @@
-use crate::{ApplyToNode, NodeDirective, NumberDirective, StringDirective};
-use codama_nodes::Node;
+use crate::{NodeDirective, NumberDirective, StringDirective};
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
 
@@ -8,16 +7,6 @@ pub enum CodamaDirective {
     Node(NodeDirective),
     Number(NumberDirective),
     String(StringDirective),
-}
-
-impl ApplyToNode for CodamaDirective {
-    fn apply(&self, node: Option<Node>) -> Option<Node> {
-        match &self {
-            Self::Node(d) => d.apply(node),
-            Self::Number(d) => d.apply(node),
-            Self::String(d) => d.apply(node),
-        }
-    }
 }
 
 impl TryFrom<&Meta> for CodamaDirective {
