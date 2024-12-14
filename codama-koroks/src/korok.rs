@@ -7,54 +7,70 @@ pub trait KorokTrait: Debug {
     fn set_node(&mut self, node: Option<Node>);
 }
 
-#[derive(From, Debug)]
-pub enum Korok<'a> {
-    Crate(crate::CrateKorok<'a>),
-    Enum(crate::EnumKorok<'a>),
-    EnumVariant(crate::EnumVariantKorok<'a>),
-    Field(crate::FieldKorok<'a>),
-    Fields(crate::FieldsKorok<'a>),
-    FileModule(crate::FileModuleKorok<'a>),
-    Item(crate::ItemKorok<'a>),
-    Module(crate::ModuleKorok<'a>),
-    Root(crate::RootKorok<'a>),
-    Struct(crate::StructKorok<'a>),
-    Type(crate::TypeKorok<'a>),
-    UnsupportedItem(crate::UnsupportedItemKorok<'a>),
+#[derive(From, Debug, PartialEq)]
+pub enum Korok<'a, 'b> {
+    Crate(&'b crate::CrateKorok<'a>),
+    Enum(&'b crate::EnumKorok<'a>),
+    EnumVariant(&'b crate::EnumVariantKorok<'a>),
+    Field(&'b crate::FieldKorok<'a>),
+    Fields(&'b crate::FieldsKorok<'a>),
+    FileModule(&'b crate::FileModuleKorok<'a>),
+    Item(&'b crate::ItemKorok<'a>),
+    Module(&'b crate::ModuleKorok<'a>),
+    Root(&'b crate::RootKorok<'a>),
+    Struct(&'b crate::StructKorok<'a>),
+    Type(&'b crate::TypeKorok<'a>),
+    UnsupportedItem(&'b crate::UnsupportedItemKorok<'a>),
 }
 
-impl KorokTrait for Korok<'_> {
+#[derive(From, Debug, PartialEq)]
+pub enum KorokMut<'a, 'b> {
+    Crate(&'b mut crate::CrateKorok<'a>),
+    Enum(&'b mut crate::EnumKorok<'a>),
+    EnumVariant(&'b mut crate::EnumVariantKorok<'a>),
+    Field(&'b mut crate::FieldKorok<'a>),
+    Fields(&'b mut crate::FieldsKorok<'a>),
+    FileModule(&'b mut crate::FileModuleKorok<'a>),
+    Item(&'b mut crate::ItemKorok<'a>),
+    Module(&'b mut crate::ModuleKorok<'a>),
+    Root(&'b mut crate::RootKorok<'a>),
+    Struct(&'b mut crate::StructKorok<'a>),
+    Type(&'b mut crate::TypeKorok<'a>),
+    UnsupportedItem(&'b mut crate::UnsupportedItemKorok<'a>),
+}
+
+impl KorokTrait for KorokMut<'_, '_> {
     fn node(&self) -> &Option<Node> {
         match self {
-            Korok::Crate(k) => k.node(),
-            Korok::Enum(k) => k.node(),
-            Korok::EnumVariant(k) => k.node(),
-            Korok::Field(k) => k.node(),
-            Korok::Fields(k) => k.node(),
-            Korok::FileModule(k) => k.node(),
-            Korok::Item(k) => k.node(),
-            Korok::Module(k) => k.node(),
-            Korok::Root(k) => k.node(),
-            Korok::Struct(k) => k.node(),
-            Korok::Type(k) => k.node(),
-            Korok::UnsupportedItem(k) => k.node(),
+            Self::Crate(k) => k.node(),
+            Self::Enum(k) => k.node(),
+            Self::EnumVariant(k) => k.node(),
+            Self::Field(k) => k.node(),
+            Self::Fields(k) => k.node(),
+            Self::FileModule(k) => k.node(),
+            Self::Item(k) => k.node(),
+            Self::Module(k) => k.node(),
+            Self::Root(k) => k.node(),
+            Self::Struct(k) => k.node(),
+            Self::Type(k) => k.node(),
+            Self::UnsupportedItem(k) => k.node(),
         }
     }
 
     fn set_node(&mut self, node: Option<Node>) {
         match self {
-            Korok::Crate(k) => k.set_node(node),
-            Korok::Enum(k) => k.set_node(node),
-            Korok::EnumVariant(k) => k.set_node(node),
-            Korok::Field(k) => k.set_node(node),
-            Korok::Fields(k) => k.set_node(node),
-            Korok::FileModule(k) => k.set_node(node),
-            Korok::Item(k) => k.set_node(node),
-            Korok::Module(k) => k.set_node(node),
-            Korok::Root(k) => k.set_node(node),
-            Korok::Struct(k) => k.set_node(node),
-            Korok::Type(k) => k.set_node(node),
-            Korok::UnsupportedItem(k) => k.set_node(node),
+            Self::Crate(k) => k.set_node(node),
+            Self::Enum(k) => k.set_node(node),
+            Self::EnumVariant(k) => k.set_node(node),
+            Self::Field(k) => k.set_node(node),
+            Self::Fields(k) => k.set_node(node),
+            Self::FileModule(k) => k.set_node(node),
+            Self::Item(k) => k.set_node(node),
+            Self::Module(k) => k.set_node(node),
+            Self::Root(k) => k.set_node(node),
+            Self::Struct(k) => k.set_node(node),
+            Self::Type(k) => k.set_node(node),
+            Self::UnsupportedItem(k) => k.set_node(node),
         }
     }
 }

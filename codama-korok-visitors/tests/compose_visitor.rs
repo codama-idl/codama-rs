@@ -1,5 +1,5 @@
 use codama_korok_visitors::{ComposeVisitor, KorokVisitable, KorokVisitor, MapVisitor};
-use codama_koroks::{StructKorok, TypeKorok};
+use codama_koroks::{KorokTrait, StructKorok, TypeKorok};
 use codama_nodes::PublicKeyTypeNode;
 
 #[test]
@@ -21,7 +21,7 @@ fn it_returns_a_single_visitor_from_multiple_visitors() {
 
     korok.accept(
         &mut ComposeVisitor::new()
-            .add(MapVisitor::new(|k| {
+            .add(MapVisitor::new(|mut k| {
                 k.set_node(Some(PublicKeyTypeNode::new().into()))
             }))
             .add(ResetStructAndTypeKoroksVisitor {}),

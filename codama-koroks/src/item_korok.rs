@@ -1,4 +1,6 @@
-use crate::{EnumKorok, FileModuleKorok, KorokTrait, ModuleKorok, StructKorok, UnsupportedItemKorok};
+use crate::{
+    EnumKorok, FileModuleKorok, KorokTrait, ModuleKorok, StructKorok, UnsupportedItemKorok,
+};
 use codama_attributes::Attributes;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
