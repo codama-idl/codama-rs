@@ -1,7 +1,7 @@
 use crate::KorokVisitor;
 use codama_attributes::{Attribute, CodamaAttribute, CodamaDirective, NodeDirective};
 use codama_koroks::{KorokMut, KorokTrait};
-use codama_nodes::Node;
+use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
 
 #[derive(Default)]
 pub struct ApplyCodamaAttributesVisitor;
@@ -92,7 +92,15 @@ fn apply_codama_attribute(
 fn apply_node_directive(directive: &NodeDirective, korok: &KorokMut) -> Option<Node> {
     let node = directive.node.clone();
     match korok {
-        KorokMut::Field(_) => Some(node), // TODO: Wrap in StructFieldTypeNode if necessary.
+        // If the `node` directive is applied to a named field and
+        // the node is a type node (i.e. excluding `StructFieldTypeNodes`)
+        // then we need to wrap the provided node in a `StructFieldTypeNode`.
+        KorokMut::Field(korok) => match (TypeNode::try_from(node.clone()).ok(), &korok.ast.ident) {
+            (Some(type_node), Some(ident)) => {
+                Some(StructFieldTypeNode::new(ident.to_string(), type_node).into())
+            }
+            _ => Some(node),
+        },
         _ => Some(node),
     }
 }
