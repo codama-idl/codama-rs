@@ -82,6 +82,13 @@ fn get_idl() {
                 "kind": "definedTypeLinkNode",
                 "name": "membership"
               }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "wallet",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
           ]
         }
