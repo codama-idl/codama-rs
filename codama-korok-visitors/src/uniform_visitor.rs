@@ -2,18 +2,17 @@ use crate::KorokVisitor;
 use codama_koroks::KorokMut;
 
 /// Use the same callback function on all koroks visited.
-/// TODO: Rename UniformVisitor?
-pub struct MapVisitor {
+pub struct UniformVisitor {
     pub callback: fn(korok: KorokMut, visitor: &mut Self),
 }
 
-impl MapVisitor {
+impl UniformVisitor {
     pub fn new(callback: fn(korok: KorokMut, visitor: &mut Self)) -> Self {
         Self { callback }
     }
 }
 
-impl KorokVisitor for MapVisitor {
+impl KorokVisitor for UniformVisitor {
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
         (self.callback)(korok.into(), self);
     }
