@@ -5,6 +5,42 @@ pub trait KorokVisitable {
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable>;
 }
 
+impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
+        match self {
+            Self::Crate(k) => k.accept(visitor),
+            Self::Enum(k) => k.accept(visitor),
+            Self::EnumVariant(k) => k.accept(visitor),
+            Self::Field(k) => k.accept(visitor),
+            Self::Fields(k) => k.accept(visitor),
+            Self::FileModule(k) => k.accept(visitor),
+            Self::Item(k) => k.accept(visitor),
+            Self::Module(k) => k.accept(visitor),
+            Self::Root(k) => k.accept(visitor),
+            Self::Struct(k) => k.accept(visitor),
+            Self::Type(k) => k.accept(visitor),
+            Self::UnsupportedItem(k) => k.accept(visitor),
+        }
+    }
+
+    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
+        match self {
+            Self::Crate(k) => k.get_children(),
+            Self::Enum(k) => k.get_children(),
+            Self::EnumVariant(k) => k.get_children(),
+            Self::Field(k) => k.get_children(),
+            Self::Fields(k) => k.get_children(),
+            Self::FileModule(k) => k.get_children(),
+            Self::Item(k) => k.get_children(),
+            Self::Module(k) => k.get_children(),
+            Self::Root(k) => k.get_children(),
+            Self::Struct(k) => k.get_children(),
+            Self::Type(k) => k.get_children(),
+            Self::UnsupportedItem(k) => k.get_children(),
+        }
+    }
+}
+
 impl KorokVisitable for codama_koroks::RootKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
         visitor.visit_root(self);
