@@ -8,6 +8,7 @@ use std::path::Path;
 pub struct Codama {
     store: RootStore,
     plugins: Vec<Box<dyn KorokPlugin>>,
+    with_default_plugin: bool,
 }
 
 impl Codama {
@@ -15,6 +16,7 @@ impl Codama {
         Self {
             store,
             plugins: Vec::new(),
+            with_default_plugin: true,
         }
         .add_plugin(DefaultPlugin)
     }
@@ -31,6 +33,11 @@ impl Codama {
         Ok(Self::new(RootStore::hydrate(tt)?))
     }
 
+    pub fn without_default_plugin(mut self) -> Self {
+        self.with_default_plugin = false;
+        self
+    }
+
     pub fn add_plugin<T: KorokPlugin + 'static>(mut self, plugin: T) -> Self {
         self.plugins.push(Box::new(plugin));
         self
@@ -40,9 +47,16 @@ impl Codama {
         RootKorok::parse(&self.store)
     }
 
+    pub fn get_plugins(&self) -> &[Box<dyn KorokPlugin>] {
+        match self.with_default_plugin {
+            true => &self.plugins,
+            false => &self.plugins[1..],
+        }
+    }
+
     pub fn get_visited_korok(&self) -> CodamaResult<RootKorok> {
         let mut korok = self.get_korok()?;
-        let run_plugins = resolve_plugins(&self.plugins);
+        let run_plugins = resolve_plugins(self.get_plugins());
         run_plugins(&mut korok);
         Ok(korok)
     }
