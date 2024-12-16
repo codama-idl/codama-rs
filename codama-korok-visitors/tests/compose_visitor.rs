@@ -21,7 +21,8 @@ fn it_returns_a_single_visitor_from_multiple_visitors() {
 
     korok.accept(
         &mut ComposeVisitor::new()
-            .add(MapVisitor::new(|mut k| {
+            .add(MapVisitor::new(|mut k, visitor| {
+                visitor.visit_children(&mut k);
                 k.set_node(Some(PublicKeyTypeNode::new().into()))
             }))
             .add(ResetStructAndTypeKoroksVisitor {}),

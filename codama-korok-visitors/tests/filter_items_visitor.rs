@@ -1,4 +1,4 @@
-use codama_korok_visitors::{FilterItemsVisitor, KorokVisitable, MapVisitor};
+use codama_korok_visitors::{FilterItemsVisitor, KorokVisitable, KorokVisitor, MapVisitor};
 use codama_koroks::{ItemKorok, KorokTrait};
 use codama_nodes::PublicKeyTypeNode;
 
@@ -21,7 +21,10 @@ fn it_only_starts_the_child_visitor_on_filtered_items() {
             ItemKorok::Module(module) => module.ast.ident == "foo",
             _ => false,
         },
-        MapVisitor::new(|mut k| k.set_node(Some(PublicKeyTypeNode::new().into()))),
+        MapVisitor::new(|mut k, visitor| {
+            visitor.visit_children(&mut k);
+            k.set_node(Some(PublicKeyTypeNode::new().into()))
+        }),
     ));
 
     let ItemKorok::Module(module) = &korok else {
