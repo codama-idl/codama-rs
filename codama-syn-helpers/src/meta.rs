@@ -1,7 +1,7 @@
 use crate::extensions::*;
 use derive_more::From;
-use proc_macro2::{Delimiter, TokenStream, TokenTree};
-use quote::ToTokens;
+use proc_macro2::{Delimiter, Group, TokenStream, TokenTree};
+use quote::{ToTokens, TokenStreamExt};
 use syn::{
     ext::IdentExt,
     parse::discouraged::Speculative,
@@ -14,10 +14,13 @@ use syn::{
 pub enum Meta {
     /// A path — e.g. `my_attribute` or `a::b::my_attribute`.
     Path(Path),
-    /// A list of Metas — e.g. `my_attribute(one, two, three)`.
-    List(MetaList),
-    /// A name-value pair where value is a Meta — e.g. `my_attribute = my_value`.
+    /// A path followed by an equal sign and a single Meta — e.g. `my_attribute = my_value`.
+    /// TODO: PathValue
     Label(MetaLabel),
+    /// A path followed by a wrapped list of Metas — e.g. `my_attribute(one, two, three)`.
+    /// This accepts an optional equal sign before the list — e.g. `my_attribute = (one, two, three)`.
+    /// TODO: PathList
+    List(PathList),
     /// An expression — e.g. `42`, `"hello"` or `a + b`.
     /// In case of ambiguity with `Path`, `Path` is preferred.
     Expr(Expr),
@@ -31,6 +34,14 @@ pub struct MetaLabel {
     pub path: Path,
     pub eq_token: Token![=],
     pub value: Box<Meta>,
+}
+
+#[derive(Debug)]
+pub struct PathList {
+    pub path: Path,
+    pub eq_token: Option<Token![=]>,
+    pub delimiter: MacroDelimiter,
+    pub tokens: TokenStream,
 }
 
 impl Meta {
@@ -72,7 +83,7 @@ impl Meta {
         Err(syn::Error::new(error_span, "unexpected token in attribute"))
     }
 
-    pub fn as_list(&self) -> syn::Result<&MetaList> {
+    pub fn as_list(&self) -> syn::Result<&PathList> {
         match self {
             Meta::List(meta) => Ok(meta),
             Meta::Path(path) => Err(path.error(format!(
@@ -128,13 +139,44 @@ impl Meta {
     }
 }
 
+impl PathList {
+    /// Get an equivalent `MetaList` from the path list.
+    pub fn as_meta_list(&self) -> MetaList {
+        MetaList {
+            path: self.path.clone(),
+            delimiter: self.delimiter.clone(),
+            tokens: self.tokens.clone(),
+        }
+    }
+
+    /// Iterate over all metas in the list.
+    pub fn each(&self, logic: impl FnMut(Meta) -> syn::Result<()>) -> syn::Result<()> {
+        self.as_meta_list().each(logic)
+    }
+
+    /// Parse all metas in the list.
+    pub fn parse_metas(&self) -> syn::Result<Vec<Meta>> {
+        self.as_meta_list().parse_metas()
+    }
+
+    /// Parse all arguments as comma-separated types.
+    pub fn parse_comma_args<T: syn::parse::Parse>(&self) -> syn::Result<Vec<T>> {
+        self.as_meta_list().parse_comma_args()
+    }
+}
+
 impl syn::parse::Parse for Meta {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let fork = input.fork();
         match fork.call(parse_meta_path) {
             Ok(path) => {
-                if fork.peek(Paren) || fork.peek(Bracket) || fork.peek(Brace) {
-                    Ok(Self::List(input.call(parse_meta_list)?))
+                if fork.peek(Paren)
+                    || fork.peek(Bracket)
+                    || fork.peek(Brace)
+                    || (fork.peek(Token![=])
+                        && (fork.peek2(Paren) || fork.peek2(Bracket) || fork.peek2(Brace)))
+                {
+                    Ok(Self::List(input.parse()?))
                 } else if fork.peek(Token![=]) {
                     Ok(Self::Label(input.parse()?))
                 } else {
@@ -163,6 +205,20 @@ impl syn::parse::Parse for MetaLabel {
     }
 }
 
+impl syn::parse::Parse for PathList {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let path = input.call(parse_meta_path)?;
+        let eq_token = input.parse()?;
+        let (delimiter, tokens) = input.call(parse_delimiters)?;
+        Ok(Self {
+            path,
+            eq_token,
+            delimiter,
+            tokens,
+        })
+    }
+}
+
 /// Parse a path without segment arguments and allowing any reserved keyword.
 fn parse_meta_path(input: syn::parse::ParseStream) -> syn::Result<Path> {
     Ok(Path {
@@ -179,17 +235,6 @@ fn parse_meta_path(input: syn::parse::ParseStream) -> syn::Result<Path> {
             }
             segments
         },
-    })
-}
-
-/// Custom implementation of `syn::parse::Parse` for `MetaList`.
-fn parse_meta_list(input: syn::parse::ParseStream) -> syn::Result<MetaList> {
-    let path = input.call(parse_meta_path)?;
-    let (delimiter, tokens) = input.call(parse_delimiters)?;
-    Ok(MetaList {
-        path,
-        delimiter,
-        tokens,
     })
 }
 
@@ -230,6 +275,21 @@ impl ToTokens for MetaLabel {
     }
 }
 
+impl ToTokens for PathList {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.path.to_tokens(tokens);
+        self.eq_token.to_tokens(tokens);
+        let (delim, span) = match self.delimiter {
+            MacroDelimiter::Paren(paren) => (Delimiter::Parenthesis, paren.span),
+            MacroDelimiter::Brace(brace) => (Delimiter::Brace, brace.span),
+            MacroDelimiter::Bracket(bracket) => (Delimiter::Bracket, bracket.span),
+        };
+        let mut group = Group::new(delim, self.tokens.clone());
+        group.set_span(span.join());
+        tokens.append(group);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -256,6 +316,18 @@ mod tests {
             panic!("expected Meta::List");
         };
         assert!(list.path.is_strict("foo"));
+        assert!(list.eq_token.is_none());
+        assert_eq!(list.tokens.to_string(), "1 , 2 , 3");
+    }
+
+    #[test]
+    fn parse_list_with_equal_sign() {
+        let meta = meta! { foo = [1, 2, 3] };
+        let Meta::List(list) = meta else {
+            panic!("expected Meta::List");
+        };
+        assert!(list.path.is_strict("foo"));
+        assert!(list.eq_token.is_some());
         assert_eq!(list.tokens.to_string(), "1 , 2 , 3");
     }
 
