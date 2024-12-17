@@ -1,7 +1,7 @@
 use crate::extensions::*;
 use derive_more::From;
-use proc_macro2::{Delimiter, Group, TokenStream, TokenTree};
-use quote::{ToTokens, TokenStreamExt};
+use proc_macro2::{Delimiter, TokenStream, TokenTree};
+use quote::ToTokens;
 use syn::{
     ext::IdentExt,
     parse::discouraged::Speculative,
@@ -18,8 +18,6 @@ pub enum Meta {
     List(MetaList),
     /// A name-value pair where value is a Meta — e.g. `my_attribute = my_value`.
     Label(MetaLabel),
-    /// An array of Metas with no path — e.g. `[one, two, three]`.
-    Array(MetaArray),
     /// An expression — e.g. `42`, `"hello"` or `a + b`.
     /// In case of ambiguity with `Path`, `Path` is preferred.
     Expr(Expr),
@@ -35,19 +33,12 @@ pub struct MetaLabel {
     pub value: Box<Meta>,
 }
 
-#[derive(Debug)]
-pub struct MetaArray {
-    pub delimiter: MacroDelimiter,
-    pub tokens: TokenStream,
-}
-
 impl Meta {
     pub fn path(&self) -> syn::Result<&Path> {
         match self {
             Meta::Path(path) => Ok(path),
             Meta::List(meta) => Ok(&meta.path),
             Meta::Label(meta) => Ok(&meta.path),
-            Meta::Array(meta) => Err(meta.error("expected a path")),
             Meta::Expr(expr) => match expr {
                 Expr::Path(expr) => Ok(&expr.path),
                 _ => Err(expr.error("expected a path")),
@@ -75,7 +66,6 @@ impl Meta {
             Meta::Path(path) => return Ok(path),
             Meta::List(meta) => meta.delimiter.span().open(),
             Meta::Label(meta) => meta.eq_token.span,
-            Meta::Array(meta) => meta.delimiter.span().open(),
             Meta::Expr(expr) => expr.span(),
             Meta::Verbatim(tokens) => tokens.span(),
         };
@@ -90,10 +80,6 @@ impl Meta {
                 path.to_string(),
             ))),
             Meta::Label(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
-            Meta::Array(meta) => Err(syn::Error::new(
-                meta.delimiter.span().open(),
-                "expected a path followed by `(`",
-            )),
             Meta::Expr(expr) => Err(syn::Error::new(
                 expr.span(),
                 "expected a path followed by `(`",
@@ -116,10 +102,6 @@ impl Meta {
                 meta.delimiter.span().open(),
                 "expected `=`",
             )),
-            Meta::Array(meta) => Err(syn::Error::new(
-                meta.delimiter.span().open(),
-                "expected a path followed by `=`",
-            )),
             Meta::Expr(expr) => Err(expr.error("expected a path followed by `=`")),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
         }
@@ -131,9 +113,6 @@ impl Meta {
             Meta::Path(path) => Err(path.error("expected an expression that is not a path")),
             Meta::List(meta) => Err(meta.error("expected a valid expression")),
             Meta::Label(meta) => Err(meta.error("expected a valid expression")),
-            Meta::Array(meta) => {
-                Err(meta.error("expected a valid expression that is not an array"))
-            }
             Meta::Verbatim(tokens) => Err(tokens.error("expected a valid expression")),
         }
     }
@@ -144,7 +123,6 @@ impl Meta {
             Meta::Path(path) => Err(path.error("expected a custom token stream")),
             Meta::List(meta) => Err(meta.error("expected a custom token stream")),
             Meta::Label(meta) => Err(meta.error("expected a custom token stream")),
-            Meta::Array(meta) => Err(meta.error("expected a custom token stream")),
             Meta::Expr(expr) => Err(expr.error("expected a custom token stream")),
         }
     }
@@ -182,13 +160,6 @@ impl syn::parse::Parse for MetaLabel {
             eq_token: input.parse()?,
             value: input.parse()?,
         })
-    }
-}
-
-impl syn::parse::Parse for MetaArray {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let (delimiter, tokens) = input.call(parse_delimiters)?;
-        Ok(Self { delimiter, tokens })
     }
 }
 
@@ -245,7 +216,6 @@ impl ToTokens for Meta {
             Meta::Path(m) => m.to_tokens(tokens),
             Meta::List(m) => m.to_tokens(tokens),
             Meta::Label(m) => m.to_tokens(tokens),
-            Meta::Array(m) => m.to_tokens(tokens),
             Meta::Expr(m) => m.to_tokens(tokens),
             Meta::Verbatim(m) => m.to_tokens(tokens),
         }
@@ -257,19 +227,6 @@ impl ToTokens for MetaLabel {
         self.path.to_tokens(tokens);
         self.eq_token.to_tokens(tokens);
         self.value.to_tokens(tokens);
-    }
-}
-
-impl ToTokens for MetaArray {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let (delim, span) = match self.delimiter {
-            MacroDelimiter::Paren(paren) => (Delimiter::Parenthesis, paren.span),
-            MacroDelimiter::Brace(brace) => (Delimiter::Brace, brace.span),
-            MacroDelimiter::Bracket(bracket) => (Delimiter::Bracket, bracket.span),
-        };
-        let mut group = Group::new(delim, self.tokens.clone());
-        group.set_span(span.join());
-        tokens.append(group);
     }
 }
 
