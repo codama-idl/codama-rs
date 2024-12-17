@@ -9,10 +9,13 @@ impl FromMeta for FixedSizeTypeNode<TypeNode> {
         meta.as_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("type", _) => {
-                    let node = Node::from_meta(&meta.value_as_meta()?)?;
+                    let node = Node::from_meta(&meta.as_label()?.value)?;
                     r#type.set(node, meta)
                 }
-                ("size", _) => size.set(meta.as_name_value()?.value.as_literal_integer()?, meta),
+                ("size", _) => size.set(
+                    meta.as_label()?.value.as_expr()?.as_literal_integer()?,
+                    meta,
+                ),
                 (_, Meta::List(_) | Meta::Path(_)) => r#type.set(Node::from_meta(meta)?, meta),
                 (_, Meta::Expr(expr)) => size.set(expr.as_literal_integer()?, meta),
                 _ => Err(meta.error("unrecognized attribute")),

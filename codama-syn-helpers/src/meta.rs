@@ -7,7 +7,7 @@ use syn::{
     parse::discouraged::Speculative,
     spanned::Spanned,
     token::{Brace, Bracket, Paren},
-    Expr, MacroDelimiter, MetaList, MetaNameValue, Path, Token,
+    Expr, MacroDelimiter, MetaList, Path, Token,
 };
 
 #[derive(Debug, From)]
@@ -16,11 +16,8 @@ pub enum Meta {
     Path(Path),
     /// A list of Metas — e.g. `my_attribute(one, two, three)`.
     List(MetaList),
-    /// A name-list pair where list is a list of Metas — e.g. `my_attribute = my_value(one, two, three)`.
-    NameList(MetaNameList),
-    /// A name-value pair where value is an expression — e.g. `my_attribute = 42`.
-    /// In case of ambiguity with `NameList`, `NameList` is preferred.
-    NameValue(MetaNameValue),
+    /// A name-value pair where value is a Meta — e.g. `my_attribute = my_value`.
+    Label(MetaLabel),
     /// An expression — e.g. `42`, `"hello"` or `a + b`.
     /// In case of ambiguity with `Path`, `Path` is preferred.
     Expr(Expr),
@@ -30,10 +27,10 @@ pub enum Meta {
 }
 
 #[derive(Debug)]
-pub struct MetaNameList {
+pub struct MetaLabel {
     pub path: Path,
     pub eq_token: Token![=],
-    pub list: MetaList,
+    pub value: Box<Meta>,
 }
 
 impl Meta {
@@ -41,8 +38,7 @@ impl Meta {
         match self {
             Meta::Path(path) => Ok(path),
             Meta::List(meta) => Ok(&meta.path),
-            Meta::NameValue(meta) => Ok(&meta.path),
-            Meta::NameList(meta) => Ok(&meta.path),
+            Meta::Label(meta) => Ok(&meta.path),
             Meta::Expr(expr) => match expr {
                 Expr::Path(expr) => Ok(&expr.path),
                 _ => Err(expr.error("expected a path")),
@@ -69,8 +65,7 @@ impl Meta {
         let error_span = match self {
             Meta::Path(path) => return Ok(path),
             Meta::List(meta) => meta.delimiter.span().open(),
-            Meta::NameValue(meta) => meta.eq_token.span,
-            Meta::NameList(meta) => meta.eq_token.span,
+            Meta::Label(meta) => meta.eq_token.span,
             Meta::Expr(expr) => expr.span(),
             Meta::Verbatim(tokens) => tokens.span(),
         };
@@ -84,8 +79,7 @@ impl Meta {
                 "expected attribute arguments in parentheses: `{}(...)`",
                 path.to_string(),
             ))),
-            Meta::NameValue(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
-            Meta::NameList(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
+            Meta::Label(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
             Meta::Expr(expr) => Err(syn::Error::new(
                 expr.span(),
                 "expected a path followed by `(`",
@@ -97,9 +91,9 @@ impl Meta {
         }
     }
 
-    pub fn as_name_value(&self) -> syn::Result<&MetaNameValue> {
+    pub fn as_label(&self) -> syn::Result<&MetaLabel> {
         match self {
-            Meta::NameValue(meta) => Ok(meta),
+            Meta::Label(meta) => Ok(meta),
             Meta::Path(path) => Err(path.error(format!(
                 "expected a value for this attribute: `{} = ...`",
                 path.to_string(),
@@ -108,38 +102,8 @@ impl Meta {
                 meta.delimiter.span().open(),
                 "expected `=`",
             )),
-            Meta::NameList(meta) => Err(syn::Error::new(
-                meta.list.delimiter.span().join(),
-                "expected a valid expression",
-            )),
             Meta::Expr(expr) => Err(expr.error("expected a path followed by `=`")),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
-        }
-    }
-
-    pub fn as_name_list(&self) -> syn::Result<&MetaNameList> {
-        match self {
-            Meta::NameList(meta) => Ok(meta),
-            Meta::Path(path) => Err(path.error(format!(
-                "expected a value for this attribute: `{} = ...(...)`",
-                path.to_string(),
-            ))),
-            Meta::List(meta) => Err(syn::Error::new(
-                meta.delimiter.span().open(),
-                format!(
-                    "expected a name for this list: `... = {}(...)`",
-                    meta.path.to_string(),
-                ),
-            )),
-            Meta::NameValue(meta) => Err(syn::Error::new(
-                meta.value.span(),
-                format!(
-                    "expected a list as value: `{} = ...(...)`",
-                    meta.path.to_string(),
-                ),
-            )),
-            Meta::Expr(expr) => Err(expr.error("expected a named list: `... = ...(...)`")),
-            Meta::Verbatim(tokens) => Err(tokens.error("expected a named list: `... = ...(...)`")),
         }
     }
 
@@ -148,12 +112,7 @@ impl Meta {
             Meta::Expr(expr) => return Ok(expr),
             Meta::Path(path) => path.span(),
             Meta::List(meta) => meta.delimiter.span().join(),
-            Meta::NameList(meta) => meta
-                .path
-                .span()
-                .join(meta.list.delimiter.span().close())
-                .unwrap_or(meta.path.span()),
-            Meta::NameValue(meta) => meta
+            Meta::Label(meta) => meta
                 .path
                 .span()
                 .join(meta.value.span())
@@ -168,12 +127,7 @@ impl Meta {
             Meta::Verbatim(tokens) => return Ok(tokens),
             Meta::Path(path) => path.span(),
             Meta::List(meta) => meta.delimiter.span().join(),
-            Meta::NameList(meta) => meta
-                .path
-                .span()
-                .join(meta.list.delimiter.span().close())
-                .unwrap_or(meta.path.span()),
-            Meta::NameValue(meta) => meta
+            Meta::Label(meta) => meta
                 .path
                 .span()
                 .join(meta.value.span())
@@ -181,17 +135,6 @@ impl Meta {
             Meta::Expr(expr) => expr.span(),
         };
         Err(syn::Error::new(span, "expected a custom token stream"))
-    }
-
-    pub fn value_as_meta(&self) -> syn::Result<Meta> {
-        match self {
-            Meta::NameList(meta) => Ok(Meta::List(meta.list.clone())),
-            Meta::NameValue(meta) => match &meta.value {
-                syn::Expr::Path(expr) => Ok(Meta::Path(expr.path.clone())),
-                _ => Ok(Meta::Verbatim(meta.value.to_token_stream())),
-            },
-            _ => Err(self.error("expected a name-value or name-list attribute")),
-        }
     }
 }
 
@@ -203,18 +146,7 @@ impl syn::parse::Parse for Meta {
                 if fork.peek(Paren) || fork.peek(Bracket) || fork.peek(Brace) {
                     Ok(Self::List(input.call(parse_meta_list)?))
                 } else if fork.peek(Token![=]) {
-                    let eq_token = fork.parse::<Token![=]>()?;
-                    match fork.call(parse_meta_list) {
-                        Ok(list) => {
-                            input.advance_to(&fork);
-                            Ok(Self::NameList(MetaNameList {
-                                path,
-                                eq_token,
-                                list,
-                            }))
-                        }
-                        Err(_) => Ok(Self::NameValue(input.call(parse_meta_name_value)?)),
-                    }
+                    Ok(Self::Label(input.parse()?))
                 } else {
                     input.advance_to(&fork);
                     Ok(Self::Path(path))
@@ -231,12 +163,12 @@ impl syn::parse::Parse for Meta {
     }
 }
 
-impl syn::parse::Parse for MetaNameList {
+impl syn::parse::Parse for MetaLabel {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.call(parse_meta_path)?,
             eq_token: input.parse()?,
-            list: input.parse()?,
+            value: input.parse()?,
         })
     }
 }
@@ -283,33 +215,23 @@ fn parse_meta_list(input: syn::parse::ParseStream) -> syn::Result<MetaList> {
     })
 }
 
-/// Custom implementation of `syn::parse::Parse` for `MetaNameValue`.
-fn parse_meta_name_value(input: syn::parse::ParseStream) -> syn::Result<MetaNameValue> {
-    Ok(MetaNameValue {
-        path: input.call(parse_meta_path)?,
-        eq_token: input.parse()?,
-        value: input.parse()?,
-    })
-}
-
-impl quote::ToTokens for Meta {
+impl ToTokens for Meta {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
             Meta::Path(path) => path.to_tokens(tokens),
             Meta::List(list) => list.to_tokens(tokens),
-            Meta::NameValue(name_value) => name_value.to_tokens(tokens),
-            Meta::NameList(name_list) => name_list.to_tokens(tokens),
+            Meta::Label(label) => label.to_tokens(tokens),
             Meta::Expr(expr) => expr.to_tokens(tokens),
             Meta::Verbatim(verbatim) => verbatim.to_tokens(tokens),
         }
     }
 }
 
-impl quote::ToTokens for MetaNameList {
+impl ToTokens for MetaLabel {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.path.to_tokens(tokens);
         self.eq_token.to_tokens(tokens);
-        self.list.to_tokens(tokens);
+        self.value.to_tokens(tokens);
     }
 }
 
@@ -343,24 +265,37 @@ mod tests {
     }
 
     #[test]
-    fn parse_name_value() {
+    fn parse_label_with_expression() {
         let meta = meta! { foo = 42 };
-        let Meta::NameValue(name_value) = meta else {
-            panic!("expected Meta::NameValue");
+        let Meta::Label(label) = meta else {
+            panic!("expected Meta::Label");
         };
-        assert!(name_value.path.is_strict("foo"));
-        assert_eq!(name_value.value.as_literal_integer::<usize>().unwrap(), 42);
+        assert!(label.path.is_strict("foo"));
+        let expr = label.value.as_expr().unwrap();
+        assert_eq!(expr.as_literal_integer::<usize>().unwrap(), 42);
     }
 
     #[test]
-    fn parse_name_list() {
-        let meta = meta! { foo = bar(1, 2, 3) };
-        let Meta::NameList(name_list) = meta else {
-            panic!("expected Meta::NameList");
+    fn parse_label_with_verbatim() {
+        let meta = meta! { foo = ?what? };
+        let Meta::Label(label) = meta else {
+            panic!("expected Meta::Label");
         };
-        assert!(name_list.path.is_strict("foo"));
-        assert!(name_list.list.path.is_strict("bar"));
-        assert_eq!(name_list.list.tokens.to_string(), "1 , 2 , 3");
+        assert!(label.path.is_strict("foo"));
+        let value = label.value.as_verbatim().unwrap();
+        assert_eq!(value.to_string(), "? what ?");
+    }
+
+    #[test]
+    fn parse_label_with_list() {
+        let meta = meta! { foo = bar(1, 2, 3) };
+        let Meta::Label(label) = meta else {
+            panic!("expected Meta::Label");
+        };
+        assert!(label.path.is_strict("foo"));
+        let list = label.value.as_list().unwrap();
+        assert!(list.path.is_strict("bar"));
+        assert_eq!(list.tokens.to_string(), "1 , 2 , 3");
     }
 
     #[test]

@@ -11,7 +11,7 @@ impl FromMeta for BooleanTypeNode {
         meta.as_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("size", _) => {
-                    let node = Node::from_meta(&meta.value_as_meta()?)?;
+                    let node = Node::from_meta(&meta.as_label()?.value)?;
                     size.set(node, meta)
                 }
                 (_, Meta::List(_) | Meta::Path(_)) => size.set(Node::from_meta(meta)?, meta),

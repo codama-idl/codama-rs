@@ -9,7 +9,7 @@ impl FromMeta for NumberTypeNode {
         meta.as_list()?.each(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
-                ("format", Meta::NameValue(m)) => match m.value.as_path()?.to_string().as_str() {
+                ("format", Meta::Label(m)) => match m.value.as_path()?.to_string().as_str() {
                     "u8" => format.set(NumberFormat::U8, meta),
                     "u16" => format.set(NumberFormat::U16, meta),
                     "u32" => format.set(NumberFormat::U32, meta),
@@ -25,7 +25,7 @@ impl FromMeta for NumberTypeNode {
                     "shortU16" => format.set(NumberFormat::ShortU16, meta),
                     _ => Err(m.value.error("invalid format")),
                 },
-                ("endian", Meta::NameValue(m)) => match m.value.as_path()?.to_string().as_str() {
+                ("endian", Meta::Label(m)) => match m.value.as_path()?.to_string().as_str() {
                     "le" => endian.set(Endian::Little, meta),
                     "be" => endian.set(Endian::Big, meta),
                     _ => Err(m.value.error("invalid endian")),
@@ -127,7 +127,7 @@ mod tests {
             { number_type(u16, le, unknown = 42) },
             "unrecognized attribute"
         );
-        assert_node_err!({ number_type(u16 = what?, le) }, "unrecognized attribute");
+        assert_node_err!({ number_type(u16 = ?what?, le) }, "unrecognized attribute");
     }
 
     #[test]
