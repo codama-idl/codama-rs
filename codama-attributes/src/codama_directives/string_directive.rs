@@ -12,7 +12,7 @@ impl TryFrom<&Meta> for StringDirective {
     fn try_from(meta: &Meta) -> syn::Result<Self> {
         let list = meta.as_list()?;
         if !list.path.is_strict("string") {
-            return Err(list.path.error("expected #[string(...)]"));
+            return Err(list.path.error("expected #[codama(string(...))]"));
         };
 
         // TODO
