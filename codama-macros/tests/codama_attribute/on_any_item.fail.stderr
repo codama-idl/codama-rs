@@ -1,59 +1,59 @@
-error: node is missing
- --> tests/codama_attribute/on_any_item.fail.rs:3:10
+error: unrecognized type
+ --> tests/codama_attribute/on_any_item.fail.rs:3:17
   |
-3 | #[codama(node())]
-  |          ^^^^^^
+3 | #[codama(type = invalid)]
+  |                 ^^^^^^^
 
-error: node is missing
- --> tests/codama_attribute/on_any_item.fail.rs:6:10
+error: unrecognized type
+ --> tests/codama_attribute/on_any_item.fail.rs:6:17
   |
-6 | #[codama(node())]
-  |          ^^^^^^
+6 | #[codama(type = invalid)]
+  |                 ^^^^^^^
 
-error: node is missing
- --> tests/codama_attribute/on_any_item.fail.rs:9:10
+error: unrecognized type
+ --> tests/codama_attribute/on_any_item.fail.rs:9:17
   |
-9 | #[codama(node())]
-  |          ^^^^^^
+9 | #[codama(type = invalid)]
+  |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:12:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:12:17
    |
-12 | #[codama(node())]
-   |          ^^^^^^
+12 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:15:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:15:17
    |
-15 | #[codama(node())]
-   |          ^^^^^^
+15 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:18:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:18:17
    |
-18 | #[codama(node())]
-   |          ^^^^^^
+18 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:21:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:21:17
    |
-21 | #[codama(node())]
-   |          ^^^^^^
+21 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:24:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:24:17
    |
-24 | #[codama(node())]
-   |          ^^^^^^
+24 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:27:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:27:17
    |
-27 | #[codama(node())]
-   |          ^^^^^^
+27 | #[codama(type = invalid)]
+   |                 ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_any_item.fail.rs:32:10
+error: unrecognized type
+  --> tests/codama_attribute/on_any_item.fail.rs:32:17
    |
-32 | #[codama(node())]
-   |          ^^^^^^
+32 | #[codama(type = invalid)]
+   |                 ^^^^^^^

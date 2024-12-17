@@ -1,0 +1,5 @@
+error: invalid endian
+ --> tests/codama_attribute/type_nodes/number_type_node/invalid_endian.fail.rs:3:38
+  |
+3 | #[codama(type = number(u32, endian = invalid))]
+  |                                      ^^^^^^^

@@ -1,0 +1,5 @@
+error: public_key does not accept any input
+ --> tests/codama_attribute/type_nodes/public_key_type_node/with_input.fail.rs:3:17
+  |
+3 | #[codama(type = public_key(foo = 42))]
+  |                 ^^^^^^^^^^^^^^^^^^^^

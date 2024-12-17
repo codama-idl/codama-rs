@@ -1,0 +1,5 @@
+error: expected `=` followed by a value
+ --> tests/codama_attribute/type_directive/double_type.fail.rs:3:17
+  |
+3 | #[codama(type = (number(u32), public_key))]
+  |                 ^

@@ -1,5 +1,0 @@
-error: node is already set
- --> tests/codama_attribute/node_directive/double_node.fail.rs:3:37
-  |
-3 | #[codama(node(number_type(u32, le), public_key_type()))]
-  |                                     ^^^^^^^^^^^^^^^^^

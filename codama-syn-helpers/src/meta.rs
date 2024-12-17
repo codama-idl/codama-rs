@@ -88,14 +88,17 @@ impl Meta {
                 "expected attribute arguments in parentheses: `{}(...)`",
                 path.to_string(),
             ))),
-            Meta::PathValue(meta) => Err(syn::Error::new(meta.eq_token.span, "expected `(`")),
+            Meta::PathValue(meta) => Err(syn::Error::new(
+                meta.eq_token.span,
+                "expected a path followed by a list",
+            )),
             Meta::Expr(expr) => Err(syn::Error::new(
                 expr.span(),
-                "expected a path followed by `(`",
+                "expected a path followed by a list",
             )),
             Meta::Verbatim(tokens) => Err(syn::Error::new(
                 tokens.span(),
-                "expected a path followed by `(`",
+                "expected a path followed by a list",
             )),
         }
     }
@@ -109,7 +112,7 @@ impl Meta {
             ))),
             Meta::PathList(meta) => Err(syn::Error::new(
                 meta.delimiter.span().open(),
-                "expected `=`",
+                "expected `=` followed by a value",
             )),
             Meta::Expr(expr) => Err(expr.error("expected a path followed by `=`")),
             Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
@@ -447,18 +450,18 @@ mod tests {
         );
         assert_eq!(
             meta! { foo = 42 }.as_path_list().unwrap_err().to_string(),
-            "expected `(`"
+            "expected a path followed by a list"
         );
         assert_eq!(
             meta! { foo = bar(42) }
                 .as_path_list()
                 .unwrap_err()
                 .to_string(),
-            "expected `(`"
+            "expected a path followed by a list"
         );
         assert_eq!(
             meta! { [verbatim] }.as_path_list().unwrap_err().to_string(),
-            "expected a path followed by `(`"
+            "expected a path followed by a list"
         );
     }
 }

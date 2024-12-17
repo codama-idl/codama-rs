@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/number_type_node/unrecognized_attribute.fail.rs:3:29
+  |
+3 | #[codama(type = number(u32, unrecognized = 42, le))]
+  |                             ^^^^^^^^^^^^

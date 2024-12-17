@@ -1,6 +1,6 @@
 use codama::codama;
 
-#[codama(type = boolean)]
+#[codama(type = number(u32, endian = invalid))]
 pub struct Test;
 
 fn main() {}

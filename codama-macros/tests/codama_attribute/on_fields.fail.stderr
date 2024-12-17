@@ -1,29 +1,29 @@
-error: node is missing
- --> tests/codama_attribute/on_fields.fail.rs:5:14
+error: unrecognized type
+ --> tests/codama_attribute/on_fields.fail.rs:5:21
   |
-5 |     #[codama(node())]
-  |              ^^^^^^
+5 |     #[codama(type = invalid)]
+  |                     ^^^^^^^
 
-error: node is missing
- --> tests/codama_attribute/on_fields.fail.rs:7:14
+error: unrecognized type
+ --> tests/codama_attribute/on_fields.fail.rs:7:21
   |
-7 |     #[codama(node())]
-  |              ^^^^^^
+7 |     #[codama(type = invalid)]
+  |                     ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_fields.fail.rs:12:31
+error: unrecognized type
+  --> tests/codama_attribute/on_fields.fail.rs:12:38
    |
-12 | pub struct TupleTest(#[codama(node())] u8);
-   |                               ^^^^^^
+12 | pub struct TupleTest(#[codama(type = invalid)] u8);
+   |                                      ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_fields.fail.rs:17:18
+error: unrecognized type
+  --> tests/codama_attribute/on_fields.fail.rs:17:25
    |
-17 |         #[codama(node())]
-   |                  ^^^^^^
+17 |         #[codama(type = invalid)]
+   |                         ^^^^^^^
 
-error: node is missing
-  --> tests/codama_attribute/on_fields.fail.rs:20:20
+error: unrecognized type
+  --> tests/codama_attribute/on_fields.fail.rs:20:27
    |
-20 |     Tuple(#[codama(node())] u8),
-   |                    ^^^^^^
+20 |     Tuple(#[codama(type = invalid)] u8),
+   |                           ^^^^^^^

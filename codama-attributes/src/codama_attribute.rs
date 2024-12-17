@@ -37,20 +37,19 @@ mod tests {
 
     #[test]
     fn test_codama_attribute() {
-        let ast = parse_quote! { #[codama(node(boolean_type))] };
+        let ast = parse_quote! { #[codama(type = boolean)] };
         let attribute = CodamaAttribute::try_from(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
-        assert!(matches!(attribute.directive, CodamaDirective::Node(_)));
+        assert!(matches!(attribute.directive, CodamaDirective::Type(_)));
     }
 
     #[test]
     fn test_feature_gated_codama_attribute() {
-        let ast =
-            parse_quote! { #[cfg_attr(feature = "some_feature", codama(node(boolean_type)))] };
+        let ast = parse_quote! { #[cfg_attr(feature = "some_feature", codama(type = boolean))] };
         let attribute = CodamaAttribute::try_from(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
-        assert!(matches!(attribute.directive, CodamaDirective::Node(_)));
+        assert!(matches!(attribute.directive, CodamaDirective::Type(_)));
     }
 }

@@ -1,35 +1,35 @@
 use codama::codama;
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub struct StructTest;
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub enum EnumTest {}
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub trait TraitTest {}
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub type TypeTest = ();
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub mod mod_test {}
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub fn fn_test() {}
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub const CONST_TEST: () = ();
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub static STATIC_TEST: () = ();
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub union UnionTest {
     _field: (),
 }
 
-#[codama(node())]
+#[codama(type = invalid)]
 pub extern "C" fn extern_fn_test() {}
 
 fn main() {}

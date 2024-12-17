@@ -1,5 +1,0 @@
-error: public_key_type does not accept any input
- --> tests/codama_attribute/node_directive/type_nodes/public_key_type_node/with_input.fail.rs:3:15
-  |
-3 | #[codama(node(public_key_type(foo = 42)))]
-  |               ^^^^^^^^^^^^^^^^^^^^^^^^^

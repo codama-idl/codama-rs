@@ -1,0 +1,5 @@
+error: unrecognized type
+ --> tests/codama_attribute/type_directive/unrecognized_type.fail.rs:3:17
+  |
+3 | #[codama(type = unrecognized_type(foo = 42))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

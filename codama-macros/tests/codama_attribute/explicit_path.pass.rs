@@ -1,5 +1,5 @@
-#[codama::codama(node(boolean_type))]
-#[codama_macros::codama(node(boolean_type))]
+#[codama::codama(type = boolean)]
+#[codama_macros::codama(type = boolean)]
 pub struct Test;
 
 fn main() {}

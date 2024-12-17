@@ -2,22 +2,22 @@ use codama::{codama, CodamaType};
 
 #[derive(CodamaType)]
 pub struct StructTest {
-    #[codama(node(boolean_type))]
+    #[codama(type = boolean)]
     pub public_field: u8,
-    #[codama(node(boolean_type))]
+    #[codama(type = boolean)]
     private_field: u8,
 }
 
 #[derive(CodamaType)]
-pub struct TupleTest(#[codama(node(boolean_type))] u8);
+pub struct TupleTest(#[codama(type = boolean)] u8);
 
 #[derive(CodamaType)]
 pub enum EnumTest {
     Struct {
-        #[codama(node(boolean_type))]
+        #[codama(type = boolean)]
         field: u8,
     },
-    Tuple(#[codama(node(boolean_type))] u8),
+    Tuple(#[codama(type = boolean)] u8),
 }
 
 fn main() {}

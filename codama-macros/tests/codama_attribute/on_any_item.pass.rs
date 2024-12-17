@@ -1,35 +1,35 @@
 use codama::codama;
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub struct StructTest;
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub enum EnumTest {}
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub trait TraitTest {}
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub type TypeTest = ();
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub mod mod_test {}
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub fn fn_test() {}
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub const CONST_TEST: () = ();
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub static STATIC_TEST: () = ();
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub union UnionTest {
     _field: (),
 }
 
-#[codama(node(boolean_type))]
+#[codama(type = boolean)]
 pub extern "C" fn extern_fn_test() {}
 
 fn main() {}

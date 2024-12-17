@@ -13,16 +13,16 @@ impl Attributes<'_> {
 
     pub fn validate_codama_attributes(&self) -> syn::Result<()> {
         let mut errors = Vec::<syn::Error>::new();
-        let mut has_seen_node = false;
+        let mut has_seen_type = false;
 
         for attribute in &self.0 {
             if let Attribute::Codama(attribute) = attribute {
                 match &attribute.directive {
-                    CodamaDirective::Node(_) if !has_seen_node => has_seen_node = true,
-                    _ if has_seen_node => {
+                    CodamaDirective::Type(_) if !has_seen_type => has_seen_type = true,
+                    _ if has_seen_type => {
                         errors.push(syn::Error::new_spanned(
                             attribute.ast,
-                            "This attribute is overridden by a `#[codama(node(...))]` attribute above",
+                            "This attribute is overridden by a `#[codama(type = ...)]` attribute below",
                         ));
                     }
                     _ => {}

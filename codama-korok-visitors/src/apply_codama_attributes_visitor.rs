@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_attributes::{Attribute, CodamaAttribute, CodamaDirective, NodeDirective};
+use codama_attributes::{Attribute, CodamaAttribute, CodamaDirective, TypeDirective};
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
 
@@ -66,7 +66,6 @@ fn apply_codama_attributes(mut korok: KorokMut) {
 
     let node = attributes
         .iter()
-        .rev()
         .filter_map(|attribute| match attribute {
             Attribute::Codama(attribute) => Some(attribute),
             _ => None,
@@ -84,12 +83,12 @@ fn apply_codama_attribute(
     korok: &KorokMut,
 ) -> Option<Node> {
     match &attribute.directive {
-        CodamaDirective::Node(directive) => apply_node_directive(directive, korok),
+        CodamaDirective::Type(directive) => apply_node_directive(directive, korok),
         _ => node,
     }
 }
 
-fn apply_node_directive(directive: &NodeDirective, korok: &KorokMut) -> Option<Node> {
+fn apply_node_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<Node> {
     let node = directive.node.clone();
     match korok {
         // If the `node` directive is applied to a named field and
@@ -99,8 +98,8 @@ fn apply_node_directive(directive: &NodeDirective, korok: &KorokMut) -> Option<N
             (Some(type_node), Some(ident)) => {
                 Some(StructFieldTypeNode::new(ident.to_string(), type_node).into())
             }
-            _ => Some(node),
+            _ => Some(node.into()),
         },
-        _ => Some(node),
+        _ => Some(node.into()),
     }
 }

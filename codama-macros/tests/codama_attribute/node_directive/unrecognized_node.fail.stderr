@@ -1,5 +1,0 @@
-error: unrecognized node
- --> tests/codama_attribute/node_directive/unrecognized_node.fail.rs:3:15
-  |
-3 | #[codama(node(unrecognized_node(foo = 42)))]
-  |               ^^^^^^^^^^^^^^^^^

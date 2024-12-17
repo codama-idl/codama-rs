@@ -1,1 +1,1 @@
-mod node_directive;
+mod type_directive;

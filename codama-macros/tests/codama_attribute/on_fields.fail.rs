@@ -2,22 +2,22 @@ use codama::{codama, CodamaType};
 
 #[derive(CodamaType)]
 pub struct StructTest {
-    #[codama(node())]
+    #[codama(type = invalid)]
     pub public_field: u8,
-    #[codama(node())]
+    #[codama(type = invalid)]
     private_field: u8,
 }
 
 #[derive(CodamaType)]
-pub struct TupleTest(#[codama(node())] u8);
+pub struct TupleTest(#[codama(type = invalid)] u8);
 
 #[derive(CodamaType)]
 pub enum EnumTest {
     Struct {
-        #[codama(node())]
+        #[codama(type = invalid)]
         field: u8,
     },
-    Tuple(#[codama(node())] u8),
+    Tuple(#[codama(type = invalid)] u8),
 }
 
 fn main() {}
