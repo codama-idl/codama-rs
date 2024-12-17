@@ -8,13 +8,13 @@ impl FromMeta for BooleanTypeNode {
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default().into());
         }
-        meta.as_list()?
+        meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("size", _) => {
-                    let node = Node::from_meta(&meta.as_label()?.value)?;
+                    let node = Node::from_meta(&meta.as_path_value()?.value)?;
                     size.set(node, meta)
                 }
-                (_, Meta::List(_) | Meta::Path(_)) => size.set(Node::from_meta(meta)?, meta),
+                (_, Meta::PathList(_) | Meta::Path(_)) => size.set(Node::from_meta(meta)?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
         let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {

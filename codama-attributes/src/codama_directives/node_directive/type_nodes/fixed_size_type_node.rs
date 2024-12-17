@@ -6,17 +6,20 @@ impl FromMeta for FixedSizeTypeNode<TypeNode> {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut r#type: SetOnce<Node> = SetOnce::<Node>::new("type");
         let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
-        meta.as_list()?
+        meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("type", _) => {
-                    let node = Node::from_meta(&meta.as_label()?.value)?;
+                    let node = Node::from_meta(&meta.as_path_value()?.value)?;
                     r#type.set(node, meta)
                 }
                 ("size", _) => size.set(
-                    meta.as_label()?.value.as_expr()?.as_literal_integer()?,
+                    meta.as_path_value()?
+                        .value
+                        .as_expr()?
+                        .as_literal_integer()?,
                     meta,
                 ),
-                (_, Meta::List(_) | Meta::Path(_)) => r#type.set(Node::from_meta(meta)?, meta),
+                (_, Meta::PathList(_) | Meta::Path(_)) => r#type.set(Node::from_meta(meta)?, meta),
                 (_, Meta::Expr(expr)) => size.set(expr.as_literal_integer()?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;

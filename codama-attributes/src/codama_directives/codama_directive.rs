@@ -13,7 +13,7 @@ impl TryFrom<&Meta> for CodamaDirective {
     type Error = syn::Error;
 
     fn try_from(meta: &Meta) -> syn::Result<Self> {
-        let list = meta.as_list()?;
+        let list = meta.as_path_list()?;
         match list.path.to_string().as_str() {
             "node" => Ok(CodamaDirective::Node(meta.try_into()?)),
             "number" => Ok(CodamaDirective::Number(meta.try_into()?)),

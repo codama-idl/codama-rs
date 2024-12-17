@@ -6,10 +6,10 @@ impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
-        meta.as_list()?.each(|ref meta| {
+        meta.as_path_list()?.each(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
-                ("format", Meta::Label(m)) => match m.value.as_path()?.to_string().as_str() {
+                ("format", Meta::PathValue(m)) => match m.value.as_path()?.to_string().as_str() {
                     "u8" => format.set(NumberFormat::U8, meta),
                     "u16" => format.set(NumberFormat::U16, meta),
                     "u32" => format.set(NumberFormat::U32, meta),
@@ -25,7 +25,7 @@ impl FromMeta for NumberTypeNode {
                     "shortU16" => format.set(NumberFormat::ShortU16, meta),
                     _ => Err(m.value.error("invalid format")),
                 },
-                ("endian", Meta::Label(m)) => match m.value.as_path()?.to_string().as_str() {
+                ("endian", Meta::PathValue(m)) => match m.value.as_path()?.to_string().as_str() {
                     "le" => endian.set(Endian::Little, meta),
                     "be" => endian.set(Endian::Big, meta),
                     _ => Err(m.value.error("invalid endian")),

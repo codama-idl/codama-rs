@@ -11,7 +11,7 @@ impl TryFrom<&Meta> for NodeDirective {
     type Error = syn::Error;
 
     fn try_from(meta: &Meta) -> syn::Result<Self> {
-        let list = meta.as_list()?;
+        let list = meta.as_path_list()?;
         if !list.path.is_strict("node") {
             return Err(list.path.error("expected #[codama(node(...))]"));
         };

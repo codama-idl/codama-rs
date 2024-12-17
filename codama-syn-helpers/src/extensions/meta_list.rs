@@ -46,9 +46,9 @@ mod tests {
         assert_eq!(items.len(), 3);
         assert!(items[0].as_path().unwrap().is_strict("one"));
         assert!(items[1].as_path().unwrap().is_strict("two"));
-        let label = items[2].as_label().unwrap();
-        let expr = label.value.as_expr().unwrap();
-        assert!(label.path.is_strict("three"));
+        let meta = items[2].as_path_value().unwrap();
+        let expr = meta.value.as_expr().unwrap();
+        assert!(meta.path.is_strict("three"));
         assert_eq!(expr.as_literal_integer::<usize>().unwrap(), 42);
     }
 }
