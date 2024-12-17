@@ -15,7 +15,7 @@ impl Attributes<'_> {
         let mut errors = Vec::<syn::Error>::new();
         let mut has_seen_type = false;
 
-        for attribute in &self.0 {
+        for attribute in self.0.iter().rev() {
             if let Attribute::Codama(attribute) = attribute {
                 match &attribute.directive {
                     CodamaDirective::Type(_) if !has_seen_type => has_seen_type = true,
