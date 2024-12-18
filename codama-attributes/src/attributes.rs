@@ -22,7 +22,7 @@ impl Attributes<'_> {
                     CodamaDirective::Type(_) | CodamaDirective::Encoding(_) if has_seen_type => {
                         errors.push(syn::Error::new_spanned(
                             attribute.ast,
-                            "This attribute is overridden by a `#[codama(type = ...)]` attribute above",
+                            "This attribute is overridden by a `#[codama(type = ...)]` attribute below",
                         ));
                     }
                     _ => {}

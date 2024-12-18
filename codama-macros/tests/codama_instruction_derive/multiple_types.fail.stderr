@@ -1,34 +1,34 @@
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
  --> tests/codama_instruction_derive/multiple_types.fail.rs:6:1
   |
 6 | #[codama(type = public_key)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
  --> tests/codama_instruction_derive/multiple_types.fail.rs:4:1
   |
 4 | #[codama(type = boolean)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
   --> tests/codama_instruction_derive/multiple_types.fail.rs:10:5
    |
 10 |     #[codama(type = boolean)]
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
   --> tests/codama_instruction_derive/multiple_types.fail.rs:16:1
    |
 16 | #[codama(type = boolean)]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
   --> tests/codama_instruction_derive/multiple_types.fail.rs:19:5
    |
 19 |     #[codama(type = boolean)]
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: This attribute is overridden by a `#[codama(type = ...)]` attribute above
+error: This attribute is overridden by a `#[codama(type = ...)]` attribute below
   --> tests/codama_instruction_derive/multiple_types.fail.rs:22:9
    |
 22 |         #[codama(type = boolean)]
