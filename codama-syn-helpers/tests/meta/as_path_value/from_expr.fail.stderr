@@ -1,0 +1,5 @@
+error: expected a path followed by a value: `my_path = ...`
+ --> tests/meta/as_path_value/from_expr.fail.rs:3:17
+  |
+3 | #[as_path_value("hello")]
+  |                 ^^^^^^^

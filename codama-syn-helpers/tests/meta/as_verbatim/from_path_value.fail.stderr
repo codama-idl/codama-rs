@@ -1,0 +1,5 @@
+error: expected verbatim
+ --> tests/meta/as_verbatim/from_path_value.fail.rs:3:15
+  |
+3 | #[as_verbatim(foo = bar(1, 2, 3))]
+  |               ^^^^^^^^^^^^^^^^^^

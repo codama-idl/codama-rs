@@ -1,0 +1,5 @@
+error: expected a valid expression
+ --> tests/meta/as_expr/from_verbatim.fail.rs:3:11
+  |
+3 | #[as_expr([==> ??? <==])]
+  |           ^^^^^^^^^^^^^

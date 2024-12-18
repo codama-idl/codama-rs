@@ -1,0 +1,11 @@
+error: expected verbatim
+ --> tests/meta/as_verbatim/from_path_list.fail.rs:3:15
+  |
+3 | #[as_verbatim(foo(1, 2, 3))]
+  |               ^^^^^^^^^^^^
+
+error: expected verbatim
+ --> tests/meta/as_verbatim/from_path_list.fail.rs:6:15
+  |
+6 | #[as_verbatim(foo = (1, 2, 3))]
+  |               ^^^^^^^^^^^^^^^

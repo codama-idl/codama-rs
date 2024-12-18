@@ -1,0 +1,11 @@
+error: expected a valid expression
+ --> tests/meta/as_expr/from_path_list.fail.rs:3:11
+  |
+3 | #[as_expr(foo(1, 2, 3))]
+  |           ^^^^^^^^^^^^
+
+error: expected a valid expression
+ --> tests/meta/as_expr/from_path_list.fail.rs:6:11
+  |
+6 | #[as_expr(foo = (1, 2, 3))]
+  |           ^^^^^^^^^^^^^^^
