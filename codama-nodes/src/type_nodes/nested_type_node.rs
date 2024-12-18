@@ -3,7 +3,7 @@ use crate::{
     NodeTrait, NodeUnionTrait, PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode,
     SizePrefixTypeNode, TypeNode, TypeNodeTrait, TypeNodeUnionTrait,
 };
-use codama_errors::CodamaError;
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::node_union;
 
 #[node_union]
@@ -68,7 +68,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
 impl<T: TypeNodeTrait> TryFrom<Node> for NestedTypeNode<T> {
     type Error = CodamaError;
 
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
+    fn try_from(node: Node) -> CodamaResult<Self> {
         TypeNode::try_from(node)?.try_into()
     }
 }
@@ -76,7 +76,7 @@ impl<T: TypeNodeTrait> TryFrom<Node> for NestedTypeNode<T> {
 impl<T: TypeNodeTrait> TryFrom<TypeNode> for NestedTypeNode<T> {
     type Error = CodamaError;
 
-    fn try_from(node: TypeNode) -> Result<Self, Self::Error> {
+    fn try_from(node: TypeNode) -> CodamaResult<Self> {
         match node {
             TypeNode::FixedSize(node) => {
                 Ok(NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode {
@@ -125,6 +125,63 @@ impl<T: TypeNodeTrait> TryFrom<TypeNode> for NestedTypeNode<T> {
     }
 }
 
+impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for Node {
+    type Error = CodamaError;
+
+    fn try_from(node: NestedTypeNode<T>) -> CodamaResult<Self> {
+        let type_node: TypeNode = node.try_into()?;
+        Ok(Node::Type(type_node.try_into()?))
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for TypeNode {
+    type Error = CodamaError;
+
+    fn try_from(node: NestedTypeNode<T>) -> CodamaResult<Self> {
+        match node {
+            NestedTypeNode::FixedSize(node) => Ok(Self::FixedSize(Box::new(FixedSizeTypeNode {
+                size: node.size,
+                r#type: node.r#type.try_into()?,
+            }))),
+            NestedTypeNode::HiddenPrefix(node) => {
+                Ok(Self::HiddenPrefix(Box::new(HiddenPrefixTypeNode {
+                    r#type: node.r#type.try_into()?,
+                    prefix: node.prefix,
+                })))
+            }
+            NestedTypeNode::HiddenSuffix(node) => {
+                Ok(Self::HiddenSuffix(Box::new(HiddenSuffixTypeNode {
+                    r#type: node.r#type.try_into()?,
+                    suffix: node.suffix,
+                })))
+            }
+            NestedTypeNode::PostOffset(node) => {
+                Ok(Self::PostOffset(Box::new(PostOffsetTypeNode {
+                    offset: node.offset,
+                    strategy: node.strategy,
+                    r#type: node.r#type.try_into()?,
+                })))
+            }
+            NestedTypeNode::PreOffset(node) => Ok(Self::PreOffset(Box::new(PreOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: node.r#type.try_into()?,
+            }))),
+            NestedTypeNode::Sentinel(node) => Ok(Self::Sentinel(Box::new(SentinelTypeNode {
+                r#type: node.r#type.try_into()?,
+                sentinel: node.sentinel,
+            }))),
+            NestedTypeNode::SizePrefix(node) => {
+                Ok(Self::SizePrefix(Box::new(SizePrefixTypeNode {
+                    r#type: node.r#type.try_into()?,
+                    prefix: node.prefix,
+                })))
+            }
+            NestedTypeNode::Value(value) => Ok(T::into_type_node(value)?),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,5 +191,26 @@ mod tests {
     fn kind() {
         let node: NestedTypeNode<StringTypeNode> = StringTypeNode::utf8().into();
         assert_eq!(node.kind(), "stringTypeNode");
+    }
+
+    #[test]
+    fn from_type_node() {
+        let node: TypeNode = FixedSizeTypeNode::<TypeNode>::new(StringTypeNode::utf8(), 42).into();
+        let node: NestedTypeNode<StringTypeNode> = node.try_into().unwrap();
+        assert_eq!(
+            node,
+            NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)))
+        );
+    }
+
+    #[test]
+    fn into_type_node() {
+        let node =
+            NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)));
+        let node: TypeNode = node.try_into().unwrap();
+        assert_eq!(
+            node,
+            TypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)))
+        );
     }
 }

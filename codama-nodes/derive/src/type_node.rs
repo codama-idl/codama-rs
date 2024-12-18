@@ -32,9 +32,9 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
         "ZeroableOption",
     ]
     .contains(&variant_name.to_string().as_str());
-    let ok_result = match is_boxed {
-        true => quote! { Ok(*node) },
-        false => quote! { Ok(node) },
+    let (node_deref, node_boxed) = match is_boxed {
+        true => (quote! { *node }, quote! { Box::new(node) }),
+        false => (quote! { node }, quote! { node }),
     };
 
     Ok(quote! {
@@ -42,12 +42,15 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
             fn from_type_node(node: crate::TypeNode) -> codama_errors::CodamaResult<Self> {
                 use crate::NodeTrait;
                 match node {
-                    crate::TypeNode::#variant_name(node) => #ok_result,
+                    crate::TypeNode::#variant_name(node) => Ok(#node_deref),
                     _ => Err(codama_errors::CodamaError::InvalidNodeConversion {
                         from: "TypeNode".into(),
                         into: #item_name::KIND.into(),
                     }),
                 }
+            }
+            fn into_type_node(node: Self) -> codama_errors::CodamaResult<crate::TypeNode> {
+                Ok(crate::TypeNode::#variant_name(#node_boxed))
             }
         }
     })
