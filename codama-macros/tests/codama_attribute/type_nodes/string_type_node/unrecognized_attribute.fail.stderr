@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/string_type_node/unrecognized_attribute.fail.rs:3:24
+  |
+3 | #[codama(type = string(unrecognized))]
+  |                        ^^^^^^^^^^^^

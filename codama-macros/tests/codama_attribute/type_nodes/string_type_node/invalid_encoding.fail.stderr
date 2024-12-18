@@ -1,0 +1,5 @@
+error: invalid encoding
+ --> tests/codama_attribute/type_nodes/string_type_node/invalid_encoding.fail.rs:3:35
+  |
+3 | #[codama(type = string(encoding = invalid))]
+  |                                   ^^^^^^^

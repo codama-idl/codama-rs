@@ -1,0 +1,11 @@
+error: encoding is already set
+ --> tests/codama_attribute/type_nodes/string_type_node/encoding_already_set.fail.rs:3:30
+  |
+3 | #[codama(type = string(utf8, base64))]
+  |                              ^^^^^^
+
+error: encoding is already set
+ --> tests/codama_attribute/type_nodes/string_type_node/encoding_already_set.fail.rs:6:41
+  |
+6 | #[codama(type = string(encoding = utf8, encoding = base64))]
+  |                                         ^^^^^^^^^^^^^^^^^

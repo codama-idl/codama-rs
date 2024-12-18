@@ -10,27 +10,33 @@ impl FromMeta for NumberTypeNode {
         meta.as_path_list()?.each(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
-                ("format", Meta::PathValue(m)) => match m.value.as_path()?.to_string().as_str() {
-                    "u8" => format.set(NumberFormat::U8, meta),
-                    "u16" => format.set(NumberFormat::U16, meta),
-                    "u32" => format.set(NumberFormat::U32, meta),
-                    "u64" => format.set(NumberFormat::U64, meta),
-                    "u128" => format.set(NumberFormat::U128, meta),
-                    "i8" => format.set(NumberFormat::I8, meta),
-                    "i16" => format.set(NumberFormat::I16, meta),
-                    "i32" => format.set(NumberFormat::I32, meta),
-                    "i64" => format.set(NumberFormat::I64, meta),
-                    "i128" => format.set(NumberFormat::I128, meta),
-                    "f32" => format.set(NumberFormat::F32, meta),
-                    "f64" => format.set(NumberFormat::F64, meta),
-                    "shortU16" => format.set(NumberFormat::ShortU16, meta),
-                    _ => Err(m.value.error("invalid format")),
-                },
-                ("endian", Meta::PathValue(m)) => match m.value.as_path()?.to_string().as_str() {
-                    "le" => endian.set(Endian::Little, meta),
-                    "be" => endian.set(Endian::Big, meta),
-                    _ => Err(m.value.error("invalid endian")),
-                },
+                ("format", _) => {
+                    let path = meta.as_path_value()?.value.as_path()?;
+                    match path.to_string().as_str() {
+                        "u8" => format.set(NumberFormat::U8, meta),
+                        "u16" => format.set(NumberFormat::U16, meta),
+                        "u32" => format.set(NumberFormat::U32, meta),
+                        "u64" => format.set(NumberFormat::U64, meta),
+                        "u128" => format.set(NumberFormat::U128, meta),
+                        "i8" => format.set(NumberFormat::I8, meta),
+                        "i16" => format.set(NumberFormat::I16, meta),
+                        "i32" => format.set(NumberFormat::I32, meta),
+                        "i64" => format.set(NumberFormat::I64, meta),
+                        "i128" => format.set(NumberFormat::I128, meta),
+                        "f32" => format.set(NumberFormat::F32, meta),
+                        "f64" => format.set(NumberFormat::F64, meta),
+                        "shortU16" => format.set(NumberFormat::ShortU16, meta),
+                        _ => Err(path.error("invalid format")),
+                    }
+                }
+                ("endian", _) => {
+                    let path = meta.as_path_value()?.value.as_path()?;
+                    match path.to_string().as_str() {
+                        "le" => endian.set(Endian::Little, meta),
+                        "be" => endian.set(Endian::Big, meta),
+                        _ => Err(path.error("invalid endian")),
+                    }
+                }
                 ("u8", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U8, meta),
                 ("u16", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U16, meta),
                 ("u32", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U32, meta),

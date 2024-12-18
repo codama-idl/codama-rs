@@ -1,6 +1,6 @@
 use crate::utils::FromMeta;
 use codama_nodes::{
-    BooleanTypeNode, FixedSizeTypeNode, NumberTypeNode, PublicKeyTypeNode, TypeNode,
+    BooleanTypeNode, FixedSizeTypeNode, NumberTypeNode, PublicKeyTypeNode, StringTypeNode, TypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -11,6 +11,7 @@ impl FromMeta for TypeNode {
             "fixed_size" => Ok(FixedSizeTypeNode::from_meta(meta)?.into()),
             "number" => Ok(NumberTypeNode::from_meta(meta)?.into()),
             "public_key" => Ok(PublicKeyTypeNode::from_meta(meta)?.into()),
+            "string" => Ok(StringTypeNode::from_meta(meta)?.into()),
             _ => Err(meta.error("unrecognized type")),
         }
     }
