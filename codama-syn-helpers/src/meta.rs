@@ -133,6 +133,14 @@ impl Meta {
             meta => Err(meta.error(msg)),
         }
     }
+
+    pub fn assert_directive(&self, directive: &str) -> syn::Result<&Self> {
+        let path = self.path()?;
+        if !path.is_strict(directive) {
+            return Err(path.error(format!("expected #[codama({})] attribute", directive)));
+        };
+        Ok(&self)
+    }
 }
 
 impl PathValue {

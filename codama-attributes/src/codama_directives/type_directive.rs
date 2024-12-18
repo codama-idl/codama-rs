@@ -1,5 +1,5 @@
 use codama_nodes::TypeNode;
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_syn_helpers::Meta;
 
 use crate::utils::FromMeta;
 
@@ -12,11 +12,7 @@ impl TryFrom<&Meta> for TypeDirective {
     type Error = syn::Error;
 
     fn try_from(meta: &Meta) -> syn::Result<Self> {
-        let pv = meta.as_path_value()?;
-        if !pv.path.is_strict("type") {
-            return Err(pv.path.error("expected #[codama(type = ...)]"));
-        };
-
+        let pv = meta.assert_directive("type")?.as_path_value()?;
         let node = TypeNode::from_meta(&pv.value)?;
         Ok(Self { node })
     }
