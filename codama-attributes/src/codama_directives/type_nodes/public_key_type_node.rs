@@ -14,21 +14,21 @@ impl FromMeta for PublicKeyTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err};
+    use crate::{assert_type, assert_type_err};
 
     #[test]
     fn ok() {
-        assert_node!({ public_key }, PublicKeyTypeNode::new().into());
-        assert_node!({ public_key() }, PublicKeyTypeNode::new().into());
+        assert_type!({ public_key }, PublicKeyTypeNode::new().into());
+        assert_type!({ public_key() }, PublicKeyTypeNode::new().into());
     }
 
     #[test]
     fn unexpected_input() {
-        assert_node_err!(
+        assert_type_err!(
             { public_key(unexpected) },
             "public_key does not accept any input"
         );
-        assert_node_err!(
+        assert_type_err!(
             { public_key(foo = 42) },
             "public_key does not accept any input"
         );

@@ -28,18 +28,18 @@ impl FromMeta for BooleanTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err};
+    use crate::{assert_type, assert_type_err};
     use codama_nodes::NumberFormat::U32;
 
     #[test]
     fn default() {
-        assert_node!({ boolean }, BooleanTypeNode::default().into());
-        assert_node!({ boolean() }, BooleanTypeNode::default().into());
+        assert_type!({ boolean }, BooleanTypeNode::default().into());
+        assert_type!({ boolean() }, BooleanTypeNode::default().into());
     }
 
     #[test]
     fn implicit() {
-        assert_node!(
+        assert_type!(
             { boolean(number(u32)) },
             BooleanTypeNode::new(NumberTypeNode::le(U32)).into()
         );
@@ -47,7 +47,7 @@ mod tests {
 
     #[test]
     fn explicit() {
-        assert_node!(
+        assert_type!(
             { boolean(size = number(u32)) },
             BooleanTypeNode::new(NumberTypeNode::le(U32)).into()
         );
@@ -55,11 +55,11 @@ mod tests {
 
     #[test]
     fn unrecognized_type() {
-        assert_node_err!({ boolean(unrecognized) }, "unrecognized type");
+        assert_type_err!({ boolean(unrecognized) }, "unrecognized type");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!({ boolean(foo = 42) }, "unrecognized attribute");
+        assert_type_err!({ boolean(foo = 42) }, "unrecognized attribute");
     }
 }

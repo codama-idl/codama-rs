@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! assert_node {
+macro_rules! assert_type {
     ({$($attr:tt)*}, $expected:expr) => {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { type = $($attr)* };
@@ -10,7 +10,7 @@ macro_rules! assert_node {
 }
 
 #[macro_export]
-macro_rules! assert_node_err {
+macro_rules! assert_type_err {
     ({$($attr:tt)*}, $expected:expr) => {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { type = $($attr)* };

@@ -56,42 +56,42 @@ impl FromMeta for NumberTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_node, assert_node_err};
+    use crate::{assert_type, assert_type_err};
     use NumberFormat::{U16, U64};
 
     #[test]
     fn implicit() {
-        assert_node!({ number(u16, le) }, NumberTypeNode::le(U16).into());
-        assert_node!({ number(u16, le) }, NumberTypeNode::le(U16).into());
-        assert_node!({ number(u64, le) }, NumberTypeNode::le(U64).into());
-        assert_node!({ number(u16, be) }, NumberTypeNode::be(U16).into());
-        assert_node!({ number(u64, be) }, NumberTypeNode::be(U64).into());
-        assert_node!({ number(le, u16) }, NumberTypeNode::le(U16).into());
+        assert_type!({ number(u16, le) }, NumberTypeNode::le(U16).into());
+        assert_type!({ number(u16, le) }, NumberTypeNode::le(U16).into());
+        assert_type!({ number(u64, le) }, NumberTypeNode::le(U64).into());
+        assert_type!({ number(u16, be) }, NumberTypeNode::be(U16).into());
+        assert_type!({ number(u64, be) }, NumberTypeNode::be(U64).into());
+        assert_type!({ number(le, u16) }, NumberTypeNode::le(U16).into());
     }
 
     #[test]
     fn explicit() {
-        assert_node!(
+        assert_type!(
             { number(format = u16, endian = le) },
             NumberTypeNode::le(U16).into()
         );
-        assert_node!(
+        assert_type!(
             { number(format = u16, endian = le) },
             NumberTypeNode::le(U16).into()
         );
-        assert_node!(
+        assert_type!(
             { number(format = u64, endian = le) },
             NumberTypeNode::le(U64).into()
         );
-        assert_node!(
+        assert_type!(
             { number(format = u16, endian = be) },
             NumberTypeNode::be(U16).into()
         );
-        assert_node!(
+        assert_type!(
             { number(format = u64, endian = be) },
             NumberTypeNode::be(U64).into()
         );
-        assert_node!(
+        assert_type!(
             { number(endian = le, format = u16) },
             NumberTypeNode::le(U16).into()
         );
@@ -99,34 +99,34 @@ mod tests {
 
     #[test]
     fn defaults_to_little_endian() {
-        assert_node!({ number(u16) }, NumberTypeNode::le(U16).into());
-        assert_node!({ number(format = u16) }, NumberTypeNode::le(U16).into());
+        assert_type!({ number(u16) }, NumberTypeNode::le(U16).into());
+        assert_type!({ number(format = u16) }, NumberTypeNode::le(U16).into());
     }
 
     #[test]
     fn missing_format() {
-        assert_node_err!({ number(le) }, "format is missing");
+        assert_type_err!({ number(le) }, "format is missing");
     }
 
     #[test]
     fn format_already_set() {
-        assert_node_err!({ number(u8, u16) }, "format is already set");
+        assert_type_err!({ number(u8, u16) }, "format is already set");
     }
 
     #[test]
     fn endian_already_set() {
-        assert_node_err!({ number(le, be) }, "endian is already set");
+        assert_type_err!({ number(le, be) }, "endian is already set");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_node_err!({ number(u16, le, unknown) }, "unrecognized attribute");
-        assert_node_err!({ number(u16, le, unknown = 42) }, "unrecognized attribute");
-        assert_node_err!({ number(u16 = ?what?, le) }, "unrecognized attribute");
+        assert_type_err!({ number(u16, le, unknown) }, "unrecognized attribute");
+        assert_type_err!({ number(u16, le, unknown = 42) }, "unrecognized attribute");
+        assert_type_err!({ number(u16 = ?what?, le) }, "unrecognized attribute");
     }
 
     #[test]
     fn expected_a_path() {
-        assert_node_err!({ number(42) }, "expected a path");
+        assert_type_err!({ number(42) }, "expected a path");
     }
 }
