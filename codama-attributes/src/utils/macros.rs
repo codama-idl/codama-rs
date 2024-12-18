@@ -1,4 +1,14 @@
 #[macro_export]
+macro_rules! directive {
+    ({$($attr:tt)*}) => {
+        {
+            let meta: codama_syn_helpers::Meta = syn::parse_quote! { $($attr)* };
+            (&meta).try_into().unwrap();
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! assert_type {
     ({$($attr:tt)*}, $expected:expr) => {
         {
