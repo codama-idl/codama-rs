@@ -1,18 +1,20 @@
 use crate::KorokVisitor;
-use codama_attributes::{Attribute, CodamaAttribute, CodamaDirective, TypeDirective};
+use codama_attributes::{
+    Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, TypeDirective,
+};
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
 
 #[derive(Default)]
-pub struct ApplyCodamaAttributesVisitor;
+pub struct ApplyCodamaTypeAttributesVisitor;
 
-impl ApplyCodamaAttributesVisitor {
+impl ApplyCodamaTypeAttributesVisitor {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl KorokVisitor for ApplyCodamaAttributesVisitor {
+impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
         self.visit_children(korok);
     }
@@ -83,17 +85,17 @@ fn apply_codama_attribute(
     korok: &KorokMut,
 ) -> Option<Node> {
     match &attribute.directive {
-        CodamaDirective::Type(directive) => apply_node_directive(directive, korok),
+        CodamaDirective::Type(directive) => apply_type_directive(directive, korok),
+        CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, korok, node),
         _ => node,
     }
 }
 
-fn apply_node_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<Node> {
+fn apply_type_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<Node> {
     let node = directive.node.clone();
     match korok {
-        // If the `node` directive is applied to a named field and
-        // the node is a type node (i.e. excluding `StructFieldTypeNodes`)
-        // then we need to wrap the provided node in a `StructFieldTypeNode`.
+        // If the `type` directive is applied to a named field then
+        // we need to wrap the provided node in a `StructFieldTypeNode`.
         KorokMut::Field(korok) => match (TypeNode::try_from(node.clone()).ok(), &korok.ast.ident) {
             (Some(type_node), Some(ident)) => {
                 Some(StructFieldTypeNode::new(ident.to_string(), type_node).into())
@@ -102,4 +104,12 @@ fn apply_node_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<N
         },
         _ => Some(node.into()),
     }
+}
+
+fn apply_encoding_directive(
+    _directive: &EncodingDirective,
+    _korok: &KorokMut,
+    _node: Option<Node>,
+) -> Option<Node> {
+    todo!()
 }

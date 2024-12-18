@@ -11,7 +11,7 @@ impl Attributes<'_> {
         attrs.try_into()
     }
 
-    pub fn validate_codama_attributes(&self) -> syn::Result<()> {
+    pub fn validate_codama_type_attributes(&self) -> syn::Result<()> {
         let mut errors = Vec::<syn::Error>::new();
         let mut has_seen_type = false;
 
@@ -19,10 +19,10 @@ impl Attributes<'_> {
             if let Attribute::Codama(attribute) = attribute {
                 match &attribute.directive {
                     CodamaDirective::Type(_) if !has_seen_type => has_seen_type = true,
-                    _ if has_seen_type => {
+                    CodamaDirective::Type(_) | CodamaDirective::Encoding(_) if has_seen_type => {
                         errors.push(syn::Error::new_spanned(
                             attribute.ast,
-                            "This attribute is overridden by a `#[codama(type = ...)]` attribute below",
+                            "This attribute is overridden by a `#[codama(type = ...)]` attribute above",
                         ));
                     }
                     _ => {}
@@ -73,7 +73,7 @@ impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
                 .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
                 .collect_and_combine_errors()?,
         );
-        attributes.validate_codama_attributes()?;
+        attributes.validate_codama_type_attributes()?;
         Ok(attributes)
     }
 }
@@ -88,7 +88,7 @@ impl<'a> TryFrom<&'a Vec<syn::Attribute>> for Attributes<'a> {
                 .map(Attribute::parse)
                 .collect_and_combine_errors()?,
         );
-        attributes.validate_codama_attributes()?;
+        attributes.validate_codama_type_attributes()?;
         Ok(attributes)
     }
 }

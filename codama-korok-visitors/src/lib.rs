@@ -1,4 +1,4 @@
-mod apply_codama_attributes_visitor;
+mod apply_codama_type_attributes_visitor;
 mod combine_modules_visitor;
 mod combine_types_visitor;
 mod compose_visitor;
@@ -10,7 +10,7 @@ mod uniform_visitor;
 mod visitable;
 mod visitor;
 
-pub use apply_codama_attributes_visitor::*;
+pub use apply_codama_type_attributes_visitor::*;
 pub use combine_modules_visitor::*;
 pub use combine_types_visitor::*;
 pub use compose_visitor::*;
