@@ -1,4 +1,4 @@
-use crate::{NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
+use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
 use codama_nodes_derive::nestable_type_node;
 use serde::{Deserialize, Serialize};
 
@@ -60,11 +60,8 @@ impl<T: TypeNodeUnionTrait> PostOffsetTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for PostOffsetTypeNode<T>
-where
-    T: NestedTypeNodeTrait<U>,
-{
-    fn get_nested_type_node(&self) -> &U {
+impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for PostOffsetTypeNode<NestedTypeNode<T>> {
+    fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
     }
 }

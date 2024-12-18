@@ -1,4 +1,6 @@
-use crate::{ConstantValueNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
+use crate::{
+    ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait,
+};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -27,11 +29,8 @@ impl<T: TypeNodeUnionTrait> HiddenSuffixTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for HiddenSuffixTypeNode<T>
-where
-    T: NestedTypeNodeTrait<U>,
-{
-    fn get_nested_type_node(&self) -> &U {
+impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for HiddenSuffixTypeNode<NestedTypeNode<T>> {
+    fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
     }
 }

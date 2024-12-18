@@ -30,11 +30,8 @@ impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
     }
 }
 
-impl<T: TypeNodeUnionTrait, U: TypeNodeTrait> NestedTypeNodeTrait<U> for SizePrefixTypeNode<T>
-where
-    T: NestedTypeNodeTrait<U>,
-{
-    fn get_nested_type_node(&self) -> &U {
+impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SizePrefixTypeNode<NestedTypeNode<T>> {
+    fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
     }
 }
