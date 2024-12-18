@@ -30,14 +30,25 @@ impl<T: TypeNodeUnionTrait> FixedSizeTypeNode<T> {
 }
 
 impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for FixedSizeTypeNode<NestedTypeNode<T>> {
+    type Mapped<U: TypeNodeTrait> = FixedSizeTypeNode<NestedTypeNode<U>>;
+
     fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
+    }
+
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+        FixedSizeTypeNode {
+            size: self.size,
+            r#type: self.r#type.map_nested_type_node(f),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{NestedTypeNode, StringTypeNode, TypeNode};
+    use crate::{
+        BooleanTypeNode, NestedTypeNode, NumberFormat::*, NumberTypeNode, StringTypeNode, TypeNode,
+    };
 
     use super::*;
 
@@ -55,6 +66,19 @@ mod tests {
         assert_eq!(node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.size, 42);
+    }
+
+    #[test]
+    fn map_nested_type_node() {
+        let node = FixedSizeTypeNode::<NestedTypeNode<_>>::new(NumberTypeNode::le(U32), 42);
+        let node = node.map_nested_type_node(|node| BooleanTypeNode::new(node));
+        assert_eq!(
+            node,
+            FixedSizeTypeNode::<NestedTypeNode<_>>::new(
+                BooleanTypeNode::new(NumberTypeNode::le(U32)),
+                42
+            )
+        );
     }
 
     #[test]

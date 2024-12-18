@@ -61,8 +61,18 @@ impl<T: TypeNodeUnionTrait> PostOffsetTypeNode<T> {
 }
 
 impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for PostOffsetTypeNode<NestedTypeNode<T>> {
+    type Mapped<U: TypeNodeTrait> = PostOffsetTypeNode<NestedTypeNode<U>>;
+
     fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
+    }
+
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+        PostOffsetTypeNode {
+            r#type: self.r#type.map_nested_type_node(f),
+            strategy: self.strategy,
+            offset: self.offset,
+        }
     }
 }
 

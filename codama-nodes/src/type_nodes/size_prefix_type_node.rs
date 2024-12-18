@@ -31,8 +31,17 @@ impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
 }
 
 impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SizePrefixTypeNode<NestedTypeNode<T>> {
+    type Mapped<U: TypeNodeTrait> = SizePrefixTypeNode<NestedTypeNode<U>>;
+
     fn get_nested_type_node(&self) -> &T {
         self.r#type.get_nested_type_node()
+    }
+
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+        SizePrefixTypeNode {
+            r#type: self.r#type.map_nested_type_node(f),
+            prefix: self.prefix,
+        }
     }
 }
 

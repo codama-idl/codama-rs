@@ -22,6 +22,8 @@ pub enum NestedTypeNode<T: TypeNodeTrait> {
 impl<T: TypeNodeTrait> TypeNodeUnionTrait for NestedTypeNode<T> {}
 
 impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
+    type Mapped<U: TypeNodeTrait> = NestedTypeNode<U>;
+
     fn get_nested_type_node(&self) -> &T {
         match self {
             NestedTypeNode::FixedSize(node) => node.get_nested_type_node(),
@@ -32,6 +34,33 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
             NestedTypeNode::Sentinel(node) => node.get_nested_type_node(),
             NestedTypeNode::SizePrefix(node) => node.get_nested_type_node(),
             NestedTypeNode::Value(value) => value,
+        }
+    }
+
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+        match self {
+            NestedTypeNode::FixedSize(node) => {
+                NestedTypeNode::FixedSize(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::HiddenPrefix(node) => {
+                NestedTypeNode::HiddenPrefix(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::HiddenSuffix(node) => {
+                NestedTypeNode::HiddenSuffix(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::PostOffset(node) => {
+                NestedTypeNode::PostOffset(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::PreOffset(node) => {
+                NestedTypeNode::PreOffset(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::Sentinel(node) => {
+                NestedTypeNode::Sentinel(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::SizePrefix(node) => {
+                NestedTypeNode::SizePrefix(Box::new(node.map_nested_type_node(f)))
+            }
+            NestedTypeNode::Value(value) => NestedTypeNode::Value(f(value)),
         }
     }
 }

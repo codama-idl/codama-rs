@@ -16,5 +16,7 @@ pub trait TypeNodeUnionTrait: NodeUnionTrait {}
 pub trait NestedTypeNodeTrait<T: TypeNodeTrait>:
     Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
 {
+    type Mapped<U: TypeNodeTrait>: NestedTypeNodeTrait<U>;
     fn get_nested_type_node(&self) -> &T;
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U>;
 }
