@@ -1,0 +1,11 @@
+error: format is already set
+ --> tests/codama_attribute/type_nodes/number_type_node/format_already_set.fail.rs:3:29
+  |
+3 | #[codama(type = number(u32, u64))]
+  |                             ^^^
+
+error: format is already set
+ --> tests/codama_attribute/type_nodes/number_type_node/format_already_set.fail.rs:6:38
+  |
+6 | #[codama(type = number(format = u32, format = u64))]
+  |                                      ^^^^^^^^^^^^

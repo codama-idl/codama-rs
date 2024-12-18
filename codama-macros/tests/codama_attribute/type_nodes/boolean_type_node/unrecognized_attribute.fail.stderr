@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/boolean_type_node/unrecognized_attribute.fail.rs:3:25
+  |
+3 | #[codama(type = boolean(foo = 42))]
+  |                         ^^^^^^^^

@@ -1,0 +1,11 @@
+error: size is missing
+ --> tests/codama_attribute/type_nodes/fixed_size_type_node/size_missing.fail.rs:3:17
+  |
+3 | #[codama(type = fixed_size(boolean))]
+  |                 ^^^^^^^^^^^^^^^^^^^
+
+error: size is missing
+ --> tests/codama_attribute/type_nodes/fixed_size_type_node/size_missing.fail.rs:6:17
+  |
+6 | #[codama(type = fixed_size(type = boolean))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^

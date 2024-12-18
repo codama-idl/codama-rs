@@ -3,3 +3,9 @@ error: endian is already set
   |
 3 | #[codama(type = number(be, le, u32))]
   |                            ^^
+
+error: endian is already set
+ --> tests/codama_attribute/type_nodes/number_type_node/endian_already_set.fail.rs:6:37
+  |
+6 | #[codama(type = number(endian = be, endian = le, format = u32))]
+  |                                     ^^^^^^^^^^^

@@ -1,0 +1,11 @@
+error: size is already set
+ --> tests/codama_attribute/type_nodes/fixed_size_type_node/size_already_set.fail.rs:3:41
+  |
+3 | #[codama(type = fixed_size(42, boolean, 100))]
+  |                                         ^^^
+
+error: size is already set
+ --> tests/codama_attribute/type_nodes/fixed_size_type_node/size_already_set.fail.rs:6:55
+  |
+6 | #[codama(type = fixed_size(size = 42, type = boolean, size = 100))]
+  |                                                       ^^^^^^^^^^

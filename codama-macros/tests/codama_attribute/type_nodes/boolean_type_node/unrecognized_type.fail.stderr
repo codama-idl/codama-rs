@@ -1,0 +1,11 @@
+error: unrecognized type
+ --> tests/codama_attribute/type_nodes/boolean_type_node/unrecognized_type.fail.rs:3:25
+  |
+3 | #[codama(type = boolean(unrecognized))]
+  |                         ^^^^^^^^^^^^
+
+error: unrecognized type
+ --> tests/codama_attribute/type_nodes/boolean_type_node/unrecognized_type.fail.rs:6:32
+  |
+6 | #[codama(type = boolean(size = unrecognized))]
+  |                                ^^^^^^^^^^^^
