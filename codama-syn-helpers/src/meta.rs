@@ -80,7 +80,7 @@ impl Meta {
             Meta::PathList(pl) => {
                 let delim_span = pl.delimiter.span().join();
                 let span = match pl.eq_token {
-                    Some(eq_token) => eq_token.span.join(delim_span).unwrap(),
+                    Some(_) => delim_span,
                     None => delim_span,
                 };
                 let message = "unexpected tokens, expected a single path";
