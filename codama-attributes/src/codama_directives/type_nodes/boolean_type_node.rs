@@ -14,9 +14,7 @@ impl FromMeta for BooleanTypeNode {
                     let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
                     size.set(node, meta)
                 }
-                (_, Meta::PathList(_) | Meta::Path(_)) => {
-                    size.set(TypeNode::from_meta(meta)?, meta)
-                }
+                (_, m) if m.is_path_or_list() => size.set(TypeNode::from_meta(meta)?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
         let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {

@@ -2,6 +2,7 @@ use crate::extensions::*;
 use derive_more::From;
 use proc_macro2::{Delimiter, Group, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt};
+use std::fmt::Display;
 use syn::{
     ext::IdentExt,
     parse::discouraged::Speculative,
@@ -12,18 +13,15 @@ use syn::{
 
 #[derive(Debug, From)]
 pub enum Meta {
-    /// A path — e.g. `my_attribute` or `a::b::my_attribute`.
-    Path(Path),
     /// A path followed by an equal sign and a single Meta — e.g. `my_attribute = my_value`.
     PathValue(PathValue),
     /// A path followed by a wrapped list of Metas — e.g. `my_attribute(one, two, three)`.
     /// This accepts an optional equal sign before the list — e.g. `my_attribute = (one, two, three)`.
     PathList(PathList),
-    /// An expression — e.g. `42`, `"hello"` or `a + b`.
-    /// In case of ambiguity with `Path`, `Path` is preferred.
+    /// An expression — e.g. `my_attribute`, `42`, `"hello"` or `a + b`.
     Expr(Expr),
     /// A verbatim token stream — e.g. `[<=>]`.
-    /// In case of ambiguity with `Expr`, `Expr` is preferred.
+    /// This is the fallback for any other Meta that does not match the other variants.
     Verbatim(TokenStream),
 }
 
@@ -45,9 +43,8 @@ pub struct PathList {
 impl Meta {
     pub fn path(&self) -> syn::Result<&Path> {
         match self {
-            Meta::Path(path) => Ok(path),
-            Meta::PathList(meta) => Ok(&meta.path),
-            Meta::PathValue(meta) => Ok(&meta.path),
+            Meta::PathList(pl) => Ok(&pl.path),
+            Meta::PathValue(pv) => Ok(&pv.path),
             Meta::Expr(expr) => match expr {
                 Expr::Path(expr) => Ok(&expr.path),
                 _ => Err(expr.error("expected a path")),
@@ -62,80 +59,87 @@ impl Meta {
         self.path().map_or("".into(), |path| path.to_string())
     }
 
+    pub fn is_path_or_list(&self) -> bool {
+        match self {
+            Meta::PathList(_) | Meta::Expr(Expr::Path(_)) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_path_or_empty_list(&self) -> bool {
         match self {
-            Meta::Path(_) => true,
-            Meta::PathList(list) if list.tokens.is_empty() => true,
+            Meta::PathList(pl) if pl.tokens.is_empty() => true,
+            Meta::Expr(Expr::Path(_)) => true,
             _ => false,
         }
     }
 
     pub fn as_path(&self) -> syn::Result<&Path> {
-        let error_span = match self {
-            Meta::Path(path) => return Ok(path),
-            Meta::PathList(meta) => meta.delimiter.span().open(),
-            Meta::PathValue(meta) => meta.eq_token.span,
-            Meta::Expr(expr) => expr.span(),
-            Meta::Verbatim(tokens) => tokens.span(),
-        };
-        Err(syn::Error::new(error_span, "unexpected token in attribute"))
+        match self {
+            Meta::Expr(Expr::Path(expr)) => Ok(&expr.path),
+            Meta::PathList(pl) => {
+                let delim_span = pl.delimiter.span().join();
+                let span = match pl.eq_token {
+                    Some(eq_token) => eq_token.span.join(delim_span).unwrap(),
+                    None => delim_span,
+                };
+                let message = "unexpected tokens, expected a single path";
+                Err(syn::Error::new(span, message))
+            }
+            Meta::PathValue(pv) => {
+                let span = pv.eq_token.span.join(pv.value.span()).unwrap();
+                let message = "unexpected tokens, expected a single path";
+                Err(syn::Error::new(span, message))
+            }
+            meta => Err(meta.error("expected a path")),
+        }
     }
 
     pub fn as_path_list(&self) -> syn::Result<&PathList> {
         match self {
-            Meta::PathList(meta) => Ok(meta),
-            Meta::Path(path) => Err(path.error(format!(
-                "expected attribute arguments in parentheses: `{}(...)`",
-                path.to_string(),
+            Meta::PathList(pl) => Ok(pl),
+            Meta::PathValue(pv) => Err(pv.value.error(format!(
+                "expected a list: `{} = (...)`",
+                pv.path.to_string()
             ))),
-            Meta::PathValue(meta) => Err(syn::Error::new(
-                meta.eq_token.span,
-                "expected a path followed by a list",
-            )),
-            Meta::Expr(expr) => Err(syn::Error::new(
-                expr.span(),
-                "expected a path followed by a list",
-            )),
-            Meta::Verbatim(tokens) => Err(syn::Error::new(
-                tokens.span(),
-                "expected a path followed by a list",
-            )),
+            Meta::Expr(Expr::Path(expr)) => Err(expr.error(format!(
+                "expected a list: `{0}(...)` or `{0} = (...)`",
+                expr.path.to_string()
+            ))),
+            meta => Err(meta
+                .error("expected a path followed by a list: `my_path(...)` or `my_path = (...)`")),
         }
     }
 
     pub fn as_path_value(&self) -> syn::Result<&PathValue> {
         match self {
-            Meta::PathValue(meta) => Ok(meta),
-            Meta::Path(path) => Err(path.error(format!(
-                "expected a value for this attribute: `{} = ...`",
-                path.to_string(),
+            Meta::PathValue(pv) => Ok(pv),
+            Meta::PathList(pl) => match pl.eq_token {
+                Some(_) => Err(pl.tokens.error("expected a single value, found a list")),
+                None => Err(pl.tokens.error(format!(
+                    "expected `=` followed by a single value: `{} = ...`",
+                    pl.path.to_string(),
+                ))),
+            },
+            Meta::Expr(Expr::Path(expr)) => Err(expr.error(format!(
+                "expected a value for that path: `{} = ...`",
+                expr.path.to_string()
             ))),
-            Meta::PathList(meta) => Err(syn::Error::new(
-                meta.delimiter.span().open(),
-                "expected `=` followed by a value",
-            )),
-            Meta::Expr(expr) => Err(expr.error("expected a path followed by `=`")),
-            Meta::Verbatim(tokens) => Err(tokens.error("expected a path followed by `=`")),
+            meta => Err(meta.error("expected a path followed by a value: `my_path = ...`")),
         }
     }
 
     pub fn as_expr(&self) -> syn::Result<&Expr> {
         match self {
             Meta::Expr(expr) => Ok(expr),
-            Meta::Path(path) => Err(path.error("expected an expression that is not a path")),
-            Meta::PathList(meta) => Err(meta.error("expected a valid expression")),
-            Meta::PathValue(meta) => Err(meta.error("expected a valid expression")),
-            Meta::Verbatim(tokens) => Err(tokens.error("expected a valid expression")),
+            meta => Err(meta.error("expected a valid expression")),
         }
     }
 
-    pub fn as_verbatim(&self) -> syn::Result<&TokenStream> {
+    pub fn as_verbatim(&self, msg: impl Display) -> syn::Result<&TokenStream> {
         match self {
             Meta::Verbatim(tokens) => Ok(tokens),
-            Meta::Path(path) => Err(path.error("expected a custom token stream")),
-            Meta::PathList(meta) => Err(meta.error("expected a custom token stream")),
-            Meta::PathValue(meta) => Err(meta.error("expected a custom token stream")),
-            Meta::Expr(expr) => Err(expr.error("expected a custom token stream")),
+            meta => Err(meta.error(msg)),
         }
     }
 }
@@ -182,7 +186,11 @@ impl syn::parse::Parse for Meta {
                     Ok(Self::PathValue(input.parse()?))
                 } else {
                     input.advance_to(&fork);
-                    Ok(Self::Path(path))
+                    Ok(Self::Expr(syn::Expr::Path(syn::ExprPath {
+                        attrs: Vec::new(),
+                        qself: None,
+                        path,
+                    })))
                 }
             }
             Err(_) => match fork.parse::<Expr>() {
@@ -259,7 +267,6 @@ fn parse_delimiters(input: syn::parse::ParseStream) -> syn::Result<(MacroDelimit
 impl ToTokens for Meta {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            Meta::Path(m) => m.to_tokens(tokens),
             Meta::PathList(m) => m.to_tokens(tokens),
             Meta::PathValue(m) => m.to_tokens(tokens),
             Meta::Expr(m) => m.to_tokens(tokens),
@@ -304,7 +311,7 @@ mod tests {
     #[test]
     fn parse_path() {
         let meta = meta! { foo };
-        let Meta::Path(path) = meta else {
+        let Meta::Expr(syn::Expr::Path(syn::ExprPath { path, .. })) = meta else {
             panic!("expected Meta::Path");
         };
         assert!(path.is_strict("foo"));
@@ -350,7 +357,7 @@ mod tests {
             panic!("expected Meta::PathValue");
         };
         assert!(meta.path.is_strict("foo"));
-        let value = meta.value.as_verbatim().unwrap();
+        let value = meta.value.as_verbatim("expected verbatim").unwrap();
         assert_eq!(value.to_string(), "? what ?");
     }
 
@@ -391,8 +398,14 @@ mod tests {
         assert_eq!(list.path.to_string(), "foo");
         let metas = list.parse_metas()?;
         assert_eq!(metas.len(), 2);
-        assert_eq!(metas[0].as_verbatim()?.to_string(), "[==> 1 <==]");
-        assert_eq!(metas[1].as_verbatim()?.to_string(), "[==> 2 <==]");
+        assert_eq!(
+            metas[0].as_verbatim("expected [==> n <==]")?.to_string(),
+            "[==> 1 <==]"
+        );
+        assert_eq!(
+            metas[1].as_verbatim("expected [==> n <==]")?.to_string(),
+            "[==> 2 <==]"
+        );
         Ok(())
     }
 
@@ -427,14 +440,22 @@ mod tests {
     fn as_path() {
         assert_eq!(meta! { foo }.as_path().unwrap().to_string(), "foo");
 
-        let msg = "unexpected token in attribute";
-        assert_eq!(meta! { foo(42) }.as_path().unwrap_err().to_string(), msg);
-        assert_eq!(meta! { foo = 42 }.as_path().unwrap_err().to_string(), msg);
+        assert_eq!(
+            meta! { foo(42) }.as_path().unwrap_err().to_string(),
+            "unexpected tokens, expected a single path"
+        );
+        assert_eq!(
+            meta! { foo = 42 }.as_path().unwrap_err().to_string(),
+            "unexpected tokens, expected a single path"
+        );
         assert_eq!(
             meta! { foo = bar(42) }.as_path().unwrap_err().to_string(),
-            msg
+            "unexpected tokens, expected a single path"
         );
-        assert_eq!(meta! { [verbatim] }.as_path().unwrap_err().to_string(), msg);
+        assert_eq!(
+            meta! { [verbatim] }.as_path().unwrap_err().to_string(),
+            "expected a path"
+        );
     }
 
     #[test]
@@ -446,22 +467,22 @@ mod tests {
 
         assert_eq!(
             meta! { foo }.as_path_list().unwrap_err().to_string(),
-            "expected attribute arguments in parentheses: `foo(...)`"
+            "expected a list: `foo(...)` or `foo = (...)`"
         );
         assert_eq!(
             meta! { foo = 42 }.as_path_list().unwrap_err().to_string(),
-            "expected a path followed by a list"
+            "expected a list: `foo = (...)`"
         );
         assert_eq!(
             meta! { foo = bar(42) }
                 .as_path_list()
                 .unwrap_err()
                 .to_string(),
-            "expected a path followed by a list"
+            "expected a list: `foo = (...)`"
         );
         assert_eq!(
             meta! { [verbatim] }.as_path_list().unwrap_err().to_string(),
-            "expected a path followed by a list"
+            "expected a path followed by a list: `my_path(...)` or `my_path = (...)`"
         );
     }
 }

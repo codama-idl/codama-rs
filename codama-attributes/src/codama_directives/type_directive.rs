@@ -49,7 +49,7 @@ mod tests {
         let error = TypeDirective::try_from(&meta).unwrap_err();
         assert!(error
             .to_string()
-            .contains("expected `=` followed by a value"));
+            .contains("expected a single value, found a list"));
     }
 
     #[test]

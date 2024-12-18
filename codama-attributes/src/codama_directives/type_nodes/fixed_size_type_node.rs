@@ -19,9 +19,7 @@ impl FromMeta for FixedSizeTypeNode<TypeNode> {
                         .as_literal_integer()?,
                     meta,
                 ),
-                (_, Meta::PathList(_) | Meta::Path(_)) => {
-                    r#type.set(TypeNode::from_meta(meta)?, meta)
-                }
+                (_, m) if m.is_path_or_list() => r#type.set(TypeNode::from_meta(meta)?, meta),
                 (_, Meta::Expr(expr)) => size.set(expr.as_literal_integer()?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
