@@ -1,0 +1,5 @@
+error: invalid encoding
+ --> tests/codama_attribute/encoding_directive/invalid_encoding.fail.rs:3:21
+  |
+3 | #[codama(encoding = invalid)]
+  |                     ^^^^^^^

@@ -25,7 +25,7 @@ mod tests {
     use syn::parse_quote;
 
     #[test]
-    fn single_input() {
+    fn ok() {
         let meta: Meta = parse_quote! { type = number(u16, le) };
         let node = TypeDirective::try_from(&meta).unwrap().node;
 
