@@ -1,10 +1,7 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{
-    BytesEncoding::{self, Base16, Base58, Base64, Utf8},
-    StringTypeNode,
-};
+use codama_nodes::{BytesEncoding, StringTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
-use syn::Expr;
+use syn::{Expr, ExprPath};
 
 impl FromMeta for StringTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
@@ -16,18 +13,17 @@ impl FromMeta for StringTypeNode {
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("encoding", _) => {
                     let path = meta.as_path_value()?.value.as_path()?;
-                    match path.to_string().as_str() {
-                        "base16" => encoding.set(Base16, meta),
-                        "base58" => encoding.set(Base58, meta),
-                        "base64" => encoding.set(Base64, meta),
-                        "utf8" => encoding.set(Utf8, meta),
-                        _ => return Err(path.error("invalid encoding")),
+                    match BytesEncoding::try_from(path.to_string()) {
+                        Ok(value) => encoding.set(value, meta),
+                        _ => Err(path.error("invalid encoding")),
                     }
                 }
-                ("base16", Meta::Expr(Expr::Path(_))) => encoding.set(Base16, meta),
-                ("base58", Meta::Expr(Expr::Path(_))) => encoding.set(Base58, meta),
-                ("base64", Meta::Expr(Expr::Path(_))) => encoding.set(Base64, meta),
-                ("utf8", Meta::Expr(Expr::Path(_))) => encoding.set(Utf8, meta),
+                (_, Meta::Expr(Expr::Path(ExprPath { path, .. }))) => {
+                    if let Ok(value) = BytesEncoding::try_from(path.to_string()) {
+                        return encoding.set(value, meta);
+                    }
+                    Err(path.error("unrecognized attribute"))
+                }
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
         Ok(StringTypeNode::new(encoding.take(meta)?))

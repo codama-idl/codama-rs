@@ -1,7 +1,7 @@
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{Endian, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
-use syn::Expr;
+use syn::{Expr, ExprPath};
 
 impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
@@ -12,46 +12,27 @@ impl FromMeta for NumberTypeNode {
             match (meta.path_str().as_str(), meta) {
                 ("format", _) => {
                     let path = meta.as_path_value()?.value.as_path()?;
-                    match path.to_string().as_str() {
-                        "u8" => format.set(NumberFormat::U8, meta),
-                        "u16" => format.set(NumberFormat::U16, meta),
-                        "u32" => format.set(NumberFormat::U32, meta),
-                        "u64" => format.set(NumberFormat::U64, meta),
-                        "u128" => format.set(NumberFormat::U128, meta),
-                        "i8" => format.set(NumberFormat::I8, meta),
-                        "i16" => format.set(NumberFormat::I16, meta),
-                        "i32" => format.set(NumberFormat::I32, meta),
-                        "i64" => format.set(NumberFormat::I64, meta),
-                        "i128" => format.set(NumberFormat::I128, meta),
-                        "f32" => format.set(NumberFormat::F32, meta),
-                        "f64" => format.set(NumberFormat::F64, meta),
-                        "shortU16" => format.set(NumberFormat::ShortU16, meta),
+                    match NumberFormat::try_from(path.to_string()) {
+                        Ok(value) => format.set(value, meta),
                         _ => Err(path.error("invalid format")),
                     }
                 }
                 ("endian", _) => {
                     let path = meta.as_path_value()?.value.as_path()?;
-                    match path.to_string().as_str() {
-                        "le" => endian.set(Endian::Little, meta),
-                        "be" => endian.set(Endian::Big, meta),
+                    match Endian::try_from(path.to_string()) {
+                        Ok(value) => endian.set(value, meta),
                         _ => Err(path.error("invalid endian")),
                     }
                 }
-                ("u8", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U8, meta),
-                ("u16", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U16, meta),
-                ("u32", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U32, meta),
-                ("u64", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U64, meta),
-                ("u128", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::U128, meta),
-                ("i8", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::I8, meta),
-                ("i16", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::I16, meta),
-                ("i32", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::I32, meta),
-                ("i64", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::I64, meta),
-                ("i128", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::I128, meta),
-                ("f32", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::F32, meta),
-                ("f64", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::F64, meta),
-                ("shortU16", Meta::Expr(Expr::Path(_))) => format.set(NumberFormat::ShortU16, meta),
-                ("le", Meta::Expr(Expr::Path(_))) => endian.set(Endian::Little, meta),
-                ("be", Meta::Expr(Expr::Path(_))) => endian.set(Endian::Big, meta),
+                (_, Meta::Expr(Expr::Path(ExprPath { path, .. }))) => {
+                    if let Ok(value) = NumberFormat::try_from(path.to_string()) {
+                        return format.set(value, meta);
+                    }
+                    if let Ok(value) = Endian::try_from(path.to_string()) {
+                        return endian.set(value, meta);
+                    }
+                    Err(path.error("unrecognized attribute"))
+                }
                 _ => Err(path.error("unrecognized attribute")),
             }
         })?;

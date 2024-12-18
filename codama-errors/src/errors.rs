@@ -23,6 +23,15 @@ pub enum CodamaError {
 
     #[error("Node not found")]
     NodeNotFound,
+
+    #[error("Invalid encoding: {0}")]
+    InvalidBytesEncoding(String),
+
+    #[error("Invalid number format: {0}")]
+    InvalidNumberFormat(String),
+
+    #[error("Invalid endian: {0}")]
+    InvalidEndian(String),
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

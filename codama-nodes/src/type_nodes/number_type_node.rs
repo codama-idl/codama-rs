@@ -1,3 +1,4 @@
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::type_node;
 use serde::{Deserialize, Serialize};
 
@@ -48,12 +49,63 @@ pub enum NumberFormat {
     ShortU16,
 }
 
+impl TryFrom<String> for NumberFormat {
+    type Error = CodamaError;
+
+    fn try_from(value: String) -> CodamaResult<Self> {
+        value.as_str().try_into()
+    }
+}
+
+impl TryFrom<&str> for NumberFormat {
+    type Error = CodamaError;
+
+    fn try_from(value: &str) -> CodamaResult<Self> {
+        match value {
+            "u8" => Ok(U8),
+            "u16" => Ok(U16),
+            "u32" => Ok(U32),
+            "u64" => Ok(U64),
+            "u128" => Ok(U128),
+            "i8" => Ok(I8),
+            "i16" => Ok(I16),
+            "i32" => Ok(I32),
+            "i64" => Ok(I64),
+            "i128" => Ok(I128),
+            "f32" => Ok(F32),
+            "f64" => Ok(F64),
+            "short_u16" => Ok(ShortU16),
+            _ => Err(CodamaError::InvalidNumberFormat(value.to_string())),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Endian {
     #[serde(rename = "be")]
     Big,
     #[serde(rename = "le")]
     Little,
+}
+
+impl TryFrom<String> for Endian {
+    type Error = CodamaError;
+
+    fn try_from(value: String) -> CodamaResult<Self> {
+        value.as_str().try_into()
+    }
+}
+
+impl TryFrom<&str> for Endian {
+    type Error = CodamaError;
+
+    fn try_from(value: &str) -> CodamaResult<Self> {
+        match value {
+            "be" | "big" => Ok(Endian::Big),
+            "le" | "little" => Ok(Endian::Little),
+            _ => Err(CodamaError::InvalidEndian(value.to_string())),
+        }
+    }
 }
 
 #[cfg(test)]
