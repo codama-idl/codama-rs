@@ -11,9 +11,9 @@ impl TryFrom<&Meta> for NumberDirective {
     type Error = syn::Error;
 
     fn try_from(meta: &Meta) -> syn::Result<Self> {
-        let list = meta.as_path_list()?;
-        if !list.path.is_strict("number") {
-            return Err(list.path.error("expected #[codama(number(...))]"));
+        let pl = meta.as_path_list()?;
+        if !pl.path.is_strict("number") {
+            return Err(pl.path.error("expected #[codama(number(...))]"));
         };
 
         // TODO

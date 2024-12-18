@@ -1,12 +1,13 @@
-use crate::{NumberDirective, StringDirective, TypeDirective};
+use crate::{EncodingDirective, NumberDirective, TypeDirective};
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
 
 #[derive(Debug, PartialEq, From)]
 pub enum CodamaDirective {
+    // Type directives.
     Type(TypeDirective),
+    Encoding(EncodingDirective),
     Number(NumberDirective),
-    String(StringDirective),
 }
 
 impl TryFrom<&Meta> for CodamaDirective {
@@ -16,8 +17,8 @@ impl TryFrom<&Meta> for CodamaDirective {
         let path = meta.path()?;
         match path.to_string().as_str() {
             "type" => Ok(CodamaDirective::Type(meta.try_into()?)),
+            "encoding" => Ok(CodamaDirective::Encoding(meta.try_into()?)),
             "number" => Ok(CodamaDirective::Number(meta.try_into()?)),
-            "string" => Ok(CodamaDirective::String(meta.try_into()?)),
             _ => Err(path.error("unrecognized codama directive")),
         }
     }

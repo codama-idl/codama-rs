@@ -2,17 +2,17 @@ use codama_nodes::BytesEncoding;
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
-pub struct StringDirective {
+pub struct EncodingDirective {
     pub encoding: BytesEncoding,
 }
 
-impl TryFrom<&Meta> for StringDirective {
+impl TryFrom<&Meta> for EncodingDirective {
     type Error = syn::Error;
 
     fn try_from(meta: &Meta) -> syn::Result<Self> {
-        let list = meta.as_path_list()?;
-        if !list.path.is_strict("string") {
-            return Err(list.path.error("expected #[codama(string(...))]"));
+        let pv = meta.as_path_value()?;
+        if !pv.path.is_strict("encoding") {
+            return Err(pv.path.error("expected #[codama(encoding = ...)]"));
         };
 
         // TODO
