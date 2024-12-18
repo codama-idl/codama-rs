@@ -6,7 +6,6 @@ use std::fmt::Display;
 use syn::{
     ext::IdentExt,
     parse::discouraged::Speculative,
-    spanned::Spanned,
     token::{Brace, Bracket, Paren},
     Expr, MacroDelimiter, MetaList, Path, Token,
 };
@@ -77,20 +76,12 @@ impl Meta {
     pub fn as_path(&self) -> syn::Result<&Path> {
         match self {
             Meta::Expr(Expr::Path(expr)) => Ok(&expr.path),
-            Meta::PathList(pl) => {
-                let delim_span = pl.delimiter.span().join();
-                let span = match pl.eq_token {
-                    Some(_) => delim_span,
-                    None => delim_span,
-                };
-                let message = "unexpected tokens, expected a single path";
-                Err(syn::Error::new(span, message))
-            }
-            Meta::PathValue(pv) => {
-                let span = pv.eq_token.span.join(pv.value.span()).unwrap();
-                let message = "unexpected tokens, expected a single path";
-                Err(syn::Error::new(span, message))
-            }
+            Meta::PathList(pl) => Err(pl
+                .tokens_after_path()
+                .error("unexpected tokens, expected a single path")),
+            Meta::PathValue(pv) => Err(pv
+                .tokens_after_path()
+                .error("unexpected tokens, expected a single path")),
             meta => Err(meta.error("expected a path")),
         }
     }
@@ -144,7 +135,25 @@ impl Meta {
     }
 }
 
+impl PathValue {
+    /// Get the equal sign and value tokens.
+    pub fn tokens_after_path(&self) -> TokenStream {
+        let mut tokens = TokenStream::new();
+        self.eq_token.to_tokens(&mut tokens);
+        self.value.to_tokens(&mut tokens);
+        tokens
+    }
+}
+
 impl PathList {
+    /// Get all tokens after the path, including the equal sign if present.
+    pub fn tokens_after_path(&self) -> TokenStream {
+        let mut tokens = TokenStream::new();
+        self.eq_token.to_tokens(&mut tokens);
+        delimiters_to_tokens(&self.delimiter, &self.tokens, &mut tokens);
+        tokens
+    }
+
     /// Get an equivalent `MetaList` from the path list.
     pub fn as_meta_list(&self) -> MetaList {
         MetaList {
@@ -264,6 +273,17 @@ fn parse_delimiters(input: syn::parse::ParseStream) -> syn::Result<(MacroDelimit
     })
 }
 
+fn delimiters_to_tokens(delimiter: &MacroDelimiter, inner: &TokenStream, tokens: &mut TokenStream) {
+    let (delim, span) = match delimiter {
+        MacroDelimiter::Paren(paren) => (Delimiter::Parenthesis, paren.span),
+        MacroDelimiter::Brace(brace) => (Delimiter::Brace, brace.span),
+        MacroDelimiter::Bracket(bracket) => (Delimiter::Bracket, bracket.span),
+    };
+    let mut group = Group::new(delim, inner.clone());
+    group.set_span(span.join());
+    tokens.append(group);
+}
+
 impl ToTokens for Meta {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
@@ -287,14 +307,7 @@ impl ToTokens for PathList {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.path.to_tokens(tokens);
         self.eq_token.to_tokens(tokens);
-        let (delim, span) = match self.delimiter {
-            MacroDelimiter::Paren(paren) => (Delimiter::Parenthesis, paren.span),
-            MacroDelimiter::Brace(brace) => (Delimiter::Brace, brace.span),
-            MacroDelimiter::Bracket(bracket) => (Delimiter::Bracket, bracket.span),
-        };
-        let mut group = Group::new(delim, self.tokens.clone());
-        group.set_span(span.join());
-        tokens.append(group);
+        delimiters_to_tokens(&self.delimiter, &self.tokens, tokens);
     }
 }
 

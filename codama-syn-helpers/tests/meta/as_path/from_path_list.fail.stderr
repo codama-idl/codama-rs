@@ -5,7 +5,7 @@ error: unexpected tokens, expected a single path
   |              ^^^^^^^^^
 
 error: unexpected tokens, expected a single path
- --> tests/meta/as_path/from_path_list.fail.rs:6:17
+ --> tests/meta/as_path/from_path_list.fail.rs:6:15
   |
 6 | #[as_path(foo = (1, 2, 3))]
-  |                 ^^^^^^^^^
+  |               ^^^^^^^^^^^
