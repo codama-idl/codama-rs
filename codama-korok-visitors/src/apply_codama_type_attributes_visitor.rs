@@ -110,26 +110,40 @@ fn apply_type_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<N
 }
 
 fn apply_encoding_directive(directive: &EncodingDirective, node: Option<Node>) -> Option<Node> {
+    update_type_node(
+        node,
+        |type_node| match NestedTypeNode::<StringTypeNode>::try_from(type_node.clone()) {
+            Ok(nested) => nested
+                .map_nested_type_node(|_| StringTypeNode::new(directive.encoding))
+                .try_into() // TODO: Remove unwrap?
+                .unwrap(),
+            _ => {
+                // TODO: Throw error?
+                type_node
+            }
+        },
+    )
+}
+
+/// Updates the type node within a given `Node` using the provided function.
+/// If the `Node` is a `StructFieldTypeNode`, its type node will be updated; otherwise,
+/// the function will attempt to update the type node of the `Node` itself.
+fn update_type_node(node: Option<Node>, update: impl FnOnce(TypeNode) -> TypeNode) -> Option<Node> {
     let Some(node) = node else {
-        // TODO: Throw error
+        // TODO: Throw error?
         return None;
     };
-    let update_node = |_: StringTypeNode| StringTypeNode::new(directive.encoding);
 
-    if let Ok(nested) = NestedTypeNode::<StringTypeNode>::try_from(node.clone()) {
-        // TODO: Remove unwrap
-        return Some(nested.map_nested_type_node(update_node).try_into().unwrap());
+    if let Node::Type(RegisteredTypeNode::StructField(mut field)) = node {
+        field.r#type = update(field.r#type);
+        return Some(field.into());
     };
 
-    match node {
-        Node::Type(RegisteredTypeNode::String(node)) => Some(update_node(node).into()),
-        Node::Type(RegisteredTypeNode::StructField(mut field)) => {
-            field.r#type = match field.r#type {
-                TypeNode::String(node) => update_node(node).into(),
-                node => node,
-            };
-            Some(field.into())
+    match TypeNode::try_from(node.clone()) {
+        Ok(type_node) => Some(update(type_node).into()),
+        Err(_) => {
+            // TODO: Throw error?
+            Some(node)
         }
-        node => Some(node),
     }
 }
