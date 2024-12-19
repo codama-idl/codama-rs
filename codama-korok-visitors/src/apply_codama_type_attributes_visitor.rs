@@ -115,8 +115,7 @@ fn apply_encoding_directive(directive: &EncodingDirective, node: Option<Node>) -
         |type_node| match NestedTypeNode::<StringTypeNode>::try_from(type_node.clone()) {
             Ok(nested) => nested
                 .map_nested_type_node(|_| StringTypeNode::new(directive.encoding))
-                .try_into() // TODO: Remove unwrap?
-                .unwrap(),
+                .into(),
             _ => {
                 // TODO: Throw error?
                 type_node

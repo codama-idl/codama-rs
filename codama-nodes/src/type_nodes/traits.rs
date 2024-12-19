@@ -9,11 +9,8 @@ pub trait TypeNodeTrait: NodeTrait {
             into: Self::KIND.into(),
         })
     }
-    fn into_type_node(_node: Self) -> CodamaResult<TypeNode> {
-        Err(codama_errors::CodamaError::InvalidNodeConversion {
-            from: Self::KIND.into(),
-            into: "TypeNode".into(),
-        })
+    fn into_type_node(_node: Self) -> TypeNode {
+        unreachable!()
     }
 }
 

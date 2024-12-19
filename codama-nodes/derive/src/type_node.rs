@@ -49,8 +49,8 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
                     }),
                 }
             }
-            fn into_type_node(node: Self) -> codama_errors::CodamaResult<crate::TypeNode> {
-                Ok(crate::TypeNode::#variant_name(#node_boxed))
+            fn into_type_node(node: Self) -> crate::TypeNode {
+                crate::TypeNode::#variant_name(#node_boxed)
             }
         }
     })

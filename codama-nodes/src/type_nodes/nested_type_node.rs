@@ -129,55 +129,49 @@ impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for Node {
     type Error = CodamaError;
 
     fn try_from(node: NestedTypeNode<T>) -> CodamaResult<Self> {
-        let type_node: TypeNode = node.try_into()?;
+        let type_node: TypeNode = node.into();
         Ok(Node::Type(type_node.try_into()?))
     }
 }
 
-impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for TypeNode {
-    type Error = CodamaError;
-
-    fn try_from(node: NestedTypeNode<T>) -> CodamaResult<Self> {
+impl<T: TypeNodeTrait> From<NestedTypeNode<T>> for TypeNode {
+    fn from(node: NestedTypeNode<T>) -> Self {
         match node {
-            NestedTypeNode::FixedSize(node) => Ok(Self::FixedSize(Box::new(FixedSizeTypeNode {
+            NestedTypeNode::FixedSize(node) => Self::FixedSize(Box::new(FixedSizeTypeNode {
                 size: node.size,
-                r#type: node.r#type.try_into()?,
-            }))),
+                r#type: node.r#type.into(),
+            })),
             NestedTypeNode::HiddenPrefix(node) => {
-                Ok(Self::HiddenPrefix(Box::new(HiddenPrefixTypeNode {
-                    r#type: node.r#type.try_into()?,
+                Self::HiddenPrefix(Box::new(HiddenPrefixTypeNode {
+                    r#type: node.r#type.into(),
                     prefix: node.prefix,
-                })))
+                }))
             }
             NestedTypeNode::HiddenSuffix(node) => {
-                Ok(Self::HiddenSuffix(Box::new(HiddenSuffixTypeNode {
-                    r#type: node.r#type.try_into()?,
+                Self::HiddenSuffix(Box::new(HiddenSuffixTypeNode {
+                    r#type: node.r#type.into(),
                     suffix: node.suffix,
-                })))
+                }))
             }
-            NestedTypeNode::PostOffset(node) => {
-                Ok(Self::PostOffset(Box::new(PostOffsetTypeNode {
-                    offset: node.offset,
-                    strategy: node.strategy,
-                    r#type: node.r#type.try_into()?,
-                })))
-            }
-            NestedTypeNode::PreOffset(node) => Ok(Self::PreOffset(Box::new(PreOffsetTypeNode {
+            NestedTypeNode::PostOffset(node) => Self::PostOffset(Box::new(PostOffsetTypeNode {
                 offset: node.offset,
                 strategy: node.strategy,
-                r#type: node.r#type.try_into()?,
-            }))),
-            NestedTypeNode::Sentinel(node) => Ok(Self::Sentinel(Box::new(SentinelTypeNode {
-                r#type: node.r#type.try_into()?,
+                r#type: node.r#type.into(),
+            })),
+            NestedTypeNode::PreOffset(node) => Self::PreOffset(Box::new(PreOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: node.r#type.into(),
+            })),
+            NestedTypeNode::Sentinel(node) => Self::Sentinel(Box::new(SentinelTypeNode {
+                r#type: node.r#type.into(),
                 sentinel: node.sentinel,
-            }))),
-            NestedTypeNode::SizePrefix(node) => {
-                Ok(Self::SizePrefix(Box::new(SizePrefixTypeNode {
-                    r#type: node.r#type.try_into()?,
-                    prefix: node.prefix,
-                })))
-            }
-            NestedTypeNode::Value(value) => Ok(T::into_type_node(value)?),
+            })),
+            NestedTypeNode::SizePrefix(node) => Self::SizePrefix(Box::new(SizePrefixTypeNode {
+                r#type: node.r#type.into(),
+                prefix: node.prefix,
+            })),
+            NestedTypeNode::Value(value) => T::into_type_node(value),
         }
     }
 }
