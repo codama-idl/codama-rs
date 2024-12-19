@@ -8,11 +8,11 @@ pub struct RootStore {
 }
 
 impl RootStore {
-    pub fn load(path: &Path) -> CodamaResult<Self> {
+    pub fn load<P: AsRef<Path>>(path: P) -> CodamaResult<Self> {
         Self::load_all(&[path])
     }
 
-    pub fn load_all(paths: &[&Path]) -> CodamaResult<Self> {
+    pub fn load_all<P: AsRef<Path>>(paths: &[P]) -> CodamaResult<Self> {
         Ok(Self {
             crates: paths
                 .iter()

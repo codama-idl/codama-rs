@@ -16,11 +16,11 @@ pub struct CrateStore {
 }
 
 impl CrateStore {
-    pub fn load(path: &Path) -> CodamaResult<Self> {
+    pub fn load<P: AsRef<Path>>(path: P) -> CodamaResult<Self> {
         // Find and load the closest Cargo.toml file — a.k.a. the crate's manifest.
-        let manifest_path = get_closest_manifest_path(path)?;
+        let manifest_path = get_closest_manifest_path(path.as_ref())?;
         let mut manifest = Manifest::from_path(&manifest_path)?;
-        manifest.complete_from_path(path)?;
+        manifest.complete_from_path(path.as_ref())?;
 
         // Find the crate's content from the manifest.
         let relative_product_path = get_product_path(&manifest)?;
@@ -55,8 +55,8 @@ impl CrateStore {
 /// E.g. "my/crate/Cargo.toml" returns "my/crate/Cargo.toml"
 /// E.g. "my/crate" may return "my/crate/Cargo.toml"
 /// E.g. "my/workspace/crate" may return "my/workspace/Cargo.toml"
-pub fn get_closest_manifest_path(path: &Path) -> CodamaResult<PathBuf> {
-    let mut current_path = path.canonicalize()?;
+pub fn get_closest_manifest_path<P: AsRef<Path>>(path: P) -> CodamaResult<PathBuf> {
+    let mut current_path = path.as_ref().canonicalize()?;
 
     // If the initial path is a valid Cargo.toml file, return it.
     if current_path.ends_with("Cargo.toml") && current_path.is_file() {
