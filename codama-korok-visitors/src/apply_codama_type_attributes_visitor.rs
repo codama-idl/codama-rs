@@ -3,7 +3,10 @@ use codama_attributes::{
     Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, TypeDirective,
 };
 use codama_koroks::{KorokMut, KorokTrait};
-use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
+use codama_nodes::{
+    NestedTypeNode, NestedTypeNodeTrait, Node, RegisteredTypeNode, StringTypeNode,
+    StructFieldTypeNode, TypeNode,
+};
 
 #[derive(Default)]
 pub struct ApplyCodamaTypeAttributesVisitor;
@@ -86,7 +89,7 @@ fn apply_codama_attribute(
 ) -> Option<Node> {
     match &attribute.directive {
         CodamaDirective::Type(directive) => apply_type_directive(directive, korok),
-        CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, korok, node),
+        CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, node),
         _ => node,
     }
 }
@@ -106,10 +109,27 @@ fn apply_type_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<N
     }
 }
 
-fn apply_encoding_directive(
-    _directive: &EncodingDirective,
-    _korok: &KorokMut,
-    _node: Option<Node>,
-) -> Option<Node> {
-    todo!()
+fn apply_encoding_directive(directive: &EncodingDirective, node: Option<Node>) -> Option<Node> {
+    let Some(node) = node else {
+        // TODO: Throw error
+        return None;
+    };
+    let update_node = |_: StringTypeNode| StringTypeNode::new(directive.encoding);
+
+    if let Ok(nested) = NestedTypeNode::<StringTypeNode>::try_from(node.clone()) {
+        // TODO: Remove unwrap
+        return Some(nested.map_nested_type_node(update_node).try_into().unwrap());
+    };
+
+    match node {
+        Node::Type(RegisteredTypeNode::String(node)) => Some(update_node(node).into()),
+        Node::Type(RegisteredTypeNode::StructField(mut field)) => {
+            field.r#type = match field.r#type {
+                TypeNode::String(node) => update_node(node).into(),
+                node => node,
+            };
+            Some(field.into())
+        }
+        node => Some(node),
+    }
 }
