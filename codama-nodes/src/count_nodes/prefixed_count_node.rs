@@ -47,10 +47,10 @@ mod tests {
         let node = PrefixedCountNode::new(PreOffsetTypeNode::absolute(NumberTypeNode::le(U32), 0));
         assert_eq!(
             node.prefix,
-            NestedTypeNode::PreOffset(Box::new(PreOffsetTypeNode::absolute(
+            NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
                 NestedTypeNode::Value(NumberTypeNode::new(U32, Endian::Little)),
                 0
-            )))
+            ))
         );
         assert_eq!(
             node.prefix.get_nested_type_node(),

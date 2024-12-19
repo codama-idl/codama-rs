@@ -11,9 +11,9 @@ pub struct ConditionalValueNode {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<ValueNode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub if_true: Option<InstructionInputValueNode>,
+    pub if_true: Box<Option<InstructionInputValueNode>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub if_false: Option<InstructionInputValueNode>,
+    pub if_false: Box<Option<InstructionInputValueNode>>,
 }
 
 impl From<ConditionalValueNode> for crate::Node {
@@ -40,8 +40,8 @@ mod tests {
         let node = ConditionalValueNode {
             condition: ArgumentValueNode::new("myArgument").into(),
             value: Some(NumberValueNode::new(42).into()),
-            if_true: Some(AccountValueNode::new("myOtherAccount").into()),
-            if_false: None,
+            if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+            if_false: Box::new(None),
         };
         assert_eq!(
             node.condition,
@@ -52,12 +52,12 @@ mod tests {
             Some(ValueNode::Number(NumberValueNode::new(42)))
         );
         assert_eq!(
-            node.if_true,
+            *node.if_true,
             Some(InstructionInputValueNode::Account(AccountValueNode::new(
                 "myOtherAccount"
             )))
         );
-        assert_eq!(node.if_false, None);
+        assert_eq!(*node.if_false, None);
     }
 
     #[test]
@@ -65,8 +65,8 @@ mod tests {
         let node = ConditionalValueNode {
             condition: ArgumentValueNode::new("myArgument").into(),
             value: Some(NumberValueNode::new(42).into()),
-            if_true: Some(AccountValueNode::new("myOtherAccount").into()),
-            if_false: None,
+            if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+            if_false: Box::new(None),
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -84,8 +84,8 @@ mod tests {
             ConditionalValueNode {
                 condition: ArgumentValueNode::new("myArgument").into(),
                 value: Some(NumberValueNode::new(42u32).into()),
-                if_true: Some(AccountValueNode::new("myOtherAccount").into()),
-                if_false: None,
+                if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+                if_false: Box::new(None),
             }
         );
     }

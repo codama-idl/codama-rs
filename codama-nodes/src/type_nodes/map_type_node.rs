@@ -7,8 +7,8 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct MapTypeNode {
     // Children.
-    pub key: TypeNode,
-    pub value: TypeNode,
+    pub key: Box<TypeNode>,
+    pub value: Box<TypeNode>,
     pub count: CountNode,
 }
 
@@ -26,8 +26,8 @@ impl MapTypeNode {
         C: Into<CountNode>,
     {
         Self {
-            key: key.into(),
-            value: value.into(),
+            key: Box::new(key.into()),
+            value: Box::new(value.into()),
             count: count.into(),
         }
     }
@@ -71,10 +71,10 @@ mod tests {
             FixedCountNode::new(42),
         );
         assert_eq!(
-            node.key,
-            TypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 10)))
+            *node.key,
+            TypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 10))
         );
-        assert_eq!(node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
@@ -85,8 +85,8 @@ mod tests {
             NumberTypeNode::le(U64),
             NumberTypeNode::le(U32),
         );
-        assert_eq!(node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(
             node.count,
             CountNode::Prefixed(PrefixedCountNode::new(NumberTypeNode::le(U32)))
@@ -96,16 +96,16 @@ mod tests {
     #[test]
     fn fixed() {
         let node = MapTypeNode::fixed(StringTypeNode::utf8(), NumberTypeNode::le(U64), 42);
-        assert_eq!(node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn remainder() {
         let node = MapTypeNode::remainder(StringTypeNode::utf8(), NumberTypeNode::le(U64));
-        assert_eq!(node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
 

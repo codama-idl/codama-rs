@@ -8,13 +8,13 @@ use codama_nodes_derive::node_union;
 
 #[node_union]
 pub enum NestedTypeNode<T: TypeNodeTrait> {
-    FixedSize(Box<FixedSizeTypeNode<NestedTypeNode<T>>>),
-    HiddenPrefix(Box<HiddenPrefixTypeNode<NestedTypeNode<T>>>),
-    HiddenSuffix(Box<HiddenSuffixTypeNode<NestedTypeNode<T>>>),
-    PostOffset(Box<PostOffsetTypeNode<NestedTypeNode<T>>>),
-    PreOffset(Box<PreOffsetTypeNode<NestedTypeNode<T>>>),
-    Sentinel(Box<SentinelTypeNode<NestedTypeNode<T>>>),
-    SizePrefix(Box<SizePrefixTypeNode<NestedTypeNode<T>>>),
+    FixedSize(FixedSizeTypeNode<NestedTypeNode<T>>),
+    HiddenPrefix(HiddenPrefixTypeNode<NestedTypeNode<T>>),
+    HiddenSuffix(HiddenSuffixTypeNode<NestedTypeNode<T>>),
+    PostOffset(PostOffsetTypeNode<NestedTypeNode<T>>),
+    PreOffset(PreOffsetTypeNode<NestedTypeNode<T>>),
+    Sentinel(SentinelTypeNode<NestedTypeNode<T>>),
+    SizePrefix(SizePrefixTypeNode<NestedTypeNode<T>>),
     #[fallback]
     Value(T),
 }
@@ -39,28 +39,14 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
 
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         match self {
-            NestedTypeNode::FixedSize(node) => {
-                NestedTypeNode::FixedSize(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::HiddenPrefix(node) => {
-                NestedTypeNode::HiddenPrefix(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::HiddenSuffix(node) => {
-                NestedTypeNode::HiddenSuffix(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::PostOffset(node) => {
-                NestedTypeNode::PostOffset(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::PreOffset(node) => {
-                NestedTypeNode::PreOffset(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::Sentinel(node) => {
-                NestedTypeNode::Sentinel(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::SizePrefix(node) => {
-                NestedTypeNode::SizePrefix(Box::new(node.map_nested_type_node(f)))
-            }
-            NestedTypeNode::Value(value) => NestedTypeNode::Value(f(value)),
+            Self::FixedSize(node) => Self::Mapped::FixedSize(node.map_nested_type_node(f)),
+            Self::HiddenPrefix(node) => Self::Mapped::HiddenPrefix(node.map_nested_type_node(f)),
+            Self::HiddenSuffix(node) => Self::Mapped::HiddenSuffix(node.map_nested_type_node(f)),
+            Self::PostOffset(node) => Self::Mapped::PostOffset(node.map_nested_type_node(f)),
+            Self::PreOffset(node) => Self::Mapped::PreOffset(node.map_nested_type_node(f)),
+            Self::Sentinel(node) => Self::Mapped::Sentinel(node.map_nested_type_node(f)),
+            Self::SizePrefix(node) => Self::Mapped::SizePrefix(node.map_nested_type_node(f)),
+            Self::Value(value) => Self::Mapped::Value(f(value)),
         }
     }
 }
@@ -78,48 +64,40 @@ impl<T: TypeNodeTrait> TryFrom<TypeNode> for NestedTypeNode<T> {
 
     fn try_from(node: TypeNode) -> CodamaResult<Self> {
         match node {
-            TypeNode::FixedSize(node) => {
-                Ok(NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode {
-                    size: node.size,
-                    r#type: node.r#type.try_into()?,
-                })))
-            }
-            TypeNode::HiddenPrefix(node) => Ok(NestedTypeNode::HiddenPrefix(Box::new(
-                HiddenPrefixTypeNode {
-                    r#type: node.r#type.try_into()?,
+            TypeNode::FixedSize(node) => Ok(NestedTypeNode::FixedSize(FixedSizeTypeNode {
+                size: node.size,
+                r#type: Box::new(Self::try_from(*node.r#type)?),
+            })),
+            TypeNode::HiddenPrefix(node) => {
+                Ok(NestedTypeNode::HiddenPrefix(HiddenPrefixTypeNode {
+                    r#type: Box::new(Self::try_from(*node.r#type)?),
                     prefix: node.prefix,
-                },
-            ))),
-            TypeNode::HiddenSuffix(node) => Ok(NestedTypeNode::HiddenSuffix(Box::new(
-                HiddenSuffixTypeNode {
-                    r#type: node.r#type.try_into()?,
+                }))
+            }
+            TypeNode::HiddenSuffix(node) => {
+                Ok(NestedTypeNode::HiddenSuffix(HiddenSuffixTypeNode {
+                    r#type: Box::new(Self::try_from(*node.r#type)?),
                     suffix: node.suffix,
-                },
-            ))),
-            TypeNode::PostOffset(node) => {
-                Ok(NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode {
-                    offset: node.offset,
-                    strategy: node.strategy,
-                    r#type: node.r#type.try_into()?,
-                })))
+                }))
             }
-            TypeNode::PreOffset(node) => {
-                Ok(NestedTypeNode::PreOffset(Box::new(PreOffsetTypeNode {
-                    offset: node.offset,
-                    strategy: node.strategy,
-                    r#type: node.r#type.try_into()?,
-                })))
-            }
-            TypeNode::Sentinel(node) => Ok(NestedTypeNode::Sentinel(Box::new(SentinelTypeNode {
-                r#type: node.r#type.try_into()?,
+            TypeNode::PostOffset(node) => Ok(NestedTypeNode::PostOffset(PostOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: Box::new(Self::try_from(*node.r#type)?),
+            })),
+            TypeNode::PreOffset(node) => Ok(NestedTypeNode::PreOffset(PreOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: Box::new(Self::try_from(*node.r#type)?),
+            })),
+            TypeNode::Sentinel(node) => Ok(NestedTypeNode::Sentinel(SentinelTypeNode {
+                r#type: Box::new(Self::try_from(*node.r#type)?),
                 sentinel: node.sentinel,
-            }))),
-            TypeNode::SizePrefix(node) => {
-                Ok(NestedTypeNode::SizePrefix(Box::new(SizePrefixTypeNode {
-                    r#type: node.r#type.try_into()?,
-                    prefix: node.prefix,
-                })))
-            }
+            })),
+            TypeNode::SizePrefix(node) => Ok(NestedTypeNode::SizePrefix(SizePrefixTypeNode {
+                r#type: Box::new(Self::try_from(*node.r#type)?),
+                prefix: node.prefix,
+            })),
             _ => Ok(NestedTypeNode::Value(T::from_type_node(node)?)),
         }
     }
@@ -137,40 +115,36 @@ impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for Node {
 impl<T: TypeNodeTrait> From<NestedTypeNode<T>> for TypeNode {
     fn from(node: NestedTypeNode<T>) -> Self {
         match node {
-            NestedTypeNode::FixedSize(node) => Self::FixedSize(Box::new(FixedSizeTypeNode {
+            NestedTypeNode::FixedSize(node) => Self::FixedSize(FixedSizeTypeNode {
                 size: node.size,
-                r#type: node.r#type.into(),
-            })),
-            NestedTypeNode::HiddenPrefix(node) => {
-                Self::HiddenPrefix(Box::new(HiddenPrefixTypeNode {
-                    r#type: node.r#type.into(),
-                    prefix: node.prefix,
-                }))
-            }
-            NestedTypeNode::HiddenSuffix(node) => {
-                Self::HiddenSuffix(Box::new(HiddenSuffixTypeNode {
-                    r#type: node.r#type.into(),
-                    suffix: node.suffix,
-                }))
-            }
-            NestedTypeNode::PostOffset(node) => Self::PostOffset(Box::new(PostOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: node.r#type.into(),
-            })),
-            NestedTypeNode::PreOffset(node) => Self::PreOffset(Box::new(PreOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: node.r#type.into(),
-            })),
-            NestedTypeNode::Sentinel(node) => Self::Sentinel(Box::new(SentinelTypeNode {
-                r#type: node.r#type.into(),
-                sentinel: node.sentinel,
-            })),
-            NestedTypeNode::SizePrefix(node) => Self::SizePrefix(Box::new(SizePrefixTypeNode {
-                r#type: node.r#type.into(),
+                r#type: Box::new(Self::from(*node.r#type)),
+            }),
+            NestedTypeNode::HiddenPrefix(node) => Self::HiddenPrefix(HiddenPrefixTypeNode {
+                r#type: Box::new(Self::from(*node.r#type)),
                 prefix: node.prefix,
-            })),
+            }),
+            NestedTypeNode::HiddenSuffix(node) => Self::HiddenSuffix(HiddenSuffixTypeNode {
+                r#type: Box::new(Self::from(*node.r#type)),
+                suffix: node.suffix,
+            }),
+            NestedTypeNode::PostOffset(node) => Self::PostOffset(PostOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: Box::new(Self::from(*node.r#type)),
+            }),
+            NestedTypeNode::PreOffset(node) => Self::PreOffset(PreOffsetTypeNode {
+                offset: node.offset,
+                strategy: node.strategy,
+                r#type: Box::new(Self::from(*node.r#type)),
+            }),
+            NestedTypeNode::Sentinel(node) => Self::Sentinel(SentinelTypeNode {
+                r#type: Box::new(Self::from(*node.r#type)),
+                sentinel: node.sentinel,
+            }),
+            NestedTypeNode::SizePrefix(node) => Self::SizePrefix(SizePrefixTypeNode {
+                r#type: Box::new(Self::from(*node.r#type)),
+                prefix: node.prefix,
+            }),
             NestedTypeNode::Value(value) => T::into_type_node(value),
         }
     }
@@ -193,18 +167,17 @@ mod tests {
         let node: NestedTypeNode<StringTypeNode> = node.try_into().unwrap();
         assert_eq!(
             node,
-            NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)))
+            NestedTypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42))
         );
     }
 
     #[test]
     fn into_type_node() {
-        let node =
-            NestedTypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)));
+        let node = NestedTypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42));
         let node: TypeNode = node.try_into().unwrap();
         assert_eq!(
             node,
-            TypeNode::FixedSize(Box::new(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42)))
+            TypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42))
         );
     }
 }

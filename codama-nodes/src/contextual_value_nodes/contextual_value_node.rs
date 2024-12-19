@@ -11,7 +11,7 @@ pub enum RegisteredContextualValueNode {
     Account(AccountValueNode),
     AccountBump(AccountBumpValueNode),
     Argument(ArgumentValueNode),
-    Conditional(Box<ConditionalValueNode>),
+    Conditional(ConditionalValueNode),
     Identity(IdentityValueNode),
     Payer(PayerValueNode),
     Pda(PdaValueNode),

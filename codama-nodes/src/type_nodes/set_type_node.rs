@@ -7,7 +7,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct SetTypeNode {
     // Children.
-    pub item: TypeNode,
+    pub item: Box<TypeNode>,
     pub count: CountNode,
 }
 
@@ -24,7 +24,7 @@ impl SetTypeNode {
         U: Into<CountNode>,
     {
         Self {
-            item: item.into(),
+            item: Box::new(item.into()),
             count: count.into(),
         }
     }
@@ -60,14 +60,14 @@ mod tests {
     #[test]
     fn new() {
         let node = SetTypeNode::new(NumberTypeNode::le(U64), FixedCountNode::new(42));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn prefixed() {
         let node = SetTypeNode::prefixed(StringTypeNode::utf8(), NumberTypeNode::le(U32));
-        assert_eq!(node.item, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(
             node.count,
             CountNode::Prefixed(PrefixedCountNode::new(NumberTypeNode::le(U32)))
@@ -77,14 +77,14 @@ mod tests {
     #[test]
     fn fixed() {
         let node = SetTypeNode::fixed(StringTypeNode::utf8(), 42);
-        assert_eq!(node.item, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn remainder() {
         let node = SetTypeNode::remainder(NumberTypeNode::le(U64));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
 

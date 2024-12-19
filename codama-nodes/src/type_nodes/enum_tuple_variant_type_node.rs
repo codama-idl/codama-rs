@@ -89,13 +89,13 @@ mod tests {
         let node = EnumTupleVariantTypeNode::new("my_variant", nested_struct);
         assert_eq!(
             node.tuple,
-            NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode::pre_offset(
-                NestedTypeNode::PreOffset(Box::new(PreOffsetTypeNode::absolute(
+            NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
+                NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
                     TupleTypeNode::new(vec![]),
                     0
-                ))),
+                )),
                 0,
-            )))
+            ))
         );
         assert_eq!(
             node.tuple.get_nested_type_node(),

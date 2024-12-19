@@ -4,7 +4,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct ZeroableOptionTypeNode {
     // Children.
-    pub item: TypeNode,
+    pub item: Box<TypeNode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub zero_value: Option<ConstantValueNode>,
 }
@@ -21,7 +21,7 @@ impl ZeroableOptionTypeNode {
         T: Into<TypeNode>,
     {
         Self {
-            item: item.into(),
+            item: Box::new(item.into()),
             zero_value: None,
         }
     }
@@ -31,7 +31,7 @@ impl ZeroableOptionTypeNode {
         T: Into<TypeNode>,
     {
         Self {
-            item: item.into(),
+            item: Box::new(item.into()),
             zero_value: Some(zero_value),
         }
     }
@@ -45,7 +45,7 @@ mod tests {
     #[test]
     fn new() {
         let node = ZeroableOptionTypeNode::new(NumberTypeNode::le(U64));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.zero_value, None);
     }
 
@@ -55,7 +55,7 @@ mod tests {
             NumberTypeNode::le(U64),
             ConstantValueNode::bytes(Base16, "ffffffffffffffff"),
         );
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(
             node.zero_value,
             Some(ConstantValueNode::bytes(Base16, "ffffffffffffffff"))

@@ -4,7 +4,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct RemainderOptionTypeNode {
     // Children.
-    pub item: TypeNode,
+    pub item: Box<TypeNode>,
 }
 
 impl From<RemainderOptionTypeNode> for crate::Node {
@@ -18,7 +18,9 @@ impl RemainderOptionTypeNode {
     where
         T: Into<TypeNode>,
     {
-        Self { item: item.into() }
+        Self {
+            item: Box::new(item.into()),
+        }
     }
 }
 
@@ -30,7 +32,7 @@ mod tests {
     #[test]
     fn new() {
         let node = RemainderOptionTypeNode::new(NumberTypeNode::le(U64));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
     }
 
     #[test]

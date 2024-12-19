@@ -7,8 +7,8 @@ use codama_nodes_derive::nestable_type_node;
 pub struct SizePrefixTypeNode<T: TypeNodeUnionTrait> {
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
-    pub r#type: T,
-    pub prefix: NestedTypeNode<NumberTypeNode>,
+    pub r#type: Box<T>,
+    pub prefix: Box<NestedTypeNode<NumberTypeNode>>,
 }
 
 impl From<SizePrefixTypeNode<crate::TypeNode>> for crate::Node {
@@ -24,8 +24,8 @@ impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
         V: Into<NestedTypeNode<NumberTypeNode>>,
     {
         Self {
-            r#type: r#type.into(),
-            prefix: prefix.into(),
+            r#type: Box::new(r#type.into()),
+            prefix: Box::new(prefix.into()),
         }
     }
 }
@@ -39,7 +39,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SizePrefixTypeNode<NestedTypeN
 
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         SizePrefixTypeNode {
-            r#type: self.r#type.map_nested_type_node(f),
+            r#type: Box::new(self.r#type.map_nested_type_node(f)),
             prefix: self.prefix,
         }
     }
@@ -55,8 +55,8 @@ mod tests {
     fn new_type_node() {
         let node =
             SizePrefixTypeNode::<TypeNode>::new(StringTypeNode::utf8(), NumberTypeNode::le(U32));
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
     }
 
     #[test]
@@ -65,9 +65,9 @@ mod tests {
             StringTypeNode::utf8(),
             NumberTypeNode::le(U32),
         );
-        assert_eq!(node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
-        assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
+        assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
     }
 
     #[test]

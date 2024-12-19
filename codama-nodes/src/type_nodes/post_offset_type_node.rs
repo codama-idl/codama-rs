@@ -10,7 +10,7 @@ pub struct PostOffsetTypeNode<T: TypeNodeUnionTrait> {
 
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
-    pub r#type: T,
+    pub r#type: Box<T>,
 }
 
 impl From<PostOffsetTypeNode<crate::TypeNode>> for crate::Node {
@@ -25,7 +25,7 @@ impl<T: TypeNodeUnionTrait> PostOffsetTypeNode<T> {
         U: Into<T>,
     {
         Self {
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
             strategy,
             offset,
         }
@@ -69,7 +69,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for PostOffsetTypeNode<NestedTypeN
 
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         PostOffsetTypeNode {
-            r#type: self.r#type.map_nested_type_node(f),
+            r#type: Box::new(self.r#type.map_nested_type_node(f)),
             strategy: self.strategy,
             offset: self.offset,
         }
@@ -98,7 +98,7 @@ mod tests {
             PostOffsetStrategy::Absolute,
             -42,
         );
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::Absolute);
         assert_eq!(node.offset, -42);
     }
@@ -111,7 +111,7 @@ mod tests {
             -42,
         );
         assert_eq!(
-            node.r#type,
+            *node.r#type,
             NestedTypeNode::Value(StringTypeNode::new(Utf8))
         );
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::new(Utf8));
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn absolute() {
         let node = PostOffsetTypeNode::<TypeNode>::absolute(StringTypeNode::new(Utf8), 0);
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::Absolute);
         assert_eq!(node.offset, 0);
     }
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn relative() {
         let node = PostOffsetTypeNode::<TypeNode>::relative(StringTypeNode::new(Utf8), -4);
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::Relative);
         assert_eq!(node.offset, -4);
     }
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn pre_offset() {
         let node = PostOffsetTypeNode::<TypeNode>::pre_offset(StringTypeNode::new(Utf8), 0);
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::PreOffset);
         assert_eq!(node.offset, 0);
     }
@@ -146,7 +146,7 @@ mod tests {
     #[test]
     fn padded() {
         let node = PostOffsetTypeNode::<TypeNode>::padded(StringTypeNode::new(Utf8), 8);
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::new(Utf8)));
         assert_eq!(node.strategy, PostOffsetStrategy::Padded);
         assert_eq!(node.offset, 8);
     }

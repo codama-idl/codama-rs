@@ -89,13 +89,13 @@ mod tests {
         let node = EnumStructVariantTypeNode::new("my_variant", nested_struct);
         assert_eq!(
             node.r#struct,
-            NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode::pre_offset(
-                NestedTypeNode::PreOffset(Box::new(PreOffsetTypeNode::absolute(
+            NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
+                NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
                     StructTypeNode::new(vec![]),
                     0
-                ))),
+                )),
                 0,
-            )))
+            ))
         );
         assert_eq!(
             node.r#struct.get_nested_type_node(),

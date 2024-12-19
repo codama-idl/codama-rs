@@ -7,7 +7,7 @@ use codama_nodes_derive::nestable_type_node;
 pub struct HiddenPrefixTypeNode<T: TypeNodeUnionTrait> {
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
-    pub r#type: T,
+    pub r#type: Box<T>,
     pub prefix: Vec<ConstantValueNode>,
 }
 
@@ -23,7 +23,7 @@ impl<T: TypeNodeUnionTrait> HiddenPrefixTypeNode<T> {
         U: Into<T>,
     {
         Self {
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
             prefix,
         }
     }
@@ -38,7 +38,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for HiddenPrefixTypeNode<NestedTyp
 
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         HiddenPrefixTypeNode {
-            r#type: self.r#type.map_nested_type_node(f),
+            r#type: Box::new(self.r#type.map_nested_type_node(f)),
             prefix: self.prefix,
         }
     }
@@ -55,7 +55,7 @@ mod tests {
             StringTypeNode::utf8(),
             vec![ConstantValueNode::bytes(Base16, "ffff")],
         );
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.prefix, vec![ConstantValueNode::bytes(Base16, "ffff")]);
     }
 
@@ -65,7 +65,7 @@ mod tests {
             StringTypeNode::utf8(),
             vec![],
         );
-        assert_eq!(node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.prefix, vec![]);
     }

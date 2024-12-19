@@ -89,13 +89,13 @@ mod tests {
         );
         assert_eq!(
             node.number,
-            NestedTypeNode::PostOffset(Box::new(PostOffsetTypeNode::pre_offset(
-                NestedTypeNode::PreOffset(Box::new(PreOffsetTypeNode::absolute(
+            NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
+                NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
                     NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big)),
                     0
-                ))),
+                )),
                 0,
-            )))
+            ))
         );
         assert_eq!(
             node.number.get_nested_type_node(),

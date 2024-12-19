@@ -8,7 +8,7 @@ pub struct FixedSizeTypeNode<T: TypeNodeUnionTrait> {
 
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
-    pub r#type: T,
+    pub r#type: Box<T>,
 }
 
 impl From<FixedSizeTypeNode<crate::TypeNode>> for crate::Node {
@@ -24,7 +24,7 @@ impl<T: TypeNodeUnionTrait> FixedSizeTypeNode<T> {
     {
         Self {
             size,
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
         }
     }
 }
@@ -39,7 +39,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for FixedSizeTypeNode<NestedTypeNo
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         FixedSizeTypeNode {
             size: self.size,
-            r#type: self.r#type.map_nested_type_node(f),
+            r#type: Box::new(self.r#type.map_nested_type_node(f)),
         }
     }
 }
@@ -55,7 +55,7 @@ mod tests {
     #[test]
     fn new_type_node() {
         let node = FixedSizeTypeNode::<TypeNode>::new(StringTypeNode::utf8(), 42);
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.size, 42);
     }
 
@@ -63,7 +63,7 @@ mod tests {
     fn new_nested_type_node() {
         let node =
             FixedSizeTypeNode::<NestedTypeNode<StringTypeNode>>::new(StringTypeNode::utf8(), 42);
-        assert_eq!(node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.size, 42);
     }

@@ -9,7 +9,7 @@ pub struct OptionTypeNode {
     pub fixed: bool,
 
     // Children.
-    pub item: TypeNode,
+    pub item: Box<TypeNode>,
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
@@ -26,7 +26,7 @@ impl OptionTypeNode {
     {
         Self {
             fixed: false,
-            item: item.into(),
+            item: Box::new(item.into()),
             prefix: NumberTypeNode::le(U8).into(),
         }
     }
@@ -37,7 +37,7 @@ impl OptionTypeNode {
     {
         Self {
             fixed: true,
-            item: item.into(),
+            item: Box::new(item.into()),
             prefix: NumberTypeNode::le(U8).into(),
         }
     }
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn new() {
         let node = OptionTypeNode::new(NumberTypeNode::le(U64));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
         assert!(!node.fixed);
     }
@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn fixed() {
         let node = OptionTypeNode::fixed(NumberTypeNode::le(U64));
-        assert_eq!(node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
         assert!(node.fixed);
     }
@@ -68,11 +68,11 @@ mod tests {
     fn direct_instantiation() {
         let node = OptionTypeNode {
             fixed: true,
-            item: StringTypeNode::utf8().into(),
+            item: Box::new(StringTypeNode::utf8().into()),
             prefix: NumberTypeNode::le(U64).into(),
         };
 
-        assert_eq!(node.item, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U64)));
         assert!(node.fixed);
     }

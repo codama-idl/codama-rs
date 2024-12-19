@@ -4,8 +4,8 @@ use codama_nodes_derive::node;
 #[node]
 pub struct ConstantValueNode {
     // Children.
-    pub r#type: TypeNode,
-    pub value: ValueNode,
+    pub r#type: Box<TypeNode>,
+    pub value: Box<ValueNode>,
 }
 
 impl From<ConstantValueNode> for crate::Node {
@@ -21,8 +21,8 @@ impl ConstantValueNode {
         U: Into<ValueNode>,
     {
         Self {
-            r#type: r#type.into(),
-            value: value.into(),
+            r#type: Box::new(r#type.into()),
+            value: Box::new(value.into()),
         }
     }
 
@@ -31,8 +31,8 @@ impl ConstantValueNode {
         T: Into<String>,
     {
         Self {
-            r#type: BytesTypeNode::new().into(),
-            value: BytesValueNode::new(encoding, data).into(),
+            r#type: Box::new(BytesTypeNode::new().into()),
+            value: Box::new(BytesValueNode::new(encoding, data).into()),
         }
     }
 }
@@ -45,16 +45,16 @@ mod tests {
     #[test]
     fn new() {
         let node = ConstantValueNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42u64)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(42u64)));
     }
 
     #[test]
     fn bytes() {
         let node = ConstantValueNode::bytes(Base16, "deadb0d1e5");
-        assert_eq!(node.r#type, TypeNode::Bytes(BytesTypeNode::new()));
+        assert_eq!(*node.r#type, TypeNode::Bytes(BytesTypeNode::new()));
         assert_eq!(
-            node.value,
+            *node.value,
             ValueNode::Bytes(BytesValueNode::base16("deadb0d1e5"))
         );
     }

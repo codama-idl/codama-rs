@@ -7,7 +7,7 @@ use codama_nodes_derive::nestable_type_node;
 pub struct SentinelTypeNode<T: TypeNodeUnionTrait> {
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
-    pub r#type: T,
+    pub r#type: Box<T>,
     pub sentinel: ConstantValueNode,
 }
 
@@ -23,7 +23,7 @@ impl<T: TypeNodeUnionTrait> SentinelTypeNode<T> {
         U: Into<T>,
     {
         Self {
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
             sentinel,
         }
     }
@@ -38,7 +38,7 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SentinelTypeNode<NestedTypeNod
 
     fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
         SentinelTypeNode {
-            r#type: self.r#type.map_nested_type_node(f),
+            r#type: Box::new(self.r#type.map_nested_type_node(f)),
             sentinel: self.sentinel,
         }
     }
@@ -55,7 +55,7 @@ mod tests {
             StringTypeNode::utf8(),
             ConstantValueNode::bytes(Base16, "ffff"),
         );
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.sentinel, ConstantValueNode::bytes(Base16, "ffff"));
     }
 
@@ -65,7 +65,7 @@ mod tests {
             StringTypeNode::utf8(),
             ConstantValueNode::bytes(Base16, "ffff"),
         );
-        assert_eq!(node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
+        assert_eq!(*node.r#type, NestedTypeNode::Value(StringTypeNode::utf8()));
         assert_eq!(node.get_nested_type_node(), &StringTypeNode::utf8());
         assert_eq!(node.sentinel, ConstantValueNode::bytes(Base16, "ffff"));
     }

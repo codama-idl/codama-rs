@@ -4,7 +4,7 @@ use codama_nodes_derive::node;
 #[node]
 pub struct SomeValueNode {
     // Children.
-    pub value: ValueNode,
+    pub value: Box<ValueNode>,
 }
 
 impl From<SomeValueNode> for crate::Node {
@@ -19,7 +19,7 @@ impl SomeValueNode {
         T: Into<ValueNode>,
     {
         Self {
-            value: value.into(),
+            value: Box::new(value.into()),
         }
     }
 }
@@ -32,7 +32,7 @@ mod tests {
     #[test]
     fn new() {
         let node = SomeValueNode::new(NumberValueNode::new(42));
-        assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42)));
+        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(42)));
     }
 
     #[test]
