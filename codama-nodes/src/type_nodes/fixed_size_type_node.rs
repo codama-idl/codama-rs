@@ -1,4 +1,4 @@
-use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait};
+use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait, TypeNodeUnionTrait};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -41,6 +41,15 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for FixedSizeTypeNode<NestedTypeNo
             size: self.size,
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
         }
+    }
+}
+
+impl<T: TypeNodeTrait> TypeNodeTrait for FixedSizeTypeNode<NestedTypeNode<T>> {
+    fn into_type_node(self) -> TypeNode {
+        TypeNode::FixedSize(FixedSizeTypeNode {
+            size: self.size,
+            r#type: Box::new((*self.r#type).into()),
+        })
     }
 }
 

@@ -16,9 +16,12 @@ pub fn expand_attribute_nestable_type_node(input: &syn::DeriveInput) -> CodamaRe
 pub fn expand_derive_nestable_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_struct()?;
     let item_name = &input.ident;
-    let (pre_generics, post_generics) = &input.generics.block_wrappers();
 
     Ok(quote! {
-        impl #pre_generics crate::TypeNodeTrait for #item_name #post_generics {}
+        impl crate::TypeNodeTrait for #item_name<crate::TypeNode> {
+            fn into_type_node(self) -> crate::TypeNode {
+                self.into()
+            }
+        }
     })
 }

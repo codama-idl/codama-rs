@@ -24,7 +24,7 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
 
     Ok(quote! {
         impl #pre_generics crate::TypeNodeTrait for #item_name #post_generics{
-            fn from_type_node(node: crate::TypeNode) -> codama_errors::CodamaResult<Self> {
+            fn try_from_type_node(node: crate::TypeNode) -> codama_errors::CodamaResult<Self> {
                 use crate::NodeTrait;
                 match node {
                     crate::TypeNode::#variant_name(node) => Ok(node),
@@ -34,8 +34,8 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
                     }),
                 }
             }
-            fn into_type_node(node: Self) -> crate::TypeNode {
-                crate::TypeNode::#variant_name(node)
+            fn into_type_node(self) -> crate::TypeNode {
+                self.into()
             }
         }
     })

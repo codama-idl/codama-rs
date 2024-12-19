@@ -1,5 +1,6 @@
 use crate::{
-    ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNodeTrait, TypeNodeUnionTrait,
+    ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait,
+    TypeNodeUnionTrait,
 };
 use codama_nodes_derive::nestable_type_node;
 
@@ -41,6 +42,15 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SentinelTypeNode<NestedTypeNod
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
             sentinel: self.sentinel,
         }
+    }
+}
+
+impl<T: TypeNodeTrait> TypeNodeTrait for SentinelTypeNode<NestedTypeNode<T>> {
+    fn into_type_node(self) -> TypeNode {
+        TypeNode::Sentinel(SentinelTypeNode {
+            r#type: Box::new((*self.r#type).into()),
+            sentinel: self.sentinel,
+        })
     }
 }
 

@@ -1,5 +1,6 @@
 use crate::{
-    NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNodeTrait, TypeNodeUnionTrait,
+    NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNode, TypeNodeTrait,
+    TypeNodeUnionTrait,
 };
 use codama_nodes_derive::nestable_type_node;
 
@@ -27,6 +28,15 @@ impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
             r#type: Box::new(r#type.into()),
             prefix: Box::new(prefix.into()),
         }
+    }
+}
+
+impl<T: TypeNodeTrait> TypeNodeTrait for SizePrefixTypeNode<NestedTypeNode<T>> {
+    fn into_type_node(self) -> TypeNode {
+        TypeNode::SizePrefix(SizePrefixTypeNode {
+            r#type: Box::new((*self.r#type).into()),
+            prefix: self.prefix,
+        })
     }
 }
 

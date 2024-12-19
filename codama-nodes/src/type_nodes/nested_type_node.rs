@@ -98,7 +98,7 @@ impl<T: TypeNodeTrait> TryFrom<TypeNode> for NestedTypeNode<T> {
                 r#type: Box::new(Self::try_from(*node.r#type)?),
                 prefix: node.prefix,
             })),
-            _ => Ok(NestedTypeNode::Value(T::from_type_node(node)?)),
+            _ => Ok(NestedTypeNode::Value(T::try_from_type_node(node)?)),
         }
     }
 }
@@ -115,36 +115,13 @@ impl<T: TypeNodeTrait> TryFrom<NestedTypeNode<T>> for Node {
 impl<T: TypeNodeTrait> From<NestedTypeNode<T>> for TypeNode {
     fn from(node: NestedTypeNode<T>) -> Self {
         match node {
-            NestedTypeNode::FixedSize(node) => Self::FixedSize(FixedSizeTypeNode {
-                size: node.size,
-                r#type: Box::new(Self::from(*node.r#type)),
-            }),
-            NestedTypeNode::HiddenPrefix(node) => Self::HiddenPrefix(HiddenPrefixTypeNode {
-                r#type: Box::new(Self::from(*node.r#type)),
-                prefix: node.prefix,
-            }),
-            NestedTypeNode::HiddenSuffix(node) => Self::HiddenSuffix(HiddenSuffixTypeNode {
-                r#type: Box::new(Self::from(*node.r#type)),
-                suffix: node.suffix,
-            }),
-            NestedTypeNode::PostOffset(node) => Self::PostOffset(PostOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: Box::new(Self::from(*node.r#type)),
-            }),
-            NestedTypeNode::PreOffset(node) => Self::PreOffset(PreOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: Box::new(Self::from(*node.r#type)),
-            }),
-            NestedTypeNode::Sentinel(node) => Self::Sentinel(SentinelTypeNode {
-                r#type: Box::new(Self::from(*node.r#type)),
-                sentinel: node.sentinel,
-            }),
-            NestedTypeNode::SizePrefix(node) => Self::SizePrefix(SizePrefixTypeNode {
-                r#type: Box::new(Self::from(*node.r#type)),
-                prefix: node.prefix,
-            }),
+            NestedTypeNode::FixedSize(node) => node.into_type_node(),
+            NestedTypeNode::HiddenPrefix(node) => node.into_type_node(),
+            NestedTypeNode::HiddenSuffix(node) => node.into_type_node(),
+            NestedTypeNode::PostOffset(node) => node.into_type_node(),
+            NestedTypeNode::PreOffset(node) => node.into_type_node(),
+            NestedTypeNode::Sentinel(node) => node.into_type_node(),
+            NestedTypeNode::SizePrefix(node) => node.into_type_node(),
             NestedTypeNode::Value(value) => T::into_type_node(value),
         }
     }
