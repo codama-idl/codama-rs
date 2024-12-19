@@ -5,10 +5,10 @@ use crate::{
     ProgramNode, RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
     TypeNode, ValueNode,
 };
-use codama_nodes_derive::IntoEnum;
+use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
 
-#[derive(IntoEnum, Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(From, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Node {
     // Node unions.

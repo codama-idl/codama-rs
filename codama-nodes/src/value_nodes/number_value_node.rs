@@ -1,4 +1,5 @@
-use codama_nodes_derive::{node, IntoEnum};
+use codama_nodes_derive::node;
+use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
 use serde_json::Number as JsonNumber;
 
@@ -25,7 +26,7 @@ impl NumberValueNode {
     }
 }
 
-#[derive(IntoEnum, Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(From, Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 #[serde(from = "JsonNumber", into = "JsonNumber")]
 pub enum Number {
     UnsignedInteger(u64),

@@ -8,7 +8,7 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<Tok
     input.as_enum()?;
 
     Ok(quote! {
-        #[derive(codama_nodes_derive::NodeUnion, codama_nodes_derive::IntoEnum, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone)]
+        #[derive(codama_nodes_derive::NodeUnion, derive_more::From, core::fmt::Debug, core::cmp::PartialEq, core::clone::Clone)]
         #input
     })
 }

@@ -109,6 +109,7 @@ version = "0.1.0"
 dependencies = [
  "codama-errors",
  "codama-nodes-derive",
+ "derive_more",
  "serde",
  "serde_json",
 ]
@@ -120,6 +121,7 @@ dependencies = [
  "codama-errors",
  "codama-nodes",
  "codama-syn-helpers",
+ "derive_more",
  "proc-macro2",
  "quote",
  "serde",
