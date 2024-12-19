@@ -18,7 +18,6 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Module(k) => k.accept(visitor),
             Self::Root(k) => k.accept(visitor),
             Self::Struct(k) => k.accept(visitor),
-            Self::Type(k) => k.accept(visitor),
             Self::UnsupportedItem(k) => k.accept(visitor),
         }
     }
@@ -35,7 +34,6 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Module(k) => k.get_children(),
             Self::Root(k) => k.get_children(),
             Self::Struct(k) => k.get_children(),
-            Self::Type(k) => k.get_children(),
             Self::UnsupportedItem(k) => k.get_children(),
         }
     }
@@ -128,15 +126,6 @@ impl KorokVisitable for codama_koroks::FieldsKorok<'_> {
 impl KorokVisitable for codama_koroks::FieldKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
         visitor.visit_field(self);
-    }
-    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        vec![&mut self.r#type as &mut dyn KorokVisitable]
-    }
-}
-
-impl KorokVisitable for codama_koroks::TypeKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) {
-        visitor.visit_type(self);
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
         Vec::new()

@@ -16,11 +16,13 @@ impl SetBorshTypesVisitor {
 }
 
 impl KorokVisitor for SetBorshTypesVisitor {
-    fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
         if korok.node.is_some() {
             return;
         }
-        korok.node = self.get_type_node(korok.ast).map(|node| node.into());
+        if let Some(node) = self.get_type_node(&korok.ast.ty) {
+            korok.set_type_node(node);
+        }
     }
 }
 
@@ -64,17 +66,15 @@ impl SetBorshTypesVisitor {
                         SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
                             .into(),
                     ),
-                    ("" | "std::vec", "Vec", [t]) => self.get_type_node(t).map(|item| ArrayTypeNode::new(
-                                item,
-                                PrefixedCountNode::new(NumberTypeNode::le(U32)),
-                            )
-                            .into()),
+                    ("" | "std::vec", "Vec", [t]) => self.get_type_node(t).map(|item| {
+                        ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                            .into()
+                    }),
                     ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
-                        self.get_type_node(t).map(|item| SetTypeNode::new(
-                                    item,
-                                    PrefixedCountNode::new(NumberTypeNode::le(U32)),
-                                )
-                                .into())
+                        self.get_type_node(t).map(|item| {
+                            SetTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                                .into()
+                        })
                     }
                     ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
                         match (self.get_type_node(k), self.get_type_node(v)) {
@@ -96,7 +96,8 @@ impl SetBorshTypesVisitor {
                 let Ok(size) = len.as_literal_integer::<usize>() else {
                     return None;
                 };
-                self.get_type_node(elem).map(|item| ArrayTypeNode::new(item, FixedCountNode::new(size)).into())
+                self.get_type_node(elem)
+                    .map(|item| ArrayTypeNode::new(item, FixedCountNode::new(size)).into())
             }
             _ => None,
         }

@@ -4,6 +4,7 @@ mod enum_empty_variant_type_node;
 mod enum_struct_variant_type_node;
 mod enum_tuple_variant_type_node;
 mod enum_type_node;
+mod field_korok;
 mod map_type_node;
 mod no_override;
 mod number_type_node;

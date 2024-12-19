@@ -84,10 +84,4 @@ impl KorokVisitor for ComposeVisitor<'_> {
             visitor.visit_field(korok);
         }
     }
-
-    fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
-        for visitor in &mut self.visitors {
-            visitor.visit_type(korok);
-        }
-    }
 }

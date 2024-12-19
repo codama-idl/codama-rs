@@ -1,14 +1,13 @@
-use crate::{KorokTrait, TypeKorok};
+use crate::KorokTrait;
 use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
-use codama_nodes::Node;
+use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
 
 #[derive(Debug, PartialEq)]
 pub struct FieldKorok<'a> {
     pub ast: &'a syn::Field,
     pub attributes: Attributes<'a>,
     pub node: Option<Node>,
-    pub r#type: TypeKorok<'a>,
 }
 
 impl<'a> FieldKorok<'a> {
@@ -18,8 +17,14 @@ impl<'a> FieldKorok<'a> {
             ast,
             attributes,
             node: None,
-            r#type: TypeKorok::new(&ast.ty),
         })
+    }
+
+    pub fn set_type_node(&mut self, node: TypeNode) {
+        self.node = match &self.ast.ident {
+            Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
+            None => Some(node.into()),
+        }
     }
 }
 

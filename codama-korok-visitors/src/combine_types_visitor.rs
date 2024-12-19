@@ -1,8 +1,8 @@
 use crate::KorokVisitor;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -76,7 +76,8 @@ impl KorokVisitor for CombineTypesVisitor {
         let discriminator = korok
             .ast
             .discriminant
-            .as_ref().and_then(|(_, x)| x.as_literal_integer::<usize>().ok());
+            .as_ref()
+            .and_then(|(_, x)| x.as_literal_integer::<usize>().ok());
 
         korok.node = match (&korok.ast.fields, &korok.fields.node) {
             (syn::Fields::Unit, _) => Some(
@@ -141,20 +142,5 @@ impl KorokVisitor for CombineTypesVisitor {
             }
             syn::Fields::Unit => None,
         };
-    }
-
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_children(korok);
-        if korok.node.is_some() && !self.r#override {
-            return;
-        }
-
-        korok.node = match TypeNode::try_from(korok.r#type.node.clone()) {
-            Ok(node) => match &korok.ast.ident {
-                Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
-                None => Some(node.into()),
-            },
-            Err(_) => None,
-        }
     }
 }

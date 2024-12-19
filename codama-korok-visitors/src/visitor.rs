@@ -68,11 +68,7 @@ pub trait KorokVisitor {
         }
     }
 
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_type(&mut korok.r#type);
-    }
-
-    fn visit_type(&mut self, _korok: &mut codama_koroks::TypeKorok) {
+    fn visit_field(&mut self, _korok: &mut codama_koroks::FieldKorok) {
         //
     }
 }

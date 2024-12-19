@@ -9,7 +9,6 @@ mod korok;
 mod module_korok;
 mod root_korok;
 mod struct_korok;
-mod type_korok;
 mod unsupported_item_korok;
 
 pub use crate_korok::*;
@@ -23,5 +22,4 @@ pub use korok::*;
 pub use module_korok::*;
 pub use root_korok::*;
 pub use struct_korok::*;
-pub use type_korok::*;
 pub use unsupported_item_korok::*;

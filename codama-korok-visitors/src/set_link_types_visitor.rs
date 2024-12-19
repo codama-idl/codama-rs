@@ -12,15 +12,12 @@ impl SetLinkTypesVisitor {
 }
 
 impl KorokVisitor for SetLinkTypesVisitor {
-    fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
         if korok.node.is_some() {
             return;
         }
-        korok.node = match korok.ast {
-            syn::Type::Path(syn::TypePath { path, .. }) => {
-                Some(DefinedTypeLinkNode::new(path.last_str()).into())
-            }
-            _ => None,
-        };
+        if let syn::Type::Path(tp) = &korok.ast.ty {
+            korok.set_type_node(DefinedTypeLinkNode::new(tp.path.last_str()).into())
+        }
     }
 }

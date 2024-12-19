@@ -83,7 +83,7 @@ fn it_does_not_override_existing_nodes_by_default() {
 fn it_can_override_existing_nodes() {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo (i32); };
     let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
-    korok.all[0].r#type.node = Some(NumberTypeNode::le(I32).into());
+    korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 
     korok.accept(&mut CombineTypesVisitor { r#override: true });

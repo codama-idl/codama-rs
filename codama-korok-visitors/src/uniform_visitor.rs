@@ -56,8 +56,4 @@ impl KorokVisitor for UniformVisitor {
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
         (self.callback)(korok.into(), self);
     }
-
-    fn visit_type(&mut self, korok: &mut codama_koroks::TypeKorok) {
-        (self.callback)(korok.into(), self);
-    }
 }
