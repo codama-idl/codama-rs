@@ -21,7 +21,7 @@ impl Codama {
         .add_plugin(DefaultPlugin)
     }
 
-    pub fn load(path: &Path) -> CodamaResult<Self> {
+    pub fn load<P: AsRef<Path>>(path: P) -> CodamaResult<Self> {
         Ok(Self::new(RootStore::load(path)?))
     }
 
