@@ -1,7 +1,4 @@
-use crate::{
-    EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, HasKind,
-    NodeUnionTrait,
-};
+use crate::{EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]

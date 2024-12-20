@@ -1,4 +1,4 @@
-use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs, HasKind, NodeUnionTrait};
+use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs};
 use codama_nodes_derive::{node, node_union};
 
 #[node]

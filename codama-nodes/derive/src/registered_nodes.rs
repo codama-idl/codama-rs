@@ -66,7 +66,7 @@ pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> CodamaResult<
         impl TryFrom<#registered_enum_name> for #standalone_enum_name {
             type Error = codama_errors::CodamaError;
 
-            fn try_from(value: #registered_enum_name) -> Result<Self, Self::Error> {
+            fn try_from(value: #registered_enum_name) -> core::result::Result<Self, Self::Error> {
                 match value {
                     #(#from_registered_patterns)*
                     _ => Err(codama_errors::CodamaError::InvalidNodeConversion {

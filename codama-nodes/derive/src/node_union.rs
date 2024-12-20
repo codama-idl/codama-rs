@@ -84,9 +84,9 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
     };
 
     Ok(quote! {
-        impl #pre_generics NodeUnionTrait for #item_name #post_generics {}
+        impl #pre_generics crate::NodeUnionTrait for #item_name #post_generics {}
 
-        impl #pre_generics HasKind for #item_name #post_generics {
+        impl #pre_generics crate::HasKind for #item_name #post_generics {
             fn kind(&self) -> &'static str {
                 match self {
                     #(#kind_patterns)*
@@ -95,7 +95,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         }
 
         impl #pre_generics serde::Serialize for #item_name #post_generics {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
             {
@@ -106,7 +106,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         }
 
         impl #pre_generics_with_de serde::Deserialize<'de> for #item_name #post_generics {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
             where
                 D: serde::Deserializer<'de>,
             {

@@ -25,12 +25,12 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
     Ok(quote! {
         impl #pre_generics crate::TypeNodeTrait for #item_name #post_generics{
             fn try_from_type_node(node: crate::TypeNode) -> codama_errors::CodamaResult<Self> {
-                use crate::NodeTrait;
+                use crate::{HasKind, NodeTrait};
                 match node {
                     crate::TypeNode::#variant_name(node) => Ok(node),
                     _ => Err(codama_errors::CodamaError::InvalidNodeConversion {
-                        from: "TypeNode".into(),
-                        into: #item_name::KIND.into(),
+                        from: node.kind().to_string(),
+                        into: Self::KIND.into(),
                     }),
                 }
             }

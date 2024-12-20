@@ -1,6 +1,6 @@
 use crate::{
-    AccountLinkNode, DefinedTypeLinkNode, HasKind, InstructionAccountLinkNode,
-    InstructionArgumentLinkNode, InstructionLinkNode, NodeUnionTrait, PdaLinkNode, ProgramLinkNode,
+    AccountLinkNode, DefinedTypeLinkNode, InstructionAccountLinkNode, InstructionArgumentLinkNode,
+    InstructionLinkNode, PdaLinkNode, ProgramLinkNode,
 };
 use codama_nodes_derive::node_union;
 
@@ -18,6 +18,7 @@ pub enum LinkNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::HasKind;
 
     #[test]
     fn kind() {

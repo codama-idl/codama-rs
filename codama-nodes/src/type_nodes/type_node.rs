@@ -2,11 +2,10 @@ use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     DefinedTypeLinkNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
     EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode, HasKind, HiddenPrefixTypeNode,
-    HiddenSuffixTypeNode, LinkNode, MapTypeNode, Node, NodeUnionTrait, NumberTypeNode,
-    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
-    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
-    ZeroableOptionTypeNode,
+    HiddenSuffixTypeNode, LinkNode, MapTypeNode, Node, NumberTypeNode, OptionTypeNode,
+    PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode, RemainderOptionTypeNode,
+    SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode, StringTypeNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait, ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
 use codama_nodes_derive::node_union;

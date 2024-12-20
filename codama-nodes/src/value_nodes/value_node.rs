@@ -1,8 +1,8 @@
 use crate::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode, HasKind,
-    MapEntryValueNode, MapValueNode, NodeUnionTrait, NoneValueNode, NumberValueNode,
-    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode,
-    StructValueNode, TupleValueNode,
+    MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode, PublicKeyValueNode,
+    SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode, StructValueNode,
+    TupleValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 
