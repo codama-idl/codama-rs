@@ -4,7 +4,7 @@ use codama_attributes::{
 };
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
-    NestedTypeNode, NestedTypeNodeTrait, Node, RegisteredTypeNode, StringTypeNode,
+    NestedTypeLeaf, NestedTypeNode, NestedTypeNodeTrait, Node, RegisteredTypeNode, StringTypeNode,
     StructFieldTypeNode, TypeNode,
 };
 
@@ -110,16 +110,28 @@ fn apply_type_directive(directive: &TypeDirective, korok: &KorokMut) -> Option<N
 }
 
 fn apply_encoding_directive(directive: &EncodingDirective, node: Option<Node>) -> Option<Node> {
+    update_nested_type_node(node, |type_node| match type_node {
+        TypeNode::String(_) => StringTypeNode::new(directive.encoding).into(),
+        node => {
+            // TODO: Throw error?
+            node
+        }
+    })
+}
+
+fn update_nested_type_node(
+    node: Option<Node>,
+    update: impl FnOnce(TypeNode) -> TypeNode,
+) -> Option<Node> {
     update_type_node(
         node,
-        |type_node| match NestedTypeNode::<StringTypeNode>::try_from(type_node.clone()) {
+        |type_node| match NestedTypeNode::<NestedTypeLeaf>::try_from(type_node.clone()) {
             Ok(nested) => nested
-                .map_nested_type_node(|_| StringTypeNode::new(directive.encoding))
+                // Note that here we end up with a `NestedTypeLeaf` value...
+                .map_nested_type_node(|leaf| NestedTypeLeaf(update(leaf.0)))
+                // ...but here the `NestedTypeNode` value is unwrapped into a `TypeNode`.
                 .into(),
-            _ => {
-                // TODO: Throw error?
-                type_node
-            }
+            _ => unreachable!("NestedTypeLeaf can always be created from a TypeNode"),
         },
     )
 }
