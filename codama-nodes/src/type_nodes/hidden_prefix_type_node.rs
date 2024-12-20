@@ -2,6 +2,7 @@ use crate::{
     ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait,
     TypeNodeUnionTrait,
 };
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -15,6 +16,29 @@ pub struct HiddenPrefixTypeNode<T: TypeNodeUnionTrait> {
 impl From<HiddenPrefixTypeNode<crate::TypeNode>> for crate::Node {
     fn from(val: HiddenPrefixTypeNode<crate::TypeNode>) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl<T: TypeNodeTrait> From<HiddenPrefixTypeNode<NestedTypeNode<T>>>
+    for HiddenPrefixTypeNode<TypeNode>
+{
+    fn from(node: HiddenPrefixTypeNode<NestedTypeNode<T>>) -> Self {
+        HiddenPrefixTypeNode {
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+            prefix: node.prefix,
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<HiddenPrefixTypeNode<TypeNode>>
+    for HiddenPrefixTypeNode<NestedTypeNode<T>>
+{
+    type Error = CodamaError;
+    fn try_from(node: HiddenPrefixTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(HiddenPrefixTypeNode {
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+            prefix: node.prefix,
+        })
     }
 }
 
@@ -42,15 +66,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for HiddenPrefixTypeNode<NestedTyp
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
             prefix: self.prefix,
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for HiddenPrefixTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::HiddenPrefix(HiddenPrefixTypeNode {
-            r#type: Box::new((*self.r#type).into()),
-            prefix: self.prefix,
-        })
     }
 }
 

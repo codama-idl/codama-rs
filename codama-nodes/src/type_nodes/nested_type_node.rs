@@ -64,40 +64,13 @@ impl<T: TypeNodeTrait> TryFrom<TypeNode> for NestedTypeNode<T> {
 
     fn try_from(node: TypeNode) -> CodamaResult<Self> {
         match node {
-            TypeNode::FixedSize(node) => Ok(NestedTypeNode::FixedSize(FixedSizeTypeNode {
-                size: node.size,
-                r#type: Box::new(Self::try_from(*node.r#type)?),
-            })),
-            TypeNode::HiddenPrefix(node) => {
-                Ok(NestedTypeNode::HiddenPrefix(HiddenPrefixTypeNode {
-                    r#type: Box::new(Self::try_from(*node.r#type)?),
-                    prefix: node.prefix,
-                }))
-            }
-            TypeNode::HiddenSuffix(node) => {
-                Ok(NestedTypeNode::HiddenSuffix(HiddenSuffixTypeNode {
-                    r#type: Box::new(Self::try_from(*node.r#type)?),
-                    suffix: node.suffix,
-                }))
-            }
-            TypeNode::PostOffset(node) => Ok(NestedTypeNode::PostOffset(PostOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: Box::new(Self::try_from(*node.r#type)?),
-            })),
-            TypeNode::PreOffset(node) => Ok(NestedTypeNode::PreOffset(PreOffsetTypeNode {
-                offset: node.offset,
-                strategy: node.strategy,
-                r#type: Box::new(Self::try_from(*node.r#type)?),
-            })),
-            TypeNode::Sentinel(node) => Ok(NestedTypeNode::Sentinel(SentinelTypeNode {
-                r#type: Box::new(Self::try_from(*node.r#type)?),
-                sentinel: node.sentinel,
-            })),
-            TypeNode::SizePrefix(node) => Ok(NestedTypeNode::SizePrefix(SizePrefixTypeNode {
-                r#type: Box::new(Self::try_from(*node.r#type)?),
-                prefix: node.prefix,
-            })),
+            TypeNode::FixedSize(node) => Ok(NestedTypeNode::FixedSize(node.try_into()?)),
+            TypeNode::HiddenPrefix(node) => Ok(NestedTypeNode::HiddenPrefix(node.try_into()?)),
+            TypeNode::HiddenSuffix(node) => Ok(NestedTypeNode::HiddenSuffix(node.try_into()?)),
+            TypeNode::PostOffset(node) => Ok(NestedTypeNode::PostOffset(node.try_into()?)),
+            TypeNode::PreOffset(node) => Ok(NestedTypeNode::PreOffset(node.try_into()?)),
+            TypeNode::Sentinel(node) => Ok(NestedTypeNode::Sentinel(node.try_into()?)),
+            TypeNode::SizePrefix(node) => Ok(NestedTypeNode::SizePrefix(node.try_into()?)),
             _ => Ok(NestedTypeNode::Value(T::try_from_type_node(node)?)),
         }
     }

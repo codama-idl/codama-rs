@@ -1,4 +1,5 @@
 use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait, TypeNodeUnionTrait};
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 use serde::{Deserialize, Serialize};
 
@@ -16,6 +17,31 @@ pub struct PostOffsetTypeNode<T: TypeNodeUnionTrait> {
 impl From<PostOffsetTypeNode<crate::TypeNode>> for crate::Node {
     fn from(val: PostOffsetTypeNode<crate::TypeNode>) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl<T: TypeNodeTrait> From<PostOffsetTypeNode<NestedTypeNode<T>>>
+    for PostOffsetTypeNode<TypeNode>
+{
+    fn from(node: PostOffsetTypeNode<NestedTypeNode<T>>) -> Self {
+        PostOffsetTypeNode {
+            strategy: node.strategy,
+            offset: node.offset,
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<PostOffsetTypeNode<TypeNode>>
+    for PostOffsetTypeNode<NestedTypeNode<T>>
+{
+    type Error = CodamaError;
+    fn try_from(node: PostOffsetTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(PostOffsetTypeNode {
+            strategy: node.strategy,
+            offset: node.offset,
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+        })
     }
 }
 
@@ -73,16 +99,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for PostOffsetTypeNode<NestedTypeN
             strategy: self.strategy,
             offset: self.offset,
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for PostOffsetTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::PostOffset(PostOffsetTypeNode {
-            offset: self.offset,
-            strategy: self.strategy,
-            r#type: Box::new((*self.r#type).into()),
-        })
     }
 }
 

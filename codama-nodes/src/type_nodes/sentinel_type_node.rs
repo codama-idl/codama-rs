@@ -2,6 +2,7 @@ use crate::{
     ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait,
     TypeNodeUnionTrait,
 };
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -15,6 +16,25 @@ pub struct SentinelTypeNode<T: TypeNodeUnionTrait> {
 impl From<SentinelTypeNode<crate::TypeNode>> for crate::Node {
     fn from(val: SentinelTypeNode<crate::TypeNode>) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl<T: TypeNodeTrait> From<SentinelTypeNode<NestedTypeNode<T>>> for SentinelTypeNode<TypeNode> {
+    fn from(node: SentinelTypeNode<NestedTypeNode<T>>) -> Self {
+        SentinelTypeNode {
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+            sentinel: node.sentinel,
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<SentinelTypeNode<TypeNode>> for SentinelTypeNode<NestedTypeNode<T>> {
+    type Error = CodamaError;
+    fn try_from(node: SentinelTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(SentinelTypeNode {
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+            sentinel: node.sentinel,
+        })
     }
 }
 
@@ -42,15 +62,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for SentinelTypeNode<NestedTypeNod
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
             sentinel: self.sentinel,
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for SentinelTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::Sentinel(SentinelTypeNode {
-            r#type: Box::new((*self.r#type).into()),
-            sentinel: self.sentinel,
-        })
     }
 }
 

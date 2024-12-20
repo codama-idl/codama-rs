@@ -3,9 +3,7 @@ use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
 pub trait TypeNodeTrait: NodeTrait {
-    fn try_from_type_node(_node: TypeNode) -> CodamaResult<Self> {
-        unreachable!()
-    }
+    fn try_from_type_node(node: TypeNode) -> CodamaResult<Self>;
     fn into_type_node(self) -> TypeNode;
 }
 

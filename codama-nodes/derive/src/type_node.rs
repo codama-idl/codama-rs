@@ -18,7 +18,7 @@ pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenSt
     let item_name = &input.ident;
     let (pre_generics, post_generics) = &input.generics.block_wrappers();
 
-    // The item name ident without the last 8 characters (for "TypeNode").
+    // The item name ident without the last 8 characters (for "TypeNode" or "LinkNode").
     let variant_name = item_name.to_string();
     let variant_name = syn::Ident::new(&variant_name[..variant_name.len() - 8], item_name.span());
 

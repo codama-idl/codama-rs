@@ -2,6 +2,7 @@ use crate::{
     ConstantValueNode, NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait,
     TypeNodeUnionTrait,
 };
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -15,6 +16,29 @@ pub struct HiddenSuffixTypeNode<T: TypeNodeUnionTrait> {
 impl From<HiddenSuffixTypeNode<crate::TypeNode>> for crate::Node {
     fn from(val: HiddenSuffixTypeNode<crate::TypeNode>) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl<T: TypeNodeTrait> From<HiddenSuffixTypeNode<NestedTypeNode<T>>>
+    for HiddenSuffixTypeNode<TypeNode>
+{
+    fn from(node: HiddenSuffixTypeNode<NestedTypeNode<T>>) -> Self {
+        HiddenSuffixTypeNode {
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+            suffix: node.suffix,
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<HiddenSuffixTypeNode<TypeNode>>
+    for HiddenSuffixTypeNode<NestedTypeNode<T>>
+{
+    type Error = CodamaError;
+    fn try_from(node: HiddenSuffixTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(HiddenSuffixTypeNode {
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+            suffix: node.suffix,
+        })
     }
 }
 
@@ -42,15 +66,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for HiddenSuffixTypeNode<NestedTyp
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
             suffix: self.suffix,
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for HiddenSuffixTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::HiddenSuffix(HiddenSuffixTypeNode {
-            r#type: Box::new((*self.r#type).into()),
-            suffix: self.suffix,
-        })
     }
 }
 

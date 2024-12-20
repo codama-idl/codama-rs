@@ -2,6 +2,7 @@ use crate::{
     NestedTypeNode, NestedTypeNodeTrait, NumberTypeNode, TypeNode, TypeNodeTrait,
     TypeNodeUnionTrait,
 };
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -18,6 +19,29 @@ impl From<SizePrefixTypeNode<crate::TypeNode>> for crate::Node {
     }
 }
 
+impl<T: TypeNodeTrait> From<SizePrefixTypeNode<NestedTypeNode<T>>>
+    for SizePrefixTypeNode<TypeNode>
+{
+    fn from(node: SizePrefixTypeNode<NestedTypeNode<T>>) -> Self {
+        SizePrefixTypeNode {
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+            prefix: node.prefix,
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<SizePrefixTypeNode<TypeNode>>
+    for SizePrefixTypeNode<NestedTypeNode<T>>
+{
+    type Error = CodamaError;
+    fn try_from(node: SizePrefixTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(SizePrefixTypeNode {
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+            prefix: node.prefix,
+        })
+    }
+}
+
 impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
     pub fn new<U, V>(r#type: U, prefix: V) -> Self
     where
@@ -28,15 +52,6 @@ impl<T: TypeNodeUnionTrait> SizePrefixTypeNode<T> {
             r#type: Box::new(r#type.into()),
             prefix: Box::new(prefix.into()),
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for SizePrefixTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::SizePrefix(SizePrefixTypeNode {
-            r#type: Box::new((*self.r#type).into()),
-            prefix: self.prefix,
-        })
     }
 }
 

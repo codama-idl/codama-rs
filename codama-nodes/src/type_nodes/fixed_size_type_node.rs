@@ -1,4 +1,5 @@
 use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait, TypeNodeUnionTrait};
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
 
 #[nestable_type_node]
@@ -11,9 +12,30 @@ pub struct FixedSizeTypeNode<T: TypeNodeUnionTrait> {
     pub r#type: Box<T>,
 }
 
-impl From<FixedSizeTypeNode<crate::TypeNode>> for crate::Node {
-    fn from(val: FixedSizeTypeNode<crate::TypeNode>) -> Self {
-        crate::Node::Type(val.into())
+impl From<FixedSizeTypeNode<TypeNode>> for crate::Node {
+    fn from(node: FixedSizeTypeNode<TypeNode>) -> Self {
+        crate::Node::Type(node.into())
+    }
+}
+
+impl<T: TypeNodeTrait> From<FixedSizeTypeNode<NestedTypeNode<T>>> for FixedSizeTypeNode<TypeNode> {
+    fn from(node: FixedSizeTypeNode<NestedTypeNode<T>>) -> Self {
+        FixedSizeTypeNode {
+            size: node.size,
+            r#type: Box::new(TypeNode::from(*node.r#type)),
+        }
+    }
+}
+
+impl<T: TypeNodeTrait> TryFrom<FixedSizeTypeNode<TypeNode>>
+    for FixedSizeTypeNode<NestedTypeNode<T>>
+{
+    type Error = CodamaError;
+    fn try_from(node: FixedSizeTypeNode<TypeNode>) -> CodamaResult<Self> {
+        Ok(FixedSizeTypeNode {
+            size: node.size,
+            r#type: Box::new(NestedTypeNode::try_from(*node.r#type)?),
+        })
     }
 }
 
@@ -41,15 +63,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for FixedSizeTypeNode<NestedTypeNo
             size: self.size,
             r#type: Box::new(self.r#type.map_nested_type_node(f)),
         }
-    }
-}
-
-impl<T: TypeNodeTrait> TypeNodeTrait for FixedSizeTypeNode<NestedTypeNode<T>> {
-    fn into_type_node(self) -> TypeNode {
-        TypeNode::FixedSize(FixedSizeTypeNode {
-            size: self.size,
-            r#type: Box::new((*self.r#type).into()),
-        })
     }
 }
 
