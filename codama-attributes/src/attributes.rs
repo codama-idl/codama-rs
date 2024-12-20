@@ -19,7 +19,11 @@ impl Attributes<'_> {
             if let Attribute::Codama(attribute) = attribute {
                 match &attribute.directive {
                     CodamaDirective::Type(_) if !has_seen_type => has_seen_type = true,
-                    CodamaDirective::Type(_) | CodamaDirective::Encoding(_) if has_seen_type => {
+                    CodamaDirective::Type(_)
+                    | CodamaDirective::Encoding(_)
+                    | CodamaDirective::FixedSize(_)
+                        if has_seen_type =>
+                    {
                         errors.push(syn::Error::new_spanned(
                             attribute.ast,
                             "This attribute is overridden by a `#[codama(type = ...)]` attribute below",

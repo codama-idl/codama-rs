@@ -1,11 +1,12 @@
 use crate::KorokVisitor;
 use codama_attributes::{
-    Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, TypeDirective,
+    Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, FixedSizeDirective,
+    TypeDirective,
 };
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
-    NestedTypeLeaf, NestedTypeNode, NestedTypeNodeTrait, Node, RegisteredTypeNode, StringTypeNode,
-    StructFieldTypeNode, TypeNode,
+    FixedSizeTypeNode, NestedTypeLeaf, NestedTypeNode, NestedTypeNodeTrait, Node,
+    RegisteredTypeNode, StringTypeNode, StructFieldTypeNode, TypeNode,
 };
 
 #[derive(Default)]
@@ -90,6 +91,7 @@ fn apply_codama_attribute(
     match &attribute.directive {
         CodamaDirective::Type(directive) => apply_type_directive(directive, korok),
         CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, node),
+        CodamaDirective::FixedSize(directive) => apply_fixed_size_directive(directive, node),
         _ => node,
     }
 }
@@ -116,6 +118,14 @@ fn apply_encoding_directive(directive: &EncodingDirective, node: Option<Node>) -
             // TODO: Throw error?
             node
         }
+    })
+}
+
+fn apply_fixed_size_directive(directive: &FixedSizeDirective, node: Option<Node>) -> Option<Node> {
+    update_type_node(node, |node| match node {
+        TypeNode::FixedSize(node) => FixedSizeTypeNode::new(*node.r#type, directive.size).into(),
+        TypeNode::SizePrefix(node) => FixedSizeTypeNode::new(*node.r#type, directive.size).into(),
+        node => FixedSizeTypeNode::new(node, directive.size).into(),
     })
 }
 
