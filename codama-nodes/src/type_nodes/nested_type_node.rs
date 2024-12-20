@@ -1,6 +1,6 @@
 use crate::{
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, NestedTypeNodeTrait, Node,
-    NodeTrait, NodeUnionTrait, PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode,
+    FixedSizeTypeNode, HasKind, HiddenPrefixTypeNode, HiddenSuffixTypeNode, NestedTypeNodeTrait,
+    Node, NodeUnionTrait, PostOffsetTypeNode, PreOffsetTypeNode, SentinelTypeNode,
     SizePrefixTypeNode, TypeNode, TypeNodeTrait, TypeNodeUnionTrait,
 };
 use codama_errors::{CodamaError, CodamaResult};
@@ -130,7 +130,7 @@ impl<T: TypeNodeTrait> From<NestedTypeNode<T>> for TypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NodeUnionTrait, StringTypeNode};
+    use crate::StringTypeNode;
 
     #[test]
     fn kind() {

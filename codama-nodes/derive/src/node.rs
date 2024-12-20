@@ -27,5 +27,11 @@ pub fn expand_derive_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream>
         impl #pre_generics crate::NodeTrait for #item_name #post_generics{
             const KIND: &'static str = #kind;
         }
+
+        impl #pre_generics crate::HasKind for #item_name #post_generics{
+            fn kind(&self) -> &'static str {
+                <Self as crate::NodeTrait>::KIND
+            }
+        }
     })
 }

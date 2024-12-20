@@ -84,7 +84,9 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
     };
 
     Ok(quote! {
-        impl #pre_generics NodeUnionTrait for #item_name #post_generics {
+        impl #pre_generics NodeUnionTrait for #item_name #post_generics {}
+
+        impl #pre_generics HasKind for #item_name #post_generics {
             fn kind(&self) -> &'static str {
                 match self {
                     #(#kind_patterns)*

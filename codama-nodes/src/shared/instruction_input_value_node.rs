@@ -1,9 +1,10 @@
 use crate::{
     AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ArrayValueNode, BooleanValueNode,
-    BytesValueNode, ConditionalValueNode, ConstantValueNode, EnumValueNode, IdentityValueNode,
-    MapValueNode, NodeTrait, NodeUnionTrait, NoneValueNode, NumberValueNode, PayerValueNode,
-    PdaValueNode, ProgramIdValueNode, ProgramLinkNode, PublicKeyValueNode, ResolverValueNode,
-    SetValueNode, SomeValueNode, StringValueNode, StructValueNode, TupleValueNode,
+    BytesValueNode, ConditionalValueNode, ConstantValueNode, EnumValueNode, HasKind,
+    IdentityValueNode, MapValueNode, NodeUnionTrait, NoneValueNode, NumberValueNode,
+    PayerValueNode, PdaValueNode, ProgramIdValueNode, ProgramLinkNode, PublicKeyValueNode,
+    ResolverValueNode, SetValueNode, SomeValueNode, StringValueNode, StructValueNode,
+    TupleValueNode,
 };
 use codama_nodes_derive::node_union;
 

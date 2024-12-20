@@ -1,6 +1,5 @@
 use crate::{
-    CamelCaseString, DefinedTypeLinkNode, NodeTrait, NodeUnionTrait, StructValueNode,
-    TupleValueNode,
+    CamelCaseString, DefinedTypeLinkNode, HasKind, NodeUnionTrait, StructValueNode, TupleValueNode,
 };
 use codama_nodes_derive::{node, node_union};
 

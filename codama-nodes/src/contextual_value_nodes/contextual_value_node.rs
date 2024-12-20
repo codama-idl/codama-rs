@@ -1,6 +1,6 @@
 use crate::{
-    AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ConditionalValueNode,
-    IdentityValueNode, NodeTrait, NodeUnionTrait, PayerValueNode, PdaSeedValueNode, PdaValueNode,
+    AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ConditionalValueNode, HasKind,
+    IdentityValueNode, NodeUnionTrait, PayerValueNode, PdaSeedValueNode, PdaValueNode,
     ProgramIdValueNode, ResolverValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
@@ -25,7 +25,6 @@ pub enum RegisteredContextualValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeUnionTrait;
 
     #[test]
     fn kind_from_standalone() {

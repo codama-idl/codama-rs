@@ -1,8 +1,8 @@
 use crate::{
     AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
     DefinedTypeLinkNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
-    EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode, HiddenPrefixTypeNode,
-    HiddenSuffixTypeNode, LinkNode, MapTypeNode, Node, NodeTrait, NodeUnionTrait, NumberTypeNode,
+    EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode, HasKind, HiddenPrefixTypeNode,
+    HiddenSuffixTypeNode, LinkNode, MapTypeNode, Node, NodeUnionTrait, NumberTypeNode,
     OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode,
     RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
     StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNodeUnionTrait,
@@ -187,7 +187,6 @@ impl TryFrom<TypeNode> for RegisteredTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeUnionTrait;
 
     #[test]
     fn kind_from_standalone() {

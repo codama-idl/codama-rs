@@ -1,4 +1,4 @@
-use codama_nodes::{NodeTrait, NodeUnionTrait};
+use codama_nodes::{HasKind, NodeTrait, NodeUnionTrait};
 use codama_nodes_derive::{node, NodeUnion};
 
 #[node]

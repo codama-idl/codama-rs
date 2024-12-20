@@ -1,5 +1,5 @@
 use crate::{
-    ConstantDiscriminatorNode, FieldDiscriminatorNode, NodeTrait, NodeUnionTrait,
+    ConstantDiscriminatorNode, FieldDiscriminatorNode, HasKind, NodeUnionTrait,
     SizeDiscriminatorNode,
 };
 use codama_nodes_derive::node_union;
@@ -14,7 +14,6 @@ pub enum DiscriminatorNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeUnionTrait;
 
     #[test]
     fn kind() {

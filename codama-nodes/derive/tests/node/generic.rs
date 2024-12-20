@@ -1,5 +1,8 @@
 use codama_nodes_derive::Node;
 
+pub trait HasKind {
+    fn kind(&self) -> &'static str;
+}
 pub trait NodeTrait {
     const KIND: &'static str;
 }

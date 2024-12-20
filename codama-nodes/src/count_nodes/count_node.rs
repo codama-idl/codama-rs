@@ -1,4 +1,4 @@
-use crate::{FixedCountNode, NodeTrait, NodeUnionTrait, PrefixedCountNode, RemainderCountNode};
+use crate::{FixedCountNode, HasKind, NodeUnionTrait, PrefixedCountNode, RemainderCountNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]
@@ -11,7 +11,6 @@ pub enum CountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeUnionTrait;
 
     #[test]
     fn kind() {

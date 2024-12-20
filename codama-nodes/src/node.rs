@@ -1,9 +1,9 @@
 use crate::{
     AccountNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode, InstructionNode,
-    InstructionRemainingAccountsNode, LinkNode, NodeTrait, NodeUnionTrait, PdaNode, PdaSeedNode,
-    ProgramNode, RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
-    TypeNode, ValueNode,
+    HasKind, InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode,
+    InstructionNode, InstructionRemainingAccountsNode, LinkNode, NodeUnionTrait, PdaNode,
+    PdaSeedNode, ProgramNode, RegisteredContextualValueNode, RegisteredTypeNode,
+    RegisteredValueNode, RootNode, TypeNode, ValueNode,
 };
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
@@ -55,7 +55,8 @@ impl From<ValueNode> for Node {
     }
 }
 
-impl NodeUnionTrait for Node {
+impl NodeUnionTrait for Node {}
+impl HasKind for Node {
     fn kind(&self) -> &'static str {
         match self {
             Node::ContextualValue(node) => node.kind(),

@@ -4,10 +4,7 @@ use std::fmt::Debug;
 
 pub trait TypeNodeTrait: NodeTrait {
     fn try_from_type_node(_node: TypeNode) -> CodamaResult<Self> {
-        Err(codama_errors::CodamaError::InvalidNodeConversion {
-            from: "TypeNode".into(),
-            into: Self::KIND.into(),
-        })
+        unreachable!()
     }
     fn into_type_node(self) -> TypeNode;
 }

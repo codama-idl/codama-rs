@@ -1,4 +1,4 @@
-use crate::{ConstantPdaSeedNode, NodeTrait, NodeUnionTrait, VariablePdaSeedNode};
+use crate::{ConstantPdaSeedNode, HasKind, NodeUnionTrait, VariablePdaSeedNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]
@@ -10,7 +10,7 @@ pub enum PdaSeedNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NodeUnionTrait, NumberTypeNode, NumberValueNode, U8};
+    use crate::{NumberTypeNode, NumberValueNode, U8};
 
     #[test]
     fn kind() {

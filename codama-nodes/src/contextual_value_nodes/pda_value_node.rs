@@ -1,4 +1,4 @@
-use crate::{NodeTrait, NodeUnionTrait, PdaLinkNode, PdaNode, PdaSeedValueNode};
+use crate::{HasKind, NodeUnionTrait, PdaLinkNode, PdaNode, PdaSeedValueNode};
 use codama_nodes_derive::{node, node_union};
 
 #[node]

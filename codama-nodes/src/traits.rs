@@ -2,13 +2,9 @@ use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
 pub trait NodeTrait:
-    Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
+    HasKind + Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
 {
     const KIND: &'static str;
-
-    fn kind(&self) -> &'static str {
-        Self::KIND
-    }
 
     fn to_json(&self) -> CodamaResult<String> {
         serde_json::to_string(&self).map_err(Into::into)
@@ -24,7 +20,10 @@ pub trait NodeTrait:
 }
 
 pub trait NodeUnionTrait:
-    Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
+    HasKind + Debug + PartialEq + Clone + serde::Serialize + for<'de> serde::Deserialize<'de>
 {
+}
+
+pub trait HasKind {
     fn kind(&self) -> &'static str;
 }

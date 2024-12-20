@@ -1,6 +1,6 @@
 use crate::{
-    ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
-    MapEntryValueNode, MapValueNode, NodeTrait, NodeUnionTrait, NoneValueNode, NumberValueNode,
+    ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode, HasKind,
+    MapEntryValueNode, MapValueNode, NodeUnionTrait, NoneValueNode, NumberValueNode,
     PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode,
     StructValueNode, TupleValueNode,
 };
@@ -33,7 +33,6 @@ pub enum RegisteredValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NodeUnionTrait;
 
     #[test]
     fn kind_from_standalone() {
