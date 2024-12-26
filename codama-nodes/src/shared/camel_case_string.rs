@@ -112,6 +112,12 @@ mod tests {
     }
 
     #[test]
+    fn parse_from_special_chars() {
+        let value = CamelCaseString::new(String::from("crate::hello:world?*,this+is!a#test"));
+        assert_eq!(value.0, "crateHelloWorldThisIsATest");
+    }
+
+    #[test]
     fn double_parse() {
         let value = to_camel_case("my_value");
         let value = to_camel_case(&value);
