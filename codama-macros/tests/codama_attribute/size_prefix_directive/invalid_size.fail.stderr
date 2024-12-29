@@ -1,0 +1,11 @@
+error: prefix must be a NumberTypeNode
+ --> tests/codama_attribute/size_prefix_directive/invalid_size.fail.rs:3:24
+  |
+3 | #[codama(size_prefix = string)]
+  |                        ^^^^^^
+
+error: unrecognized type
+ --> tests/codama_attribute/size_prefix_directive/invalid_size.fail.rs:6:24
+  |
+6 | #[codama(size_prefix = invalid(1, 2, 3))]
+  |                        ^^^^^^^^^^^^^^^^

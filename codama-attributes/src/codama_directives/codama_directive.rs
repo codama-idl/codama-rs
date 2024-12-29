@@ -1,4 +1,4 @@
-use crate::{EncodingDirective, FixedSizeDirective, TypeDirective};
+use crate::{EncodingDirective, FixedSizeDirective, SizePrefixDirective, TypeDirective};
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
 
@@ -8,6 +8,7 @@ pub enum CodamaDirective {
     Type(TypeDirective),
     Encoding(EncodingDirective),
     FixedSize(FixedSizeDirective),
+    SizePrefix(SizePrefixDirective),
 }
 
 impl TryFrom<&Meta> for CodamaDirective {
@@ -20,6 +21,7 @@ impl TryFrom<&Meta> for CodamaDirective {
             "type" => Ok(CodamaDirective::Type(meta.try_into()?)),
             "encoding" => Ok(CodamaDirective::Encoding(meta.try_into()?)),
             "fixed_size" => Ok(CodamaDirective::FixedSize(meta.try_into()?)),
+            "size_prefix" => Ok(CodamaDirective::SizePrefix(meta.try_into()?)),
             _ => Err(path.error("unrecognized codama directive")),
         }
     }
