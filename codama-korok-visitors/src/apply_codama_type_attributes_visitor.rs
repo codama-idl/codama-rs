@@ -92,7 +92,6 @@ fn apply_codama_attribute(
         CodamaDirective::Type(directive) => apply_type_directive(directive, korok),
         CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, node),
         CodamaDirective::FixedSize(directive) => apply_fixed_size_directive(directive, node),
-        _ => node,
     }
 }
 
