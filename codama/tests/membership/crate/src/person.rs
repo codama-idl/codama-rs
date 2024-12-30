@@ -1,6 +1,6 @@
 use super::Membership;
 
-#[derive(CodamaType)]
+#[derive(CodamaAccount)]
 pub struct Person {
     pub name: String,
     pub age: u8,

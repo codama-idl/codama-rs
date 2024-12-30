@@ -15,39 +15,11 @@ fn get_idl() {
     "name": "membership",
     "publicKey": "Membership1111111111111111111111111",
     "version": "1.2.3",
-    "accounts": [],
-    "instructions": [],
-    "definedTypes": [
+    "accounts": [
       {
-        "kind": "definedTypeNode",
-        "name": "membership",
-        "type": {
-          "kind": "enumTypeNode",
-          "variants": [
-            {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "none"
-            },
-            {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "basic"
-            },
-            {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "premium"
-            }
-          ],
-          "size": {
-            "kind": "numberTypeNode",
-            "format": "u8",
-            "endian": "le"
-          }
-        }
-      },
-      {
-        "kind": "definedTypeNode",
+        "kind": "accountNode",
         "name": "person",
-        "type": {
+        "data": {
           "kind": "structTypeNode",
           "fields": [
             {
@@ -91,6 +63,35 @@ fn get_idl() {
               }
             }
           ]
+        }
+      }
+    ],
+    "instructions": [],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "membership",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "none"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "basic"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "premium"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
         }
       }
     ]

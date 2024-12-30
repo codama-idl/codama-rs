@@ -1,8 +1,8 @@
 use crate::KorokPlugin;
 use codama_korok_visitors::{
     ApplyCodamaTypeAttributesVisitor, CombineModulesVisitor, CombineTypesVisitor, ComposeVisitor,
-    FilterItemsVisitor, KorokVisitable, SetBorshTypesVisitor, SetLinkTypesVisitor,
-    SetProgramMetadataVisitor,
+    FilterItemsVisitor, KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor,
+    SetLinkTypesVisitor, SetProgramMetadataVisitor,
 };
 use codama_koroks::KorokTrait;
 
@@ -26,7 +26,9 @@ pub fn get_default_visitor<'a>() -> ComposeVisitor<'a> {
         .add(ApplyCodamaTypeAttributesVisitor::new())
         .add(FilterItemsVisitor::new(
             |item| item.attributes().unwrap().has_any_codama_derive(),
-            CombineTypesVisitor::new(),
+            ComposeVisitor::new()
+                .add(CombineTypesVisitor::new())
+                .add(SetAccountsVisitor::new()),
         ))
         .add(CombineModulesVisitor::new())
 }
