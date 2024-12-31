@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::DefinedTypeLinkNode;
 use codama_syn_helpers::extensions::*;
 
@@ -12,7 +13,7 @@ impl SetLinkTypesVisitor {
 }
 
 impl KorokVisitor for SetLinkTypesVisitor {
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> syn::Result<()> {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         if korok.node.is_some() {
             return Ok(());
         }

@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::{AccountNode, NestedTypeNode, Node, StructTypeNode};
 
 #[derive(Default)]
@@ -11,7 +12,7 @@ impl SetAccountsVisitor {
 }
 
 impl KorokVisitor for SetAccountsVisitor {
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> syn::Result<()> {
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
 
         // Ensure the struct has the `CodamaAccount` attribute.
@@ -48,7 +49,7 @@ impl KorokVisitor for SetAccountsVisitor {
         Ok(())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> syn::Result<()> {
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
 
         // Ensure the struct has the `CodamaAccount` attribute.

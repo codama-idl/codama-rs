@@ -7,4 +7,3 @@ edition = "2021"
 codama-errors = { path = "../codama-errors" }
 codama-koroks = { path = "../codama-koroks" }
 codama-korok-visitors = { path = "../codama-korok-visitors" }
-syn = { version = "2.0", features = ["extra-traits", "full"] }

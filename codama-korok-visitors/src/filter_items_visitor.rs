@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_koroks::ItemKorok;
 
 pub struct FilterItemsVisitor<'a, F>
@@ -25,7 +26,7 @@ impl<F> KorokVisitor for FilterItemsVisitor<'_, F>
 where
     F: Fn(&ItemKorok) -> bool,
 {
-    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> syn::Result<()> {
+    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> CodamaResult<()> {
         if (self.filter)(korok) {
             self.visitor.visit_item(korok)
         } else {

@@ -1,20 +1,21 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{ComposeVisitor, KorokVisitable, KorokVisitor, UniformVisitor};
 use codama_koroks::{FieldKorok, KorokTrait, StructKorok};
 use codama_nodes::PublicKeyTypeNode;
 
 #[test]
-fn it_returns_a_single_visitor_from_multiple_visitors() -> syn::Result<()> {
+fn it_returns_a_single_visitor_from_multiple_visitors() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
-    let mut korok = StructKorok::parse(&ast).unwrap();
+    let mut korok = StructKorok::parse(&ast)?;
 
     struct ResetStructAndFieldKoroksVisitor;
     impl KorokVisitor for ResetStructAndFieldKoroksVisitor {
-        fn visit_struct(&mut self, korok: &mut StructKorok) -> syn::Result<()> {
+        fn visit_struct(&mut self, korok: &mut StructKorok) -> CodamaResult<()> {
             self.visit_children(korok)?;
             korok.node = None;
             Ok(())
         }
-        fn visit_field(&mut self, korok: &mut FieldKorok) -> syn::Result<()> {
+        fn visit_field(&mut self, korok: &mut FieldKorok) -> CodamaResult<()> {
             self.visit_children(korok)?;
             korok.node = None;
             Ok(())

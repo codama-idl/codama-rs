@@ -1,11 +1,12 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::FieldsKorok;
 use codama_nodes::{NumberTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64};
 
 #[test]
-fn it_create_a_struct_type_node_from_struct_field_type_nodes() -> syn::Result<()> {
+fn it_create_a_struct_type_node_from_struct_field_type_nodes() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo { x: i32, y: i32 } };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
     korok.all[0].node = Some(StructFieldTypeNode::new("x", NumberTypeNode::le(I32)).into());
     korok.all[1].node = Some(StructFieldTypeNode::new("y", NumberTypeNode::le(I32)).into());
 
@@ -25,9 +26,9 @@ fn it_create_a_struct_type_node_from_struct_field_type_nodes() -> syn::Result<()
 }
 
 #[test]
-fn it_create_a_tuple_type_node_from_multiple_type_nodes() -> syn::Result<()> {
+fn it_create_a_tuple_type_node_from_multiple_type_nodes() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo (i32, u64); };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.all[1].node = Some(NumberTypeNode::le(U64).into());
 
@@ -47,9 +48,9 @@ fn it_create_a_tuple_type_node_from_multiple_type_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_create_a_tuple_type_node_from_single_type_nodes() -> syn::Result<()> {
+fn it_create_a_tuple_type_node_from_single_type_nodes() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo (i32); };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
 
     assert_eq!(korok.node, None);
@@ -62,9 +63,9 @@ fn it_create_a_tuple_type_node_from_single_type_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_sets_node_to_none_from_empty_fields() -> syn::Result<()> {
+fn it_sets_node_to_none_from_empty_fields() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo; };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -73,9 +74,9 @@ fn it_sets_node_to_none_from_empty_fields() -> syn::Result<()> {
 }
 
 #[test]
-fn it_does_not_override_existing_nodes_by_default() -> syn::Result<()> {
+fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo (i32); };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 
@@ -85,9 +86,9 @@ fn it_does_not_override_existing_nodes_by_default() -> syn::Result<()> {
 }
 
 #[test]
-fn it_can_override_existing_nodes() -> syn::Result<()> {
+fn it_can_override_existing_nodes() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! { struct Foo (i32); };
-    let mut korok = FieldsKorok::parse(&ast.fields).unwrap();
+    let mut korok = FieldsKorok::parse(&ast.fields)?;
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 

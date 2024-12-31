@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
@@ -18,7 +19,7 @@ impl CombineTypesVisitor {
 }
 
 impl KorokVisitor for CombineTypesVisitor {
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> syn::Result<()> {
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
             return Ok(());
@@ -35,7 +36,7 @@ impl KorokVisitor for CombineTypesVisitor {
         Ok(())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> syn::Result<()> {
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
             return Ok(());
@@ -71,7 +72,7 @@ impl KorokVisitor for CombineTypesVisitor {
     fn visit_enum_variant(
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
-    ) -> syn::Result<()> {
+    ) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
             return Ok(());
@@ -113,7 +114,7 @@ impl KorokVisitor for CombineTypesVisitor {
         Ok(())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> syn::Result<()> {
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
             return Ok(());

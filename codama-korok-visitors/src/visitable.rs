@@ -1,12 +1,13 @@
 use crate::visitor::KorokVisitor;
+use codama_errors::CodamaResult;
 
 pub trait KorokVisitable {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()>;
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()>;
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable>;
 }
 
 impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         match self {
             Self::Crate(k) => k.accept(visitor),
             Self::Enum(k) => k.accept(visitor),
@@ -40,7 +41,7 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
 }
 
 impl KorokVisitable for codama_koroks::RootKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_root(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -52,7 +53,7 @@ impl KorokVisitable for codama_koroks::RootKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::CrateKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_crate(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -64,7 +65,7 @@ impl KorokVisitable for codama_koroks::CrateKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::ItemKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_item(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -79,7 +80,7 @@ impl KorokVisitable for codama_koroks::ItemKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::FileModuleKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_file_module(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -91,7 +92,7 @@ impl KorokVisitable for codama_koroks::FileModuleKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::ModuleKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_module(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -103,7 +104,7 @@ impl KorokVisitable for codama_koroks::ModuleKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::StructKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_struct(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -112,7 +113,7 @@ impl KorokVisitable for codama_koroks::StructKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::FieldsKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_fields(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -124,7 +125,7 @@ impl KorokVisitable for codama_koroks::FieldsKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::FieldKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_field(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -133,7 +134,7 @@ impl KorokVisitable for codama_koroks::FieldKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::EnumKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_enum(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -145,7 +146,7 @@ impl KorokVisitable for codama_koroks::EnumKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::EnumVariantKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_enum_variant(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
@@ -154,7 +155,7 @@ impl KorokVisitable for codama_koroks::EnumVariantKorok<'_> {
 }
 
 impl KorokVisitable for codama_koroks::UnsupportedItemKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_unsupported_item(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {

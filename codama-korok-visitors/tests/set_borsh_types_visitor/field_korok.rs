@@ -1,11 +1,12 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor};
 use codama_koroks::FieldKorok;
 use codama_nodes::{NumberTypeNode, StructFieldTypeNode, U64};
 
 #[test]
-fn it_create_a_struct_field_type_node_when_nammed() -> syn::Result<()> {
+fn it_create_a_struct_field_type_node_when_nammed() -> CodamaResult<()> {
     let ast = syn::parse_quote! { foo: u64 };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -17,9 +18,9 @@ fn it_create_a_struct_field_type_node_when_nammed() -> syn::Result<()> {
 }
 
 #[test]
-fn it_forwards_the_type_when_unnamed() -> syn::Result<()> {
+fn it_forwards_the_type_when_unnamed() -> CodamaResult<()> {
     let ast = syn::parse_quote! { u64 };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;

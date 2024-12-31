@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, NumberFormat::*, NumberTypeNode,
     PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
@@ -16,7 +17,7 @@ impl SetBorshTypesVisitor {
 }
 
 impl KorokVisitor for SetBorshTypesVisitor {
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> syn::Result<()> {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         if korok.node.is_some() {
             return Ok(());
         }

@@ -1,11 +1,12 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetLinkTypesVisitor};
 use codama_koroks::{FieldKorok, StructKorok};
 use codama_nodes::{DefinedTypeLinkNode, NumberFormat::U32, NumberTypeNode, StructFieldTypeNode};
 
 #[test]
-fn it_sets_link_nodes_using_the_type_path() -> syn::Result<()> {
+fn it_sets_link_nodes_using_the_type_path() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! { Membership };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetLinkTypesVisitor::new())?;
@@ -17,9 +18,9 @@ fn it_sets_link_nodes_using_the_type_path() -> syn::Result<()> {
 }
 
 #[test]
-fn it_ignores_the_path_prefix() -> syn::Result<()> {
+fn it_ignores_the_path_prefix() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! { some::prefix::Membership };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     korok.accept(&mut SetLinkTypesVisitor::new())?;
     assert_eq!(
@@ -30,9 +31,9 @@ fn it_ignores_the_path_prefix() -> syn::Result<()> {
 }
 
 #[test]
-fn it_ignores_non_path_types() -> syn::Result<()> {
+fn it_ignores_non_path_types() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! { [u32; 8] };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     korok.accept(&mut SetLinkTypesVisitor::new())?;
     assert_eq!(korok.node, None);
@@ -40,9 +41,9 @@ fn it_ignores_non_path_types() -> syn::Result<()> {
 }
 
 #[test]
-fn it_ignores_types_that_already_have_nodes() -> syn::Result<()> {
+fn it_ignores_types_that_already_have_nodes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! { u32 };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
     korok.node = Some(NumberTypeNode::le(U32).into());
 
     korok.accept(&mut SetLinkTypesVisitor::new())?;
@@ -51,11 +52,11 @@ fn it_ignores_types_that_already_have_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_works_in_any_parent_koroks() -> syn::Result<()> {
+fn it_works_in_any_parent_koroks() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! {
         pub struct Person(String, u8, Membership);
     };
-    let mut korok = StructKorok::parse(&ast).unwrap();
+    let mut korok = StructKorok::parse(&ast)?;
 
     korok.accept(&mut SetLinkTypesVisitor::new())?;
     let fields = korok.fields.all;
@@ -72,9 +73,9 @@ fn it_works_in_any_parent_koroks() -> syn::Result<()> {
 }
 
 #[test]
-fn it_create_a_struct_field_type_node_when_nammed() -> syn::Result<()> {
+fn it_create_a_struct_field_type_node_when_nammed() -> CodamaResult<()> {
     let ast = syn::parse_quote! { foo: Membership };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetLinkTypesVisitor::new())?;
@@ -86,9 +87,9 @@ fn it_create_a_struct_field_type_node_when_nammed() -> syn::Result<()> {
 }
 
 #[test]
-fn it_forwards_the_type_when_unnamed() -> syn::Result<()> {
+fn it_forwards_the_type_when_unnamed() -> CodamaResult<()> {
     let ast = syn::parse_quote! { Membership };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetLinkTypesVisitor::new())?;

@@ -94,7 +94,7 @@ mod tests {
 
     struct MockVisitable;
     impl KorokVisitable for MockVisitable {
-        fn accept(&mut self, _visitor: &mut dyn KorokVisitor) -> syn::Result<()> {
+        fn accept(&mut self, _visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
             Ok(())
         }
         fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {

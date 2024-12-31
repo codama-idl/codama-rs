@@ -1,9 +1,10 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{FilterItemsVisitor, KorokVisitable, KorokVisitor, UniformVisitor};
 use codama_koroks::{ItemKorok, KorokTrait};
 use codama_nodes::PublicKeyTypeNode;
 
 #[test]
-fn it_only_starts_the_child_visitor_on_filtered_items() -> syn::Result<()> {
+fn it_only_starts_the_child_visitor_on_filtered_items() -> CodamaResult<()> {
     let ast: syn::Item = syn::parse_quote! {
         mod parent {
             mod foo {
@@ -14,7 +15,7 @@ fn it_only_starts_the_child_visitor_on_filtered_items() -> syn::Result<()> {
             }
         }
     };
-    let mut korok = ItemKorok::parse(&ast, &[], &mut 0).unwrap();
+    let mut korok = ItemKorok::parse(&ast, &[], &mut 0)?;
 
     korok.accept(&mut FilterItemsVisitor::new(
         |item| match item {

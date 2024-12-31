@@ -57,7 +57,6 @@ dependencies = [
  "codama-errors",
  "codama-korok-visitors",
  "codama-koroks",
- "syn",
 ]
 
 [[package]]

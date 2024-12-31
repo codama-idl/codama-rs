@@ -1,4 +1,5 @@
 use cargo_toml::{Inheritable, Manifest, Package, Value};
+use codama_errors::CodamaResult;
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
@@ -18,7 +19,7 @@ impl SetProgramMetadataVisitor {
 }
 
 impl KorokVisitor for SetProgramMetadataVisitor {
-    fn visit_crate(&mut self, korok: &mut CrateKorok) -> syn::Result<()> {
+    fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
 
         // Get a mutable reference to the program to update its metadata.
@@ -81,7 +82,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         Ok(())
     }
 
-    fn visit_unsupported_item(&mut self, korok: &mut UnsupportedItemKorok) -> syn::Result<()> {
+    fn visit_unsupported_item(&mut self, korok: &mut UnsupportedItemKorok) -> CodamaResult<()> {
         let syn::Item::Macro(syn::ItemMacro { mac, .. }) = korok.ast else {
             return Ok(());
         };

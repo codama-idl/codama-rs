@@ -1,4 +1,4 @@
-use codama_errors::IteratorCombineErrors;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 
 use crate::KorokVisitor;
 
@@ -21,7 +21,7 @@ impl<'a> ComposeVisitor<'a> {
 }
 
 impl KorokVisitor for ComposeVisitor<'_> {
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> syn::Result<()> {
+    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_root(korok))
@@ -29,7 +29,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> syn::Result<()> {
+    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_crate(korok))
@@ -37,7 +37,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> syn::Result<()> {
+    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_item(korok))
@@ -45,7 +45,10 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) -> syn::Result<()> {
+    fn visit_file_module(
+        &mut self,
+        korok: &mut codama_koroks::FileModuleKorok,
+    ) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_file_module(korok))
@@ -53,7 +56,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> syn::Result<()> {
+    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_module(korok))
@@ -61,7 +64,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> syn::Result<()> {
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_struct(korok))
@@ -69,7 +72,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> syn::Result<()> {
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_enum(korok))
@@ -80,7 +83,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
     fn visit_enum_variant(
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
-    ) -> syn::Result<()> {
+    ) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_enum_variant(korok))
@@ -91,7 +94,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
     fn visit_unsupported_item(
         &mut self,
         korok: &mut codama_koroks::UnsupportedItemKorok,
-    ) -> syn::Result<()> {
+    ) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_unsupported_item(korok))
@@ -99,7 +102,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> syn::Result<()> {
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_fields(korok))
@@ -107,7 +110,7 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> syn::Result<()> {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()
             .map(|v| v.visit_field(korok))

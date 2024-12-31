@@ -1,3 +1,4 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyCodamaTypeAttributesVisitor, KorokVisitable, SetBorshTypesVisitor,
 };
@@ -7,12 +8,12 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_wraps_any_type_into_a_fixed_size_type_node() -> syn::Result<()> {
+fn it_wraps_any_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(fixed_size = 8)]
         u32
     };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -25,13 +26,13 @@ fn it_wraps_any_type_into_a_fixed_size_type_node() -> syn::Result<()> {
 }
 
 #[test]
-fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> syn::Result<()> {
+fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
         #[codama(fixed_size = 42)]
         String
     };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
@@ -43,14 +44,14 @@ fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> syn::Result<()>
 }
 
 #[test]
-fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> syn::Result<()> {
+fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
         #[codama(fixed_size = 111)]
         #[codama(fixed_size = 222)]
         String
     };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
@@ -62,12 +63,12 @@ fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_replaces_size_prefixed_type_nodes() -> syn::Result<()> {
+fn it_replaces_size_prefixed_type_nodes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(fixed_size = 42)]
         String
     };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -80,12 +81,12 @@ fn it_replaces_size_prefixed_type_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> syn::Result<()> {
+fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(fixed_size = 8)]
         field: u32
     };
-    let mut korok = FieldKorok::parse(&ast).unwrap();
+    let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;

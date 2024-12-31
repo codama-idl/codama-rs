@@ -1,3 +1,4 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetProgramMetadataVisitor};
 use codama_koroks::CrateKorok;
 use codama_nodes::{Node, ProgramNode, RootNode, StringValueNode};
@@ -5,12 +6,12 @@ use codama_stores::CrateStore;
 use quote::quote;
 
 #[test]
-fn it_gets_program_metadata_from_the_manifest() -> syn::Result<()> {
-    let mut store = CrateStore::hydrate(quote! {}).unwrap();
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
+fn it_gets_program_metadata_from_the_manifest() -> CodamaResult<()> {
+    let mut store = CrateStore::hydrate(quote! {})?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
     store.manifest = Some(manifest);
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
 
     let Some(Node::Program(program)) = korok.node else {
@@ -27,12 +28,11 @@ fn it_gets_program_metadata_from_the_manifest() -> syn::Result<()> {
 }
 
 #[test]
-fn it_gets_program_ids_from_the_declare_id_macro() -> syn::Result<()> {
+fn it_gets_program_ids_from_the_declare_id_macro() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    })?;
+    let mut korok = CrateKorok::parse(&store)?;
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
 
     let Some(Node::Program(program)) = korok.node else {
@@ -46,15 +46,14 @@ fn it_gets_program_ids_from_the_declare_id_macro() -> syn::Result<()> {
 }
 
 #[test]
-fn it_prioritises_the_program_id_from_the_manifest() -> syn::Result<()> {
+fn it_prioritises_the_program_id_from_the_manifest() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
+    })?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
     store.manifest = Some(manifest);
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
 
     assert_eq!(
@@ -73,13 +72,12 @@ fn it_prioritises_the_program_id_from_the_manifest() -> syn::Result<()> {
 }
 
 #[test]
-fn it_updates_existing_program_nodes() -> syn::Result<()> {
+fn it_updates_existing_program_nodes() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
+    })?;
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     korok.node = Some(ProgramNode::default().into());
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
 
@@ -97,13 +95,12 @@ fn it_updates_existing_program_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_updates_the_primary_program_of_existing_root_nodes() -> syn::Result<()> {
+fn it_updates_the_primary_program_of_existing_root_nodes() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
+    })?;
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     korok.node = Some(RootNode::default().into());
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
 
@@ -121,15 +118,14 @@ fn it_updates_the_primary_program_of_existing_root_nodes() -> syn::Result<()> {
 }
 
 #[test]
-fn it_does_not_override_existing_values() -> syn::Result<()> {
+fn it_does_not_override_existing_values() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
+    })?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
     store.manifest = Some(manifest);
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     let existing_program = ProgramNode {
         name: "myExistingName".into(),
         version: "9.9.9".into(),
@@ -144,13 +140,12 @@ fn it_does_not_override_existing_values() -> syn::Result<()> {
 }
 
 #[test]
-fn it_does_nothing_to_existing_nodes_that_are_not_roots_or_programs() -> syn::Result<()> {
+fn it_does_nothing_to_existing_nodes_that_are_not_roots_or_programs() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
-    })
-    .unwrap();
+    })?;
 
-    let mut korok = CrateKorok::parse(&store).unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
     korok.node = Some(StringValueNode::new("hello").into());
 
     korok.accept(&mut SetProgramMetadataVisitor::new())?;
