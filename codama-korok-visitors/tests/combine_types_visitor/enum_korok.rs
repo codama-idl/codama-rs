@@ -1,3 +1,4 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
@@ -7,7 +8,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_creates_a_defined_type_enum_from_variants() {
+fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
     let ast: syn::ItemEnum = syn::parse_quote! {
         enum Message {
             Quit,
@@ -15,7 +16,7 @@ fn it_creates_a_defined_type_enum_from_variants() {
             Write(String),
         }
     };
-    let mut korok = EnumKorok::parse(&ast).unwrap();
+    let mut korok = EnumKorok::parse(&ast)?;
     let variant_quit = EnumEmptyVariantTypeNode::new("quit");
     let variant_move = EnumStructVariantTypeNode::new(
         "move",
@@ -33,7 +34,7 @@ fn it_creates_a_defined_type_enum_from_variants() {
     korok.variants[2].node = Some(variant_write.clone().into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -48,12 +49,13 @@ fn it_creates_a_defined_type_enum_from_variants() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_does_not_override_existing_nodes_by_default() {
+fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left } };
-    let mut korok = EnumKorok::parse(&ast).unwrap();
+    let mut korok = EnumKorok::parse(&ast)?;
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
 
     let original_node = Some(Node::from(DefinedTypeNode::new(
@@ -61,6 +63,7 @@ fn it_does_not_override_existing_nodes_by_default() {
         EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("right").into()]),
     )));
     korok.node = original_node.clone();
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(korok.node, original_node);
+    Ok(())
 }

@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::{AccountNode, NestedTypeNode, Node, StructTypeNode};
 
 #[derive(Default)]
@@ -11,25 +12,25 @@ impl SetAccountsVisitor {
 }
 
 impl KorokVisitor for SetAccountsVisitor {
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_children(korok);
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
 
         // Ensure the struct has the `CodamaAccount` attribute.
         if !korok.attributes.has_codama_derive("CodamaAccount") {
-            return;
+            return Ok(());
         };
 
         // Ensure the korok is already typed.
         let Some(Node::DefinedType(defined_type)) = &korok.node else {
             // TODO: Throw error?
-            return;
+            return Ok(());
         };
 
         // Ensure the data type is a struct.
         let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from(defined_type.r#type.clone())
         else {
             // TODO: Throw error?
-            return;
+            return Ok(());
         };
 
         // Transform the defined type into an account node.
@@ -44,17 +45,20 @@ impl KorokVisitor for SetAccountsVisitor {
             }
             .into(),
         );
+
+        Ok(())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        self.visit_children(korok);
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
 
         // Ensure the struct has the `CodamaAccount` attribute.
         if !korok.attributes.has_codama_derive("CodamaAccount") {
-            return;
+            return Ok(());
         };
 
         // TODO: Throw error?
-        korok.node = None
+        korok.node = None;
+        Ok(())
     }
 }

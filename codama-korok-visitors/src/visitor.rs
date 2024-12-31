@@ -1,28 +1,38 @@
 use crate::KorokVisitable;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 
 pub trait KorokVisitor {
-    fn visit_children(&mut self, korok: &mut dyn KorokVisitable)
+    fn visit_children(&mut self, korok: &mut dyn KorokVisitable) -> CodamaResult<()>
     where
         Self: Sized,
     {
-        for child in korok.get_children() {
-            child.accept(self);
-        }
+        korok
+            .get_children()
+            .into_iter()
+            .map(|child| child.accept(self))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
-        for crate_korok in &mut korok.crates {
-            self.visit_crate(crate_korok);
-        }
+    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
+        korok
+            .crates
+            .iter_mut()
+            .map(|crate_korok| self.visit_crate(crate_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
+        korok
+            .items
+            .iter_mut()
+            .map(|item_korok| self.visit_item(item_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) {
+    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> CodamaResult<()> {
         match korok {
             codama_koroks::ItemKorok::FileModule(korok) => self.visit_file_module(korok),
             codama_koroks::ItemKorok::Module(korok) => self.visit_module(korok),
@@ -32,43 +42,64 @@ pub trait KorokVisitor {
         }
     }
 
-    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+    fn visit_file_module(
+        &mut self,
+        korok: &mut codama_koroks::FileModuleKorok,
+    ) -> CodamaResult<()> {
+        korok
+            .items
+            .iter_mut()
+            .map(|item_korok| self.visit_item(item_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
-        for item_korok in &mut korok.items {
-            self.visit_item(item_korok);
-        }
+    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
+        korok
+            .items
+            .iter_mut()
+            .map(|item_korok| self.visit_item(item_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_fields(&mut korok.fields);
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
+        self.visit_fields(&mut korok.fields)
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        for variant_korok in &mut korok.variants {
-            self.visit_enum_variant(variant_korok);
-        }
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
+        korok
+            .variants
+            .iter_mut()
+            .map(|variant_korok| self.visit_enum_variant(variant_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        self.visit_fields(&mut korok.fields);
+    fn visit_enum_variant(
+        &mut self,
+        korok: &mut codama_koroks::EnumVariantKorok,
+    ) -> CodamaResult<()> {
+        self.visit_fields(&mut korok.fields)
     }
 
-    fn visit_unsupported_item(&mut self, _korok: &mut codama_koroks::UnsupportedItemKorok) {
-        //
+    fn visit_unsupported_item(
+        &mut self,
+        _korok: &mut codama_koroks::UnsupportedItemKorok,
+    ) -> CodamaResult<()> {
+        Ok(())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        for field_korok in &mut korok.all {
-            self.visit_field(field_korok);
-        }
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
+        korok
+            .all
+            .iter_mut()
+            .map(|field_korok| self.visit_field(field_korok))
+            .collect_and_combine_errors()?;
+        Ok(())
     }
 
-    fn visit_field(&mut self, _korok: &mut codama_koroks::FieldKorok) {
-        //
+    fn visit_field(&mut self, _korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
+        Ok(())
     }
 }

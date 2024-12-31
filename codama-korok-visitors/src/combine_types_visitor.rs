@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_errors::CodamaResult;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
     EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
@@ -18,10 +19,10 @@ impl CombineTypesVisitor {
 }
 
 impl KorokVisitor for CombineTypesVisitor {
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_children(korok);
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return;
+            return Ok(());
         }
 
         let name = korok.ast.ident.to_string();
@@ -31,18 +32,19 @@ impl KorokVisitor for CombineTypesVisitor {
             }
             Ok(type_node) => Some(DefinedTypeNode::new(name, type_node).into()),
             Err(_) => None,
-        }
+        };
+        Ok(())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        self.visit_children(korok);
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return;
+            return Ok(());
         }
 
         // Ensure all variants have nodes.
         if !korok.variants.iter().all(|field| field.node.is_some()) {
-            return;
+            return Ok(());
         }
 
         let enum_name = korok.ast.ident.to_string();
@@ -64,12 +66,16 @@ impl KorokVisitor for CombineTypesVisitor {
             .collect::<Vec<_>>();
 
         korok.node = Some(DefinedTypeNode::new(enum_name, EnumTypeNode::new(variants)).into());
+        Ok(())
     }
 
-    fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        self.visit_children(korok);
+    fn visit_enum_variant(
+        &mut self,
+        korok: &mut codama_koroks::EnumVariantKorok,
+    ) -> CodamaResult<()> {
+        self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return;
+            return Ok(());
         }
 
         let variant_name = korok.ast.ident.to_string();
@@ -104,18 +110,19 @@ impl KorokVisitor for CombineTypesVisitor {
                 .into(),
             ),
             _ => None,
-        }
+        };
+        Ok(())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) {
-        self.visit_children(korok);
+    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return;
+            return Ok(());
         }
 
         // Ensure all fields have nodes.
         if !korok.all.iter().all(|field| field.node.is_some()) {
-            return;
+            return Ok(());
         }
 
         korok.node = match &korok.ast {
@@ -142,5 +149,6 @@ impl KorokVisitor for CombineTypesVisitor {
             }
             syn::Fields::Unit => None,
         };
+        Ok(())
     }
 }

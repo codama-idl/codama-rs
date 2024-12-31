@@ -1,4 +1,5 @@
 use crate::KorokPlugin;
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyCodamaTypeAttributesVisitor, CombineModulesVisitor, CombineTypesVisitor, ComposeVisitor,
     FilterItemsVisitor, KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor,
@@ -8,9 +9,14 @@ use codama_koroks::KorokTrait;
 
 pub struct DefaultPlugin;
 impl KorokPlugin for DefaultPlugin {
-    fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
-        next(visitable);
-        visitable.accept(&mut get_default_visitor());
+    fn run(
+        &self,
+        visitable: &mut dyn KorokVisitable,
+        next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
+    ) -> CodamaResult<()> {
+        next(visitable)?;
+        visitable.accept(&mut get_default_visitor())?;
+        Ok(())
     }
 }
 

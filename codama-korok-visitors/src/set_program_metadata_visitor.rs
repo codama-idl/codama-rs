@@ -1,4 +1,5 @@
 use cargo_toml::{Inheritable, Manifest, Package, Value};
+use codama_errors::CodamaResult;
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
@@ -18,8 +19,8 @@ impl SetProgramMetadataVisitor {
 }
 
 impl KorokVisitor for SetProgramMetadataVisitor {
-    fn visit_crate(&mut self, korok: &mut CrateKorok) {
-        self.visit_children(korok);
+    fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
 
         // Get a mutable reference to the program to update its metadata.
         let program = match &mut korok.node {
@@ -37,7 +38,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
                 }
             }
             // Don't update the node if it is set to anything else.
-            _ => return,
+            _ => return Ok(()),
         };
 
         // Update the program name using the Cargo.toml package name.
@@ -77,11 +78,13 @@ impl KorokVisitor for SetProgramMetadataVisitor {
                 program.public_key = public_key.into()
             }
         }
+
+        Ok(())
     }
 
-    fn visit_unsupported_item(&mut self, korok: &mut UnsupportedItemKorok) {
+    fn visit_unsupported_item(&mut self, korok: &mut UnsupportedItemKorok) -> CodamaResult<()> {
         let syn::Item::Macro(syn::ItemMacro { mac, .. }) = korok.ast else {
-            return;
+            return Ok(());
         };
 
         if let ("" | "solana_program", "declare_id") =
@@ -89,6 +92,8 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         {
             self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
         };
+
+        Ok(())
     }
 }
 

@@ -77,7 +77,9 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
     };
 
     module_korok.node = input.initial_node;
-    module_korok.accept(&mut CombineModulesVisitor::new());
+    module_korok
+        .accept(&mut CombineModulesVisitor::new())
+        .unwrap();
     module_korok.node
 }
 

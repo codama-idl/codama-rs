@@ -57,7 +57,7 @@ impl Codama {
     pub fn get_visited_korok(&self) -> CodamaResult<RootKorok> {
         let mut korok = self.get_korok()?;
         let run_plugins = resolve_plugins(self.get_plugins());
-        run_plugins(&mut korok);
+        run_plugins(&mut korok)?;
         Ok(korok)
     }
 

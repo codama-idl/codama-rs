@@ -1,3 +1,4 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     CombineTypesVisitor, KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor,
 };
@@ -8,7 +9,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_transforms_defined_type_nodes_into_account_nodes() {
+fn it_transforms_defined_type_nodes_into_account_nodes() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token {
@@ -17,12 +18,12 @@ fn it_transforms_defined_type_nodes_into_account_nodes() {
             amount: u64,
         }
     };
-    let mut korok = StructKorok::parse(&ast).unwrap();
+    let mut korok = StructKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new());
-    korok.accept(&mut CombineTypesVisitor::new());
-    korok.accept(&mut SetAccountsVisitor::new());
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -37,10 +38,11 @@ fn it_transforms_defined_type_nodes_into_account_nodes() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_ignores_enums() {
+fn it_ignores_enums() -> CodamaResult<()> {
     let ast: syn::ItemEnum = syn::parse_quote! {
         #[derive(CodamaAccount)]
         enum Membership {
@@ -48,11 +50,12 @@ fn it_ignores_enums() {
             Premium,
         }
     };
-    let mut korok = EnumKorok::parse(&ast).unwrap();
+    let mut korok = EnumKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new());
-    korok.accept(&mut CombineTypesVisitor::new());
-    korok.accept(&mut SetAccountsVisitor::new());
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(korok.node, None);
+    Ok(())
 }

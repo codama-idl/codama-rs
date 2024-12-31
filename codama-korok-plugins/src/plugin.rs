@@ -1,7 +1,12 @@
+use codama_errors::CodamaResult;
 use codama_korok_visitors::KorokVisitable;
 
 pub trait KorokPlugin {
-    fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable));
+    fn run(
+        &self,
+        visitable: &mut dyn KorokVisitable,
+        next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
+    ) -> CodamaResult<()>;
 }
 
 /// Reduce all plugins into a single function that runs them in sequence.
@@ -9,15 +14,17 @@ pub trait KorokPlugin {
 /// For instance, imagine we have a list of plugins [A, B, C] implemented as:
 ///
 /// ```rust
+/// use codama_errors::CodamaResult;
 /// use codama_korok_plugins::KorokPlugin;
 /// use codama_korok_visitors::KorokVisitable;
 ///
 /// struct LoggingPluging;
 /// impl KorokPlugin for LoggingPluging {
-///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
+///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>) -> CodamaResult<()> {
 ///         println!("Plugin X - before");
-///         next(visitable);
+///         next(visitable)?;
 ///         println!("Plugin X - after");
+///         Ok(())
 ///     }
 /// }
 /// ```
@@ -35,17 +42,17 @@ pub trait KorokPlugin {
 /// ```
 pub fn resolve_plugins<'a>(
     plugins: &'a [Box<dyn KorokPlugin + 'a>],
-) -> Box<dyn Fn(&mut dyn KorokVisitable) + 'a> {
+) -> Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()> + 'a> {
     // We fold from the left to ensure that any code before the
     // `next` call is run before the previous plugin on the list.
     plugins.iter().fold(
         // Base case: a no-op `next` function.
-        Box::new(|_: &mut dyn KorokVisitable| {}) as Box<dyn Fn(&mut dyn KorokVisitable)>,
+        Box::new(|_: &mut dyn KorokVisitable| Ok(()))
+            as Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>>,
         // Wrap each plugin with a closure that calls the next plugin in the chain.
         |next, plugin| {
-            Box::new(move |visitable: &mut dyn KorokVisitable| {
-                plugin.run(visitable, &next);
-            }) as Box<dyn Fn(&mut dyn KorokVisitable)>
+            Box::new(move |visitable: &mut dyn KorokVisitable| plugin.run(visitable, &next))
+                as Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>>
         },
     )
 }
@@ -69,27 +76,34 @@ mod tests {
         }
     }
     impl KorokPlugin for LoggingPluging {
-        fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
+        fn run(
+            &self,
+            visitable: &mut dyn KorokVisitable,
+            next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
+        ) -> CodamaResult<()> {
             self.logs
                 .borrow_mut()
                 .push(format!("Plugin {} - before", self.id));
-            next(visitable);
+            next(visitable)?;
             self.logs
                 .borrow_mut()
                 .push(format!("Plugin {} - after", self.id));
+            Ok(())
         }
     }
 
     struct MockVisitable;
     impl KorokVisitable for MockVisitable {
-        fn accept(&mut self, _visitor: &mut dyn KorokVisitor) {}
+        fn accept(&mut self, _visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
+            Ok(())
+        }
         fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
             Vec::new()
         }
     }
 
     #[test]
-    fn test_resolve_plugins() {
+    fn test_resolve_plugins() -> CodamaResult<()> {
         let logs = Arc::new(RefCell::new(Vec::new()));
         let plugins: Vec<Box<dyn KorokPlugin>> = vec![
             Box::new(LoggingPluging::new("A", logs.clone())),
@@ -97,7 +111,7 @@ mod tests {
         ];
 
         let run_plugins = resolve_plugins(&plugins);
-        run_plugins(&mut MockVisitable);
+        run_plugins(&mut MockVisitable)?;
 
         assert_eq!(
             logs.borrow().as_slice(),
@@ -108,5 +122,6 @@ mod tests {
                 "Plugin B - after",
             ]
         );
+        Ok(())
     }
 }
