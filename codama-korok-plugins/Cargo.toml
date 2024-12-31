@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+codama-errors = { path = "../codama-errors" }
 codama-koroks = { path = "../codama-koroks" }
 codama-korok-visitors = { path = "../codama-korok-visitors" }
+syn = { version = "2.0", features = ["extra-traits", "full"] }
