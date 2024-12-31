@@ -7,7 +7,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_creates_a_defined_type_enum_from_variants() {
+fn it_creates_a_defined_type_enum_from_variants() -> syn::Result<()> {
     let ast: syn::ItemEnum = syn::parse_quote! {
         enum Message {
             Quit,
@@ -33,7 +33,7 @@ fn it_creates_a_defined_type_enum_from_variants() {
     korok.variants[2].node = Some(variant_write.clone().into());
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -48,10 +48,11 @@ fn it_creates_a_defined_type_enum_from_variants() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_does_not_override_existing_nodes_by_default() {
+fn it_does_not_override_existing_nodes_by_default() -> syn::Result<()> {
     let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left } };
     let mut korok = EnumKorok::parse(&ast).unwrap();
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
@@ -61,6 +62,7 @@ fn it_does_not_override_existing_nodes_by_default() {
         EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("right").into()]),
     )));
     korok.node = original_node.clone();
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(korok.node, original_node);
+    Ok(())
 }

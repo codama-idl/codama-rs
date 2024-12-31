@@ -6,21 +6,22 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_creates_enum_empty_variants() {
+fn it_creates_enum_empty_variants() -> syn::Result<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(EnumEmptyVariantTypeNode::new("foo").into())
     );
+    Ok(())
 }
 
 #[test]
-fn it_creates_enum_struct_variants() {
+fn it_creates_enum_struct_variants() -> syn::Result<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo { x: i32, y: i32 } };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = Some(
@@ -32,7 +33,7 @@ fn it_creates_enum_struct_variants() {
     );
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -46,10 +47,11 @@ fn it_creates_enum_struct_variants() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_creates_enum_tuple_variants() {
+fn it_creates_enum_tuple_variants() -> syn::Result<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo (u64, String) };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = Some(
@@ -61,7 +63,7 @@ fn it_creates_enum_tuple_variants() {
     );
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -75,16 +77,17 @@ fn it_creates_enum_tuple_variants() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_keeps_track_of_the_variant_discriminant() {
+fn it_keeps_track_of_the_variant_discriminant() -> syn::Result<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo = 42 };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -95,18 +98,20 @@ fn it_keeps_track_of_the_variant_discriminant() {
             .into()
         )
     );
+    Ok(())
 }
 
 #[test]
-fn it_does_not_override_existing_nodes_by_default() {
+fn it_does_not_override_existing_nodes_by_default() -> syn::Result<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast).unwrap();
     korok.fields.node = None;
 
     korok.node = Some(EnumEmptyVariantTypeNode::new("bar").into());
-    korok.accept(&mut CombineTypesVisitor::new());
+    korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(EnumEmptyVariantTypeNode::new("bar").into())
     );
+    Ok(())
 }

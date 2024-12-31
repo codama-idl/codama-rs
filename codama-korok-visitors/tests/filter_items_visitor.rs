@@ -3,7 +3,7 @@ use codama_koroks::{ItemKorok, KorokTrait};
 use codama_nodes::PublicKeyTypeNode;
 
 #[test]
-fn it_only_starts_the_child_visitor_on_filtered_items() {
+fn it_only_starts_the_child_visitor_on_filtered_items() -> syn::Result<()> {
     let ast: syn::Item = syn::parse_quote! {
         mod parent {
             mod foo {
@@ -22,10 +22,11 @@ fn it_only_starts_the_child_visitor_on_filtered_items() {
             _ => false,
         },
         UniformVisitor::new(|mut k, visitor| {
-            visitor.visit_children(&mut k);
-            k.set_node(Some(PublicKeyTypeNode::new().into()))
+            visitor.visit_children(&mut k)?;
+            k.set_node(Some(PublicKeyTypeNode::new().into()));
+            Ok(())
         }),
-    ));
+    ))?;
 
     let ItemKorok::Module(module) = &korok else {
         panic!("Expected parent module");
@@ -58,4 +59,5 @@ fn it_only_starts_the_child_visitor_on_filtered_items() {
     assert_eq!(bar_struct.node, None);
     assert_eq!(bar_struct.fields.node, None);
     assert_eq!(bar_struct.fields.all[0].node, None);
+    Ok(())
 }
