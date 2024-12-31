@@ -14,15 +14,17 @@ pub trait KorokPlugin {
 /// For instance, imagine we have a list of plugins [A, B, C] implemented as:
 ///
 /// ```rust
+/// use codama_errors::CodamaResult;
 /// use codama_korok_plugins::KorokPlugin;
 /// use codama_korok_visitors::KorokVisitable;
 ///
 /// struct LoggingPluging;
 /// impl KorokPlugin for LoggingPluging {
-///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable)) {
+///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>) -> CodamaResult<()> {
 ///         println!("Plugin X - before");
-///         next(visitable);
+///         next(visitable)?;
 ///         println!("Plugin X - after");
+///         Ok(())
 ///     }
 /// }
 /// ```
