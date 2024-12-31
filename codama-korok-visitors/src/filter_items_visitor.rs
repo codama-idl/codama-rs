@@ -25,11 +25,11 @@ impl<F> KorokVisitor for FilterItemsVisitor<'_, F>
 where
     F: Fn(&ItemKorok) -> bool,
 {
-    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) {
+    fn visit_item(&mut self, korok: &mut codama_koroks::ItemKorok) -> syn::Result<()> {
         if (self.filter)(korok) {
-            self.visitor.visit_item(korok);
+            self.visitor.visit_item(korok)
         } else {
-            self.visit_children(korok);
+            self.visit_children(korok)
         }
     }
 }

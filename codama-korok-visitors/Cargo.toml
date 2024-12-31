@@ -11,6 +11,7 @@ codama-stores = { path = "../codama-stores" }
 [dependencies]
 cargo_toml = "0.20"
 codama-attributes = { path = "../codama-attributes" }
+codama-errors = { path = "../codama-errors" }
 codama-nodes = { path = "../codama-nodes" }
 codama-koroks = { path = "../codama-koroks" }
 codama-syn-helpers = { path = "../codama-syn-helpers" }

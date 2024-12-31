@@ -12,24 +12,28 @@ impl CombineModulesVisitor {
 }
 
 impl KorokVisitor for CombineModulesVisitor {
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
-        self.visit_children(korok);
+    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.crates);
+        Ok(())
     }
 
-    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
-        self.visit_children(korok);
+    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.items);
+        Ok(())
     }
 
-    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
-        self.visit_children(korok);
+    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.items);
+        Ok(())
     }
 
-    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
-        self.visit_children(korok);
+    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.items);
+        Ok(())
     }
 }
 

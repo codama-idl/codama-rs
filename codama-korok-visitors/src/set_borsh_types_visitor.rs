@@ -16,13 +16,14 @@ impl SetBorshTypesVisitor {
 }
 
 impl KorokVisitor for SetBorshTypesVisitor {
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> syn::Result<()> {
         if korok.node.is_some() {
-            return;
+            return Ok(());
         }
         if let Some(node) = self.get_type_node(&korok.ast.ty) {
             korok.set_type_node(node);
         }
+        Ok(())
     }
 }
 

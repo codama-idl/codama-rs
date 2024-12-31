@@ -19,55 +19,62 @@ impl ApplyCodamaTypeAttributesVisitor {
 }
 
 impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) {
-        self.visit_children(korok);
+    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        Ok(())
     }
 
-    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_file_module(&mut self, korok: &mut codama_koroks::FileModuleKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_unsupported_item(&mut self, korok: &mut codama_koroks::UnsupportedItemKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_unsupported_item(
+        &mut self,
+        korok: &mut codama_koroks::UnsupportedItemKorok,
+    ) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_enum_variant(&mut self, korok: &mut codama_koroks::EnumVariantKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_enum_variant(
+        &mut self,
+        korok: &mut codama_koroks::EnumVariantKorok,
+    ) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 
-    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) {
-        self.visit_children(korok);
-        apply_codama_attributes(korok.into());
+    fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> syn::Result<()> {
+        self.visit_children(korok)?;
+        apply_codama_attributes(korok.into())
     }
 }
 
 /// Apply codama attributes to the node from the bottom up.
-fn apply_codama_attributes(mut korok: KorokMut) {
+fn apply_codama_attributes(mut korok: KorokMut) -> syn::Result<()> {
     let Some(attributes) = korok.attributes() else {
-        return;
+        return Ok(());
     };
 
     let node = attributes
@@ -81,6 +88,7 @@ fn apply_codama_attributes(mut korok: KorokMut) {
         });
 
     korok.set_node(node);
+    Ok(())
 }
 
 fn apply_codama_attribute(
