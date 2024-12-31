@@ -42,7 +42,27 @@ fn it_transforms_defined_type_nodes_into_account_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_ignores_enums() -> CodamaResult<()> {
+fn it_requires_the_account_type_to_be_defined_first() -> CodamaResult<()> {
+    let ast: syn::ItemStruct = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        struct Token {
+            mint: Pubkey,
+            owner: Pubkey,
+            amount: u64,
+        }
+    };
+    let mut korok = StructKorok::parse(&ast)?;
+
+    assert_eq!(korok.node, None);
+    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
+    assert!(error.to_string().contains(
+        "The \"Token\" struct could not be used as an Account because its type is not defined."
+    ));
+    Ok(())
+}
+
+#[test]
+fn it_throws_an_error_on_enum_koroks() -> CodamaResult<()> {
     let ast: syn::ItemEnum = syn::parse_quote! {
         #[derive(CodamaAccount)]
         enum Membership {
@@ -55,7 +75,9 @@ fn it_ignores_enums() -> CodamaResult<()> {
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut CombineTypesVisitor::new())?;
-    korok.accept(&mut SetAccountsVisitor::new())?;
-    assert_eq!(korok.node, None);
+    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
+    assert!(
+        error.to_string().contains("The \"Membership\" enum could not be used as an Account because only structs are currently accepted.")
+    );
     Ok(())
 }
