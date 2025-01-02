@@ -16,5 +16,11 @@ pub trait NestedTypeNodeTrait<T: TypeNodeTrait>:
 {
     type Mapped<U: TypeNodeTrait>: NestedTypeNodeTrait<U>;
     fn get_nested_type_node(&self) -> &T;
-    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U>;
+    fn try_map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> CodamaResult<U>>(
+        self,
+        f: F,
+    ) -> CodamaResult<Self::Mapped<U>>;
+    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+        self.try_map_nested_type_node(|value| Ok(f(value))).unwrap()
+    }
 }

@@ -37,16 +37,27 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for NestedTypeNode<T> {
         }
     }
 
-    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
+    fn try_map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> CodamaResult<U>>(
+        self,
+        f: F,
+    ) -> CodamaResult<Self::Mapped<U>> {
         match self {
-            Self::FixedSize(node) => Self::Mapped::FixedSize(node.map_nested_type_node(f)),
-            Self::HiddenPrefix(node) => Self::Mapped::HiddenPrefix(node.map_nested_type_node(f)),
-            Self::HiddenSuffix(node) => Self::Mapped::HiddenSuffix(node.map_nested_type_node(f)),
-            Self::PostOffset(node) => Self::Mapped::PostOffset(node.map_nested_type_node(f)),
-            Self::PreOffset(node) => Self::Mapped::PreOffset(node.map_nested_type_node(f)),
-            Self::Sentinel(node) => Self::Mapped::Sentinel(node.map_nested_type_node(f)),
-            Self::SizePrefix(node) => Self::Mapped::SizePrefix(node.map_nested_type_node(f)),
-            Self::Value(value) => Self::Mapped::Value(f(value)),
+            Self::FixedSize(node) => Ok(Self::Mapped::FixedSize(node.try_map_nested_type_node(f)?)),
+            Self::HiddenPrefix(node) => Ok(Self::Mapped::HiddenPrefix(
+                node.try_map_nested_type_node(f)?,
+            )),
+            Self::HiddenSuffix(node) => Ok(Self::Mapped::HiddenSuffix(
+                node.try_map_nested_type_node(f)?,
+            )),
+            Self::PostOffset(node) => {
+                Ok(Self::Mapped::PostOffset(node.try_map_nested_type_node(f)?))
+            }
+            Self::PreOffset(node) => Ok(Self::Mapped::PreOffset(node.try_map_nested_type_node(f)?)),
+            Self::Sentinel(node) => Ok(Self::Mapped::Sentinel(node.try_map_nested_type_node(f)?)),
+            Self::SizePrefix(node) => {
+                Ok(Self::Mapped::SizePrefix(node.try_map_nested_type_node(f)?))
+            }
+            Self::Value(value) => Ok(Self::Mapped::Value(f(value)?)),
         }
     }
 }

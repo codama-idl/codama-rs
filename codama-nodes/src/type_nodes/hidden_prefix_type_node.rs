@@ -61,11 +61,14 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for HiddenPrefixTypeNode<NestedTyp
         self.r#type.get_nested_type_node()
     }
 
-    fn map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> U>(self, f: F) -> Self::Mapped<U> {
-        HiddenPrefixTypeNode {
-            r#type: Box::new(self.r#type.map_nested_type_node(f)),
+    fn try_map_nested_type_node<U: TypeNodeTrait, F: FnOnce(T) -> CodamaResult<U>>(
+        self,
+        f: F,
+    ) -> CodamaResult<Self::Mapped<U>> {
+        Ok(HiddenPrefixTypeNode {
+            r#type: Box::new(self.r#type.try_map_nested_type_node(f)?),
             prefix: self.prefix,
-        }
+        })
     }
 }
 
