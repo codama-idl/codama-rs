@@ -141,12 +141,19 @@ fn apply_encoding_directive(
     directive: &EncodingDirective,
     input: ApplyAttributeInput,
 ) -> CodamaResult<Option<Node>> {
-    update_nested_type_node(input, |type_node| match type_node {
-        TypeNode::String(_) => StringTypeNode::new(directive.encoding).into(),
+    let ast = input.attribute.ast;
+    update_nested_type_node(input, |type_node| {
+        match type_node {
+        TypeNode::String(_) => Ok(StringTypeNode::new(directive.encoding).into()),
         node => {
-            // TODO: Throw error?
-            node
+            Err(ast
+                .error(format!(
+                    "Cannot apply attribute `#[codama(encoding)]` on a node of kind `NestedTypeNode<{}>`",
+                    node.kind()
+                ))
+                .into())
         }
+    }
     })
 }
 
@@ -154,10 +161,11 @@ fn apply_fixed_size_directive(
     directive: &FixedSizeDirective,
     input: ApplyAttributeInput,
 ) -> CodamaResult<Option<Node>> {
+    let size = directive.size;
     update_type_node(input, |node| match node {
-        TypeNode::FixedSize(node) => FixedSizeTypeNode::new(*node.r#type, directive.size).into(),
-        TypeNode::SizePrefix(node) => FixedSizeTypeNode::new(*node.r#type, directive.size).into(),
-        node => FixedSizeTypeNode::new(node, directive.size).into(),
+        TypeNode::FixedSize(node) => Ok(FixedSizeTypeNode::new(*node.r#type, size).into()),
+        TypeNode::SizePrefix(node) => Ok(FixedSizeTypeNode::new(*node.r#type, size).into()),
+        node => Ok(FixedSizeTypeNode::new(node, size).into()),
     })
 }
 
@@ -167,23 +175,23 @@ fn apply_size_prefix_directive(
 ) -> CodamaResult<Option<Node>> {
     let prefix = directive.prefix.clone();
     update_type_node(input, |node| match node {
-        TypeNode::FixedSize(node) => SizePrefixTypeNode::new(*node.r#type, prefix).into(),
-        TypeNode::SizePrefix(node) => SizePrefixTypeNode::new(*node.r#type, prefix).into(),
-        node => SizePrefixTypeNode::new(node, prefix).into(),
+        TypeNode::FixedSize(node) => Ok(SizePrefixTypeNode::new(*node.r#type, prefix).into()),
+        TypeNode::SizePrefix(node) => Ok(SizePrefixTypeNode::new(*node.r#type, prefix).into()),
+        node => Ok(SizePrefixTypeNode::new(node, prefix).into()),
     })
 }
 
 fn update_nested_type_node(
     input: ApplyAttributeInput,
-    update: impl FnOnce(TypeNode) -> TypeNode,
+    update: impl FnOnce(TypeNode) -> CodamaResult<TypeNode>,
 ) -> CodamaResult<Option<Node>> {
     update_type_node(input, |type_node| {
         match NestedTypeNode::<NestedTypeLeaf>::try_from(type_node.clone()) {
-            Ok(nested) => nested
+            Ok(nested) => Ok(nested
                 // Note that here we end up with a `NestedTypeLeaf` value...
-                .map_nested_type_node(|leaf| NestedTypeLeaf(update(leaf.0)))
+                .try_map_nested_type_node(|leaf| Ok(NestedTypeLeaf(update(leaf.0)?)))?
                 // ...but here the `NestedTypeNode` value is unwrapped into a `TypeNode`.
-                .into(),
+                .into()),
             _ => unreachable!("NestedTypeLeaf can always be created from a TypeNode"),
         }
     })
@@ -194,7 +202,7 @@ fn update_nested_type_node(
 /// the function will attempt to update the type node of the `Node` itself.
 fn update_type_node(
     input: ApplyAttributeInput,
-    update: impl FnOnce(TypeNode) -> TypeNode,
+    update: impl FnOnce(TypeNode) -> CodamaResult<TypeNode>,
 ) -> CodamaResult<Option<Node>> {
     let Some(node) = input.node else {
         return Err(input
@@ -208,12 +216,12 @@ fn update_type_node(
     };
 
     if let Node::Type(RegisteredTypeNode::StructField(mut field)) = node {
-        field.r#type = update(field.r#type);
+        field.r#type = update(field.r#type)?;
         return Ok(Some(field.into()));
     };
 
     match TypeNode::try_from(node.clone()) {
-        Ok(type_node) => Ok(Some(update(type_node).into())),
+        Ok(type_node) => Ok(Some(update(type_node)?.into())),
         Err(_) => {
             return Err(input
                 .attribute

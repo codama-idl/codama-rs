@@ -4,8 +4,8 @@ use codama_korok_visitors::{
 };
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
-    NumberFormat::U32, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StringValueNode,
-    StructFieldTypeNode,
+    BooleanTypeNode, FixedSizeTypeNode, NumberFormat::U32, NumberTypeNode, SizePrefixTypeNode,
+    StringTypeNode, StringValueNode, StructFieldTypeNode,
 };
 
 #[test]
@@ -129,6 +129,27 @@ fn it_fails_on_non_type_nodes() -> CodamaResult<()> {
     assert_eq!(
         error.to_string(),
         "Cannot apply attribute `#[codama(encoding)]` on a node of kind `stringValueNode`"
+    );
+    Ok(())
+}
+
+#[test]
+fn it_fails_on_nested_type_nodes_that_are_not_string_types() -> CodamaResult<()> {
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(encoding = base16)]
+        NestedValueNode
+    };
+    let mut korok = FieldKorok::parse(&ast)?;
+    korok.set_node(Some(
+        FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into(),
+    ));
+
+    let error = korok
+        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Cannot apply attribute `#[codama(encoding)]` on a node of kind `NestedTypeNode<booleanTypeNode>`"
     );
     Ok(())
 }
