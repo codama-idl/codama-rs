@@ -1,9 +1,10 @@
 use crate::KorokVisitor;
 use codama_errors::CodamaResult;
+use codama_koroks::{EnumVariantKorok, FieldKorok};
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, HasKind, Node, RegisteredTypeNode, StructTypeNode,
-    TupleTypeNode, TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, HasKind, Node, RegisteredTypeNode, StructFieldTypeNode,
+    StructTypeNode, TupleTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -15,6 +16,41 @@ pub struct CombineTypesVisitor {
 impl CombineTypesVisitor {
     pub fn new() -> Self {
         Self::default()
+    }
+}
+
+impl CombineTypesVisitor {
+    pub fn get_enum_variant(variant: &EnumVariantKorok) -> Option<EnumVariantTypeNode> {
+        match &variant.node {
+            Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
+                Some(EnumVariantTypeNode::Empty(node.clone()))
+            }
+            Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
+                Some(EnumVariantTypeNode::Tuple(node.clone()))
+            }
+            Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
+                Some(EnumVariantTypeNode::Struct(node.clone()))
+            }
+            _ => None,
+        }
+    }
+
+    pub fn get_nammed_field(field: &FieldKorok) -> Option<StructFieldTypeNode> {
+        match &field.node {
+            Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(field.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn get_unnammed_field(field: &FieldKorok) -> Option<TypeNode> {
+        TypeNode::try_from(field.node.clone()).ok()
+    }
+
+    pub fn is_valid_field(field: &FieldKorok) -> bool {
+        match &field.ast.ident {
+            Some(_) => Self::get_nammed_field(field).is_some(),
+            _ => Self::get_unnammed_field(field).is_some(),
+        }
     }
 }
 
@@ -55,18 +91,7 @@ impl KorokVisitor for CombineTypesVisitor {
         let variants = korok
             .variants
             .iter()
-            .filter_map(|variant| match &variant.node {
-                Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
-                    Some(EnumVariantTypeNode::Empty(node.clone()))
-                }
-                Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
-                    Some(EnumVariantTypeNode::Tuple(node.clone()))
-                }
-                Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
-                    Some(EnumVariantTypeNode::Struct(node.clone()))
-                }
-                _ => None,
-            })
+            .filter_map(Self::get_enum_variant)
             .collect::<Vec<_>>();
 
         korok.node = Some(DefinedTypeNode::new(enum_name, EnumTypeNode::new(variants)).into());
@@ -146,12 +171,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 let fields = korok
                     .all
                     .iter()
-                    .filter_map(|field| match &field.node {
-                        Some(Node::Type(RegisteredTypeNode::StructField(field))) => {
-                            Some(field.clone())
-                        }
-                        _ => None,
-                    })
+                    .filter_map(Self::get_nammed_field)
                     .collect::<Vec<_>>();
                 Some(StructTypeNode::new(fields).into())
             }
@@ -159,7 +179,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 let items = korok
                     .all
                     .iter()
-                    .filter_map(|f| TypeNode::try_from(f.node.clone()).ok())
+                    .filter_map(Self::get_unnammed_field)
                     .collect::<Vec<_>>();
                 Some(TupleTypeNode::new(items).into())
             }
