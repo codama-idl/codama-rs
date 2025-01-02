@@ -63,17 +63,17 @@ impl KorokVisitor for SetAccountsVisitor {
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
 
-        // Ensure the struct has the `CodamaAccount` attribute.
-        if !korok.attributes.has_codama_derive("CodamaAccount") {
-            return Ok(());
+        // Guard against `CodamaAccount` enums.
+        if korok.attributes.has_codama_derive("CodamaAccount") {
+            return Err(korok
+                .ast
+                .error(format!(
+                    "The \"{}\" enum could not be used as an Account because only structs are currently accepted.",
+                    korok.ast.ident.to_string(),
+                ))
+                .into());
         };
 
-        Err(korok
-            .ast
-            .error(format!(
-                "The \"{}\" enum could not be used as an Account because only structs are currently accepted.",
-                korok.ast.ident.to_string(),
-            ))
-            .into())
+        Ok(())
     }
 }
