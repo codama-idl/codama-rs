@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
 use codama_nodes::{
-    DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, U32, U8,
+    DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, StringTypeNode, StringValueNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32, U8,
 };
 
 #[test]
@@ -69,6 +69,22 @@ fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_returns_an_empty_struct_from_unit_fields() -> CodamaResult<()> {
+    let ast: syn::ItemStruct = syn::parse_quote! {
+        struct MyEmptyStruct;
+    };
+    let mut korok = StructKorok::parse(&ast)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(DefinedTypeNode::new("myEmptyStruct", StructTypeNode::new(vec![])).into())
+    );
+    Ok(())
+}
+
+#[test]
 fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let ast: syn::ItemStruct = syn::parse_quote! {
         struct Overriden(u32, u32);
@@ -89,5 +105,22 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     korok.node = original_node.clone();
     korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(korok.node, original_node);
+    Ok(())
+}
+
+#[test]
+fn it_fails_if_fields_do_not_resolve_to_a_type_node() -> CodamaResult<()> {
+    let ast: syn::ItemStruct = syn::parse_quote! {
+        struct Slot(u64);
+    };
+    let mut korok = StructKorok::parse(&ast)?;
+    korok.fields.node = Some(StringValueNode::new("Not a type node").into());
+
+    assert_eq!(korok.node, None);
+    let error = korok.accept(&mut CombineTypesVisitor::new()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Cannot create a `definedTypeNode` from a node of kind `stringValueNode`"
+    );
     Ok(())
 }

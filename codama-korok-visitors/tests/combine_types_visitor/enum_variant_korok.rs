@@ -116,3 +116,33 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn it_fails_if_struct_variant_fields_are_not_struct_types() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! { Foo { bar: u64 } };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+    korok.fields.node = Some(TupleTypeNode::new(vec![]).into());
+
+    assert_eq!(korok.node, None);
+    let error = korok.accept(&mut CombineTypesVisitor::new()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Invalid node for enum variant `Foo`. Expected a struct node."
+    );
+    Ok(())
+}
+
+#[test]
+fn it_fails_if_tuple_variant_fields_are_not_tuple_types() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! { Foo (u64) };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+    korok.fields.node = Some(StructTypeNode::new(vec![]).into());
+
+    assert_eq!(korok.node, None);
+    let error = korok.accept(&mut CombineTypesVisitor::new()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Invalid node for enum variant `Foo`. Expected a tuple node."
+    );
+    Ok(())
+}

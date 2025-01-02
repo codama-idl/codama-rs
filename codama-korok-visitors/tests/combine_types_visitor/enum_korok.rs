@@ -67,3 +67,25 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     assert_eq!(korok.node, original_node);
     Ok(())
 }
+
+#[test]
+fn it_ignores_invalid_variants() -> CodamaResult<()> {
+    let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left, InvalidNode } };
+    let mut korok = EnumKorok::parse(&ast)?;
+    korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
+    korok.variants[1].node = Some(NumberTypeNode::le(I32).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "direction",
+                EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("left").into(),])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}

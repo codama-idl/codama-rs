@@ -2,8 +2,8 @@ use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, Node, RegisteredTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, HasKind, Node, RegisteredTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -31,7 +31,16 @@ impl KorokVisitor for CombineTypesVisitor {
                 Some(DefinedTypeNode::new(name, tuple_node.items.first().unwrap().clone()).into())
             }
             Ok(type_node) => Some(DefinedTypeNode::new(name, type_node).into()),
-            Err(_) => None,
+            Err(_) => {
+                let message = match &korok.fields.node {
+                    Some(node) => format!(
+                        "Cannot create a `definedTypeNode` from a node of kind `{}`",
+                        node.kind()
+                    ),
+                    _ => "Cannot create a `definedTypeNode` from `None`".to_string(),
+                };
+                return Err(korok.ast.error(message).into());
+            }
         };
         Ok(())
     }
@@ -39,11 +48,6 @@ impl KorokVisitor for CombineTypesVisitor {
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return Ok(());
-        }
-
-        // Ensure all variants have nodes.
-        if !korok.variants.iter().all(|field| field.node.is_some()) {
             return Ok(());
         }
 
@@ -109,7 +113,24 @@ impl KorokVisitor for CombineTypesVisitor {
                 }
                 .into(),
             ),
-            _ => None,
+            (syn::Fields::Named(_), _) => {
+                return Err(korok
+                    .ast
+                    .error(format!(
+                        "Invalid node for enum variant `{}`. Expected a struct node.",
+                        korok.ast.ident
+                    ))
+                    .into())
+            }
+            (syn::Fields::Unnamed(_), _) => {
+                return Err(korok
+                    .ast
+                    .error(format!(
+                        "Invalid node for enum variant `{}`. Expected a tuple node.",
+                        korok.ast.ident
+                    ))
+                    .into())
+            }
         };
         Ok(())
     }
@@ -117,11 +138,6 @@ impl KorokVisitor for CombineTypesVisitor {
     fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
-            return Ok(());
-        }
-
-        // Ensure all fields have nodes.
-        if !korok.all.iter().all(|field| field.node.is_some()) {
             return Ok(());
         }
 
@@ -147,7 +163,7 @@ impl KorokVisitor for CombineTypesVisitor {
                     .collect::<Vec<_>>();
                 Some(TupleTypeNode::new(items).into())
             }
-            syn::Fields::Unit => None,
+            syn::Fields::Unit => Some(StructTypeNode::new(vec![]).into()),
         };
         Ok(())
     }
