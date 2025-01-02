@@ -3,7 +3,7 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyCodamaTypeAttributesVisitor, CombineModulesVisitor, ComposeVisitor, FilterItemsVisitor,
     KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor, SetDefinedTypesVisitor,
-    SetLinkTypesVisitor, SetProgramMetadataVisitor,
+    SetInstructionsVisitor, SetLinkTypesVisitor, SetProgramMetadataVisitor,
 };
 use codama_koroks::KorokTrait;
 
@@ -32,5 +32,6 @@ pub fn get_default_visitor<'a>() -> ComposeVisitor<'a> {
         .add(ApplyCodamaTypeAttributesVisitor::new())
         .add(SetDefinedTypesVisitor::new())
         .add(SetAccountsVisitor::new())
+        .add(SetInstructionsVisitor::new())
         .add(CombineModulesVisitor::new())
 }

@@ -26,7 +26,7 @@ impl KorokVisitor for SetDefinedTypesVisitor {
             return Ok(());
         };
 
-        // Create a `DefinedTypeNode` from the struct.
+        // Create a `DefinedTypeNode` from the struct, if it doesn't already exist.
         self.combine_types.visit_struct(korok)?;
 
         Ok(())
@@ -38,7 +38,7 @@ impl KorokVisitor for SetDefinedTypesVisitor {
             return Ok(());
         };
 
-        // Create a `DefinedTypeNode` from the enum.
+        // Create a `DefinedTypeNode` from the enum, if it doesn't already exist.
         self.combine_types.visit_enum(korok)?;
 
         Ok(())

@@ -1,30 +1,33 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
-use codama_nodes::{AccountNode, NestedTypeNode, Node, StructTypeNode};
+use codama_nodes::{InstructionNode, NestedTypeNode, Node, StructTypeNode};
 use codama_syn_helpers::extensions::ToTokensExtension;
 
-pub struct SetAccountsVisitor {
+pub struct SetInstructionsVisitor {
     combine_types: CombineTypesVisitor,
 }
 
-impl Default for SetAccountsVisitor {
+impl Default for SetInstructionsVisitor {
     fn default() -> Self {
         Self {
-            combine_types: CombineTypesVisitor::strict(),
+            combine_types: CombineTypesVisitor {
+                // TODO: Ignore `#[codama(account)]` attributes.
+                ..CombineTypesVisitor::strict()
+            },
         }
     }
 }
 
-impl SetAccountsVisitor {
+impl SetInstructionsVisitor {
     pub fn new() -> Self {
         Self::default()
     }
 }
 
-impl KorokVisitor for SetAccountsVisitor {
+impl KorokVisitor for SetInstructionsVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
-        // Ensure the struct has the `CodamaAccount` attribute.
-        if !korok.attributes.has_codama_derive("CodamaAccount") {
+        // Ensure the struct has the `CodamaInstruction` attribute.
+        if !korok.attributes.has_codama_derive("CodamaInstruction") {
             return Ok(());
         };
 
@@ -36,19 +39,19 @@ impl KorokVisitor for SetAccountsVisitor {
             return Err(korok
                 .ast
                 .error(format!(
-                    "The \"{}\" struct could not be used as an Account because its type is not defined.",
+                    "The \"{}\" struct could not be used as an Instruction because its type is not defined.",
                     korok.ast.ident.to_string(),
                 ))
                 .into());
         };
 
         // Ensure the data type is a struct.
-        let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from(defined_type.r#type.clone())
+        let Ok(_data) = NestedTypeNode::<StructTypeNode>::try_from(defined_type.r#type.clone())
         else {
             return Err(korok
                 .ast
                 .error(format!(
-                    "The \"{}\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`.",
+                    "The \"{}\" struct could not be used as an Instruction because its type is not a `NestedTypeNode<StructTypeNode>`.",
                     korok.ast.ident.to_string(),
                 ))
                 .into());
@@ -56,13 +59,12 @@ impl KorokVisitor for SetAccountsVisitor {
 
         // Transform the defined type into an account node.
         korok.node = Some(
-            AccountNode {
+            InstructionNode {
                 name: defined_type.name.clone(),
-                size: None,
                 docs: defined_type.docs.clone(),
-                data,
-                pda: None,
-                discriminators: vec![],
+                accounts: vec![],  // TODO: Gather accounts in the fields.
+                arguments: vec![], // TODO: Transform `data` into `arguments`.
+                ..InstructionNode::default()
             }
             .into(),
         );
@@ -73,17 +75,18 @@ impl KorokVisitor for SetAccountsVisitor {
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
 
-        // Guard against `CodamaAccount` enums.
-        if korok.attributes.has_codama_derive("CodamaAccount") {
+        // Guard against `CodamaInstruction` enums.
+        if korok.attributes.has_codama_derive("CodamaInstruction") {
             return Err(korok
                 .ast
                 .error(format!(
-                    "The \"{}\" enum could not be used as an Account because only structs are currently accepted.",
+                    "The \"{}\" enum could not be used as an Instruction because only structs are currently accepted. Did you mean to use `CodamaInstructions` instead?",
                     korok.ast.ident.to_string(),
                 ))
                 .into());
         };
 
+        // TODO: Implement `CodamaInstructions`.
         Ok(())
     }
 }
