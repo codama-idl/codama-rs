@@ -306,3 +306,22 @@ fn it_fails_if_tuple_enum_variant_fields_are_not_type_nodes() -> CodamaResult<()
     );
     Ok(())
 }
+
+#[test]
+fn it_fails_if_enum_variants_are_not_valid_enum_variant_nodes() -> CodamaResult<()> {
+    let ast: syn::ItemEnum = syn::parse_quote! {
+        #[derive(CodamaType)]
+        enum Foo { Bar }
+    };
+    let mut korok = EnumKorok::parse(&ast)?;
+    korok.variants[0].node = Some(StringTypeNode::utf8().into());
+
+    let error = korok
+        .accept(&mut SetDefinedTypesVisitor::new())
+        .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Variant `Bar` of enum `Foo` does not resolve to a `EnumVariantTypeNode`"
+    );
+    Ok(())
+}

@@ -95,7 +95,10 @@ fn it_can_override_existing_nodes() -> CodamaResult<()> {
     korok.all[0].node = Some(NumberTypeNode::le(I32).into());
     korok.node = Some(NumberTypeNode::le(U64).into());
 
-    korok.accept(&mut CombineTypesVisitor { r#override: true })?;
+    korok.accept(&mut CombineTypesVisitor {
+        r#override: true,
+        ..CombineTypesVisitor::default()
+    })?;
     assert_eq!(
         korok.node,
         Some(TupleTypeNode::new(vec![NumberTypeNode::le(I32).into()]).into())
