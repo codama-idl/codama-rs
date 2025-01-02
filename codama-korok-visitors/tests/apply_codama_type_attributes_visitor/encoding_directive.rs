@@ -2,9 +2,10 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyCodamaTypeAttributesVisitor, KorokVisitable, SetBorshTypesVisitor,
 };
-use codama_koroks::FieldKorok;
+use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
-    NumberFormat::U32, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
+    NumberFormat::U32, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StringValueNode,
+    StructFieldTypeNode,
 };
 
 #[test]
@@ -91,5 +92,41 @@ fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResul
             .into()
         )
     );
+    Ok(())
+}
+
+#[test]
+fn it_fails_on_empty_nodes() -> CodamaResult<()> {
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(encoding = base16)]
+        Untyped
+    };
+    let mut korok = FieldKorok::parse(&ast)?;
+
+    assert_eq!(korok.node, None);
+    let error = korok
+        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("Cannot apply attribute `#[codama(encoding)]` on an empty node"));
+    Ok(())
+}
+
+#[test]
+fn it_fails_on_non_type_nodes() -> CodamaResult<()> {
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(encoding = base16)]
+        ValueNode
+    };
+    let mut korok = FieldKorok::parse(&ast)?;
+    korok.set_node(Some(StringValueNode::new("Some string value").into()));
+
+    let error = korok
+        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .unwrap_err();
+    assert!(error.to_string().contains(
+        "Cannot apply attribute `#[codama(encoding)]` on a node of kind `stringValueNode`"
+    ));
     Ok(())
 }

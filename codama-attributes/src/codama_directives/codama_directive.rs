@@ -26,3 +26,14 @@ impl TryFrom<&Meta> for CodamaDirective {
         }
     }
 }
+
+impl CodamaDirective {
+    pub fn name(&self) -> &'static str {
+        match self {
+            CodamaDirective::Type(_) => "type",
+            CodamaDirective::Encoding(_) => "encoding",
+            CodamaDirective::FixedSize(_) => "fixed_size",
+            CodamaDirective::SizePrefix(_) => "size_prefix",
+        }
+    }
+}
