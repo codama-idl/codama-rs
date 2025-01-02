@@ -55,9 +55,10 @@ fn it_requires_the_account_type_to_be_defined_first() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert!(error.to_string().contains(
+    assert_eq!(
+        error.to_string(),
         "The \"Token\" struct could not be used as an Account because its type is not defined."
-    ));
+    );
     Ok(())
 }
 
@@ -76,8 +77,8 @@ fn it_throws_an_error_on_enum_koroks() -> CodamaResult<()> {
     korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut CombineTypesVisitor::new())?;
     let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert!(
-        error.to_string().contains("The \"Membership\" enum could not be used as an Account because only structs are currently accepted.")
+    assert_eq!(
+        error.to_string(),"The \"Membership\" enum could not be used as an Account because only structs are currently accepted."
     );
     Ok(())
 }

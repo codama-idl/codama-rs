@@ -10,5 +10,5 @@ fn from_io_error() {
 #[test]
 fn display() {
     let error: CodamaError = std::io::Error::new(NotFound, "Could not find file `foo.rs`").into();
-    assert_eq!(error.to_string(), "IO error: Could not find file `foo.rs`");
+    assert_eq!(error.to_string(), "Could not find file `foo.rs`");
 }

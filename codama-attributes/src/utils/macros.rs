@@ -15,7 +15,7 @@ macro_rules! assert_type_err {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { type = $($attr)* };
             let message = crate::TypeDirective::try_from(&meta).unwrap_err().to_string();
-            assert!(message.contains($expected), "Expected error containing '{}', but got '{}'", $expected, message);
+            assert_eq!(message, $expected);
         }
     };
 }

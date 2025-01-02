@@ -36,22 +36,20 @@ mod tests {
     fn no_input() {
         let meta: Meta = parse_quote! { type =  };
         let error = TypeDirective::try_from(&meta).unwrap_err();
-        assert!(error.to_string().contains("unrecognized type"));
+        assert_eq!(error.to_string(), "unrecognized type");
     }
 
     #[test]
     fn multiple_inputs() {
         let meta: Meta = parse_quote! { type = (number(u16, le), public_key) };
         let error = TypeDirective::try_from(&meta).unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("expected a single value, found a list"));
+        assert_eq!(error.to_string(), "expected a single value, found a list");
     }
 
     #[test]
     fn unrecognized_type() {
         let meta: Meta = parse_quote! { type = banana };
         let error = TypeDirective::try_from(&meta).unwrap_err();
-        assert!(error.to_string().contains("unrecognized type"));
+        assert_eq!(error.to_string(), "unrecognized type");
     }
 }

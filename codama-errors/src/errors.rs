@@ -3,13 +3,13 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CodamaError {
-    #[error("IO error: {0}")]
+    #[error("{0}")]
     Filesystem(#[from] std::io::Error),
 
     #[error("Could not parse Cargo.toml files: {0}")]
     Manifest(#[from] cargo_toml::Error),
 
-    #[error("A compilation error was identified via Syn: {0}")]
+    #[error("{0}")]
     Compilation(#[from] syn::Error),
 
     #[error("Could not parse JSON files: {0}")]

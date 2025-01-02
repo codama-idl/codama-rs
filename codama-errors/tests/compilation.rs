@@ -12,8 +12,5 @@ fn from_syn_error() {
 fn display() {
     let error: CodamaError =
         syn::Error::new_spanned(TokenStream::new(), "Could not parse Rust code").into();
-    assert_eq!(
-        error.to_string(),
-        "A compilation error was identified via Syn: Could not parse Rust code"
-    );
+    assert_eq!(error.to_string(), "Could not parse Rust code");
 }

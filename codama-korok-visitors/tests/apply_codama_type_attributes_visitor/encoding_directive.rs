@@ -107,9 +107,10 @@ fn it_fails_on_empty_nodes() -> CodamaResult<()> {
     let error = korok
         .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
         .unwrap_err();
-    assert!(error
-        .to_string()
-        .contains("Cannot apply attribute `#[codama(encoding)]` on an empty node"));
+    assert_eq!(
+        error.to_string(),
+        "Cannot apply attribute `#[codama(encoding)]` on an empty node"
+    );
     Ok(())
 }
 
@@ -125,8 +126,9 @@ fn it_fails_on_non_type_nodes() -> CodamaResult<()> {
     let error = korok
         .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
         .unwrap_err();
-    assert!(error.to_string().contains(
+    assert_eq!(
+        error.to_string(),
         "Cannot apply attribute `#[codama(encoding)]` on a node of kind `stringValueNode`"
-    ));
+    );
     Ok(())
 }
