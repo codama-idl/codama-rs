@@ -133,13 +133,13 @@ impl CombineTypesVisitor {
 
 impl KorokVisitor for CombineTypesVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
-        self.parent = CombineTypesVisitorParent::Struct(korok.ast.ident.to_string());
-        self.visit_children(korok)?;
-        self.parent = CombineTypesVisitorParent::None;
-
         if korok.node.is_some() && !self.r#override {
             return Ok(());
         }
+
+        self.parent = CombineTypesVisitorParent::Struct(korok.ast.ident.to_string());
+        self.visit_children(korok)?;
+        self.parent = CombineTypesVisitorParent::None;
 
         let name = korok.ast.ident.to_string();
         korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
@@ -162,14 +162,14 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
+        if korok.node.is_some() && !self.r#override {
+            return Ok(());
+        }
+
         let parent = CombineTypesVisitorParent::Enum(korok.ast.ident.to_string());
         self.parent = parent.clone();
         self.visit_children(korok)?;
         self.parent = CombineTypesVisitorParent::None;
-
-        if korok.node.is_some() && !self.r#override {
-            return Ok(());
-        }
 
         let enum_name = korok.ast.ident.to_string();
         let variants = korok
@@ -186,16 +186,16 @@ impl KorokVisitor for CombineTypesVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
+        if korok.node.is_some() && !self.r#override {
+            return Ok(());
+        }
+
         let original_parent_item = self.parent.clone();
         if let CombineTypesVisitorParent::Enum(name) = self.parent.clone() {
             self.parent = CombineTypesVisitorParent::Variant(name, korok.ast.ident.to_string());
         }
         self.visit_children(korok)?;
         self.parent = original_parent_item;
-
-        if korok.node.is_some() && !self.r#override {
-            return Ok(());
-        }
 
         let variant_name = korok.ast.ident.to_string();
         let discriminator = korok
@@ -251,10 +251,11 @@ impl KorokVisitor for CombineTypesVisitor {
     }
 
     fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
         if korok.node.is_some() && !self.r#override {
             return Ok(());
         }
+
+        self.visit_children(korok)?;
 
         korok.node = match &korok.ast {
             syn::Fields::Named(_) => {

@@ -1,10 +1,11 @@
-use crate::KorokVisitor;
+use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
 use codama_nodes::{AccountNode, NestedTypeNode, Node, StructTypeNode};
 use codama_syn_helpers::extensions::ToTokensExtension;
 
-#[derive(Default)]
-pub struct SetAccountsVisitor {}
+pub struct SetAccountsVisitor {
+    combine_types: CombineTypesVisitor,
+}
 
 impl SetAccountsVisitor {
     pub fn new() -> Self {
@@ -12,16 +13,25 @@ impl SetAccountsVisitor {
     }
 }
 
+impl Default for SetAccountsVisitor {
+    fn default() -> Self {
+        Self {
+            combine_types: CombineTypesVisitor::strict(),
+        }
+    }
+}
+
 impl KorokVisitor for SetAccountsVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
-
         // Ensure the struct has the `CodamaAccount` attribute.
         if !korok.attributes.has_codama_derive("CodamaAccount") {
             return Ok(());
         };
 
-        // Ensure the korok is already typed.
+        // Create a `DefinedTypeNode` from the struct, if it doesn't already exist.
+        self.combine_types.visit_struct(korok)?;
+
+        // Ensure we have a `DefinedTypeNode` to work with.
         let Some(Node::DefinedType(defined_type)) = &korok.node else {
             return Err(korok
                 .ast
