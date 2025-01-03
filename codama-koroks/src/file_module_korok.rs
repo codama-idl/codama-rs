@@ -8,6 +8,7 @@ use codama_stores::FileModuleStore;
 pub struct FileModuleKorok<'a> {
     pub ast: &'a syn::ItemMod,
     pub attributes: Attributes<'a>,
+    pub file_attributes: Attributes<'a>,
     pub items: Vec<ItemKorok<'a>>,
     pub node: Option<Node>,
     pub store: &'a FileModuleStore,
@@ -23,13 +24,15 @@ impl<'a> FileModuleKorok<'a> {
             .into());
         }
 
-        let (attributes, items) = combine_errors!(
+        let (attributes, file_attributes, items) = combine_errors!(
             Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            Attributes::parse(&store.file.attrs).map_err(CodamaError::from),
             ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0),
         )?;
         Ok(Self {
             ast,
             attributes,
+            file_attributes,
             items,
             node: None,
             store,
