@@ -1,31 +1,26 @@
-use crate::{CodamaAttribute, DeriveAttribute, UnsupportedAttribute};
+use crate::{AttributeContext, CodamaAttribute, DeriveAttribute, UnsupportedAttribute};
 use codama_syn_helpers::extensions::*;
+use derive_more::derive::From;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, From)]
 pub enum Attribute<'a> {
-    // E.g. #[derive(Debug, CodamaType)]
+    // E.g. `#[derive(Debug, CodamaType)]`.
     Derive(DeriveAttribute<'a>),
-    // E.g. #[codama(node(number_type(u8, le)))]
+    // E.g. `#[codama(type = number(u8))]` or `#[codama(fixed_size = 32)]`.
     Codama(CodamaAttribute<'a>),
-    // E.g. #[some_unsupported_attribute = 42]
+    // E.g. `#[some_unsupported_attribute = 42]`.
     Unsupported(UnsupportedAttribute<'a>),
 }
 
-impl Attribute<'_> {
-    pub fn parse<T: TryInto<Self, Error = syn::Error>>(attr: T) -> syn::Result<Self> {
-        attr.try_into()
-    }
-}
-
-impl<'a> TryFrom<&'a syn::Attribute> for Attribute<'a> {
-    type Error = syn::Error;
-
-    fn try_from(attr: &'a syn::Attribute) -> syn::Result<Self> {
+impl<'a> Attribute<'a> {
+    pub fn parse(attr: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
         let path = attr.path();
         match (path.prefix().as_str(), path.last_str().as_str()) {
-            ("", "derive") => Ok(Attribute::Derive(attr.try_into()?)),
-            ("" | "codama_macros" | "codama", "codama") => Ok(Attribute::Codama(attr.try_into()?)),
-            _ => Ok(Self::Unsupported(UnsupportedAttribute::new(attr))),
+            ("", "derive") => Ok(DeriveAttribute::parse(attr)?.into()),
+            ("" | "codama_macros" | "codama", "codama") => {
+                Ok(CodamaAttribute::parse(attr, ctx)?.into())
+            }
+            _ => Ok(UnsupportedAttribute::new(attr).into()),
         }
     }
 }

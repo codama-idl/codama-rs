@@ -6,10 +6,8 @@ pub struct EncodingDirective {
     pub encoding: BytesEncoding,
 }
 
-impl TryFrom<&Meta> for EncodingDirective {
-    type Error = syn::Error;
-
-    fn try_from(meta: &Meta) -> syn::Result<Self> {
+impl EncodingDirective {
+    pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pv = meta.assert_directive("encoding")?.as_path_value()?;
         let value = pv.value.as_path()?;
         match BytesEncoding::try_from(value.to_string()) {
@@ -26,7 +24,7 @@ mod tests {
     #[test]
     fn ok() {
         let meta: Meta = syn::parse_quote! { encoding = base64 };
-        let directive = EncodingDirective::try_from(&meta).unwrap();
+        let directive = EncodingDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             EncodingDirective {

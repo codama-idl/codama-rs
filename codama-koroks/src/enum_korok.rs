@@ -14,7 +14,7 @@ pub struct EnumKorok<'a> {
 impl<'a> EnumKorok<'a> {
     pub fn parse(ast: &'a syn::ItemEnum) -> CodamaResult<Self> {
         let (attributes, variants) = combine_errors!(
-            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
             EnumVariantKorok::parse_all(&ast.variants),
         )?;
         Ok(Self {

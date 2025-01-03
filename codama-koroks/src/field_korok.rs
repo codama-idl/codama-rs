@@ -12,7 +12,7 @@ pub struct FieldKorok<'a> {
 
 impl<'a> FieldKorok<'a> {
     pub fn parse(ast: &'a syn::Field) -> CodamaResult<Self> {
-        let attributes = Attributes::parse(&ast.attrs)?;
+        let attributes = Attributes::parse(&ast.attrs, ast.into())?;
         Ok(Self {
             ast,
             attributes,

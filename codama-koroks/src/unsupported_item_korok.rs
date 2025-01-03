@@ -13,9 +13,13 @@ pub struct UnsupportedItemKorok<'a> {
 
 impl<'a> UnsupportedItemKorok<'a> {
     pub fn parse(ast: &'a syn::Item) -> CodamaResult<Self> {
+        let attributes = match ast.attributes() {
+            Some(attrs) => Attributes::parse(attrs, ast.into())?,
+            None => Attributes(Vec::new()),
+        };
         Ok(Self {
             ast,
-            attributes: Attributes::parse(ast.attributes())?,
+            attributes,
             node: None,
         })
     }

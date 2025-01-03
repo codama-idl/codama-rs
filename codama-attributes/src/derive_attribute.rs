@@ -6,10 +6,8 @@ pub struct DeriveAttribute<'a> {
     pub derives: Vec<syn::Path>,
 }
 
-impl<'a> TryFrom<&'a syn::Attribute> for DeriveAttribute<'a> {
-    type Error = syn::Error;
-
-    fn try_from(ast: &'a syn::Attribute) -> syn::Result<Self> {
+impl<'a> DeriveAttribute<'a> {
+    pub fn parse(ast: &'a syn::Attribute) -> syn::Result<Self> {
         // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
         let attr = unfeatured.as_ref().unwrap_or(ast);
@@ -34,7 +32,7 @@ mod tests {
     #[test]
     fn test_derive_attribute() {
         let ast = parse_quote! { #[derive(Debug, PartialEq)] };
-        let attribute = DeriveAttribute::try_from(&ast).unwrap();
+        let attribute = DeriveAttribute::parse(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert_eq!(
@@ -46,7 +44,7 @@ mod tests {
     #[test]
     fn test_feature_gated_derive_attribute() {
         let ast = parse_quote! { #[cfg_attr(feature = "some_feature", derive(Debug, PartialEq))] };
-        let attribute = DeriveAttribute::try_from(&ast).unwrap();
+        let attribute = DeriveAttribute::parse(&ast).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert_eq!(

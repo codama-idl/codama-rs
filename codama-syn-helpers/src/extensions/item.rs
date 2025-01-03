@@ -3,8 +3,8 @@ use syn::Item;
 pub trait ItemExtension {
     fn get_self(&self) -> &Item;
 
-    fn attributes(&self) -> Vec<&syn::Attribute> {
-        let attrs = match self.get_self() {
+    fn attributes(&self) -> Option<&Vec<syn::Attribute>> {
+        match self.get_self() {
             Item::Const(i) => Some(&i.attrs),
             Item::Enum(i) => Some(&i.attrs),
             Item::ExternCrate(i) => Some(&i.attrs),
@@ -21,11 +21,6 @@ pub trait ItemExtension {
             Item::Union(i) => Some(&i.attrs),
             Item::Use(i) => Some(&i.attrs),
             _ => None,
-        };
-
-        match attrs {
-            Some(attrs) => attrs.iter().collect(),
-            None => vec![],
         }
     }
 }
@@ -47,7 +42,7 @@ mod tests {
             struct Foo(u32);
         };
         assert!(matches!(
-            r#struct.attributes().as_slice(),
+            r#struct.attributes().unwrap().as_slice(),
             [syn::Attribute { .. }]
         ));
     }

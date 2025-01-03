@@ -27,7 +27,7 @@ impl<'a> ModuleKorok<'a> {
         };
 
         let (attributes, items) = combine_errors!(
-            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
+            Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
             ItemKorok::parse_all(&content.1, file_modules, file_module_index),
         )?;
         Ok(Self {

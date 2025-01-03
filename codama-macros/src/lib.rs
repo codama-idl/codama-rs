@@ -1,4 +1,4 @@
-use codama_attributes::CodamaAttribute;
+use codama_attributes::{AttributeContext, CodamaAttribute};
 use codama_errors::{CodamaError, CodamaResult};
 use codama_koroks::CrateKorok;
 use codama_stores::CrateStore;
@@ -42,6 +42,13 @@ pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 fn codama_attribute(attr: TokenStream2, input: TokenStream2) -> CodamaResult<TokenStream2> {
     let attr: syn::Attribute = syn::parse_quote! { #[codama(#attr)] };
-    CodamaAttribute::try_from(&attr)?;
+    let item: syn::Item = syn::parse2(input.clone())?;
+    let ctx: AttributeContext = match &item {
+        syn::Item::Struct(x) => x.into(),
+        syn::Item::Enum(x) => x.into(),
+        syn::Item::Mod(x) => x.into(),
+        _ => (&item).into(),
+    };
+    CodamaAttribute::parse(&attr, &ctx)?;
     Ok(input)
 }

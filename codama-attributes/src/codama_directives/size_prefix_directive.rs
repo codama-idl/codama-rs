@@ -7,10 +7,8 @@ pub struct SizePrefixDirective {
     pub prefix: NestedTypeNode<NumberTypeNode>,
 }
 
-impl TryFrom<&Meta> for SizePrefixDirective {
-    type Error = syn::Error;
-
-    fn try_from(meta: &Meta) -> syn::Result<Self> {
+impl SizePrefixDirective {
+    pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pv = meta.assert_directive("size_prefix")?.as_path_value()?;
         let node = TypeNode::from_meta(&pv.value)?;
         let prefix = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
@@ -29,7 +27,7 @@ mod tests {
     #[test]
     fn ok() {
         let meta: Meta = syn::parse_quote! { size_prefix = number(u32) };
-        let directive = SizePrefixDirective::try_from(&meta).unwrap();
+        let directive = SizePrefixDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             SizePrefixDirective {

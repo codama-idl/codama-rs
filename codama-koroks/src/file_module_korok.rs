@@ -25,8 +25,8 @@ impl<'a> FileModuleKorok<'a> {
         }
 
         let (attributes, file_attributes, items) = combine_errors!(
-            Attributes::parse(&ast.attrs).map_err(CodamaError::from),
-            Attributes::parse(&store.file.attrs).map_err(CodamaError::from),
+            Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
+            Attributes::parse(&store.file.attrs, (&store.file).into()).map_err(CodamaError::from),
             ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0),
         )?;
         Ok(Self {

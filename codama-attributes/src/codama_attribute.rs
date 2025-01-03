@@ -1,4 +1,4 @@
-use crate::{utils::SetOnce, CodamaDirective};
+use crate::{utils::SetOnce, AttributeContext, CodamaDirective};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -7,10 +7,8 @@ pub struct CodamaAttribute<'a> {
     pub directive: CodamaDirective,
 }
 
-impl<'a> TryFrom<&'a syn::Attribute> for CodamaAttribute<'a> {
-    type Error = syn::Error;
-
-    fn try_from(ast: &'a syn::Attribute) -> syn::Result<Self> {
+impl<'a> CodamaAttribute<'a> {
+    pub fn parse(ast: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
         // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
         let attr = unfeatured.as_ref().unwrap_or(ast);
@@ -22,7 +20,7 @@ impl<'a> TryFrom<&'a syn::Attribute> for CodamaAttribute<'a> {
         };
 
         let mut directive = SetOnce::<CodamaDirective>::new("codama");
-        list.each(|ref meta| directive.set(meta.try_into()?, meta))?;
+        list.each(|ref meta| directive.set(CodamaDirective::parse(&meta, ctx)?, meta))?;
         Ok(Self {
             ast,
             directive: directive.take(attr)?,
@@ -38,7 +36,9 @@ mod tests {
     #[test]
     fn test_codama_attribute() {
         let ast = parse_quote! { #[codama(type = boolean)] };
-        let attribute = CodamaAttribute::try_from(&ast).unwrap();
+        let file = syn::File::empty();
+        let ctx = AttributeContext::File(&file);
+        let attribute = CodamaAttribute::parse(&ast, &ctx).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert!(matches!(attribute.directive, CodamaDirective::Type(_)));
@@ -47,7 +47,9 @@ mod tests {
     #[test]
     fn test_feature_gated_codama_attribute() {
         let ast = parse_quote! { #[cfg_attr(feature = "some_feature", codama(type = boolean))] };
-        let attribute = CodamaAttribute::try_from(&ast).unwrap();
+        let file = syn::File::empty();
+        let ctx = AttributeContext::File(&file);
+        let attribute = CodamaAttribute::parse(&ast, &ctx).unwrap();
 
         assert_eq!(attribute.ast, &ast);
         assert!(matches!(attribute.directive, CodamaDirective::Type(_)));

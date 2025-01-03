@@ -63,7 +63,7 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
         .map(|node| {
             ItemKorok::Unsupported(UnsupportedItemKorok {
                 ast: inner_item,
-                attributes: Attributes::parse(&item_mod.attrs).unwrap(),
+                attributes: Attributes(Vec::new()),
                 node: node.clone(),
             })
         })
@@ -71,7 +71,7 @@ pub fn combine_modules<'a>(input: CombineModulesInput) -> Option<Node> {
 
     let mut module_korok = ModuleKorok {
         ast: item_mod,
-        attributes: Attributes::parse(&item_mod.attrs).unwrap(),
+        attributes: Attributes(Vec::new()),
         items,
         node: None,
     };

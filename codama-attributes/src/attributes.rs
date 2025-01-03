@@ -1,4 +1,4 @@
-use crate::{Attribute, CodamaDirective};
+use crate::{Attribute, AttributeContext, CodamaDirective};
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
@@ -6,9 +6,16 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
-impl Attributes<'_> {
-    pub fn parse<T: TryInto<Self, Error = syn::Error>>(attrs: T) -> syn::Result<Self> {
-        attrs.try_into()
+impl<'a> Attributes<'a> {
+    pub fn parse(attrs: &'a Vec<syn::Attribute>, ctx: AttributeContext<'a>) -> syn::Result<Self> {
+        let attributes = Self(
+            attrs
+                .iter()
+                .map(|attr| Attribute::parse(attr, &ctx))
+                .collect_and_combine_errors()?,
+        );
+        attributes.validate_codama_type_attributes()?;
+        Ok(attributes)
     }
 
     pub fn validate_codama_type_attributes(&self) -> syn::Result<()> {
@@ -64,36 +71,6 @@ impl Attributes<'_> {
                 .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last),
             _ => false,
         })
-    }
-}
-
-impl<'a> TryFrom<Vec<&'a syn::Attribute>> for Attributes<'a> {
-    type Error = syn::Error;
-
-    fn try_from(attrs: Vec<&'a syn::Attribute>) -> syn::Result<Self> {
-        let attributes = Self(
-            attrs
-                .iter()
-                .map(|attr: &&syn::Attribute| Attribute::parse(*attr))
-                .collect_and_combine_errors()?,
-        );
-        attributes.validate_codama_type_attributes()?;
-        Ok(attributes)
-    }
-}
-
-impl<'a> TryFrom<&'a Vec<syn::Attribute>> for Attributes<'a> {
-    type Error = syn::Error;
-
-    fn try_from(attrs: &'a Vec<syn::Attribute>) -> syn::Result<Self> {
-        let attributes = Self(
-            attrs
-                .iter()
-                .map(Attribute::parse)
-                .collect_and_combine_errors()?,
-        );
-        attributes.validate_codama_type_attributes()?;
-        Ok(attributes)
     }
 }
 
