@@ -3,6 +3,7 @@ use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_stores::FileModuleStore;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct FileModuleKorok<'a> {
@@ -15,7 +16,10 @@ pub struct FileModuleKorok<'a> {
 }
 
 impl<'a> FileModuleKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemMod, store: &'a FileModuleStore) -> CodamaResult<Self> {
+    pub fn parse(item: &'a syn::Item, store: &'a FileModuleStore) -> CodamaResult<Self> {
+        let syn::Item::Mod(ast) = item else {
+            return Err(item.error("Expected an module").into());
+        };
         if ast.content.is_some() {
             return Err(syn::Error::new_spanned(
                 ast,
@@ -25,7 +29,7 @@ impl<'a> FileModuleKorok<'a> {
         }
 
         let (attributes, file_attributes, items) = combine_errors!(
-            Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
+            Attributes::parse(&ast.attrs, item.into()).map_err(CodamaError::from),
             Attributes::parse(&store.file.attrs, (&store.file).into()).map_err(CodamaError::from),
             ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0),
         )?;

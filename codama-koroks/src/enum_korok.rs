@@ -2,6 +2,7 @@ use crate::{EnumVariantKorok, KorokTrait};
 use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct EnumKorok<'a> {
@@ -12,9 +13,12 @@ pub struct EnumKorok<'a> {
 }
 
 impl<'a> EnumKorok<'a> {
-    pub fn parse(ast: &'a syn::ItemEnum) -> CodamaResult<Self> {
+    pub fn parse(item: &'a syn::Item) -> CodamaResult<Self> {
+        let syn::Item::Enum(ast) = item else {
+            return Err(item.error("Expected an enum").into());
+        };
         let (attributes, variants) = combine_errors!(
-            Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
+            Attributes::parse(&ast.attrs, item.into()).map_err(CodamaError::from),
             EnumVariantKorok::parse_all(&ast.variants),
         )?;
         Ok(Self {

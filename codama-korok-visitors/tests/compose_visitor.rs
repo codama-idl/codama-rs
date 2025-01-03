@@ -5,8 +5,8 @@ use codama_nodes::PublicKeyTypeNode;
 
 #[test]
 fn it_returns_a_single_visitor_from_multiple_visitors() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! { struct Foo(u32); };
-    let mut korok = StructKorok::parse(&ast)?;
+    let item: syn::Item = syn::parse_quote! { struct Foo(u32); };
+    let mut korok = StructKorok::parse(&item)?;
 
     struct ResetStructAndFieldKoroksVisitor;
     impl KorokVisitor for ResetStructAndFieldKoroksVisitor {

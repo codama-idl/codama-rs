@@ -27,7 +27,7 @@ impl<'a> ItemKorok<'a> {
                 match file_modules.get(*file_module_index) {
                     Some(module) => {
                         file_module_index.add_assign(1);
-                        Ok(ItemKorok::FileModule(FileModuleKorok::parse(ast, module)?))
+                        Ok(ItemKorok::FileModule(FileModuleKorok::parse(item, module)?))
                     }
                     None => {
                         Err(syn::Error::new_spanned(ast, "Associated ModuleStore not found").into())
@@ -35,10 +35,10 @@ impl<'a> ItemKorok<'a> {
                 }
             }
             syn::Item::Mod(ast) if ast.content.is_some() => Ok(ItemKorok::Module(
-                ModuleKorok::parse(ast, file_modules, file_module_index)?,
+                ModuleKorok::parse(item, file_modules, file_module_index)?,
             )),
-            syn::Item::Struct(ast) => Ok(ItemKorok::Struct(StructKorok::parse(ast)?)),
-            syn::Item::Enum(ast) => Ok(ItemKorok::Enum(EnumKorok::parse(ast)?)),
+            syn::Item::Struct(_) => Ok(ItemKorok::Struct(StructKorok::parse(item)?)),
+            syn::Item::Enum(_) => Ok(ItemKorok::Enum(EnumKorok::parse(item)?)),
             _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok::parse(item)?)),
         }
     }

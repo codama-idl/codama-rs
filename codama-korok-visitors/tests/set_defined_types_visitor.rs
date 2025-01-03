@@ -11,14 +11,14 @@ use codama_nodes::{
 
 #[test]
 fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Person {
             age: u8,
             name: String,
         }
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -44,11 +44,11 @@ fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Coordinates(u32, u32);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -71,11 +71,11 @@ fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_sets_defined_types_on_structs_with_single_unnammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Age(u8);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -89,11 +89,11 @@ fn it_sets_defined_types_on_structs_with_single_unnammed_fields() -> CodamaResul
 
 #[test]
 fn it_sets_defined_types_on_structs_with_unit_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Empty;
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
@@ -106,7 +106,7 @@ fn it_sets_defined_types_on_structs_with_unit_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Message {
             Quit,
@@ -114,7 +114,7 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
             Write(String),
         }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -153,11 +153,11 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_nammed_fields_have_no_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo { bar: NoNode }
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     let error = korok
@@ -172,11 +172,11 @@ fn it_fails_if_nammed_fields_have_no_nodes() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_nammed_fields_are_not_struct_field_type_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo { bar: NotStructFieldTypeNode }
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.fields.all[0].node = Some(StringTypeNode::utf8().into());
 
     assert_eq!(korok.node, None);
@@ -192,11 +192,11 @@ fn it_fails_if_nammed_fields_are_not_struct_field_type_nodes() -> CodamaResult<(
 
 #[test]
 fn it_fails_if_unnammed_fields_have_no_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo (NoNode);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     let error = korok
@@ -211,11 +211,11 @@ fn it_fails_if_unnammed_fields_have_no_nodes() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_unnammed_fields_are_not_type_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo (NotTypeNode);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.fields.all[0].node =
         Some(StructFieldTypeNode::new("notATypeNode", BooleanTypeNode::default()).into());
 
@@ -232,11 +232,11 @@ fn it_fails_if_unnammed_fields_are_not_type_nodes() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_struct_enum_variant_fields_have_no_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Foo { Bar { baz: NoNode } }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     let error = korok
@@ -251,11 +251,11 @@ fn it_fails_if_struct_enum_variant_fields_have_no_nodes() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_struct_enum_variant_fields_are_not_struct_field_type_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Foo { Bar { baz: NotStructFieldTypeNode } }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].fields.all[0].node = Some(StringTypeNode::utf8().into());
 
     let error = korok
@@ -270,11 +270,11 @@ fn it_fails_if_struct_enum_variant_fields_are_not_struct_field_type_nodes() -> C
 
 #[test]
 fn it_fails_if_tuple_enum_variant_fields_have_no_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Foo { Bar(NoNode) }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     let error = korok
@@ -289,11 +289,11 @@ fn it_fails_if_tuple_enum_variant_fields_have_no_nodes() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_tuple_enum_variant_fields_are_not_type_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Foo { Bar(NotTypeNode) }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].fields.all[0].node =
         Some(StructFieldTypeNode::new("notATypeNode", BooleanTypeNode::default()).into());
 
@@ -309,11 +309,11 @@ fn it_fails_if_tuple_enum_variant_fields_are_not_type_nodes() -> CodamaResult<()
 
 #[test]
 fn it_fails_if_enum_variants_are_not_valid_enum_variant_nodes() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         enum Foo { Bar }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].node = Some(StringTypeNode::utf8().into());
 
     let error = korok

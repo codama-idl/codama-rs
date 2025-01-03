@@ -8,7 +8,7 @@ use codama_nodes::{
 
 #[test]
 fn it_sets_an_account_node_from_a_struct() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token {
             mint: Pubkey,
@@ -16,7 +16,7 @@ fn it_sets_an_account_node_from_a_struct() -> CodamaResult<()> {
             amount: u64,
         }
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
@@ -40,11 +40,11 @@ fn it_sets_an_account_node_from_a_struct() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_the_struct_node_is_not_a_type_node() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token;
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.node = Some(StringValueNode::new("Not a `DefinedTypeNode`").into());
 
     let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
@@ -57,11 +57,11 @@ fn it_fails_if_the_struct_node_is_not_a_type_node() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_struct_node_is_not_a_nested_struct_type_node() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token;
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.node = Some(
         DefinedTypeNode::new("token", FixedSizeTypeNode::new(NumberTypeNode::le(U64), 42)).into(),
     );
@@ -76,14 +76,14 @@ fn it_fails_if_struct_node_is_not_a_nested_struct_type_node() -> CodamaResult<()
 
 #[test]
 fn it_throws_an_error_on_enum_koroks() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         enum Membership {
             Basic,
             Premium,
         }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;

@@ -8,13 +8,13 @@ use codama_nodes::{
 
 #[test]
 fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct Person {
             age: u8,
             name: String,
         }
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     let struct_node = StructTypeNode::new(vec![
         StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
         StructFieldTypeNode::new("name", StringTypeNode::utf8()),
@@ -32,10 +32,10 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct Coordinates(u32, u32);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     let tuple_node = TupleTypeNode::new(vec![
         NumberTypeNode::le(U32).into(),
         NumberTypeNode::le(U32).into(),
@@ -53,10 +53,10 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct Slot(u64);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.fields.node = Some(TupleTypeNode::new(vec![NumberTypeNode::le(U64).into()]).into());
 
     assert_eq!(korok.node, None);
@@ -70,10 +70,10 @@ fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_returns_an_empty_struct_from_unit_fields() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct MyEmptyStruct;
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -86,10 +86,10 @@ fn it_returns_an_empty_struct_from_unit_fields() -> CodamaResult<()> {
 
 #[test]
 fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct Overriden(u32, u32);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.fields.node = Some(
         TupleTypeNode::new(vec![
             NumberTypeNode::le(U32).into(),
@@ -110,10 +110,10 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_fields_do_not_resolve_to_a_type_node() -> CodamaResult<()> {
-    let ast: syn::ItemStruct = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         struct Slot(u64);
     };
-    let mut korok = StructKorok::parse(&ast)?;
+    let mut korok = StructKorok::parse(&item)?;
     korok.fields.node = Some(StringValueNode::new("Not a type node").into());
 
     assert_eq!(korok.node, None);

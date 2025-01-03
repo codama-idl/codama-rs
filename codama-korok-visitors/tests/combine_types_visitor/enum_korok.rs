@@ -9,14 +9,14 @@ use codama_nodes::{
 
 #[test]
 fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! {
+    let item: syn::Item = syn::parse_quote! {
         enum Message {
             Quit,
             Move { x: i32, y: i32 },
             Write(String),
         }
     };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let mut korok = EnumKorok::parse(&item)?;
     let variant_quit = EnumEmptyVariantTypeNode::new("quit");
     let variant_move = EnumStructVariantTypeNode::new(
         "move",
@@ -54,8 +54,8 @@ fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
 
 #[test]
 fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left } };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let item: syn::Item = syn::parse_quote! { enum Direction { Left } };
+    let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
 
     let original_node = Some(Node::from(DefinedTypeNode::new(
@@ -70,8 +70,8 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
 
 #[test]
 fn it_ignores_invalid_variants() -> CodamaResult<()> {
-    let ast: syn::ItemEnum = syn::parse_quote! { enum Direction { Left, InvalidNode } };
-    let mut korok = EnumKorok::parse(&ast)?;
+    let item: syn::Item = syn::parse_quote! { enum Direction { Left, InvalidNode } };
+    let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
     korok.variants[1].node = Some(NumberTypeNode::le(I32).into());
 

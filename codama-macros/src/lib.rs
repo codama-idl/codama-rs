@@ -43,12 +43,7 @@ pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
 fn codama_attribute(attr: TokenStream2, input: TokenStream2) -> CodamaResult<TokenStream2> {
     let attr: syn::Attribute = syn::parse_quote! { #[codama(#attr)] };
     let item: syn::Item = syn::parse2(input.clone())?;
-    let ctx: AttributeContext = match &item {
-        syn::Item::Struct(x) => x.into(),
-        syn::Item::Enum(x) => x.into(),
-        syn::Item::Mod(x) => x.into(),
-        _ => (&item).into(),
-    };
+    let ctx: AttributeContext = (&item).into();
     CodamaAttribute::parse(&attr, &ctx)?;
     Ok(input)
 }
