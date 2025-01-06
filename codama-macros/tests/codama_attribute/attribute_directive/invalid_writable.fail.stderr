@@ -1,0 +1,5 @@
+error: expected a literal boolean
+ --> tests/codama_attribute/attribute_directive/invalid_writable.fail.rs:3:29
+  |
+3 | #[codama(account(writable = invalid))]
+  |                             ^^^^^^^

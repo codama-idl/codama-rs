@@ -24,10 +24,9 @@ impl AccountDirective {
             }) => name = name.initial_value(ident.to_string().into()),
             _ => (),
         }
-        let mut is_writable = SetOnce::<bool>::new("is_writable").initial_value(false);
-        let mut is_signer =
-            SetOnce::<IsAccountSigner>::new("is_signer").initial_value(false.into());
-        let mut is_optional = SetOnce::<bool>::new("is_optional").initial_value(false);
+        let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
+        let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
+        let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
         match meta.is_path_or_empty_list() {
             true => (),
             false => meta

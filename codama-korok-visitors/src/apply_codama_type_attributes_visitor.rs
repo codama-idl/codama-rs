@@ -116,6 +116,7 @@ fn apply_codama_attribute(input: ApplyAttributeInput) -> CodamaResult<Option<Nod
         CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, input),
         CodamaDirective::FixedSize(directive) => apply_fixed_size_directive(directive, input),
         CodamaDirective::SizePrefix(directive) => apply_size_prefix_directive(directive, input),
+        _ => Ok(input.node),
     }
 }
 

@@ -1,0 +1,11 @@
+error: name is missing
+ --> tests/codama_attribute/attribute_directive/name_missing.fail.rs:3:10
+  |
+3 | #[codama(account)]
+  |          ^^^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/attribute_directive/name_missing.fail.rs:6:10
+  |
+6 | #[codama(account(signer, writable))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^
