@@ -245,8 +245,14 @@ impl syn::parse::Parse for PathList {
     }
 }
 
-/// Parse a path without segment arguments and allowing any reserved keyword.
+/// Parse a path without segment arguments and allowing any reserved keyword
+/// except `true` and `false` on the first segment.
 fn parse_meta_path(input: syn::parse::ParseStream) -> syn::Result<Path> {
+    let fork = input.fork();
+    let ident = syn::Ident::parse_any(&fork)?;
+    if ident == "true" || ident == "false" {
+        return Err(ident.error("unexpected reserved keyword"));
+    }
     Ok(Path {
         leading_colon: input.parse()?,
         segments: {
@@ -369,6 +375,17 @@ mod tests {
         assert!(meta.path.is_strict("foo"));
         let expr = meta.value.as_expr().unwrap();
         assert_eq!(expr.as_literal_integer::<usize>().unwrap(), 42);
+    }
+
+    #[test]
+    fn parse_path_value_with_boolean() {
+        let meta: Meta = meta! { foo = true };
+        let Meta::PathValue(meta) = meta else {
+            panic!("expected Meta::PathValue");
+        };
+        assert!(meta.path.is_strict("foo"));
+        let expr = meta.value.as_expr().unwrap();
+        assert_eq!(expr.as_literal_bool().unwrap(), true);
     }
 
     #[test]

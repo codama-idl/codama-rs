@@ -32,6 +32,18 @@ pub trait ExprExtension {
         }
     }
 
+    /// Returns the boolean value of the expression if it is a literal bool.
+    fn as_literal_bool(&self) -> syn::Result<bool> {
+        let this = self.get_self();
+        match this {
+            Expr::Lit(ExprLit {
+                lit: syn::Lit::Bool(value),
+                ..
+            }) => Ok(value.value()),
+            _ => Err(this.error("expected a literal boolean")),
+        }
+    }
+
     /// Returns the path of the expression if it is a path.
     fn as_path(&self) -> syn::Result<&syn::Path> {
         let this = self.get_self();
