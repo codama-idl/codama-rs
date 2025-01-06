@@ -4,8 +4,8 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for FixedSizeTypeNode<TypeNode> {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let mut r#type: SetOnce<TypeNode> = SetOnce::<TypeNode>::new("type");
-        let mut size: SetOnce<usize> = SetOnce::<usize>::new("size");
+        let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
+        let mut size: SetOnce<usize> = SetOnce::new("size");
         meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("type", _) => {

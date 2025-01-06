@@ -5,7 +5,7 @@ use syn::{Expr, ExprPath};
 
 impl FromMeta for StringTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let mut encoding: SetOnce<BytesEncoding> = SetOnce::<BytesEncoding>::new("encoding");
+        let mut encoding: SetOnce<BytesEncoding> = SetOnce::new("encoding");
         if meta.is_path_or_empty_list() {
             return Ok(StringTypeNode::utf8().into());
         }

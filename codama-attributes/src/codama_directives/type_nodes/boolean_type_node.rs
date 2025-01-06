@@ -4,7 +4,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let mut size: SetOnce<TypeNode> = SetOnce::<TypeNode>::new("size");
+        let mut size: SetOnce<TypeNode> = SetOnce::new("size");
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default().into());
         }

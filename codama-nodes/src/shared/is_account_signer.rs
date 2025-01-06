@@ -1,17 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
 pub enum IsAccountSigner {
-    True,
+    #[default]
     False,
+    True,
     Either,
 }
 
 impl From<bool> for IsAccountSigner {
     fn from(value: bool) -> Self {
         match value {
-            true => Self::True,
             false => Self::False,
+            true => Self::True,
         }
     }
 }
@@ -22,8 +23,8 @@ impl Serialize for IsAccountSigner {
         S: serde::Serializer,
     {
         match self {
-            IsAccountSigner::True => serializer.serialize_bool(true),
             IsAccountSigner::False => serializer.serialize_bool(false),
+            IsAccountSigner::True => serializer.serialize_bool(true),
             IsAccountSigner::Either => serializer.serialize_str("either"),
         }
     }

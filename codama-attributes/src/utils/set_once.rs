@@ -30,11 +30,11 @@ impl<T> SetOnce<T> {
         Ok(())
     }
 
-    // pub fn option(&self) -> &Option<T> {
-    //     &self.value
+    // pub fn option(self) -> Option<T> {
+    //     self.value
     // }
 
-    pub fn take<U: ToTokens>(&mut self, tokens: U) -> syn::Result<T> {
+    pub fn take<U: ToTokens>(mut self, tokens: U) -> syn::Result<T> {
         match self.value.take() {
             Some(value) => Ok(value),
             None => Err(tokens.error(format!("{} is missing", self.ident))),
