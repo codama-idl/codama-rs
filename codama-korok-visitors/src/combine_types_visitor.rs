@@ -50,9 +50,6 @@ impl CombineTypesVisitor {
             ..Self::default()
         }
     }
-}
-
-impl CombineTypesVisitor {
     pub fn get_default_enum_variant(
         variant: &EnumVariantKorok,
     ) -> Option<CodamaResult<EnumVariantTypeNode>> {

@@ -1,4 +1,7 @@
-use crate::{CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, TypeNode};
+use crate::{
+    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, StructFieldTypeNode,
+    StructTypeNode, TypeNode,
+};
 use codama_nodes_derive::node;
 
 #[node]
@@ -30,6 +33,27 @@ impl InstructionArgumentNode {
             r#type: r#type.into(),
             default_value: None,
         }
+    }
+}
+
+impl From<StructFieldTypeNode> for InstructionArgumentNode {
+    fn from(value: StructFieldTypeNode) -> Self {
+        Self {
+            name: value.name,
+            default_value_strategy: value.default_value_strategy,
+            docs: value.docs,
+            r#type: value.r#type,
+            default_value: value.default_value.map(InstructionInputValueNode::from),
+        }
+    }
+}
+
+impl Into<Vec<InstructionArgumentNode>> for StructTypeNode {
+    fn into(self) -> Vec<InstructionArgumentNode> {
+        self.fields
+            .into_iter()
+            .map(InstructionArgumentNode::from)
+            .collect()
     }
 }
 

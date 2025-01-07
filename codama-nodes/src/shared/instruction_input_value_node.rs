@@ -3,7 +3,7 @@ use crate::{
     BytesValueNode, ConditionalValueNode, ConstantValueNode, EnumValueNode, IdentityValueNode,
     MapValueNode, NoneValueNode, NumberValueNode, PayerValueNode, PdaValueNode, ProgramIdValueNode,
     ProgramLinkNode, PublicKeyValueNode, ResolverValueNode, SetValueNode, SomeValueNode,
-    StringValueNode, StructValueNode, TupleValueNode,
+    StringValueNode, StructValueNode, TupleValueNode, ValueNode,
 };
 use codama_nodes_derive::node_union;
 
@@ -38,4 +38,25 @@ pub enum InstructionInputValueNode {
 
     // LinkNodes.
     ProgramLink(ProgramLinkNode),
+}
+
+impl From<ValueNode> for InstructionInputValueNode {
+    fn from(value: ValueNode) -> Self {
+        match value {
+            ValueNode::Array(value) => Self::Array(value),
+            ValueNode::Boolean(value) => Self::Boolean(value),
+            ValueNode::Bytes(value) => Self::Bytes(value),
+            ValueNode::Constant(value) => Self::Constant(value),
+            ValueNode::Enum(value) => Self::Enum(value),
+            ValueNode::Map(value) => Self::Map(value),
+            ValueNode::None(value) => Self::None(value),
+            ValueNode::Number(value) => Self::Number(value),
+            ValueNode::PublicKey(value) => Self::PublicKey(value),
+            ValueNode::Set(value) => Self::Set(value),
+            ValueNode::Some(value) => Self::Some(value),
+            ValueNode::String(value) => Self::String(value),
+            ValueNode::Struct(value) => Self::Struct(value),
+            ValueNode::Tuple(value) => Self::Tuple(value),
+        }
+    }
 }
