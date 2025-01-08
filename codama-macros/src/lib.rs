@@ -13,8 +13,22 @@ pub fn codama_account_derive(input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[proc_macro_derive(CodamaAccounts, attributes(codama))]
+pub fn codama_accounts_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input.into())
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
 #[proc_macro_derive(CodamaInstruction, attributes(codama))]
 pub fn codama_instruction_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input.into())
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+#[proc_macro_derive(CodamaInstructions, attributes(codama))]
+pub fn codama_instructions_derive(input: TokenStream) -> TokenStream {
     codama_derive(input.into())
         .unwrap_or_else(CodamaError::into_compile_error)
         .into()
