@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountNode, DefinedTypeNode, FixedSizeTypeNode, NumberFormat::U64, NumberTypeNode,
-    PublicKeyTypeNode, StringValueNode, StructFieldTypeNode, StructTypeNode,
+    AccountNode, BooleanTypeNode, NumberFormat::U64, NumberTypeNode, PublicKeyTypeNode,
+    StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -39,42 +39,6 @@ fn from_struct() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct_not_a_type_node() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaAccount)]
-        struct Token;
-    };
-    let mut korok = StructKorok::parse(&item)?;
-    korok.node = Some(StringValueNode::new("Not a `DefinedTypeNode`").into());
-
-    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert_eq!(
-        error.to_string(),
-        "The \"Token\" struct could not be used as an Account because its type is not defined."
-    );
-    Ok(())
-}
-
-#[test]
-fn from_struct_not_a_nested_struct_type_node() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaAccount)]
-        struct Token;
-    };
-    let mut korok = StructKorok::parse(&item)?;
-    korok.node = Some(
-        DefinedTypeNode::new("token", FixedSizeTypeNode::new(NumberTypeNode::le(U64), 42)).into(),
-    );
-
-    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert_eq!(
-        error.to_string(),
-        "The \"Token\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`."
-    );
-    Ok(())
-}
-
-#[test]
 fn from_enum() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
@@ -87,9 +51,22 @@ fn from_enum() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
-    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert_eq!(
-        error.to_string(),"The \"Membership\" enum could not be used as an Account because only structs are currently accepted."
-    );
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(korok.node, None);
+    // No visitor error because there is already is a compilation error.
+    Ok(())
+}
+
+#[test]
+fn no_overrides() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        struct Token;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.node = Some(BooleanTypeNode::default().into());
+
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }

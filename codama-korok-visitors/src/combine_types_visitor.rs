@@ -53,16 +53,11 @@ impl CombineTypesVisitor {
     pub fn get_default_enum_variant(
         variant: &EnumVariantKorok,
     ) -> Option<CodamaResult<EnumVariantTypeNode>> {
-        match &variant.node {
-            Some(Node::Type(RegisteredTypeNode::EnumEmptyVariant(node))) => {
-                Some(Ok(EnumVariantTypeNode::Empty(node.clone())))
-            }
-            Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(node))) => {
-                Some(Ok(EnumVariantTypeNode::Tuple(node.clone())))
-            }
-            Some(Node::Type(RegisteredTypeNode::EnumStructVariant(node))) => {
-                Some(Ok(EnumVariantTypeNode::Struct(node.clone())))
-            }
+        let Some(node) = &variant.node else {
+            return None;
+        };
+        match EnumVariantTypeNode::try_from(node.clone()) {
+            Ok(enum_variant_type_node) => Some(Ok(enum_variant_type_node)),
             _ => None,
         }
     }

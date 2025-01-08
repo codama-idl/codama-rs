@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeNode, FixedSizeTypeNode, InstructionAccountNode,
-    InstructionArgumentNode, InstructionNode, NumberFormat::U64, NumberTypeNode, StringValueNode,
+    BooleanTypeNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    NumberFormat::U64, NumberTypeNode,
 };
 
 #[test]
@@ -147,50 +147,6 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct_not_a_type_node() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaInstruction)]
-        struct Initialize;
-    };
-    let mut korok = StructKorok::parse(&item)?;
-    korok.node = Some(StringValueNode::new("Not a `DefinedTypeNode`").into());
-
-    let error = korok
-        .accept(&mut SetInstructionsVisitor::new())
-        .unwrap_err();
-    assert_eq!(
-        error.to_string(),
-        "The \"Initialize\" struct could not be used as an Instruction because its type is not defined."
-    );
-    Ok(())
-}
-
-#[test]
-fn from_struct_not_a_struct_type_node() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaInstruction)]
-        struct Initialize;
-    };
-    let mut korok = StructKorok::parse(&item)?;
-    korok.node = Some(
-        DefinedTypeNode::new(
-            "initialize",
-            FixedSizeTypeNode::new(NumberTypeNode::le(U64), 42),
-        )
-        .into(),
-    );
-
-    let error = korok
-        .accept(&mut SetInstructionsVisitor::new())
-        .unwrap_err();
-    assert_eq!(
-        error.to_string(),
-        "The \"Initialize\" struct could not be used as an Instruction because its type is not a `StructTypeNode`."
-    );
-    Ok(())
-}
-
-#[test]
 fn from_enum() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
@@ -204,11 +160,22 @@ fn from_enum() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
-    let error = korok
-        .accept(&mut SetInstructionsVisitor::new())
-        .unwrap_err();
-    assert_eq!(
-        error.to_string(),"The \"MyInstructions\" enum could not be used as an Instruction because the `CodamaInstruction` derive can only be used on structs. Did you mean to use `CodamaInstructions` instead?"
-    );
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(korok.node, None);
+    // No visitor error because there is already is a compilation error.
+    Ok(())
+}
+
+#[test]
+fn no_overrides() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        struct Initialize;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.node = Some(BooleanTypeNode::default().into());
+
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }
