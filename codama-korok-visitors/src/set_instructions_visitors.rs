@@ -115,7 +115,7 @@ impl KorokVisitor for SetInstructionsVisitor {
             return Err(korok
                 .ast
                 .error(format!(
-                    "The \"{}\" enum could not be used as an Instruction because only structs are currently accepted. Did you mean to use `CodamaInstructions` instead?",
+                    "The \"{}\" enum could not be used as an Instruction because the `CodamaInstruction` derive can only be used on structs. Did you mean to use `CodamaInstructions` instead?",
                     korok.ast.ident.to_string(),
                 ))
                 .into());

@@ -7,7 +7,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_sets_an_account_node_from_a_struct() -> CodamaResult<()> {
+fn from_struct() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token {
@@ -39,7 +39,7 @@ fn it_sets_an_account_node_from_a_struct() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_if_the_struct_node_is_not_a_type_node() -> CodamaResult<()> {
+fn from_struct_not_a_type_node() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token;
@@ -56,7 +56,7 @@ fn it_fails_if_the_struct_node_is_not_a_type_node() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_if_struct_node_is_not_a_nested_struct_type_node() -> CodamaResult<()> {
+fn from_struct_not_a_nested_struct_type_node() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         struct Token;
@@ -75,7 +75,7 @@ fn it_fails_if_struct_node_is_not_a_nested_struct_type_node() -> CodamaResult<()
 }
 
 #[test]
-fn it_throws_an_error_on_enum_koroks() -> CodamaResult<()> {
+fn from_enum() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
         enum Membership {
