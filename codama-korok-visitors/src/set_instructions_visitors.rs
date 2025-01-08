@@ -3,13 +3,16 @@ use codama_attributes::{Attribute, Attributes, CodamaAttribute};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldsKorok;
 use codama_nodes::{
-    EnumVariantTypeNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NestedTypeNode, Node, ProgramNode, TypeNode,
+    DefaultValueStrategy, Docs, EnumVariantTypeNode, FieldDiscriminatorNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
+    NumberFormat::U8, NumberTypeNode, NumberValueNode, ProgramNode, TypeNode,
 };
-use codama_syn_helpers::extensions::ToTokensExtension;
+use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
 pub struct SetInstructionsVisitor {
     combine_types: CombineTypesVisitor,
+    enum_name: Option<String>,
+    enum_current_discriminator: usize,
 }
 
 impl Default for SetInstructionsVisitor {
@@ -25,6 +28,8 @@ impl Default for SetInstructionsVisitor {
                 },
                 ..CombineTypesVisitor::strict()
             },
+            enum_name: None,
+            enum_current_discriminator: 0,
         }
     }
 }
@@ -99,7 +104,11 @@ impl KorokVisitor for SetInstructionsVisitor {
         };
 
         // Transform each variant into an `InstructionNode`.
+        self.enum_name = Some(korok.ast.ident.to_string());
+        self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
+        self.enum_name = None;
+        self.enum_current_discriminator = 0;
 
         // Gather all instructions in a `ProgramNode`.
         let instructions = korok
@@ -126,6 +135,13 @@ impl KorokVisitor for SetInstructionsVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
+        // Update current discriminator.
+        let current_discriminator = self.enum_current_discriminator;
+        self.enum_current_discriminator = match &korok.ast.discriminant {
+            Some((_, expr)) => expr.as_literal_integer()?,
+            _ => current_discriminator + 1,
+        };
+
         // No overrides.
         if korok.node.is_some() {
             return Ok(());
@@ -134,43 +150,53 @@ impl KorokVisitor for SetInstructionsVisitor {
         // Create a `EnumVariantNode` from the variant, if it doesn't already exist.
         self.combine_types.visit_enum_variant(korok)?;
 
+        // Prepare the error message for wrong node types.
+        let node_error_prefix = match &self.enum_name {
+            Some(name) => format!(
+                "The \"{}\" variant of the \"{}\" enum",
+                korok.ast.ident, name
+            ),
+            None => format!("The \"{}\" variant", korok.ast.ident),
+        };
+        let node_error = korok.ast.error(format!(
+            "{} could not be used as an Instruction because we cannot get a `StructTypeNode` for it. This is likely because it is not using nammed fields.",
+            node_error_prefix
+        ));
+
         // Ensure we have a `Node`.
         let Some(node) = &korok.node else {
-            return Err(korok
-                .ast
-                .error(format!("The \"{}\" TODO.", korok.ast.ident.to_string(),))
-                .into());
+            return Err(node_error.into());
         };
 
         // Ensure we have a `EnumStructVariantTypeNode`.
         let Ok(EnumVariantTypeNode::Struct(node)) = EnumVariantTypeNode::try_from(node.clone())
         else {
-            return Err(korok
-                .ast
-                .error(format!("The \"{}\" TODO.", korok.ast.ident.to_string(),))
-                .into());
+            return Err(node_error.into());
         };
 
         // Ensure we have a non-nested `StructTypeNode`.
         let NestedTypeNode::Value(data) = node.r#struct else {
-            return Err(korok
-                .ast
-                .error(format!("The \"{}\" TODO.", korok.ast.ident.to_string(),))
-                .into());
+            return Err(node_error.into());
         };
 
-        let arguments: Vec<InstructionArgumentNode> = data.into();
-        // TODO: set discriminator.
-        // We need to keep track of the current discriminator index on the visitor and reset it when visiting a new enum.
-        // We need to either increment it if no explicit discriminator exist on the variant, or set it to the explicit discriminator.
-        // Then we can `.insert(0)` that discriminator into the arguments and set a `FieldDiscriminatorNode` on the instruction.
-        // Right now, we'll call that field `discriminator` but we should offer a directive to customize it.
+        let mut arguments: Vec<InstructionArgumentNode> = data.into();
+        let discriminator_name = "discriminator".to_string(); // TODO: Offer a directive to customize this.
+        let discriminator = InstructionArgumentNode {
+            name: discriminator_name.clone().into(),
+            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+            docs: Docs::default(),
+            r#type: NumberTypeNode::le(U8).into(), // TODO: Get from enum type instead of assuming `u8`.
+            default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
+        };
+        arguments.insert(0, discriminator);
+        let discriminator_node = FieldDiscriminatorNode::new(discriminator_name, 0);
 
         korok.node = Some(
             InstructionNode {
                 name: korok.ast.ident.to_string().into(),
                 accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments,
+                discriminators: vec![discriminator_node.into()],
                 ..InstructionNode::default()
             }
             .into(),
