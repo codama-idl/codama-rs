@@ -1,4 +1,4 @@
-use codama_nodes::{CamelCaseString, IsAccountSigner};
+use codama_nodes::{CamelCaseString, Docs, InstructionAccountNode, IsAccountSigner};
 use codama_syn_helpers::{extensions::*, Meta};
 
 use crate::{
@@ -12,6 +12,7 @@ pub struct AccountDirective {
     pub is_writable: bool,
     pub is_signer: IsAccountSigner,
     pub is_optional: bool,
+    // TODO: `docs` for account directives not attached to fields.
 }
 
 impl AccountDirective {
@@ -45,6 +46,19 @@ impl AccountDirective {
             is_signer: is_signer.take(meta)?,
             is_optional: is_optional.take(meta)?,
         })
+    }
+}
+
+impl From<&AccountDirective> for InstructionAccountNode {
+    fn from(value: &AccountDirective) -> Self {
+        Self {
+            name: value.name.clone(),
+            is_writable: value.is_writable,
+            is_signer: value.is_signer,
+            is_optional: value.is_optional,
+            docs: Docs::default(),
+            default_value: None,
+        }
     }
 }
 

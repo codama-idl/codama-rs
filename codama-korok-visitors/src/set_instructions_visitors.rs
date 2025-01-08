@@ -1,7 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::CodamaDirective;
 use codama_errors::CodamaResult;
-use codama_nodes::{Docs, InstructionAccountNode, InstructionNode, Node, TypeNode};
+use codama_nodes::{InstructionAccountNode, InstructionNode, Node, TypeNode};
 use codama_syn_helpers::extensions::ToTokensExtension;
 
 pub struct SetInstructionsVisitor {
@@ -63,8 +63,19 @@ impl KorokVisitor for SetInstructionsVisitor {
                 .into());
         };
 
+        // Gather the accounts from the struct attributes.
+        let accounts_from_struct_attributes = korok
+            .attributes
+            .get_codama_attributes()
+            .iter()
+            .filter_map(|attr| match &attr.directive {
+                CodamaDirective::Account(a) => Some(InstructionAccountNode::from(a)),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
         // Gather the accounts from the fields.
-        let accounts = korok
+        let accounts_from_fields = korok
             .fields
             .all
             .iter()
@@ -79,17 +90,16 @@ impl KorokVisitor for SetInstructionsVisitor {
                     })
                     .last();
                 match account_attribute {
-                    Some(a) => Some(InstructionAccountNode {
-                        name: a.name.clone(),
-                        is_writable: a.is_writable,
-                        is_signer: a.is_signer,
-                        is_optional: a.is_optional,
-                        docs: Docs::default(), // TODO
-                        default_value: None,
-                    }),
+                    Some(a) => Some(InstructionAccountNode::from(a)),
                     _ => None,
                 }
             })
+            .collect::<Vec<_>>();
+
+        // Concatenate the accounts.
+        let accounts = accounts_from_struct_attributes
+            .into_iter()
+            .chain(accounts_from_fields.into_iter())
             .collect::<Vec<_>>();
 
         // Transform the defined type into an account node.
