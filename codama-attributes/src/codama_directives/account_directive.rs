@@ -1,10 +1,9 @@
-use codama_nodes::{CamelCaseString, Docs, InstructionAccountNode, IsAccountSigner};
-use codama_syn_helpers::{extensions::*, Meta};
-
 use crate::{
     utils::{FromMeta, SetOnce},
     AttributeContext,
 };
+use codama_nodes::{CamelCaseString, Docs, InstructionAccountNode, IsAccountSigner};
+use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct AccountDirective {

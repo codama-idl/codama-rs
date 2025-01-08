@@ -1,4 +1,4 @@
-use crate::{Attribute, AttributeContext, CodamaAttribute, CodamaDirective};
+use crate::{Attribute, AttributeContext, CodamaDirective};
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
@@ -73,23 +73,10 @@ impl<'a> Attributes<'a> {
         })
     }
 
-    pub fn has_any_codama_attribute(&self) -> bool {
-        self.get_codama_attributes().len() > 0
-    }
-
     pub fn has_codama_attribute(&self, name: &str) -> bool {
-        self.get_codama_attributes()
-            .into_iter()
-            .any(|a| a.directive.name() == name)
-    }
-
-    pub fn get_codama_attributes(&self) -> Vec<&CodamaAttribute<'a>> {
         self.iter()
-            .filter_map(|attr| match attr {
-                Attribute::Codama(a) => Some(a),
-                _ => None,
-            })
-            .collect()
+            .filter_map(Attribute::codama)
+            .any(|a| a.directive.name() == name)
     }
 }
 

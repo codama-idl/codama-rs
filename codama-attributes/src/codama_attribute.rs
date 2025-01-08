@@ -1,4 +1,4 @@
-use crate::{utils::SetOnce, AttributeContext, CodamaDirective};
+use crate::{utils::SetOnce, AccountDirective, AttributeContext, CodamaDirective};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -25,6 +25,13 @@ impl<'a> CodamaAttribute<'a> {
             ast,
             directive: directive.take(attr)?,
         })
+    }
+
+    pub fn account(&self) -> Option<&AccountDirective> {
+        match &self.directive {
+            CodamaDirective::Account(a) => Some(a),
+            _ => None,
+        }
     }
 }
 

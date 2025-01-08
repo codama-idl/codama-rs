@@ -23,4 +23,11 @@ impl<'a> Attribute<'a> {
             _ => Ok(UnsupportedAttribute::new(attr).into()),
         }
     }
+
+    pub fn codama(&self) -> Option<&CodamaAttribute<'a>> {
+        match self {
+            Attribute::Codama(a) => Some(a),
+            _ => None,
+        }
+    }
 }

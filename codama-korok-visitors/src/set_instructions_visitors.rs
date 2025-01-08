@@ -1,6 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::CodamaDirective;
+use codama_attributes::{Attribute, Attributes, CodamaAttribute};
 use codama_errors::CodamaResult;
+use codama_koroks::FieldsKorok;
 use codama_nodes::{InstructionAccountNode, InstructionNode, Node, TypeNode};
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -63,51 +64,12 @@ impl KorokVisitor for SetInstructionsVisitor {
                 .into());
         };
 
-        // Gather the accounts from the struct attributes.
-        let accounts_from_struct_attributes = korok
-            .attributes
-            .get_codama_attributes()
-            .iter()
-            .filter_map(|attr| match &attr.directive {
-                CodamaDirective::Account(a) => Some(InstructionAccountNode::from(a)),
-                _ => None,
-            })
-            .collect::<Vec<_>>();
-
-        // Gather the accounts from the fields.
-        let accounts_from_fields = korok
-            .fields
-            .all
-            .iter()
-            .filter_map(|field| {
-                let account_attribute = field
-                    .attributes
-                    .get_codama_attributes()
-                    .iter()
-                    .filter_map(|attr| match &attr.directive {
-                        CodamaDirective::Account(a) => Some(a),
-                        _ => None,
-                    })
-                    .last();
-                match account_attribute {
-                    Some(a) => Some(InstructionAccountNode::from(a)),
-                    _ => None,
-                }
-            })
-            .collect::<Vec<_>>();
-
-        // Concatenate the accounts.
-        let accounts = accounts_from_struct_attributes
-            .into_iter()
-            .chain(accounts_from_fields.into_iter())
-            .collect::<Vec<_>>();
-
         // Transform the defined type into an account node.
         korok.node = Some(
             InstructionNode {
                 name: defined_type.name.clone(),
                 docs: defined_type.docs.clone(),
-                accounts,
+                accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments: data.into(),
                 ..InstructionNode::default()
             }
@@ -134,4 +96,41 @@ impl KorokVisitor for SetInstructionsVisitor {
         // TODO: Implement `CodamaInstructions`.
         Ok(())
     }
+}
+
+fn get_instruction_account_nodes(
+    attributes: &Attributes,
+    fields: &FieldsKorok,
+) -> Vec<InstructionAccountNode> {
+    // Gather the accounts from the struct attributes.
+    let accounts_from_struct_attributes = attributes
+        .iter()
+        .filter_map(Attribute::codama)
+        .filter_map(CodamaAttribute::account)
+        .map(InstructionAccountNode::from)
+        .collect::<Vec<_>>();
+
+    // Gather the accounts from the fields.
+    let accounts_from_fields = fields
+        .all
+        .iter()
+        .filter_map(|field| {
+            let account_attribute = field
+                .attributes
+                .iter()
+                .filter_map(Attribute::codama)
+                .filter_map(CodamaAttribute::account)
+                .last();
+            match account_attribute {
+                Some(a) => Some(InstructionAccountNode::from(a)),
+                _ => None,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    // Concatenate the accounts.
+    accounts_from_struct_attributes
+        .into_iter()
+        .chain(accounts_from_fields.into_iter())
+        .collect::<Vec<_>>()
 }
