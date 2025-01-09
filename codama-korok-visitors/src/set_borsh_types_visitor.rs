@@ -2,8 +2,8 @@ use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, NumberFormat::*, NumberTypeNode,
-    PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode, StringTypeNode,
-    TypeNode,
+    OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode,
+    StringTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -68,6 +68,9 @@ impl SetBorshTypesVisitor {
                         SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
                             .into(),
                     ),
+                    ("" | "std::option", "Option", [t]) => self
+                        .get_type_node(t)
+                        .map(|item| OptionTypeNode::new(item).into()),
                     ("" | "std::vec", "Vec", [t]) => self.get_type_node(t).map(|item| {
                         ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
                             .into()

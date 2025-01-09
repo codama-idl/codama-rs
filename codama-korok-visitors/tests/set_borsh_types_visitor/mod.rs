@@ -8,6 +8,7 @@ mod field_korok;
 mod map_type_node;
 mod no_override;
 mod number_type_node;
+mod option_type_node;
 mod public_key_type_node;
 mod set_type_node;
 mod string_type_node;
