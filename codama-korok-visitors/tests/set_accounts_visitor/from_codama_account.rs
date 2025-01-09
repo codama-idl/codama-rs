@@ -39,6 +39,24 @@ fn from_struct() -> CodamaResult<()> {
 }
 
 #[test]
+fn from_empty_struct() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        struct Token;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(AccountNode::new("token", StructTypeNode::new(vec![])).into())
+    );
+    Ok(())
+}
+
+#[test]
 fn from_enum() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
