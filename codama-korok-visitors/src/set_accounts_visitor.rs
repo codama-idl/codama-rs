@@ -1,6 +1,6 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
-use codama_nodes::{AccountNode, NestedTypeNode, Node, StructTypeNode};
+use codama_nodes::{AccountNode, Docs, NestedTypeNode, Node, StructTypeNode};
 use codama_syn_helpers::extensions::ToTokensExtension;
 
 pub struct SetAccountsVisitor {
@@ -36,35 +36,13 @@ impl KorokVisitor for SetAccountsVisitor {
         // Create a `DefinedTypeNode` from the struct, if it doesn't already exist.
         self.combine_types.visit_struct(korok)?;
 
-        // Ensure we have a `DefinedTypeNode` to work with.
-        let Some(Node::DefinedType(defined_type)) = &korok.node else {
-            return Err(korok
-                .ast
-                .error(format!(
-                    "The \"{}\" struct could not be used as an Account because its type is not defined.",
-                    korok.ast.ident.to_string(),
-                ))
-                .into());
-        };
-
-        // Ensure the data type is a struct.
-        let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from(defined_type.r#type.clone())
-        else {
-            return Err(korok
-                .ast
-                .error(format!(
-                    "The \"{}\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`.",
-                    korok.ast.ident.to_string(),
-                ))
-                .into());
-        };
-
         // Transform the defined type into an account node.
+        let data = get_nested_struct_type_node_from_struct(korok)?;
         korok.node = Some(
             AccountNode {
-                name: defined_type.name.clone(),
+                name: korok.ast.ident.to_string().into(),
                 size: None,
-                docs: defined_type.docs.clone(),
+                docs: Docs::default(),
                 data,
                 pda: None,
                 discriminators: vec![],
@@ -81,8 +59,32 @@ impl KorokVisitor for SetAccountsVisitor {
             return Ok(());
         };
 
+        // Ensure the struct has the `CodamaAccounts` attribute.
+        if !korok.attributes.has_codama_derive("CodamaAccounts") {
+            return Ok(());
+        };
+
         // TODO: Implements `CodamaAccounts` derive.
 
         Ok(())
     }
+}
+
+fn get_nested_struct_type_node_from_struct(
+    korok: &codama_koroks::StructKorok,
+) -> CodamaResult<NestedTypeNode<StructTypeNode>> {
+    // Ensure we have a `DefinedTypeNode` to work with.
+    if let Some(Node::DefinedType(node)) = &korok.node {
+        // Ensure the data type is a struct.
+        if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from(node.r#type.clone()) {
+            return Ok(data);
+        };
+    };
+
+    // Handle error.
+    let message = format!(
+        "The \"{}\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`.",
+        korok.ast.ident.to_string(),
+    );
+    Err(korok.ast.error(message).into())
 }
