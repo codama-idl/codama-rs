@@ -81,6 +81,9 @@ impl KorokVisitor for SetInstructionsVisitor {
             return Ok(());
         };
 
+        // Create a `DefinedTypeNode` from the enum.
+        self.combine_types.visit_enum(korok)?;
+
         // Transform each variant into an `InstructionNode`.
         self.enum_name = Some(korok.ast.ident.to_string());
         self.enum_current_discriminator = 0;
@@ -119,14 +122,6 @@ impl KorokVisitor for SetInstructionsVisitor {
             Some((_, expr)) => expr.as_literal_integer()?,
             _ => current_discriminator + 1,
         };
-
-        // No overrides.
-        if korok.node.is_some() {
-            return Ok(());
-        };
-
-        // Create a `EnumVariantNode` from the variant, if it doesn't already exist.
-        self.combine_types.visit_enum_variant(korok)?;
 
         let data = get_struct_type_node_from_enum_variant(korok, &self.enum_name)?;
         let mut arguments: Vec<InstructionArgumentNode> = data.into();
@@ -218,12 +213,19 @@ fn get_struct_type_node_from_enum_variant(
 ) -> CodamaResult<StructTypeNode> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
-        // Ensure we have a `EnumStructVariantTypeNode`.
-        if let Ok(EnumVariantTypeNode::Struct(node)) = EnumVariantTypeNode::try_from(node.clone()) {
-            // Ensure we have a non-nested `StructTypeNode`.
-            if let NestedTypeNode::Value(data) = node.r#struct {
-                return Ok(data);
-            };
+        // Ensure we have a `EnumVariantTypeNode`.
+        if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
+            match node {
+                // Ensure we have a non-nested `StructTypeNode`.
+                EnumVariantTypeNode::Struct(node) => {
+                    if let NestedTypeNode::Value(data) = node.r#struct {
+                        return Ok(data);
+                    };
+                }
+                // Or an empty variant.
+                EnumVariantTypeNode::Empty(_) => return Ok(StructTypeNode::new(vec![])),
+                _ => {}
+            }
         };
     };
 
