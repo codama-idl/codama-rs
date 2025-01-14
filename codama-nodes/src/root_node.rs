@@ -2,11 +2,25 @@ use crate::ProgramNode;
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Default)]
 pub struct RootNode {
+    // Data.
+    standard: String,
+    pub version: String,
+
     // Children.
     pub program: ProgramNode,
     pub additional_programs: Vec<ProgramNode>,
+}
+
+impl Default for RootNode {
+    fn default() -> Self {
+        Self {
+            standard: "codama".into(),
+            version: "1.0.0".into(), // TODO: Get this from Cargo.toml.
+            program: Default::default(),
+            additional_programs: Default::default(),
+        }
+    }
 }
 
 impl RootNode {
@@ -69,6 +83,8 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = RootNode {
+            standard: "codama".into(),
+            version: "1.0.0".into(),
             program: ProgramNode::new("myProgram", "1111"),
             additional_programs: vec![
                 ProgramNode::new("myProgramDependencyA", "2222"),
@@ -96,13 +112,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"rootNode","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#
+            r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"rootNode","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#;
+        let json = r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#;
         let node: RootNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
