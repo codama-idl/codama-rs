@@ -47,10 +47,14 @@ mod tests {
     #[test]
     fn single_generic_type_from_path_ok() {
         let r#type: Type = syn::parse_quote! { std::option::Option<String> };
-        assert!(r#type.single_generic_type_from_path("std::option::Option").is_ok());
+        assert!(r#type
+            .single_generic_type_from_path("std::option::Option")
+            .is_ok());
 
         let r#type: Type = syn::parse_quote! { Option<String> };
-        assert!(r#type.single_generic_type_from_path("std::option::Option").is_ok());
+        assert!(r#type
+            .single_generic_type_from_path("std::option::Option")
+            .is_ok());
         assert!(r#type.single_generic_type_from_path("Option").is_ok());
     }
 
@@ -61,7 +65,9 @@ mod tests {
 
         let r#type: Type = syn::parse_quote! { std::option::Option<String> };
         assert!(r#type.single_generic_type_from_path("Option").is_err());
-        assert!(r#type.single_generic_type_from_path("wrong::prefix::Option").is_err());
+        assert!(r#type
+            .single_generic_type_from_path("wrong::prefix::Option")
+            .is_err());
 
         let r#type: Type = syn::parse_quote! { Option<String, u32> };
         assert!(r#type.single_generic_type_from_path("Option").is_err());
