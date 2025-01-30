@@ -7,7 +7,7 @@ edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-errors = { version = "0.0.0", path = "../codama-errors" }
+codama-errors = { version = "0.1.0", path = "../codama-errors" }
 codama-nodes-derive = { version = "0.0.0", path = "derive" }
 derive_more = { version = "1.0", features = ["from"] }
 serde = { version = "1.0", features = ["derive"] }

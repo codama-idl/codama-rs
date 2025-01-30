@@ -11,7 +11,7 @@ codama-syn-helpers-test-macros = { version = "0.0.0", path = "./tests/test-macro
 trybuild = { version = "1.0.49", features = ["diff"] }
 
 [dependencies]
-codama-errors = { version = "0.0.0", path = "../codama-errors" }
+codama-errors = { version = "0.1.0", path = "../codama-errors" }
 derive_more = { version = "1.0", features = ["from"] }
 proc-macro2 = "1.0"
 quote = "1.0"
