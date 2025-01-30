@@ -58,7 +58,7 @@ jobs:
       - name: Cache Dependencies
         uses: ./.github/actions/cache
         with:
-          cargo-cache-key: publish-crate-${{ inputs.crate }}
+          cargo-cache-key: publish-crate-cache
 
       - name: Install Cargo Release
         run: which cargo-release || cargo install cargo-release
