@@ -59,7 +59,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          components: release
+          components: cargo-release
           
       - name: Ensure CARGO_REGISTRY_TOKEN variable is set
         env:
