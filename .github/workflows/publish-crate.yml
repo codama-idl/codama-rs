@@ -3,10 +3,23 @@ name: Publish Rust Crate
 on:
   workflow_dispatch:
     inputs:
-      crate_path:
-        description: Path to crate
+      crate:
+        description: Crate to publish
         required: true
-        type: string
+        default: workspace
+        type: choice
+        options:
+          - workspace
+          - codama
+          - codama-attributes
+          - codama-errors
+          - codama-korok-plugins
+          - codama-korok-visitors
+          - codama-koroks
+          - codama-macros
+          - codama-nodes
+          - codama-stores
+          - codama-syn-helpers
       level:
         description: Level
         required: true
@@ -30,11 +43,6 @@ on:
         required: true
         default: true
         type: boolean
-      create_release:
-        description: Create a GitHub release
-        required: true
-        type: boolean
-        default: true
 
 jobs:
 
@@ -81,6 +89,8 @@ jobs:
             OPTIONS="--execute"
           fi
 
-          cd ${{ inputs.crate_path }}
+          if [ "${{ inputs.crate }}" != "workspace" ]; then
+              cd ${{ inputs.crate }}
+          fi
 
           cargo release $LEVEL $OPTIONS
