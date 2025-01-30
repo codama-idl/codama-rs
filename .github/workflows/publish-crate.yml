@@ -89,9 +89,9 @@ jobs:
           fi
 
           if [ "${{ inputs.dry_run }}" == "true" ]; then
-            OPTIONS="--dry-run"
+            OPTIONS=""
           else
-            OPTIONS="--execute"
+            OPTIONS="--no-confirm --execute"
           fi
 
           if [ "${{ inputs.crate }}" != "workspace" ]; then
