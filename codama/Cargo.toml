@@ -7,11 +7,11 @@ edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-errors = { path = "../codama-errors" }
-codama-korok-plugins = { path = "../codama-korok-plugins" }
-codama-korok-visitors = { path = "../codama-korok-visitors" }
-codama-koroks = { path = "../codama-koroks" }
-codama-macros = { path = "../codama-macros" }
-codama-nodes = { path = "../codama-nodes" }
-codama-stores = { path = "../codama-stores" }
+codama-errors = { version = "0.0.0", path = "../codama-errors" }
+codama-korok-plugins = { version = "0.0.0", path = "../codama-korok-plugins" }
+codama-korok-visitors = { version = "0.0.0", path = "../codama-korok-visitors" }
+codama-koroks = { version = "0.0.0", path = "../codama-koroks" }
+codama-macros = { version = "0.0.0", path = "../codama-macros" }
+codama-nodes = { version = "0.0.0", path = "../codama-nodes" }
+codama-stores = { version = "0.0.0", path = "../codama-stores" }
 proc-macro2 = "1.0"
