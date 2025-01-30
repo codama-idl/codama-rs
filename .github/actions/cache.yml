@@ -1,0 +1,21 @@
+name: Cache dependencies
+
+inputs:
+  cargo-cache-key:
+    description: The key to cache cargo dependencies.
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache Cargo Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-${{ inputs.cargo-cache-key }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-${{ inputs.cargo-cache-key }}
