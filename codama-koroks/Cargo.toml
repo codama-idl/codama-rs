@@ -1,7 +1,10 @@
 [package]
 name = "codama-koroks"
+description = "Intermediate tree structure for collecting nodes"
 version = "0.1.0"
-edition = "2021"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
 
 [dev-dependencies]
 quote = "1.0"

@@ -1,7 +1,10 @@
 [package]
 name = "codama-nodes"
+description = "Node specifications and helpers for the Codama standard"
 version = "0.1.0"
-edition = "2021"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
 codama-errors = { path = "../codama-errors" }
