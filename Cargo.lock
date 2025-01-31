@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "codama-attributes"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
