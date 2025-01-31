@@ -9,6 +9,8 @@ pub trait KorokPlugin {
     ) -> CodamaResult<()>;
 }
 
+pub type ResolvePluginsResult<'a> = Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()> + 'a>;
+
 /// Reduce all plugins into a single function that runs them in sequence.
 ///
 /// For instance, imagine we have a list of plugins [A, B, C] implemented as:
@@ -40,9 +42,7 @@ pub trait KorokPlugin {
 /// Plugin B - after
 /// Plugin C - after
 /// ```
-pub fn resolve_plugins<'a>(
-    plugins: &'a [Box<dyn KorokPlugin + 'a>],
-) -> Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()> + 'a> {
+pub fn resolve_plugins<'a>(plugins: &'a [Box<dyn KorokPlugin + 'a>]) -> ResolvePluginsResult<'a> {
     // We fold from the left to ensure that any code before the
     // `next` call is run before the previous plugin on the list.
     plugins.iter().fold(
@@ -61,14 +61,14 @@ pub fn resolve_plugins<'a>(
 mod tests {
     use super::*;
     use codama_korok_visitors::KorokVisitor;
-    use std::{cell::RefCell, sync::Arc};
+    use std::{cell::RefCell, rc::Rc};
 
     struct LoggingPluging {
         id: String,
-        logs: Arc<RefCell<Vec<String>>>,
+        logs: Rc<RefCell<Vec<String>>>,
     }
     impl LoggingPluging {
-        fn new(id: &str, logs: Arc<RefCell<Vec<String>>>) -> Self {
+        fn new(id: &str, logs: Rc<RefCell<Vec<String>>>) -> Self {
             Self {
                 id: id.into(),
                 logs,
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_resolve_plugins() -> CodamaResult<()> {
-        let logs = Arc::new(RefCell::new(Vec::new()));
+        let logs = Rc::new(RefCell::new(Vec::new()));
         let plugins: Vec<Box<dyn KorokPlugin>> = vec![
             Box::new(LoggingPluging::new("A", logs.clone())),
             Box::new(LoggingPluging::new("B", logs.clone())),

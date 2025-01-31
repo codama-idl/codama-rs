@@ -126,7 +126,7 @@ impl KorokVisitor for SetAccountsVisitor {
             .map_nested_type_node(|node| {
                 let mut fields = node.fields;
                 fields.insert(0, discriminator);
-                StructTypeNode { fields, ..node }
+                StructTypeNode { fields }
             });
         let discriminator_node = FieldDiscriminatorNode::new(discriminator_name, 0);
 
@@ -160,7 +160,7 @@ fn get_nested_struct_type_node_from_struct(
     // Handle error.
     let message = format!(
         "The \"{}\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`.",
-        korok.ast.ident.to_string(),
+        korok.ast.ident,
     );
     Err(korok.ast.error(message).into())
 }

@@ -174,17 +174,14 @@ fn get_instruction_account_nodes(
                 .filter_map(Attribute::codama)
                 .filter_map(CodamaAttribute::account)
                 .last();
-            match account_attribute {
-                Some(a) => Some(InstructionAccountNode::from(a)),
-                _ => None,
-            }
+            account_attribute.map(InstructionAccountNode::from)
         })
         .collect::<Vec<_>>();
 
     // Concatenate the accounts.
     accounts_from_struct_attributes
         .into_iter()
-        .chain(accounts_from_fields.into_iter())
+        .chain(accounts_from_fields)
         .collect::<Vec<_>>()
 }
 
@@ -202,7 +199,7 @@ fn get_struct_type_node_from_struct(
     // Handle error.
     let message = format!(
         "The \"{}\" struct could not be used as an Instruction because its type is not a `StructTypeNode`.",
-        korok.ast.ident.to_string(),
+        korok.ast.ident,
     );
     Err(korok.ast.error(message).into())
 }

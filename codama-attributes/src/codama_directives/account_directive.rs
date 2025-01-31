@@ -18,12 +18,9 @@ impl AccountDirective {
     pub fn parse(meta: &Meta, ctx: &AttributeContext) -> syn::Result<Self> {
         meta.assert_directive("account")?;
         let mut name = SetOnce::<CamelCaseString>::new("name");
-        match ctx {
-            AttributeContext::Field(syn::Field {
+        if let AttributeContext::Field(syn::Field {
                 ident: Some(ident), ..
-            }) => name = name.initial_value(ident.to_string().into()),
-            _ => (),
-        }
+            }) = ctx { name = name.initial_value(ident.to_string().into()) }
         let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
         let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);

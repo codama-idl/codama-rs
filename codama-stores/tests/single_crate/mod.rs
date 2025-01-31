@@ -12,10 +12,8 @@ fn load_single_crate() {
 
     // The crate store has the expected items.
     match &crate_store.file.items.as_slice() {
-        [syn::Item::Mod(_), syn::Item::Mod(_), syn::Item::Use(_), syn::Item::Use(_)] => {
-            assert!(true)
-        }
-        _ => assert!(false, "Unexpected items in crate"),
+        [syn::Item::Mod(_), syn::Item::Mod(_), syn::Item::Use(_), syn::Item::Use(_)] => {}
+        _ => panic!("Unexpected items in crate"),
     };
 
     // The crate store has the expected manifest.
@@ -38,12 +36,12 @@ fn load_single_crate() {
 
     // The modules have the expected items.
     match &membership_module.file.items.as_slice() {
-        [syn::Item::Enum(_)] => assert!(true),
-        _ => assert!(false, "Unexpected items in membership module"),
+        [syn::Item::Enum(_)] => {}
+        _ => panic!("Unexpected items in membership module"),
     };
     match &person_module.file.items.as_slice() {
-        [syn::Item::Use(_), syn::Item::Struct(_)] => assert!(true),
-        _ => assert!(false, "Unexpected items in person module"),
+        [syn::Item::Use(_), syn::Item::Struct(_)] => {}
+        _ => panic!("Unexpected items in person module"),
     };
 
     // The modules have the expected paths.

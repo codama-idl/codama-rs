@@ -84,7 +84,7 @@ fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
         origin: Some(format!("origin_{}", identifier)),
-        docs: Docs::new().add(format!("docs_{}", identifier)),
+        docs: Docs::new().add_doc(format!("docs_{}", identifier)),
         accounts: vec![AccountNode::new(
             format!("account_{}", identifier),
             StructTypeNode::default(),

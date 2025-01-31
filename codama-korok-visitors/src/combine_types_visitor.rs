@@ -82,7 +82,7 @@ impl CombineTypesVisitor {
                 .ast
                 .error(format!(
                     "Variant `{}` of {} does not resolve to a `EnumVariantTypeNode`",
-                    variant.ast.ident.to_string(),
+                    variant.ast.ident,
                     parent.identifier()
                 ))
                 .into())),
@@ -98,7 +98,7 @@ impl CombineTypesVisitor {
                 .ast
                 .error(format!(
                     "Field `{}` in {} does not resolve to a `structFieldTypeNode`",
-                    field.ast.ident.as_ref().unwrap().to_string(),
+                    field.ast.ident.as_ref().unwrap(),
                     parent.identifier()
                 ))
                 .into())),
@@ -115,7 +115,7 @@ impl CombineTypesVisitor {
                 .ast
                 .error(format!(
                     "Field `{}` in {} does not resolve to a `TypeNode`",
-                    index.to_string(),
+                    index,
                     parent.identifier()
                 ))
                 .into())),

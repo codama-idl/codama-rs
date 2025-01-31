@@ -16,7 +16,7 @@ impl RootStore {
         Ok(Self {
             crates: paths
                 .iter()
-                .map(|path| CrateStore::load(path))
+                .map(CrateStore::load)
                 .collect_and_combine_errors()?,
         })
     }

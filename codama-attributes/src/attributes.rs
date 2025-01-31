@@ -7,7 +7,7 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
 impl<'a> Attributes<'a> {
-    pub fn parse(attrs: &'a Vec<syn::Attribute>, ctx: AttributeContext<'a>) -> syn::Result<Self> {
+    pub fn parse(attrs: &'a [syn::Attribute], ctx: AttributeContext<'a>) -> syn::Result<Self> {
         let attributes = Self(
             attrs
                 .iter()

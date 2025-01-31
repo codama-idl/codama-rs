@@ -13,8 +13,8 @@ impl<'a> ComposeVisitor<'a> {
         Self::default()
     }
 
-    /// Add a new visitor to the composition.
-    pub fn add<T: KorokVisitor + 'a>(mut self, visitor: T) -> Self {
+    /// Adds a new visitor to the composition.
+    pub fn with<T: KorokVisitor + 'a>(mut self, visitor: T) -> Self {
         self.visitors.push(Box::new(visitor));
         self
     }

@@ -48,9 +48,9 @@ impl From<StructFieldTypeNode> for InstructionArgumentNode {
     }
 }
 
-impl Into<Vec<InstructionArgumentNode>> for StructTypeNode {
-    fn into(self) -> Vec<InstructionArgumentNode> {
-        self.fields
+impl From<StructTypeNode> for Vec<InstructionArgumentNode> {
+    fn from(val: StructTypeNode) -> Self {
+        val.fields
             .into_iter()
             .map(InstructionArgumentNode::from)
             .collect()

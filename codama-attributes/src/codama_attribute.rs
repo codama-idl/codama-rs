@@ -20,7 +20,7 @@ impl<'a> CodamaAttribute<'a> {
         };
 
         let mut directive = SetOnce::<CodamaDirective>::new("codama");
-        list.each(|ref meta| directive.set(CodamaDirective::parse(&meta, ctx)?, meta))?;
+        list.each(|ref meta| directive.set(CodamaDirective::parse(meta, ctx)?, meta))?;
         Ok(Self {
             ast,
             directive: directive.take(attr)?,
