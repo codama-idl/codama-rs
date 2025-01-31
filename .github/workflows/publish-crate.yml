@@ -97,8 +97,18 @@ jobs:
             OPTIONS="--no-confirm --execute"
           fi
 
-          if [ "${{ inputs.crate }}" != "workspace" ]; then
+          case "${{ inputs.crate }}" in
+            workspace)
+              ;;
+            codama-nodes-derive)
+              cd codama-nodes/derive
+              ;;
+            codama-syn-helpers-test-macros)
+              cd codama-syn-helpers/tests/test-macros
+              ;;
+            *)
               cd ${{ inputs.crate }}
-          fi
+              ;;
+          esac
 
           cargo release $LEVEL $OPTIONS
