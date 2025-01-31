@@ -9,7 +9,7 @@ license = { workspace = true }
 [dependencies]
 codama-errors = { version = "0.1.0", path = "../codama-errors" }
 codama-nodes = { version = "0.0.0", path = "../codama-nodes" }
-codama-syn-helpers = { version = "0.0.0", path = "../codama-syn-helpers" }
+codama-syn-helpers = { version = "0.1.0", path = "../codama-syn-helpers" }
 derive_more = { version = "1.0", features = ["from"] }
 proc-macro2 = "1.0"
 quote = "1.0"
