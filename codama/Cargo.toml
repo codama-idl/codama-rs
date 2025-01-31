@@ -12,6 +12,6 @@ codama-korok-plugins = { version = "0.0.0", path = "../codama-korok-plugins" }
 codama-korok-visitors = { version = "0.0.0", path = "../codama-korok-visitors" }
 codama-koroks = { version = "0.0.0", path = "../codama-koroks" }
 codama-macros = { version = "0.0.0", path = "../codama-macros" }
-codama-nodes = { version = "0.0.0", path = "../codama-nodes" }
+codama-nodes = { version = "0.1.0", path = "../codama-nodes" }
 codama-stores = { version = "0.0.0", path = "../codama-stores" }
 proc-macro2 = "1.0"
