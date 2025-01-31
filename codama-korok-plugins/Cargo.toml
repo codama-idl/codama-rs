@@ -8,5 +8,5 @@ license = { workspace = true }
 
 [dependencies]
 codama-errors = { version = "0.1.0", path = "../codama-errors" }
-codama-korok-visitors = { version = "0.0.0", path = "../codama-korok-visitors" }
+codama-korok-visitors = { version = "0.1.0", path = "../codama-korok-visitors" }
 codama-koroks = { version = "0.2.0", path = "../codama-koroks" }
