@@ -77,7 +77,7 @@ dependencies = [
 
 [[package]]
 name = "codama-koroks"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
