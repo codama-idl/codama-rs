@@ -121,7 +121,6 @@ name = "codama-nodes-derive"
 version = "0.0.0"
 dependencies = [
  "codama-errors",
- "codama-nodes",
  "codama-syn-helpers",
  "derive_more",
  "proc-macro2",
