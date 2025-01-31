@@ -18,8 +18,11 @@ on:
           - codama-koroks
           - codama-macros
           - codama-nodes
+          - codama-nodes-derive
           - codama-stores
           - codama-syn-helpers
+          - codama-syn-helpers-test-macros
+
       level:
         description: Level
         required: true
