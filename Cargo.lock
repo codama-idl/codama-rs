@@ -148,22 +148,11 @@ name = "codama-syn-helpers"
 version = "0.0.0"
 dependencies = [
  "codama-errors",
- "codama-syn-helpers-test-macros",
  "derive_more",
  "proc-macro2",
  "quote",
  "syn",
  "trybuild",
-]
-
-[[package]]
-name = "codama-syn-helpers-test-macros"
-version = "0.0.0"
-dependencies = [
- "codama-syn-helpers",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
