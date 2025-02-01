@@ -22,16 +22,21 @@ pub trait IteratorCombineErrors<T, E>: Iterator<Item = Result<T, E>>
 where
     E: std::error::Error + CombineErrors,
 {
-    fn collect_and_combine_errors(mut self) -> Result<Vec<T>, E>
+    fn collect_and_combine_errors(self) -> Result<Vec<T>, E>
     where
         Self: Sized,
     {
-        self.try_fold(Vec::new(), |mut acc, result| match result {
-            Ok(parsed) => {
-                acc.push(parsed);
-                Ok(acc)
+        self.fold(Ok(Vec::new()), |acc, result| match (acc, result) {
+            (Ok(mut acc_vec), Ok(parsed)) => {
+                acc_vec.push(parsed);
+                Ok(acc_vec)
             }
-            Err(err) => Err(err),
+            (Err(mut acc_err), Err(err)) => {
+                acc_err.combine(err);
+                Err(acc_err)
+            }
+            (Err(acc_err), _) => Err(acc_err),
+            (_, Err(err)) => Err(err),
         })
     }
 }

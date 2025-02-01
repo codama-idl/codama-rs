@@ -26,4 +26,4 @@ error: unrecognized type
   --> tests/codama_attribute/on_fields.fail.rs:20:27
    |
 20 |     Tuple(#[codama(type = invalid)] u8),
-   |                           ^^^^
+   |                           ^^^^^^^
