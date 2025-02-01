@@ -5,12 +5,6 @@ error: unrecognized type
   |                     ^^^^^^^
 
 error: unrecognized type
- --> tests/codama_attribute/on_fields.fail.rs:7:21
-  |
-7 |     #[codama(type = invalid)]
-  |                     ^^^^^^^
-
-error: unrecognized type
   --> tests/codama_attribute/on_fields.fail.rs:12:38
    |
 12 | pub struct TupleTest(#[codama(type = invalid)] u8);
@@ -21,9 +15,3 @@ error: unrecognized type
    |
 17 |         #[codama(type = invalid)]
    |                         ^^^^^^^
-
-error: unrecognized type
-  --> tests/codama_attribute/on_fields.fail.rs:20:27
-   |
-20 |     Tuple(#[codama(type = invalid)] u8),
-   |                           ^^^^^^^
