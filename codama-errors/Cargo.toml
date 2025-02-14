@@ -1,11 +1,14 @@
 [package]
 name = "codama-errors"
+description = "Errors and result types for Codama"
 version = "0.1.0"
-edition = "2021"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
 cargo_toml = "0.20"
-thiserror = "2.0"
 proc-macro2 = "1.0"
 serde_json = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }
+thiserror = "2.0"

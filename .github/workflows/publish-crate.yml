@@ -1,0 +1,114 @@
+name: Publish Rust Crate
+
+on:
+  workflow_dispatch:
+    inputs:
+      crate:
+        description: Crate to publish
+        required: true
+        default: workspace
+        type: choice
+        options:
+          - workspace
+          - codama
+          - codama-attributes
+          - codama-errors
+          - codama-korok-plugins
+          - codama-korok-visitors
+          - codama-koroks
+          - codama-macros
+          - codama-nodes
+          - codama-nodes-derive
+          - codama-stores
+          - codama-syn-helpers
+          - codama-syn-helpers-test-macros
+
+      level:
+        description: Level
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - rc
+          - beta
+          - alpha
+          - release
+          - version
+      version:
+        description: Version (used with level "version")
+        required: false
+        type: string
+      dry_run:
+        description: Dry run
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+
+  publish:
+    name: Publish Crate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Dependencies
+        uses: ./.github/actions/cache
+        with:
+          cargo-cache-key: publish-crate-cache
+
+      - name: Install Cargo Release
+        run: which cargo-release || cargo install cargo-release
+          
+      - name: Ensure CARGO_REGISTRY_TOKEN variable is set
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        if: ${{ env.CARGO_REGISTRY_TOKEN == '' }}
+        run: |
+          echo "The CARGO_REGISTRY_TOKEN secret variable is not set"
+          echo "Go to \"Settings\" -> \"Secrets and variables\" -> \"Actions\" -> \"New repository secret\"."
+          exit 1
+
+      - name: Set Git Author
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Publish Crate
+        id: publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ "${{ inputs.level }}" == "version" ]; then
+            LEVEL=${{ inputs.version }}
+          else
+            LEVEL=${{ inputs.level }}
+          fi
+
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            OPTIONS=""
+          else
+            OPTIONS="--no-confirm --execute"
+          fi
+
+          case "${{ inputs.crate }}" in
+            workspace)
+              ;;
+            codama-nodes-derive)
+              cd codama-nodes/derive
+              ;;
+            codama-syn-helpers-test-macros)
+              cd codama-syn-helpers/tests/test-macros
+              ;;
+            *)
+              cd ${{ inputs.crate }}
+              ;;
+          esac
+
+          cargo release $LEVEL $OPTIONS

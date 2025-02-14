@@ -1,17 +1,20 @@
 [package]
 name = "codama-koroks"
-version = "0.1.0"
-edition = "2021"
+description = "Intermediate tree structure for collecting nodes"
+version = "0.2.0"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
 
 [dev-dependencies]
 quote = "1.0"
 
 [dependencies]
-codama-attributes = { path = "../codama-attributes" }
-codama-errors = { path = "../codama-errors" }
-codama-nodes = { path = "../codama-nodes" }
-codama-stores = { path = "../codama-stores" }
-codama-syn-helpers = { path = "../codama-syn-helpers" }
+codama-attributes = { version = "0.1.0", path = "../codama-attributes" }
+codama-errors = { version = "0.1.0", path = "../codama-errors" }
+codama-nodes = { version = "0.1.0", path = "../codama-nodes" }
+codama-stores = { version = "0.1.0", path = "../codama-stores" }
+codama-syn-helpers = { version = "0.1.0", path = "../codama-syn-helpers" }
 derive_more = { version = "1.0", features = ["from"] }
 proc-macro2 = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }
