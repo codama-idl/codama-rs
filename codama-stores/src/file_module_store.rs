@@ -9,7 +9,7 @@ pub struct FileModuleStore {
 }
 
 impl FileModuleStore {
-    pub fn load_all(path: &Path, items: &Vec<syn::Item>) -> CodamaResult<Vec<Self>> {
+    pub fn load_all(path: &Path, items: &[syn::Item]) -> CodamaResult<Vec<Self>> {
         find_nested_file_modules(items)
             .iter()
             .map(|&item| FileModuleStore::load(path, item))

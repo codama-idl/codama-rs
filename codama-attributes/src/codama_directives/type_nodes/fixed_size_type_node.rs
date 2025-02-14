@@ -23,10 +23,7 @@ impl FromMeta for FixedSizeTypeNode<TypeNode> {
                 (_, Meta::Expr(expr)) => size.set(expr.as_literal_integer()?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
-        let r#type = match TypeNode::try_from(r#type.take(meta)?) {
-            Ok(node) => node,
-            Err(_) => return Err(meta.error("type must be a TypeNode")),
-        };
+        let r#type = r#type.take(meta)?;
         Ok(Self::new(r#type, size.take(meta)?))
     }
 }

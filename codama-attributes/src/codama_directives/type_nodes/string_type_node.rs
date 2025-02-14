@@ -7,7 +7,7 @@ impl FromMeta for StringTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut encoding: SetOnce<BytesEncoding> = SetOnce::new("encoding");
         if meta.is_path_or_empty_list() {
-            return Ok(StringTypeNode::utf8().into());
+            return Ok(StringTypeNode::utf8());
         }
         meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {

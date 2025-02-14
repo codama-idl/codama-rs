@@ -135,7 +135,7 @@ mod tests {
     #[test]
     fn into_type_node() {
         let node = NestedTypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42));
-        let node: TypeNode = node.try_into().unwrap();
+        let node: TypeNode = node.into();
         assert_eq!(
             node,
             TypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42))

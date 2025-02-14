@@ -50,11 +50,8 @@ fn is_can_make_decisions_based_on_the_korok_type() -> CodamaResult<()> {
 
     korok.accept(&mut UniformVisitor::new(|mut k, visitor| {
         visitor.visit_children(&mut k)?;
-        match k {
-            KorokMut::Field(_) => {
-                k.set_node(Some(PublicKeyTypeNode::new().into()));
-            }
-            _ => {}
+        if let KorokMut::Field(_) = k {
+            k.set_node(Some(PublicKeyTypeNode::new().into()));
         };
         Ok(())
     }))?;

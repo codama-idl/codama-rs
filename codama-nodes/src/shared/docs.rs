@@ -9,7 +9,7 @@ impl Docs {
         Self::default()
     }
 
-    pub fn add<T: Into<String>>(mut self, value: T) -> Self {
+    pub fn add_doc<T: Into<String>>(mut self, value: T) -> Self {
         self.0.push(value.into());
         self
     }

@@ -26,6 +26,8 @@ where
     where
         Self: Sized,
     {
+        #[allow(clippy::manual_try_fold)]
+        // We can't use try_fold here because it will short-circuit on the first error.
         self.fold(Ok(Vec::new()), |acc, result| match (acc, result) {
             (Ok(mut acc_vec), Ok(parsed)) => {
                 acc_vec.push(parsed);

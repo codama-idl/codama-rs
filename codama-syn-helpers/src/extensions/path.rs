@@ -93,7 +93,9 @@ pub trait PathExtension {
     fn single_generic_type(&self) -> CodamaResult<&syn::Type> {
         let this = self.get_self();
         if self.generic_types().len() != 1 {
-            return Err(this.error("expected a single generic type".to_string()).into());
+            return Err(this
+                .error("expected a single generic type".to_string())
+                .into());
         }
         self.first_generic_type()
     }

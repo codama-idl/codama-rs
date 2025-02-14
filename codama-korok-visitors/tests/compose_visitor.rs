@@ -24,12 +24,12 @@ fn it_returns_a_single_visitor_from_multiple_visitors() -> CodamaResult<()> {
 
     korok.accept(
         &mut ComposeVisitor::new()
-            .add(UniformVisitor::new(|mut k, visitor| {
+            .with(UniformVisitor::new(|mut k, visitor| {
                 visitor.visit_children(&mut k)?;
                 k.set_node(Some(PublicKeyTypeNode::new().into()));
                 Ok(())
             }))
-            .add(ResetStructAndFieldKoroksVisitor {}),
+            .with(ResetStructAndFieldKoroksVisitor {}),
     )?;
 
     assert_eq!(korok.node, None);

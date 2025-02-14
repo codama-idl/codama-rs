@@ -3,7 +3,7 @@ use codama::{Codama, NodeTrait};
 
 #[test]
 fn get_idl() {
-    let codama = Codama::load(&get_path("membership/crate")).unwrap();
+    let codama = Codama::load(get_path("membership/crate")).unwrap();
     let idl = codama.get_idl().unwrap().to_json_pretty().unwrap();
 
     assert_eq!(

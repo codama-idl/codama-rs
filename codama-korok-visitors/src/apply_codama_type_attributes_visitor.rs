@@ -94,17 +94,13 @@ fn apply_codama_attributes(mut korok: KorokMut) -> CodamaResult<()> {
             Attribute::Codama(attribute) => Some(attribute),
             _ => None,
         })
-        .fold(
-            Ok(korok.node().clone()),
-            |current_node, attribute| match current_node {
-                Ok(current_node) => apply_codama_attribute(ApplyAttributeInput {
-                    node: current_node,
-                    attribute,
-                    korok: &korok,
-                }),
-                Err(e) => Err(e),
-            },
-        )?;
+        .try_fold(korok.node().clone(), |current_node, attribute| {
+            apply_codama_attribute(ApplyAttributeInput {
+                node: current_node,
+                attribute,
+                korok: &korok,
+            })
+        })?;
 
     korok.set_node(node);
     Ok(())
@@ -128,8 +124,8 @@ fn apply_type_directive(
     match input.korok {
         // If the `type` directive is applied to a named field then
         // we need to wrap the provided node in a `StructFieldTypeNode`.
-        KorokMut::Field(korok) => match (TypeNode::try_from(node.clone()).ok(), &korok.ast.ident) {
-            (Some(type_node), Some(ident)) => Ok(Some(
+        KorokMut::Field(korok) => match (node.clone(), &korok.ast.ident) {
+            (type_node, Some(ident)) => Ok(Some(
                 StructFieldTypeNode::new(ident.to_string(), type_node).into(),
             )),
             _ => Ok(Some(node.into())),
@@ -223,16 +219,14 @@ fn update_type_node(
 
     match TypeNode::try_from(node.clone()) {
         Ok(type_node) => Ok(Some(update(type_node)?.into())),
-        Err(_) => {
-            return Err(input
-                .attribute
-                .ast
-                .error(format!(
-                    "Cannot apply attribute `#[codama({})]` on a node of kind `{}`",
-                    input.attribute.directive.name(),
-                    node.kind()
-                ))
-                .into());
-        }
+        Err(_) => Err(input
+            .attribute
+            .ast
+            .error(format!(
+                "Cannot apply attribute `#[codama({})]` on a node of kind `{}`",
+                input.attribute.directive.name(),
+                node.kind()
+            ))
+            .into()),
     }
 }

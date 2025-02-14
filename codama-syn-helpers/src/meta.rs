@@ -59,10 +59,7 @@ impl Meta {
     }
 
     pub fn is_path_or_list(&self) -> bool {
-        match self {
-            Meta::PathList(_) | Meta::Expr(Expr::Path(_)) => true,
-            _ => false,
-        }
+        matches!(self, Meta::PathList(_) | Meta::Expr(Expr::Path(_)))
     }
 
     pub fn is_path_or_empty_list(&self) -> bool {
@@ -139,7 +136,7 @@ impl Meta {
         if !path.is_strict(directive) {
             return Err(path.error(format!("expected #[codama({})] attribute", directive)));
         };
-        Ok(&self)
+        Ok(self)
     }
 }
 
@@ -385,7 +382,7 @@ mod tests {
         };
         assert!(meta.path.is_strict("foo"));
         let expr = meta.value.as_expr().unwrap();
-        assert_eq!(expr.as_literal_bool().unwrap(), true);
+        assert!(expr.as_literal_bool().unwrap());
     }
 
     #[test]

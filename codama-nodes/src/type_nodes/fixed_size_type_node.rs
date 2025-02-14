@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn map_nested_type_node() {
         let node = FixedSizeTypeNode::<NestedTypeNode<_>>::new(NumberTypeNode::le(U32), 42);
-        let node = node.map_nested_type_node(|node| BooleanTypeNode::new(node));
+        let node = node.map_nested_type_node(BooleanTypeNode::new);
         assert_eq!(
             node,
             FixedSizeTypeNode::<NestedTypeNode<_>>::new(

@@ -6,7 +6,7 @@ impl FromMeta for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let mut size: SetOnce<TypeNode> = SetOnce::new("size");
         if meta.is_path_or_empty_list() {
-            return Ok(BooleanTypeNode::default().into());
+            return Ok(BooleanTypeNode::default());
         }
         meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {

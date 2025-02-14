@@ -22,16 +22,16 @@ impl KorokPlugin for DefaultPlugin {
 
 pub fn get_default_visitor<'a>() -> ComposeVisitor<'a> {
     ComposeVisitor::new()
-        .add(FilterItemsVisitor::new(
+        .with(FilterItemsVisitor::new(
             |item| item.attributes().unwrap().has_any_codama_derive(),
             ComposeVisitor::new()
-                .add(SetBorshTypesVisitor::new())
-                .add(SetLinkTypesVisitor::new()),
+                .with(SetBorshTypesVisitor::new())
+                .with(SetLinkTypesVisitor::new()),
         ))
-        .add(SetProgramMetadataVisitor::new())
-        .add(ApplyCodamaTypeAttributesVisitor::new())
-        .add(SetDefinedTypesVisitor::new())
-        .add(SetAccountsVisitor::new())
-        .add(SetInstructionsVisitor::new())
-        .add(CombineModulesVisitor::new())
+        .with(SetProgramMetadataVisitor::new())
+        .with(ApplyCodamaTypeAttributesVisitor::new())
+        .with(SetDefinedTypesVisitor::new())
+        .with(SetAccountsVisitor::new())
+        .with(SetInstructionsVisitor::new())
+        .with(CombineModulesVisitor::new())
 }
