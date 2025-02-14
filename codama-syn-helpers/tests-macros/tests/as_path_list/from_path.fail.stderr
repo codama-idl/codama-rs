@@ -1,5 +1,5 @@
 error: expected a list: `foo(...)` or `foo = (...)`
- --> tests/meta/as_path_list/from_path.fail.rs:3:16
+ --> tests/as_path_list/from_path.fail.rs:3:16
   |
 3 | #[as_path_list(foo)]
   |                ^^^

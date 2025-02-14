@@ -1,11 +1,11 @@
 error: unexpected tokens, expected a single path
- --> tests/meta/as_path/from_path_list.fail.rs:3:14
+ --> tests/as_path/from_path_list.fail.rs:3:14
   |
 3 | #[as_path(foo(1, 2, 3))]
   |              ^^^^^^^^^
 
 error: unexpected tokens, expected a single path
- --> tests/meta/as_path/from_path_list.fail.rs:6:15
+ --> tests/as_path/from_path_list.fail.rs:6:15
   |
 6 | #[as_path(foo = (1, 2, 3))]
   |               ^^^^^^^^^^^

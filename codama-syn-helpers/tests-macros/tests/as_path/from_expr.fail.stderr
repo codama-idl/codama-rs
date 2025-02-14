@@ -1,5 +1,5 @@
 error: expected a path
- --> tests/meta/as_path/from_expr.fail.rs:3:11
+ --> tests/as_path/from_expr.fail.rs:3:11
   |
 3 | #[as_path("hello")]
   |           ^^^^^^^

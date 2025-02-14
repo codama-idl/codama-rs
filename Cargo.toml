@@ -12,6 +12,7 @@ members = [
   "codama-nodes/derive",
   "codama-stores",
   "codama-syn-helpers",
+  "codama-syn-helpers/tests-macros",
 ]
 
 [workspace.package]

@@ -1,5 +1,5 @@
 error: expected a value for that path: `foo = ...`
- --> tests/meta/as_path_value/from_path.fail.rs:3:17
+ --> tests/as_path_value/from_path.fail.rs:3:17
   |
 3 | #[as_path_value(foo)]
   |                 ^^^

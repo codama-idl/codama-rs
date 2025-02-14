@@ -1,5 +1,5 @@
 error: expected a path followed by a list: `my_path(...)` or `my_path = (...)`
- --> tests/meta/as_path_list/from_verbatim.fail.rs:3:16
+ --> tests/as_path_list/from_verbatim.fail.rs:3:16
   |
 3 | #[as_path_list([==> ??? <==])]
   |                ^^^^^^^^^^^^^
