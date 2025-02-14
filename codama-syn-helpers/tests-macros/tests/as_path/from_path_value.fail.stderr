@@ -1,5 +1,5 @@
 error: unexpected tokens, expected a single path
- --> tests/meta/as_path/from_path_value.fail.rs:3:15
+ --> tests/as_path/from_path_value.fail.rs:3:15
   |
 3 | #[as_path(foo = bar(1, 2, 3))]
   |               ^^^^^^^^^^^^^^
