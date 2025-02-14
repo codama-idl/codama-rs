@@ -10,6 +10,7 @@ members = [
   "codama-macros",
   "codama-nodes",
   "codama-nodes/derive",
+  "codama-nodes/tests-derive",
   "codama-stores",
   "codama-syn-helpers",
   "codama-syn-helpers/tests-macros",

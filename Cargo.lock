@@ -121,14 +121,23 @@ name = "codama-nodes-derive"
 version = "0.1.0"
 dependencies = [
  "codama-errors",
- "codama-nodes",
  "codama-syn-helpers",
  "derive_more",
  "proc-macro2",
  "quote",
+ "syn",
+]
+
+[[package]]
+name = "codama-nodes-derive-test-macros"
+version = "0.0.0"
+dependencies = [
+ "codama-errors",
+ "codama-nodes",
+ "codama-nodes-derive",
+ "derive_more",
  "serde",
  "serde_json",
- "syn",
  "trybuild",
 ]
 
