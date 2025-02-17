@@ -8,14 +8,11 @@ pub struct InstructionAccountNode {
     pub is_writable: bool,
     pub is_signer: IsAccountSigner,
     #[serde(default)]
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub is_optional: bool,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_value: Option<InstructionInputValueNode>,
 }
 

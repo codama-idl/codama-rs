@@ -5,7 +5,6 @@ use codama_nodes_derive::node;
 pub struct PublicKeyValueNode {
     // Data.
     pub public_key: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub identifier: Option<CamelCaseString>,
 }
 

@@ -7,11 +7,8 @@ use codama_nodes_derive::{node, node_union};
 pub struct ConditionalValueNode {
     // Children.
     pub condition: ConditionNode,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<ValueNode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub if_true: Box<Option<InstructionInputValueNode>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub if_false: Box<Option<InstructionInputValueNode>>,
 }
 

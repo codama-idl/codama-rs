@@ -6,7 +6,6 @@ pub struct InstructionByteDeltaNode {
     // Data.
     pub with_header: bool,
     #[serde(default)]
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub subtract: bool,
 
     // Children.

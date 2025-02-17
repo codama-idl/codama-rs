@@ -5,7 +5,6 @@ use codama_nodes_derive::type_node;
 pub struct AmountTypeNode {
     // Data.
     pub decimals: u8,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub unit: Option<String>,
 
     // Children.

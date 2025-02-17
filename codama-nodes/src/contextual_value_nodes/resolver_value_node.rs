@@ -6,11 +6,9 @@ pub struct ResolverValueNode {
     // Data.
     pub name: CamelCaseString,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub depends_on: Option<Vec<ResolverDependency>>,
 }
 

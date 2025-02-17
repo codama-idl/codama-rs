@@ -10,23 +10,18 @@ pub struct ProgramNode {
     pub name: CamelCaseString,
     pub public_key: String,
     pub version: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
     #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
     pub accounts: Vec<AccountNode>,
     pub instructions: Vec<InstructionNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub defined_types: Vec<DefinedTypeNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pdas: Vec<PdaNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<ErrorNode>,
 }
 

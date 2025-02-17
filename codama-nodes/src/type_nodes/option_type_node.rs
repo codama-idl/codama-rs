@@ -5,7 +5,6 @@ use codama_nodes_derive::type_node;
 pub struct OptionTypeNode {
     // Data.
     #[serde(default)]
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub fixed: bool,
 
     // Children.

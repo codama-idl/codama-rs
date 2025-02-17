@@ -5,7 +5,6 @@ use codama_nodes_derive::node;
 pub struct EnumEmptyVariantTypeNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub discriminator: Option<usize>,
 }
 

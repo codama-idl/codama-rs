@@ -8,15 +8,12 @@ use codama_nodes_derive::node;
 pub struct InstructionArgumentNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_value_strategy: Option<DefaultValueStrategy>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
     pub r#type: TypeNode,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_value: Option<InstructionInputValueNode>,
 }
 
