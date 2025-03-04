@@ -1,7 +1,7 @@
 [package]
 name = "codama-macros"
 description = "Procedural macros for the Codama standard"
-version = "0.1.0"
+version = "0.1.1"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -17,10 +17,10 @@ path = "tests/mod.rs"
 trybuild = { version = "1.0.49", features = ["diff"] }
 
 [dependencies]
-codama-attributes = { version = "0.1.1", path = "../codama-attributes" }
-codama-errors = { version = "0.1.1", path = "../codama-errors" }
-codama-koroks = { version = "0.2.1", path = "../codama-koroks" }
-codama-stores = { version = "0.1.1", path = "../codama-stores" }
+codama-attributes = { version = "0.1.2", path = "../codama-attributes" }
+codama-errors = { version = "0.1.2", path = "../codama-errors" }
+codama-koroks = { version = "0.2.2", path = "../codama-koroks" }
+codama-stores = { version = "0.1.2", path = "../codama-stores" }
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["extra-traits"] }
