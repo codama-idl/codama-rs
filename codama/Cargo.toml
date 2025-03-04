@@ -1,17 +1,17 @@
 [package]
 name = "codama"
 description = "Generate clients, CLIs, documentation and more from your Solana programs"
-version = "0.1.1"
+version = "0.1.0"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-errors = { version = "0.1.2", path = "../codama-errors" }
-codama-korok-plugins = { version = "0.1.2", path = "../codama-korok-plugins" }
-codama-korok-visitors = { version = "0.1.2", path = "../codama-korok-visitors" }
-codama-koroks = { version = "0.2.2", path = "../codama-koroks" }
-codama-macros = { version = "0.1.1", path = "../codama-macros" }
-codama-nodes = { version = "0.1.2", path = "../codama-nodes" }
-codama-stores = { version = "0.1.2", path = "../codama-stores" }
+codama-errors = { version = "0.1.1", path = "../codama-errors" }
+codama-korok-plugins = { version = "0.1.1", path = "../codama-korok-plugins" }
+codama-korok-visitors = { version = "0.1.1", path = "../codama-korok-visitors" }
+codama-koroks = { version = "0.2.1", path = "../codama-koroks" }
+codama-macros = { version = "0.1.0", path = "../codama-macros" }
+codama-nodes = { version = "0.1.1", path = "../codama-nodes" }
+codama-stores = { version = "0.1.1", path = "../codama-stores" }
 proc-macro2 = "1.0"
