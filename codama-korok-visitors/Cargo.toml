@@ -1,7 +1,7 @@
 [package]
 name = "codama-korok-visitors"
 description = "Visitors for Korok trees"
-version = "0.1.0"
+version = "0.1.1"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -9,13 +9,13 @@ license = { workspace = true }
 [dev-dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-codama-stores = { path = "../codama-stores", version = "0.1.0" }
+codama-stores = { path = "../codama-stores", version = "0.1.1" }
 
 [dependencies]
 cargo_toml = "0.20"
-codama-attributes = { version = "0.1.0", path = "../codama-attributes" }
-codama-errors = { version = "0.1.0", path = "../codama-errors" }
-codama-koroks = { version = "0.2.0", path = "../codama-koroks" }
-codama-nodes = { version = "0.1.0", path = "../codama-nodes" }
-codama-syn-helpers = { version = "0.1.0", path = "../codama-syn-helpers" }
+codama-attributes = { version = "0.1.1", path = "../codama-attributes" }
+codama-errors = { version = "0.1.1", path = "../codama-errors" }
+codama-koroks = { version = "0.2.1", path = "../codama-koroks" }
+codama-nodes = { version = "0.1.1", path = "../codama-nodes" }
+codama-syn-helpers = { version = "0.1.1", path = "../codama-syn-helpers" }
 syn = { version = "2.0", features = ["extra-traits", "full"] }
