@@ -94,7 +94,6 @@ dependencies = [
 name = "codama-macros"
 version = "0.1.0"
 dependencies = [
- "codama",
  "codama-attributes",
  "codama-errors",
  "codama-koroks",

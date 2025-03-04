@@ -1,4 +1,4 @@
-use codama::CodamaInstruction;
+use codama_macros::CodamaInstruction;
 
 #[derive(CodamaInstruction)]
 pub struct StructTest;

@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(account(optional = invalid))]
 pub struct Test;

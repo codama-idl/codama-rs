@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(encoding = utf8)]
 #[codama(encoding = base16)]
