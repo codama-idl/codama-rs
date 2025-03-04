@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(type = string(encoding = invalid))]
 pub struct Test;

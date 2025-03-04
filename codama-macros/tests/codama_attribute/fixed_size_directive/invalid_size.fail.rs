@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(fixed_size = invalid(1, 2, 3))]
 pub struct Test;

@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(size_prefix = string)]
 pub struct TestWithNonNumberTypeNode;

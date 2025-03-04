@@ -1,4 +1,4 @@
-use codama::CodamaInstructions;
+use codama_macros::CodamaInstructions;
 
 #[derive(CodamaInstructions)]
 pub enum TokenInstructions {

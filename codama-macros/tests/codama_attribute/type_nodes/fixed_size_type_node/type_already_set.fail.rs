@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(type = fixed_size(boolean, 42, number(u32)))]
 pub struct Test;

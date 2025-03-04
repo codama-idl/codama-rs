@@ -1,4 +1,4 @@
-use codama::CodamaAccount;
+use codama_macros::CodamaAccount;
 
 #[derive(CodamaAccount)]
 pub struct StructTest;

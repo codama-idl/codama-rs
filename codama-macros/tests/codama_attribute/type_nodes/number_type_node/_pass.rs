@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(type = number(u32))]
 #[codama(type = number(u32, be))]

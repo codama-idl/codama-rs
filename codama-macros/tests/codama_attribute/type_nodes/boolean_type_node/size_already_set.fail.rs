@@ -1,4 +1,4 @@
-use codama::codama;
+use codama_macros::codama;
 
 #[codama(type = boolean(number(u32), number(u32)))]
 pub struct Test;
