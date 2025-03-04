@@ -1,7 +1,6 @@
 [package]
 name = "codama-nodes-derive-test-macros"
 description = "Tests for internal Codama node macros"
-version = "0.0.0"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
