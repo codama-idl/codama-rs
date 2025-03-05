@@ -1,0 +1,11 @@
+[package]
+name = "system"
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata.solana]
+program-id = "11111111111111111111111111111111"
+
+[dependencies]
+solana-pubkey = "2.2.0"
