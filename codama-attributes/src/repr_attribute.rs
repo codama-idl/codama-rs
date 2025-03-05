@@ -1,3 +1,4 @@
+use codama_nodes::{NumberFormat, NumberTypeNode};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -22,11 +23,22 @@ impl<'a> ReprAttribute<'a> {
         let metas = list.parse_comma_args::<syn::Meta>()?;
         Ok(Self { ast, metas })
     }
+
+    pub fn get_number_type_node(&self) -> Option<NumberTypeNode> {
+        self.metas.iter().find_map(|meta| match meta {
+            syn::Meta::Path(p) => match NumberFormat::try_from(p.to_string()) {
+                Ok(n) => Some(NumberTypeNode::le(n)),
+                Err(_) => None,
+            },
+            _ => None,
+        })
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::NumberFormat::U32;
     use syn::parse_quote;
 
     #[test]
@@ -50,6 +62,17 @@ mod tests {
         assert_eq!(
             attribute.metas,
             [(parse_quote! { u32 }), (parse_quote! { align(4) })]
+        );
+    }
+
+    #[test]
+    fn test_get_number_type_node() {
+        let ast = parse_quote! { #[repr(u32, align(4), u64)] };
+        let attribute = ReprAttribute::parse(&ast).unwrap();
+
+        assert_eq!(
+            attribute.get_number_type_node(),
+            Some(NumberTypeNode::le(U32))
         );
     }
 }

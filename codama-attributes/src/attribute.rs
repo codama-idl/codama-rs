@@ -35,4 +35,18 @@ impl<'a> Attribute<'a> {
             _ => None,
         }
     }
+
+    pub fn derive(&self) -> Option<&DeriveAttribute<'a>> {
+        match self {
+            Attribute::Derive(a) => Some(a),
+            _ => None,
+        }
+    }
+
+    pub fn repr(&self) -> Option<&ReprAttribute<'a>> {
+        match self {
+            Attribute::Repr(a) => Some(a),
+            _ => None,
+        }
+    }
 }
