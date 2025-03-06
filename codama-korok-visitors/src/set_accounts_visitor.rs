@@ -1,15 +1,16 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    AccountNode, DefaultValueStrategy, Docs, EnumVariantTypeNode, FieldDiscriminatorNode,
-    NestedTypeNode, NestedTypeNodeTrait, Node, NumberFormat::U8, NumberTypeNode, NumberValueNode,
-    ProgramNode, StructFieldTypeNode, StructTypeNode,
+    AccountNode, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
+    FieldDiscriminatorNode, NestedTypeNode, NestedTypeNodeTrait, Node, NumberFormat::U8,
+    NumberTypeNode, NumberValueNode, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
 pub struct SetAccountsVisitor {
     combine_types: CombineTypesVisitor,
     enum_name: Option<String>,
+    enum_size: Option<NumberTypeNode>,
     enum_current_discriminator: usize,
 }
 
@@ -18,6 +19,7 @@ impl Default for SetAccountsVisitor {
         Self {
             combine_types: CombineTypesVisitor::strict(),
             enum_name: None,
+            enum_size: None,
             enum_current_discriminator: 0,
         }
     }
@@ -75,11 +77,25 @@ impl KorokVisitor for SetAccountsVisitor {
         // Create a `DefinedTypeNode` from the enum.
         self.combine_types.visit_enum(korok)?;
 
+        // Get details from the defined type enum.
+        let (enum_name, enum_size) = match &korok.node {
+            Some(Node::DefinedType(DefinedTypeNode { name, r#type, .. })) => match r#type {
+                TypeNode::Enum(data) => (
+                    Some(name.to_string()),
+                    Some(data.size.get_nested_type_node().clone()),
+                ),
+                _ => (Some(name.to_string()), None),
+            },
+            _ => (None, None),
+        };
+
         // Transform each variant into an `AccountNode`.
-        self.enum_name = Some(korok.ast.ident.to_string());
+        self.enum_name = Some(enum_name.unwrap_or(korok.ast.ident.to_string()));
+        self.enum_size = enum_size;
         self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
         self.enum_name = None;
+        self.enum_size = None;
         self.enum_current_discriminator = 0;
 
         // Gather all accounts in a `ProgramNode`.
@@ -119,7 +135,11 @@ impl KorokVisitor for SetAccountsVisitor {
             name: discriminator_name.clone().into(),
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             docs: Docs::default(),
-            r#type: NumberTypeNode::le(U8).into(),
+            r#type: self
+                .enum_size
+                .clone()
+                .unwrap_or(NumberTypeNode::le(U8))
+                .into(),
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
         };
         let data = get_nested_struct_type_node_from_enum_variant(korok, &self.enum_name)?

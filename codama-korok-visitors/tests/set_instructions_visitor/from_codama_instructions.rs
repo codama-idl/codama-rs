@@ -387,7 +387,6 @@ fn with_custom_enum_size() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut SetInstructionsVisitor::new())?;
     assert_eq!(
         korok.node,
