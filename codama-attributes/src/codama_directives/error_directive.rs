@@ -8,6 +8,12 @@ pub struct ErrorDirective {
 }
 
 impl ErrorDirective {
+    pub fn is_empty(&self) -> bool {
+        self.code.is_none() && self.message.is_none()
+    }
+}
+
+impl ErrorDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("error")?.as_path_list()?;
         let mut code = SetOnce::<usize>::new("code");
@@ -35,12 +41,14 @@ impl ErrorDirective {
             }
             _ => Err(meta.error("unrecognized attribute")),
         })?;
-        let code = code.option();
-        let message = message.option();
-        if code.is_none() && message.is_none() {
+        let directive = Self {
+            code: code.option(),
+            message: message.option(),
+        };
+        if directive.is_empty() {
             return Err(pl.error("expected at least one `code` or `message` attribute"));
         }
-        Ok(Self { code, message })
+        Ok(directive)
     }
 }
 
