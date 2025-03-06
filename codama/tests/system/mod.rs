@@ -893,6 +893,62 @@ fn get_idl() {
           }
         }
       }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "accountAlreadyInUse",
+        "code": 0,
+        "message": "an account with the same address already exists"
+      },
+      {
+        "kind": "errorNode",
+        "name": "resultWithNegativeLamports",
+        "code": 1,
+        "message": "account does not have enough SOL to perform the operation"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidProgramId",
+        "code": 2,
+        "message": "cannot assign account to this program id"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountDataLength",
+        "code": 3,
+        "message": "cannot allocate account data of this length"
+      },
+      {
+        "kind": "errorNode",
+        "name": "maxSeedLengthExceeded",
+        "code": 4,
+        "message": "length of requested seed is too long"
+      },
+      {
+        "kind": "errorNode",
+        "name": "addressWithSeedMismatch",
+        "code": 5,
+        "message": "provided address does not match addressed derived from seed"
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonceNoRecentBlockhashes",
+        "code": 6,
+        "message": "advancing stored nonce requires a populated RecentBlockhashes sysvar"
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonceBlockhashNotExpired",
+        "code": 7,
+        "message": "stored nonce is still in recent_blockhashes"
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonceUnexpectedBlockhashValue",
+        "code": 8,
+        "message": "specified nonce does not match stored nonce"
+      }
     ]
   },
   "additionalPrograms": []
