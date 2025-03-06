@@ -1,4 +1,5 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
+use codama_attributes::{Attribute, Attributes, UnsupportedAttribute};
 use codama_errors::CodamaResult;
 use codama_nodes::{DefinedTypeNode, Docs, ErrorNode, Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
@@ -85,11 +86,14 @@ impl KorokVisitor for SetErrorsVisitor {
             _ => current_discriminator + 1,
         };
 
+        // Get #[error] attribute message.
+        let message = get_message_from_thiserror(&korok.attributes);
+
         korok.node = Some(
             ErrorNode {
                 name: korok.ast.ident.to_string().into(),
                 code: current_discriminator,
-                message: "".to_string(), // TODO
+                message: message.unwrap_or("".to_string()),
                 docs: Docs::default(),
             }
             .into(),
@@ -97,4 +101,29 @@ impl KorokVisitor for SetErrorsVisitor {
 
         Ok(())
     }
+}
+
+pub fn get_message_from_thiserror(attributes: &Attributes) -> Option<String> {
+    attributes.iter().find_map(|attr| {
+        // Ensure the attribute is a meta list.
+        let Attribute::Unsupported(UnsupportedAttribute {
+            ast:
+                syn::Attribute {
+                    meta: syn::Meta::List(list),
+                    ..
+                },
+        }) = attr
+        else {
+            return None;
+        };
+
+        // Ensure the path is `#[error("...")]`.
+        if !list.path.is("thiserror::error") {
+            return None;
+        };
+
+        // Get the first meta as a string, if possible.
+        let metas = list.parse_metas().ok()?;
+        metas.first()?.as_expr().ok()?.as_literal_string().ok()
+    })
 }
