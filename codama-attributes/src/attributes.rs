@@ -1,4 +1,6 @@
-use crate::{Attribute, AttributeContext, CodamaDirective};
+use crate::{
+    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, DeriveAttribute, TryFromFilter,
+};
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
@@ -67,7 +69,7 @@ impl<'a> Attributes<'a> {
     }
 
     pub fn has_derive(&self, prefixes: &[&str], last: &str) -> bool {
-        self.iter().filter_map(Attribute::derive).any(|attr| {
+        self.iter().filter_map(DeriveAttribute::filter).any(|attr| {
             attr.derives
                 .iter()
                 .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last)
@@ -76,7 +78,7 @@ impl<'a> Attributes<'a> {
 
     pub fn has_codama_attribute(&self, name: &str) -> bool {
         self.iter()
-            .filter_map(Attribute::codama)
+            .filter_map(CodamaAttribute::filter)
             .any(|a| a.directive.name() == name)
     }
 }

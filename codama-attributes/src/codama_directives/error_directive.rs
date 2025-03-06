@@ -1,4 +1,5 @@
-use crate::utils::SetOnce;
+use crate::{utils::SetOnce, Attribute, CodamaAttribute, CodamaDirective};
+use codama_errors::CodamaError;
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
@@ -49,6 +50,28 @@ impl ErrorDirective {
             return Err(pl.error("expected at least one `code` or `message` attribute"));
         }
         Ok(directive)
+    }
+}
+
+impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a ErrorDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
+        match attribute.directive {
+            CodamaDirective::Error(ref a) => Ok(a),
+            _ => Err(CodamaError::InvalidCodamaDirective {
+                expected: "error".to_string(),
+                actual: attribute.directive.name().to_string(),
+            }),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a ErrorDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        <&CodamaAttribute>::try_from(attribute)?.try_into()
     }
 }
 

@@ -1,3 +1,5 @@
+use crate::Attribute;
+use codama_errors::CodamaError;
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -21,6 +23,20 @@ impl<'a> DeriveAttribute<'a> {
         // Parse the list of derives.
         let derives = list.parse_comma_args::<syn::Path>()?;
         Ok(Self { ast, derives })
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a DeriveAttribute<'a> {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        match attribute {
+            Attribute::Derive(a) => Ok(a),
+            _ => Err(CodamaError::InvalidAttribute {
+                expected: "derive".to_string(),
+                actual: attribute.name(),
+            }),
+        }
     }
 }
 

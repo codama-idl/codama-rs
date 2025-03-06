@@ -1,4 +1,5 @@
-use crate::utils::FromMeta;
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use codama_errors::CodamaError;
 use codama_nodes::{NestedTypeNode, NumberTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -16,6 +17,28 @@ impl SizePrefixDirective {
             Err(_) => return Err(pv.value.error("prefix must be a NumberTypeNode")),
         };
         Ok(Self { prefix })
+    }
+}
+
+impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a SizePrefixDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
+        match attribute.directive {
+            CodamaDirective::SizePrefix(ref a) => Ok(a),
+            _ => Err(CodamaError::InvalidCodamaDirective {
+                expected: "size_prefix".to_string(),
+                actual: attribute.directive.name().to_string(),
+            }),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a SizePrefixDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        <&CodamaAttribute>::try_from(attribute)?.try_into()
     }
 }
 

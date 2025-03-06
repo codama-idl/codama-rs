@@ -1,3 +1,5 @@
+use crate::{Attribute, CodamaAttribute, CodamaDirective};
+use codama_errors::CodamaError;
 use codama_nodes::BytesEncoding;
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -14,6 +16,28 @@ impl EncodingDirective {
             Ok(encoding) => Ok(Self { encoding }),
             _ => Err(value.error("invalid encoding")),
         }
+    }
+}
+
+impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a EncodingDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
+        match attribute.directive {
+            CodamaDirective::Encoding(ref a) => Ok(a),
+            _ => Err(CodamaError::InvalidCodamaDirective {
+                expected: "encoding".to_string(),
+                actual: attribute.directive.name().to_string(),
+            }),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a EncodingDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        <&CodamaAttribute>::try_from(attribute)?.try_into()
     }
 }
 

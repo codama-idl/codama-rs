@@ -1,5 +1,5 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::{Attribute, Attributes, CodamaAttribute};
+use codama_attributes::{AccountDirective, Attributes, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldsKorok;
 use codama_nodes::{
@@ -179,8 +179,7 @@ fn get_instruction_account_nodes(
     // Gather the accounts from the struct attributes.
     let accounts_from_struct_attributes = attributes
         .iter()
-        .filter_map(Attribute::codama)
-        .filter_map(CodamaAttribute::account)
+        .filter_map(AccountDirective::filter)
         .map(InstructionAccountNode::from)
         .collect::<Vec<_>>();
 
@@ -192,8 +191,7 @@ fn get_instruction_account_nodes(
             let account_attribute = field
                 .attributes
                 .iter()
-                .filter_map(Attribute::codama)
-                .filter_map(CodamaAttribute::account)
+                .filter_map(AccountDirective::filter)
                 .last();
             account_attribute.map(InstructionAccountNode::from)
         })

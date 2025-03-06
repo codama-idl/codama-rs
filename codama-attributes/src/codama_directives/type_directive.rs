@@ -1,7 +1,7 @@
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use codama_errors::CodamaError;
 use codama_nodes::TypeNode;
 use codama_syn_helpers::Meta;
-
-use crate::utils::FromMeta;
 
 #[derive(Debug, PartialEq)]
 pub struct TypeDirective {
@@ -13,6 +13,28 @@ impl TypeDirective {
         let pv = meta.assert_directive("type")?.as_path_value()?;
         let node = TypeNode::from_meta(&pv.value)?;
         Ok(Self { node })
+    }
+}
+
+impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a TypeDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
+        match attribute.directive {
+            CodamaDirective::Type(ref a) => Ok(a),
+            _ => Err(CodamaError::InvalidCodamaDirective {
+                expected: "type".to_string(),
+                actual: attribute.directive.name().to_string(),
+            }),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a TypeDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        <&CodamaAttribute>::try_from(attribute)?.try_into()
     }
 }
 

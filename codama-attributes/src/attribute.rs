@@ -29,24 +29,16 @@ impl<'a> Attribute<'a> {
         }
     }
 
-    pub fn codama(&self) -> Option<&CodamaAttribute<'a>> {
+    pub fn ast(&self) -> &syn::Attribute {
         match self {
-            Attribute::Codama(a) => Some(a),
-            _ => None,
+            Attribute::Codama(a) => a.ast,
+            Attribute::Derive(a) => a.ast,
+            Attribute::Repr(a) => a.ast,
+            Attribute::Unsupported(a) => a.ast,
         }
     }
 
-    pub fn derive(&self) -> Option<&DeriveAttribute<'a>> {
-        match self {
-            Attribute::Derive(a) => Some(a),
-            _ => None,
-        }
-    }
-
-    pub fn repr(&self) -> Option<&ReprAttribute<'a>> {
-        match self {
-            Attribute::Repr(a) => Some(a),
-            _ => None,
-        }
+    pub fn name(&self) -> String {
+        self.ast().path().last_str()
     }
 }
