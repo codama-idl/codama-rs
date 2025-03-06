@@ -1,0 +1,5 @@
+error: expected at least one `code` or `message` attribute
+ --> tests/codama_attribute/error_directive/nothing_provided.fail.rs:3:10
+  |
+3 | #[codama(error())]
+  |          ^^^^^^^

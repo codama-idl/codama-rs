@@ -94,7 +94,6 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -143,41 +142,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaAccounts)]
-        struct Mint {
-            mint_authority: Pubkey,
-            freeze_authority: Option<Pubkey>,
-            supply: u64,
-        }
-    };
-    let mut korok = StructKorok::parse(&item)?;
-
-    assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
-    korok.accept(&mut SetAccountsVisitor::new())?;
-    assert_eq!(korok.node, None);
-    // No visitor error because there is already is a compilation error.
-    Ok(())
-}
-
-#[test]
-fn no_overrides() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaAccounts)]
-        enum MyProgramAccounts {}
-    };
-    let mut korok = EnumKorok::parse(&item)?;
-    korok.node = Some(BooleanTypeNode::default().into());
-
-    korok.accept(&mut SetAccountsVisitor::new())?;
-    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
-    Ok(())
-}
-
-#[test]
-fn with_custom_enum_size() -> CodamaResult<()> {
+fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccounts)]
         #[repr(u32)]
@@ -233,5 +198,132 @@ fn with_custom_enum_size() -> CodamaResult<()> {
             .into()
         )
     );
+    Ok(())
+}
+
+#[test]
+fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            Mint,
+            Token = 42,
+            AssociatedToken,
+            Buffer = 100,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![
+                    AccountNode {
+                        name: "mint".into(),
+                        size: None,
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(0u8).into()),
+                            }
+                        ]).into(),
+                        pda: None,
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    },
+                    AccountNode {
+                        name: "token".into(),
+                        size: None,
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(42u8).into()),
+                            }
+                        ]).into(),
+                        pda: None,
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    },
+                    AccountNode {
+                        name: "associatedToken".into(),
+                        size: None,
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(43u8).into()),
+                            }
+                        ]).into(),
+                        pda: None,
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    },
+                    AccountNode {
+                        name: "buffer".into(),
+                        size: None,
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(100u8).into()),
+                            }
+                        ]).into(),
+                        pda: None,
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    },
+                ],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_struct() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        struct Mint {
+            mint_authority: Pubkey,
+            freeze_authority: Option<Pubkey>,
+            supply: u64,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(korok.node, None);
+    // No visitor error because there is already is a compilation error.
+    Ok(())
+}
+
+#[test]
+fn no_overrides() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {}
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.node = Some(BooleanTypeNode::default().into());
+
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }

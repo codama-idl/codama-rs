@@ -1,7 +1,8 @@
 use crate::{
     utils::{FromMeta, SetOnce},
-    AttributeContext,
+    Attribute, AttributeContext, CodamaAttribute, CodamaDirective,
 };
+use codama_errors::CodamaError;
 use codama_nodes::{CamelCaseString, Docs, InstructionAccountNode, IsAccountSigner};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -45,6 +46,28 @@ impl AccountDirective {
             is_signer: is_signer.take(meta)?,
             is_optional: is_optional.take(meta)?,
         })
+    }
+}
+
+impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a AccountDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
+        match attribute.directive {
+            CodamaDirective::Account(ref a) => Ok(a),
+            _ => Err(CodamaError::InvalidCodamaDirective {
+                expected: "account".to_string(),
+                actual: attribute.directive.name().to_string(),
+            }),
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        <&CodamaAttribute>::try_from(attribute)?.try_into()
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_attributes::Attribute;
+use codama_attributes::{ReprAttribute, TryFromFilter};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok};
 use codama_nodes::{
@@ -175,7 +175,7 @@ impl KorokVisitor for CombineTypesVisitor {
         let size = korok
             .attributes
             .iter()
-            .find_map(Attribute::repr)
+            .find_map(ReprAttribute::filter)
             .and_then(|attr| attr.get_number_type_node())
             .unwrap_or(NumberTypeNode::le(U8));
 

@@ -1,3 +1,5 @@
+use crate::Attribute;
+use codama_errors::CodamaError;
 use codama_nodes::{NumberFormat, NumberTypeNode};
 use codama_syn_helpers::extensions::*;
 
@@ -32,6 +34,20 @@ impl<'a> ReprAttribute<'a> {
             },
             _ => None,
         })
+    }
+}
+
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a ReprAttribute<'a> {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        match attribute {
+            Attribute::Repr(a) => Ok(a),
+            _ => Err(CodamaError::InvalidAttribute {
+                expected: "repr".to_string(),
+                actual: attribute.name(),
+            }),
+        }
     }
 }
 

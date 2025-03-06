@@ -30,9 +30,9 @@ impl<T> SetOnce<T> {
         Ok(())
     }
 
-    // pub fn option(self) -> Option<T> {
-    //     self.value
-    // }
+    pub fn option(self) -> Option<T> {
+        self.value
+    }
 
     pub fn take<U: ToTokens>(mut self, tokens: U) -> syn::Result<T> {
         match self.value.take() {

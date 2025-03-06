@@ -1,4 +1,5 @@
-use crate::{utils::SetOnce, AccountDirective, AttributeContext, CodamaDirective};
+use crate::{utils::SetOnce, Attribute, AttributeContext, CodamaDirective};
+use codama_errors::CodamaError;
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -26,11 +27,18 @@ impl<'a> CodamaAttribute<'a> {
             directive: directive.take(attr)?,
         })
     }
+}
 
-    pub fn account(&self) -> Option<&AccountDirective> {
-        match &self.directive {
-            CodamaDirective::Account(a) => Some(a),
-            _ => None,
+impl<'a> TryFrom<&'a Attribute<'a>> for &'a CodamaAttribute<'a> {
+    type Error = CodamaError;
+
+    fn try_from(attribute: &'a Attribute) -> Result<Self, Self::Error> {
+        match attribute {
+            Attribute::Codama(a) => Ok(a),
+            _ => Err(CodamaError::InvalidAttribute {
+                expected: "codama".to_string(),
+                actual: attribute.name(),
+            }),
         }
     }
 }

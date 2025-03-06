@@ -152,6 +152,47 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_sets_defined_types_on_enums_with_explicit_discriminators() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaType)]
+        enum Message {
+            Write,
+            Move = 42,
+            Run,
+            Quit = 100
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetDefinedTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "message",
+                EnumTypeNode::new(vec![
+                    EnumEmptyVariantTypeNode::new("write").into(),
+                    EnumEmptyVariantTypeNode {
+                        name: "move".into(),
+                        discriminator: Some(42)
+                    }
+                    .into(),
+                    EnumEmptyVariantTypeNode::new("run").into(),
+                    EnumEmptyVariantTypeNode {
+                        name: "quit".into(),
+                        discriminator: Some(100)
+                    }
+                    .into(),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
 fn it_fails_if_nammed_fields_have_no_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]

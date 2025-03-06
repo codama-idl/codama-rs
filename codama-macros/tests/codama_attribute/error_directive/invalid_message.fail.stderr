@@ -1,0 +1,11 @@
+error: expected a literal string
+ --> tests/codama_attribute/error_directive/invalid_message.fail.rs:3:26
+  |
+3 | #[codama(error(message = 42))]
+  |                          ^^
+
+error: expected a valid expression
+ --> tests/codama_attribute/error_directive/invalid_message.fail.rs:6:26
+  |
+6 | #[codama(error(message = foo(bar)))]
+  |                          ^^^^^^^^

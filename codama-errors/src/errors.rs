@@ -32,6 +32,12 @@ pub enum CodamaError {
 
     #[error("Invalid endian: {0}")]
     InvalidEndian(String),
+
+    #[error("Invalid attribute, Expected {expected}, got {actual}")]
+    InvalidAttribute { expected: String, actual: String },
+
+    #[error("Invalid Codama directive, Expected {expected}, got {actual}")]
+    InvalidCodamaDirective { expected: String, actual: String },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

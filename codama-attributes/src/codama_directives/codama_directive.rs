@@ -1,10 +1,9 @@
 use crate::{
-    AttributeContext, EncodingDirective, FixedSizeDirective, SizePrefixDirective, TypeDirective,
+    AccountDirective, AttributeContext, EncodingDirective, ErrorDirective, FixedSizeDirective,
+    SizePrefixDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
-
-use super::AccountDirective;
 
 #[derive(Debug, PartialEq, From)]
 pub enum CodamaDirective {
@@ -16,6 +15,9 @@ pub enum CodamaDirective {
 
     // Instruction directives.
     Account(AccountDirective),
+
+    // Error directives.
+    Error(ErrorDirective),
 }
 
 impl CodamaDirective {
@@ -31,6 +33,9 @@ impl CodamaDirective {
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
 
+            // Error directives.
+            "error" => Ok(ErrorDirective::parse(meta)?.into()),
+
             _ => Err(path.error("unrecognized codama directive")),
         }
     }
@@ -38,13 +43,16 @@ impl CodamaDirective {
     pub fn name(&self) -> &'static str {
         match self {
             // Type directives.
-            CodamaDirective::Type(_) => "type",
-            CodamaDirective::Encoding(_) => "encoding",
-            CodamaDirective::FixedSize(_) => "fixed_size",
-            CodamaDirective::SizePrefix(_) => "size_prefix",
+            Self::Type(_) => "type",
+            Self::Encoding(_) => "encoding",
+            Self::FixedSize(_) => "fixed_size",
+            Self::SizePrefix(_) => "size_prefix",
 
             // Instruction directives.
-            CodamaDirective::Account(_) => "account",
+            Self::Account(_) => "account",
+
+            // Error directives.
+            Self::Error(_) => "error",
         }
     }
 }
