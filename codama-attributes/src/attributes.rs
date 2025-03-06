@@ -56,6 +56,7 @@ impl<'a> Attributes<'a> {
     pub fn has_any_codama_derive(&self) -> bool {
         self.has_codama_derive("CodamaAccount")
             || self.has_codama_derive("CodamaAccounts")
+            || self.has_codama_derive("CodamaErrors")
             || self.has_codama_derive("CodamaInstruction")
             || self.has_codama_derive("CodamaInstructions")
             || self.has_codama_derive("CodamaType")
