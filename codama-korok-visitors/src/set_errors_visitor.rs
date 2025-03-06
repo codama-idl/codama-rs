@@ -1,5 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::{Attribute, Attributes, UnsupportedAttribute};
+use codama_attributes::{
+    Attribute, Attributes, ErrorDirective, TryFromFilter, UnsupportedAttribute,
+};
 use codama_errors::CodamaResult;
 use codama_nodes::{DefinedTypeNode, Docs, ErrorNode, Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
@@ -86,14 +88,28 @@ impl KorokVisitor for SetErrorsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
-        // Get #[error] attribute message.
-        let message = get_message_from_thiserror(&korok.attributes);
+        // Get #[codama(error)] attribute.
+        let codama_error = korok
+            .attributes
+            .iter()
+            .find_map(ErrorDirective::filter)
+            .cloned()
+            .unwrap_or_default();
+
+        // Get the message from `#[codama(error)]` and then `#[error]` if available.
+        let message = codama_error
+            .message
+            .or(get_message_from_thiserror(&korok.attributes))
+            .unwrap_or_default();
+
+        // Get the code from `#[codama(error)]` and then the current discriminator.
+        let code = codama_error.code.unwrap_or(current_discriminator);
 
         korok.node = Some(
             ErrorNode {
                 name: korok.ast.ident.to_string().into(),
-                code: current_discriminator,
-                message: message.unwrap_or("".to_string()),
+                code,
+                message,
                 docs: Docs::default(),
             }
             .into(),

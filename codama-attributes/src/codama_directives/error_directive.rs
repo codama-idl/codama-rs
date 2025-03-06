@@ -2,7 +2,7 @@ use crate::{utils::SetOnce, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
 use codama_syn_helpers::{extensions::*, Meta};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub struct ErrorDirective {
     pub code: Option<usize>,
     pub message: Option<String>,
