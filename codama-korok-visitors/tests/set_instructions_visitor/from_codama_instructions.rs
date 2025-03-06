@@ -4,7 +4,7 @@ use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionAccountNode,
     InstructionArgumentNode, InstructionNode,
-    NumberFormat::{U64, U8},
+    NumberFormat::{U32, U64, U8},
     NumberTypeNode, NumberValueNode, ProgramNode,
 };
 
@@ -371,5 +371,62 @@ fn no_overrides() -> CodamaResult<()> {
 
     korok.accept(&mut SetInstructionsVisitor::new())?;
     assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
+    Ok(())
+}
+
+#[test]
+fn with_custom_enum_size() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        #[repr(u32)]
+        enum MyProgramInstructions {
+            Initialize,
+            Update
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![
+                    InstructionNode {
+                        name: "initialize".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U32).into(),
+                                default_value: Some(NumberValueNode::new(0u32).into()),
+                            },
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    },
+                    InstructionNode {
+                        name: "update".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U32).into(),
+                                default_value: Some(NumberValueNode::new(1u32).into()),
+                            },
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    }
+                ],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
     Ok(())
 }
