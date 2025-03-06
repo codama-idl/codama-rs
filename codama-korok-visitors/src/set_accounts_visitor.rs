@@ -124,11 +124,11 @@ impl KorokVisitor for SetAccountsVisitor {
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
         // Update current discriminator.
-        let current_discriminator = self.enum_current_discriminator;
-        self.enum_current_discriminator = match &korok.ast.discriminant {
+        let current_discriminator = match &korok.ast.discriminant {
             Some((_, expr)) => expr.as_literal_integer()?,
-            _ => current_discriminator + 1,
+            _ => self.enum_current_discriminator,
         };
+        self.enum_current_discriminator = current_discriminator + 1;
 
         let discriminator_name = "discriminator".to_string(); // TODO: Offer a directive to customize this.
         let discriminator = StructFieldTypeNode {

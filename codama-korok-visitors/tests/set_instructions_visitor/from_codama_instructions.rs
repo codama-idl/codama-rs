@@ -224,7 +224,6 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut SetInstructionsVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -339,43 +338,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaInstructions)]
-        struct Initialize {
-            #[codama(account)]
-            authority: AccountMeta,
-            #[codama(account(signer, writable))]
-            payer: AccountMeta,
-            amount: u64,
-        }
-    };
-    let mut korok = StructKorok::parse(&item)?;
-
-    assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
-    korok.accept(&mut SetInstructionsVisitor::new())?;
-    assert_eq!(korok.node, None);
-    // No visitor error because there is already is a compilation error.
-    Ok(())
-}
-
-#[test]
-fn no_overrides() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaInstructions)]
-        enum MyProgramInstructions {}
-    };
-    let mut korok = EnumKorok::parse(&item)?;
-    korok.node = Some(BooleanTypeNode::default().into());
-
-    korok.accept(&mut SetInstructionsVisitor::new())?;
-    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
-    Ok(())
-}
-
-#[test]
-fn with_custom_enum_size() -> CodamaResult<()> {
+fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         #[repr(u32)]
@@ -427,5 +390,126 @@ fn with_custom_enum_size() -> CodamaResult<()> {
             .into()
         )
     );
+    Ok(())
+}
+
+#[test]
+fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            Initialize,
+            Update = 42,
+            Write,
+            Close = 100,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![
+                    InstructionNode {
+                        name: "initialize".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(0u8).into()),
+                            }
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    },
+                    InstructionNode {
+                        name: "update".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(42u8).into()),
+                            }
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    },
+                    InstructionNode {
+                        name: "write".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(43u8).into()),
+                            }
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    },
+                    InstructionNode {
+                        name: "close".into(),
+                        arguments: vec![
+                            InstructionArgumentNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(100u8).into()),
+                            }
+                        ],
+                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        ..InstructionNode::default()
+                    }
+                ],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_struct() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        struct Initialize {
+            #[codama(account)]
+            authority: AccountMeta,
+            #[codama(account(signer, writable))]
+            payer: AccountMeta,
+            amount: u64,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(korok.node, None);
+    // No visitor error because there is already is a compilation error.
+    Ok(())
+}
+
+#[test]
+fn no_overrides() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {}
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.node = Some(BooleanTypeNode::default().into());
+
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }

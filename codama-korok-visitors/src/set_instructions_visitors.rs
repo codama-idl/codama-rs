@@ -134,11 +134,11 @@ impl KorokVisitor for SetInstructionsVisitor {
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
         // Update current discriminator.
-        let current_discriminator = self.enum_current_discriminator;
-        self.enum_current_discriminator = match &korok.ast.discriminant {
+        let current_discriminator = match &korok.ast.discriminant {
             Some((_, expr)) => expr.as_literal_integer()?,
-            _ => current_discriminator + 1,
+            _ => self.enum_current_discriminator,
         };
+        self.enum_current_discriminator = current_discriminator + 1;
 
         let data = get_struct_type_node_from_enum_variant(korok, &self.enum_name)?;
         let mut arguments: Vec<InstructionArgumentNode> = data.into();

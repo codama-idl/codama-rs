@@ -54,7 +54,6 @@ fn from_enum_with_thiserror_prefix() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
     korok.accept(&mut SetErrorsVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -101,6 +100,43 @@ fn from_enum_with_ignored_data() -> CodamaResult<()> {
                     ErrorNode::new("emptyTuple", 1, "Empty tuple"),
                     ErrorNode::new("filledStruct", 2, "Filled struct"),
                     ErrorNode::new("filledTuple", 3, "Filled tuple"),
+                ],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaErrors)]
+        enum MyProgramErrors {
+            #[error("Lamports below rent-exempt threshold")]
+            NotRentExempt,
+            #[error("Insufficient funds")]
+            InsufficientFunds = 42,
+            #[error("Invalid Mint")]
+            InvalidMint,
+            #[error("Account not associated with this Mint")]
+            MintMismatch = 100,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetErrorsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                errors: vec![
+                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
+                    ErrorNode::new("insufficientFunds", 42, "Insufficient funds"),
+                    ErrorNode::new("invalidMint", 43, "Invalid Mint"),
+                    ErrorNode::new("mintMismatch", 100, "Account not associated with this Mint"),
                 ],
                 ..ProgramNode::default()
             }

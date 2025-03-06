@@ -80,11 +80,11 @@ impl KorokVisitor for SetErrorsVisitor {
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
         // Update current discriminator.
-        let current_discriminator = self.enum_current_discriminator;
-        self.enum_current_discriminator = match &korok.ast.discriminant {
+        let current_discriminator = match &korok.ast.discriminant {
             Some((_, expr)) => expr.as_literal_integer()?,
-            _ => current_discriminator + 1,
+            _ => self.enum_current_discriminator,
         };
+        self.enum_current_discriminator = current_discriminator + 1;
 
         // Get #[error] attribute message.
         let message = get_message_from_thiserror(&korok.attributes);
