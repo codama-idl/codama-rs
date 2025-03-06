@@ -11,14 +11,14 @@ pub struct Nonce {
 }
 
 #[derive(CodamaType)]
-// TODO: Enum size: u32
+#[repr(u32)]
 pub enum NonceVersion {
     Legacy,
     Current,
 }
 
 #[derive(CodamaType)]
-// TODO: Enum size: u32
+#[repr(u32)]
 pub enum NonceState {
     Uninitialized,
     Initialized,
