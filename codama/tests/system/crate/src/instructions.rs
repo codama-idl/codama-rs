@@ -2,7 +2,7 @@ use codama::CodamaInstructions;
 use solana_pubkey::Pubkey;
 
 #[derive(CodamaInstructions)]
-// TODO: Enum size: u32
+#[repr(u32)]
 pub enum SystemInstruction {
     #[codama(account(name = "payer", signer, writable))] // TODO: Default value?
     #[codama(account(name = "new_account", signer, writable))]

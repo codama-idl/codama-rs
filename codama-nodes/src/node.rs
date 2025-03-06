@@ -81,6 +81,15 @@ impl HasKind for Node {
     }
 }
 
+impl HasKind for Option<Node> {
+    fn kind(&self) -> &'static str {
+        match self {
+            Some(node) => node.kind(),
+            None => "None",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

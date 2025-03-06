@@ -92,7 +92,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -152,7 +152,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -200,7 +200,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -256,7 +256,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -351,7 +351,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -410,7 +410,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -466,7 +466,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -514,7 +514,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -556,7 +556,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -606,7 +606,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -686,7 +686,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -763,7 +763,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -830,7 +830,7 @@ fn get_idl() {
             "defaultValueStrategy": "omitted",
             "type": {
               "kind": "numberTypeNode",
-              "format": "u8",
+              "format": "u32",
               "endian": "le"
             },
             "defaultValue": {
@@ -866,7 +866,7 @@ fn get_idl() {
           ],
           "size": {
             "kind": "numberTypeNode",
-            "format": "u8",
+            "format": "u32",
             "endian": "le"
           }
         }
@@ -888,7 +888,7 @@ fn get_idl() {
           ],
           "size": {
             "kind": "numberTypeNode",
-            "format": "u8",
+            "format": "u32",
             "endian": "le"
           }
         }

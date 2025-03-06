@@ -3,8 +3,8 @@ use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, Node, NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
-    TupleTypeNode, I32,
+    EnumTypeNode, NestedTypeNode, Node, NumberFormat::U32, NumberTypeNode, StringTypeNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32,
 };
 
 #[test]
@@ -83,6 +83,36 @@ fn it_ignores_invalid_variants() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "direction",
                 EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("left").into(),])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[repr(u32)]
+        enum Message { Hello, Bye }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    let variant_hello = EnumEmptyVariantTypeNode::new("hello");
+    let variant_bye = EnumEmptyVariantTypeNode::new("bye");
+    korok.variants[0].node = Some(variant_hello.clone().into());
+    korok.variants[1].node = Some(variant_bye.clone().into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "message",
+                EnumTypeNode {
+                    variants: vec![variant_hello.into(), variant_bye.into(),],
+                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                }
             )
             .into()
         )

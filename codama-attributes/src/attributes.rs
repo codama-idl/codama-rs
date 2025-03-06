@@ -66,12 +66,10 @@ impl<'a> Attributes<'a> {
     }
 
     pub fn has_derive(&self, prefixes: &[&str], last: &str) -> bool {
-        self.iter().any(|attr| match attr {
-            Attribute::Derive(a) => a
-                .derives
+        self.iter().filter_map(Attribute::derive).any(|attr| {
+            attr.derives
                 .iter()
-                .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last),
-            _ => false,
+                .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last)
         })
     }
 

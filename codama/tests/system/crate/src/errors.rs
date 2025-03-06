@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-// TODO: Add CodamaError(s)
+// TODO: Add CodamaErrors
 pub enum SystemError {
     #[error("an account with the same address already exists")]
     AccountAlreadyInUse,

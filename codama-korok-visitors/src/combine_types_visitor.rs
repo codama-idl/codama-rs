@@ -1,10 +1,12 @@
 use crate::KorokVisitor;
+use codama_attributes::Attribute;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok};
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, HasKind, Node, RegisteredTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, HasKind, NestedTypeNode, Node, NumberFormat::U8,
+    NumberTypeNode, RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -170,7 +172,23 @@ impl KorokVisitor for CombineTypesVisitor {
             .filter_map(|variant| (self.get_enum_variant)(variant, parent.clone()))
             .collect_and_combine_errors()?;
 
-        korok.node = Some(DefinedTypeNode::new(enum_name, EnumTypeNode::new(variants)).into());
+        let size = korok
+            .attributes
+            .iter()
+            .find_map(Attribute::repr)
+            .and_then(|attr| attr.get_number_type_node())
+            .unwrap_or(NumberTypeNode::le(U8));
+
+        korok.node = Some(
+            DefinedTypeNode::new(
+                enum_name,
+                EnumTypeNode {
+                    variants,
+                    size: NestedTypeNode::Value(size),
+                },
+            )
+            .into(),
+        );
         Ok(())
     }
 
