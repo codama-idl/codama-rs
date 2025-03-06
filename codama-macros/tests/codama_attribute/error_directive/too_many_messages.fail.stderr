@@ -1,0 +1,11 @@
+error: message is already set
+ --> tests/codama_attribute/error_directive/too_many_messages.fail.rs:3:25
+  |
+3 | #[codama(error("hello", "world"))]
+  |                         ^^^^^^^
+
+error: message is already set
+ --> tests/codama_attribute/error_directive/too_many_messages.fail.rs:6:35
+  |
+6 | #[codama(error(message = "hello", message = "world"))]
+  |                                   ^^^^^^^^^^^^^^^^^

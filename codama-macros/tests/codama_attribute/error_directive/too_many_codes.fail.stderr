@@ -1,0 +1,11 @@
+error: code is already set
+ --> tests/codama_attribute/error_directive/too_many_codes.fail.rs:3:20
+  |
+3 | #[codama(error(42, 100))]
+  |                    ^^^
+
+error: code is already set
+ --> tests/codama_attribute/error_directive/too_many_codes.fail.rs:6:27
+  |
+6 | #[codama(error(code = 42, code = 100))]
+  |                           ^^^^^^^^^^

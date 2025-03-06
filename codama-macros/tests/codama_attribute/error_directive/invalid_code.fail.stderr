@@ -1,0 +1,11 @@
+error: expected a literal integer
+ --> tests/codama_attribute/error_directive/invalid_code.fail.rs:3:23
+  |
+3 | #[codama(error(code = "42"))]
+  |                       ^^^^
+
+error: expected a valid expression
+ --> tests/codama_attribute/error_directive/invalid_code.fail.rs:6:23
+  |
+6 | #[codama(error(code = foo(bar)))]
+  |                       ^^^^^^^^
