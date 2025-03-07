@@ -1,0 +1,11 @@
+error: expected a list: `public_key(...)` or `public_key = (...)`
+ --> tests/codama_attribute/values_nodes/public_key_value_node/no_input.fail.rs:3:26
+  |
+3 | #[codama(default_value = public_key)]
+  |                          ^^^^^^^^^^
+
+error: public_key is missing
+ --> tests/codama_attribute/values_nodes/public_key_value_node/no_input.fail.rs:6:26
+  |
+6 | #[codama(default_value = public_key())]
+  |                          ^^^^^^^^^^^^

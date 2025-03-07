@@ -83,7 +83,7 @@ impl KorokVisitor for SetErrorsVisitor {
     ) -> CodamaResult<()> {
         // Update current discriminator.
         let current_discriminator = match &korok.ast.discriminant {
-            Some((_, expr)) => expr.as_literal_integer()?,
+            Some((_, expr)) => expr.as_unsigned_integer()?,
             _ => self.enum_current_discriminator,
         };
         self.enum_current_discriminator = current_discriminator + 1;
@@ -140,6 +140,6 @@ pub fn get_message_from_thiserror(attributes: &Attributes) -> Option<String> {
 
         // Get the first meta as a string, if possible.
         let metas = list.parse_metas().ok()?;
-        metas.first()?.as_expr().ok()?.as_literal_string().ok()
+        metas.first()?.as_expr().ok()?.as_string().ok()
     })
 }

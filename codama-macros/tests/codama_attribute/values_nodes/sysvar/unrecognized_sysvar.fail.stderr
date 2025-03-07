@@ -1,0 +1,5 @@
+error: unrecognized sysvar
+ --> tests/codama_attribute/values_nodes/sysvar/unrecognized_sysvar.fail.rs:3:33
+  |
+3 | #[codama(default_value = sysvar("banana"))]
+  |                                 ^^^^^^^^

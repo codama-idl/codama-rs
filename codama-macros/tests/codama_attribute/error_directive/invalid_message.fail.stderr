@@ -1,4 +1,4 @@
-error: expected a literal string
+error: expected a string
  --> tests/codama_attribute/error_directive/invalid_message.fail.rs:3:26
   |
 3 | #[codama(error(message = 42))]

@@ -1,0 +1,5 @@
+error: sysvar_identifier is already set
+ --> tests/codama_attribute/values_nodes/sysvar/too_many_inputs.fail.rs:3:41
+  |
+3 | #[codama(default_value = sysvar("rent", "clock"))]
+  |                                         ^^^^^^^

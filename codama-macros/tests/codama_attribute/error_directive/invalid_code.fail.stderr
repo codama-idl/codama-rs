@@ -1,4 +1,4 @@
-error: expected a literal integer
+error: expected an unsigned integer
  --> tests/codama_attribute/error_directive/invalid_code.fail.rs:3:23
   |
 3 | #[codama(error(code = "42"))]

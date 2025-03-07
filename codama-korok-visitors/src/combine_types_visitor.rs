@@ -212,7 +212,7 @@ impl KorokVisitor for CombineTypesVisitor {
             .ast
             .discriminant
             .as_ref()
-            .and_then(|(_, x)| x.as_literal_integer::<usize>().ok());
+            .and_then(|(_, x)| x.as_unsigned_integer::<usize>().ok());
 
         korok.node = match (&korok.ast.fields, &korok.fields.node) {
             (syn::Fields::Unit, _) => Some(

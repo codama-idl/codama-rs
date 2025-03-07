@@ -93,7 +93,7 @@ fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
             }
         }
         syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
-            let Ok(size) = len.as_literal_integer::<usize>() else {
+            let Ok(size) = len.as_unsigned_integer::<usize>() else {
                 return None;
             };
             get_type_node(elem)

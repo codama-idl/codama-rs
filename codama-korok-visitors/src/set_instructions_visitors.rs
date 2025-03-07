@@ -135,7 +135,7 @@ impl KorokVisitor for SetInstructionsVisitor {
     ) -> CodamaResult<()> {
         // Update current discriminator.
         let current_discriminator = match &korok.ast.discriminant {
-            Some((_, expr)) => expr.as_literal_integer()?,
+            Some((_, expr)) => expr.as_unsigned_integer()?,
             _ => self.enum_current_discriminator,
         };
         self.enum_current_discriminator = current_discriminator + 1;

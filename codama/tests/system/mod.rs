@@ -76,7 +76,10 @@ fn get_idl() {
             "kind": "instructionAccountNode",
             "name": "payer",
             "isWritable": true,
-            "isSigner": true
+            "isSigner": true,
+            "defaultValue": {
+              "kind": "payerValueNode"
+            }
           },
           {
             "kind": "instructionAccountNode",
@@ -335,7 +338,11 @@ fn get_idl() {
             "kind": "instructionAccountNode",
             "name": "recentBlockhashesSysvar",
             "isWritable": false,
-            "isSigner": false
+            "isSigner": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRecentB1ockHashes11111111111111111111"
+            }
           },
           {
             "kind": "instructionAccountNode",
@@ -388,13 +395,21 @@ fn get_idl() {
             "kind": "instructionAccountNode",
             "name": "recentBlockhashesSysvar",
             "isWritable": false,
-            "isSigner": false
+            "isSigner": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRecentB1ockHashes11111111111111111111"
+            }
           },
           {
             "kind": "instructionAccountNode",
             "name": "rentSysvar",
             "isWritable": false,
-            "isSigner": false
+            "isSigner": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            }
           },
           {
             "kind": "instructionAccountNode",
@@ -450,13 +465,21 @@ fn get_idl() {
             "kind": "instructionAccountNode",
             "name": "recentBlockhashesSysvar",
             "isWritable": false,
-            "isSigner": false
+            "isSigner": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRecentB1ockHashes11111111111111111111"
+            }
           },
           {
             "kind": "instructionAccountNode",
             "name": "rentSysvar",
             "isWritable": false,
-            "isSigner": false
+            "isSigner": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            }
           }
         ],
         "arguments": [

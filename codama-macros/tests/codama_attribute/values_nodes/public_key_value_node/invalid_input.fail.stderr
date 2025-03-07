@@ -1,0 +1,11 @@
+error: expected a string
+ --> tests/codama_attribute/values_nodes/public_key_value_node/invalid_input.fail.rs:3:37
+  |
+3 | #[codama(default_value = public_key(42))]
+  |                                     ^^
+
+error: expected a string
+ --> tests/codama_attribute/values_nodes/public_key_value_node/invalid_input.fail.rs:6:37
+  |
+6 | #[codama(default_value = public_key(banana))]
+  |                                     ^^^^^^
