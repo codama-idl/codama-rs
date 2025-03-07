@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NumberFormat::U64, NumberTypeNode,
+    BooleanTypeNode, Docs, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    NumberFormat::U64, NumberTypeNode, PayerValueNode, PublicKeyValueNode,
 };
 
 #[test]
@@ -137,6 +137,57 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                 arguments: vec![
                     InstructionArgumentNode::new("amount", NumberTypeNode::le(U64)),
                     InstructionArgumentNode::new("is_canonical", BooleanTypeNode::default(),),
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(account(name = "rent_sysvar", default_value = sysvar("rent")))]
+        struct Initialize {
+            #[codama(account)]
+            authority: AccountMeta,
+            #[codama(account(signer, writable, default_value = payer))]
+            payer: AccountMeta,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "initialize".into(),
+                accounts: vec![
+                    InstructionAccountNode {
+                        name: "rentSysvar".into(),
+                        default_value: Some(
+                            PublicKeyValueNode::new("SysvarRent111111111111111111111111111111111")
+                                .into()
+                        ),
+                        is_writable: false,
+                        is_signer: false.into(),
+                        is_optional: false,
+                        docs: Docs::default(),
+                    },
+                    InstructionAccountNode::new("authority", false, false),
+                    InstructionAccountNode {
+                        name: "payer".into(),
+                        is_signer: true.into(),
+                        is_writable: true,
+                        default_value: Some(PayerValueNode::new().into()),
+                        is_optional: false,
+                        docs: Docs::default(),
+                    },
                 ],
                 ..InstructionNode::default()
             }

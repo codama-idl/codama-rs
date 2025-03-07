@@ -3,7 +3,9 @@ use crate::{
     Attribute, AttributeContext, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{CamelCaseString, Docs, InstructionAccountNode, IsAccountSigner};
+use codama_nodes::{
+    CamelCaseString, Docs, InstructionAccountNode, InstructionInputValueNode, IsAccountSigner,
+};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
@@ -12,6 +14,7 @@ pub struct AccountDirective {
     pub is_writable: bool,
     pub is_signer: IsAccountSigner,
     pub is_optional: bool,
+    pub default_value: Option<InstructionInputValueNode>,
     // TODO: `docs` for account directives not attached to fields.
 }
 
@@ -28,6 +31,7 @@ impl AccountDirective {
         let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
         let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
+        let mut default_value = SetOnce::<InstructionInputValueNode>::new("default_value");
         match meta.is_path_or_empty_list() {
             true => (),
             false => meta
@@ -37,6 +41,10 @@ impl AccountDirective {
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
                     "signer" => is_signer.set(IsAccountSigner::from_meta(meta)?, meta),
                     "optional" => is_optional.set(bool::from_meta(meta)?, meta),
+                    "default_value" => {
+                        let value = &meta.as_path_value()?.value;
+                        default_value.set(InstructionInputValueNode::from_meta(value)?, meta)
+                    }
                     _ => Err(meta.error("unrecognized attribute")),
                 })?,
         }
@@ -45,6 +53,7 @@ impl AccountDirective {
             is_writable: is_writable.take(meta)?,
             is_signer: is_signer.take(meta)?,
             is_optional: is_optional.take(meta)?,
+            default_value: default_value.option(),
         })
     }
 }
@@ -79,7 +88,7 @@ impl From<&AccountDirective> for InstructionAccountNode {
             is_signer: value.is_signer,
             is_optional: value.is_optional,
             docs: Docs::default(),
-            default_value: None,
+            default_value: value.default_value.clone(),
         }
     }
 }
@@ -87,10 +96,11 @@ impl From<&AccountDirective> for InstructionAccountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::PayerValueNode;
 
     #[test]
     fn fully_set() {
-        let meta: Meta = syn::parse_quote! { account(name = "payer", writable, signer, optional) };
+        let meta: Meta = syn::parse_quote! { account(name = "payer", writable, signer, optional, default_value = payer) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
@@ -101,13 +111,20 @@ mod tests {
                 is_writable: true,
                 is_signer: IsAccountSigner::True,
                 is_optional: true,
+                default_value: Some(PayerValueNode::new().into()),
             }
         );
     }
 
     #[test]
     fn fully_set_with_explicit_values() {
-        let meta: Meta = syn::parse_quote! { account(name = "payer", writable = true, signer = "either", optional = false) };
+        let meta: Meta = syn::parse_quote! { account(
+            name = "payer",
+            writable = true,
+            signer = "either",
+            optional = false,
+            default_value = payer
+        ) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
@@ -118,12 +135,13 @@ mod tests {
                 is_writable: true,
                 is_signer: IsAccountSigner::Either,
                 is_optional: false,
+                default_value: Some(PayerValueNode::new().into()),
             }
         );
     }
 
     #[test]
-    fn empty_on_nammed_field() {
+    fn empty_on_named_field() {
         let meta: Meta = syn::parse_quote! { account };
         let field = syn::parse_quote! { authority: AccountMeta };
         let ctx = AttributeContext::Field(&field);
@@ -135,6 +153,7 @@ mod tests {
                 is_writable: false,
                 is_signer: IsAccountSigner::False,
                 is_optional: false,
+                default_value: None,
             }
         );
     }
