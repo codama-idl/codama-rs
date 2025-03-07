@@ -24,17 +24,16 @@ impl ErrorDirective {
                 meta.as_path_value()?
                     .value
                     .as_expr()?
-                    .as_literal_integer()?,
+                    .as_unsigned_integer()?,
                 meta,
             ),
-            ("message", _) => message.set(
-                meta.as_path_value()?.value.as_expr()?.as_literal_string()?,
-                meta,
-            ),
+            ("message", _) => {
+                message.set(meta.as_path_value()?.value.as_expr()?.as_string()?, meta)
+            }
             (_, Meta::Expr(expr)) => {
-                if let Ok(value) = expr.as_literal_integer() {
+                if let Ok(value) = expr.as_unsigned_integer() {
                     code.set(value, meta)
-                } else if let Ok(value) = expr.as_literal_string() {
+                } else if let Ok(value) = expr.as_string() {
                     message.set(value, meta)
                 } else {
                     Err(expr.error("expected an integer or a string"))

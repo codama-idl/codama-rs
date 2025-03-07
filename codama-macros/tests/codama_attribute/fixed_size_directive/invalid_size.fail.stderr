@@ -4,7 +4,7 @@ error: expected a valid expression
 3 | #[codama(fixed_size = invalid(1, 2, 3))]
   |                       ^^^^^^^^^^^^^^^^
 
-error: expected a literal integer
+error: expected an unsigned integer
  --> tests/codama_attribute/fixed_size_directive/invalid_size.fail.rs:6:23
   |
 6 | #[codama(fixed_size = invalid)]

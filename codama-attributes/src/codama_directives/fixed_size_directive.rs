@@ -10,7 +10,7 @@ pub struct FixedSizeDirective {
 impl FixedSizeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pv = meta.assert_directive("fixed_size")?.as_path_value()?;
-        let size = pv.value.as_expr()?.as_literal_integer()?;
+        let size = pv.value.as_expr()?.as_unsigned_integer()?;
         Ok(Self { size })
     }
 }

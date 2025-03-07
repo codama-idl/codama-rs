@@ -49,6 +49,6 @@ mod tests {
         let meta = items[2].as_path_value().unwrap();
         let expr = meta.value.as_expr().unwrap();
         assert!(meta.path.is_strict("three"));
-        assert_eq!(expr.as_literal_integer::<usize>().unwrap(), 42);
+        assert_eq!(expr.as_unsigned_integer::<usize>().unwrap(), 42);
     }
 }

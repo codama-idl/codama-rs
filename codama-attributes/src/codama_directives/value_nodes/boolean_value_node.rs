@@ -4,7 +4,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for BooleanValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let value = meta.as_expr()?.as_literal_bool()?;
+        let value = meta.as_expr()?.as_bool()?;
         Ok(BooleanValueNode::new(value))
     }
 }

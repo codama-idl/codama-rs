@@ -371,7 +371,7 @@ mod tests {
         };
         assert!(meta.path.is_strict("foo"));
         let expr = meta.value.as_expr().unwrap();
-        assert_eq!(expr.as_literal_integer::<usize>().unwrap(), 42);
+        assert_eq!(expr.as_unsigned_integer::<usize>().unwrap(), 42);
     }
 
     #[test]
@@ -382,7 +382,7 @@ mod tests {
         };
         assert!(meta.path.is_strict("foo"));
         let expr = meta.value.as_expr().unwrap();
-        assert!(expr.as_literal_bool().unwrap());
+        assert!(expr.as_bool().unwrap());
     }
 
     #[test]
