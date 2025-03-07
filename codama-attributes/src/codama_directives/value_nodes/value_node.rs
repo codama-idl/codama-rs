@@ -1,9 +1,9 @@
+use crate::codama_directives::value_nodes::sysvar::public_key_value_node_from_sysvar;
 use crate::utils::FromMeta;
 use codama_nodes::{
     BooleanValueNode, NumberValueNode, PublicKeyValueNode, StringValueNode, ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
-use crate::codama_directives::value_nodes::sysvar::public_key_value_node_from_sysvar;
 
 impl FromMeta for ValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
