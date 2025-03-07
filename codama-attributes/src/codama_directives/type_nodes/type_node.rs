@@ -7,11 +7,11 @@ use codama_syn_helpers::{extensions::*, Meta};
 impl FromMeta for TypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
-            "boolean" => Ok(BooleanTypeNode::from_meta(meta)?.into()),
-            "fixed_size" => Ok(FixedSizeTypeNode::from_meta(meta)?.into()),
-            "number" => Ok(NumberTypeNode::from_meta(meta)?.into()),
-            "public_key" => Ok(PublicKeyTypeNode::from_meta(meta)?.into()),
-            "string" => Ok(StringTypeNode::from_meta(meta)?.into()),
+            "boolean" => BooleanTypeNode::from_meta(meta).map(Self::from),
+            "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
+            "number" => NumberTypeNode::from_meta(meta).map(Self::from),
+            "public_key" => PublicKeyTypeNode::from_meta(meta).map(Self::from),
+            "string" => StringTypeNode::from_meta(meta).map(Self::from),
             _ => Err(meta.error("unrecognized type")),
         }
     }
