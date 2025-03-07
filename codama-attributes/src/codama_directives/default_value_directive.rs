@@ -1,17 +1,17 @@
 use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::ValueNode;
+use codama_nodes::InstructionInputValueNode;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct DefaultValueDirective {
-    pub node: ValueNode, // TODO: Superset like InstructionInputValueNode?
+    pub node: InstructionInputValueNode,
 }
 
 impl DefaultValueDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pv = meta.assert_directive("default_value")?.as_path_value()?;
-        let node = ValueNode::from_meta(&pv.value)?;
+        let node = InstructionInputValueNode::from_meta(&pv.value)?;
         Ok(Self { node })
     }
 }
