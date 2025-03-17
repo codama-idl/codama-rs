@@ -7,7 +7,7 @@ pub struct InstructionAccountNode {
     pub name: CamelCaseString,
     pub is_writable: bool,
     pub is_signer: IsAccountSigner,
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_optional: bool,
     #[serde(default, skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,

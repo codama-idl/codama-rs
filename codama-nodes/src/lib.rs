@@ -41,3 +41,8 @@ pub use shared::*;
 pub use traits::*;
 pub use type_nodes::*;
 pub use value_nodes::*;
+
+// Serde helper function to use with `#[serde(some_thing = "crate::is_default")]`.
+fn is_default<T: Default + PartialEq>(t: &T) -> bool {
+    t == &T::default()
+}

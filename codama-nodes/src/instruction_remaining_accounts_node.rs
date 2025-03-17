@@ -4,9 +4,11 @@ use codama_nodes_derive::{node, node_union};
 #[node]
 pub struct InstructionRemainingAccountsNode {
     // Data.
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_optional: bool,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_signer: IsAccountSigner,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_writable: bool,
     #[serde(default, skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,

@@ -12,10 +12,7 @@ pub struct InstructionNode {
     pub name: CamelCaseString,
     #[serde(default, skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
-    #[serde(
-        default,
-        skip_serializing_if = "InstructionOptionalAccountStrategy::is_default"
-    )]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub optional_account_strategy: InstructionOptionalAccountStrategy,
 
     // Children.
@@ -39,12 +36,6 @@ pub enum InstructionOptionalAccountStrategy {
     Omitted,
     #[default]
     ProgramId,
-}
-
-impl InstructionOptionalAccountStrategy {
-    pub fn is_default(&self) -> bool {
-        matches!(self, Self::ProgramId)
-    }
 }
 
 #[cfg(test)]
