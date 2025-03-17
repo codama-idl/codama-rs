@@ -19,14 +19,8 @@ pub struct ProgramNode {
     // Children.
     pub accounts: Vec<AccountNode>,
     pub instructions: Vec<InstructionNode>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub defined_types: Vec<DefinedTypeNode>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pdas: Vec<PdaNode>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<ErrorNode>,
 }
 
