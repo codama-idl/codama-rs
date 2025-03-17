@@ -10,23 +10,30 @@ use serde::{Deserialize, Serialize};
 pub struct InstructionNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "Docs::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub optional_account_strategy: InstructionOptionalAccountStrategy,
 
     // Children.
     pub accounts: Vec<InstructionAccountNode>,
     pub arguments: Vec<InstructionArgumentNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub extra_arguments: Vec<InstructionArgumentNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub remaining_accounts: Vec<InstructionRemainingAccountsNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub byte_deltas: Vec<InstructionByteDeltaNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub discriminators: Vec<DiscriminatorNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub sub_instructions: Vec<InstructionNode>,
 }
 

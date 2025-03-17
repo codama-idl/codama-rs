@@ -9,14 +9,16 @@ pub struct AccountNode {
     pub name: CamelCaseString,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<usize>,
-    #[serde(default, skip_serializing_if = "Docs::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
     pub data: NestedTypeNode<StructTypeNode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pda: Option<PdaLinkNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub discriminators: Vec<DiscriminatorNode>,
 }
 

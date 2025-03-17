@@ -12,17 +12,21 @@ pub struct ProgramNode {
     pub version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
-    #[serde(default, skip_serializing_if = "Docs::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
     pub accounts: Vec<AccountNode>,
     pub instructions: Vec<InstructionNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub defined_types: Vec<DefinedTypeNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pdas: Vec<PdaNode>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<ErrorNode>,
 }
 
