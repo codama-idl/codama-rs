@@ -5,8 +5,7 @@ use codama_nodes_derive::node;
 pub struct DefinedTypeNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "Docs::is_empty")]
     pub docs: Docs,
 
     // Children.
