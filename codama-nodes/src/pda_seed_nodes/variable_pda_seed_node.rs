@@ -5,8 +5,7 @@ use codama_nodes_derive::node;
 pub struct VariablePdaSeedNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.

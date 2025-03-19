@@ -7,7 +7,7 @@ pub struct InstructionAccountLinkNode {
     pub name: CamelCaseString,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub instruction: Option<InstructionLinkNode>,
 }
 

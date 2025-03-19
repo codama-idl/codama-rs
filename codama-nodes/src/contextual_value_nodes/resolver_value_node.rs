@@ -5,12 +5,11 @@ use codama_nodes_derive::{node, node_union};
 pub struct ResolverValueNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub depends_on: Option<Vec<ResolverDependency>>,
 }
 

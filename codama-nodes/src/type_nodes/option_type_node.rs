@@ -4,8 +4,7 @@ use codama_nodes_derive::type_node;
 #[type_node]
 pub struct OptionTypeNode {
     // Data.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "crate::is_default")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub fixed: bool,
 
     // Children.

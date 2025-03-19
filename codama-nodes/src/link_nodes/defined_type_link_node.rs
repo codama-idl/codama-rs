@@ -7,7 +7,7 @@ pub struct DefinedTypeLinkNode {
     pub name: CamelCaseString,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub program: Option<ProgramLinkNode>,
 }
 

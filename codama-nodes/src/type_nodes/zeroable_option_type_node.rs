@@ -5,7 +5,7 @@ use codama_nodes_derive::type_node;
 pub struct ZeroableOptionTypeNode {
     // Children.
     pub item: Box<TypeNode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub zero_value: Option<ConstantValueNode>,
 }
 

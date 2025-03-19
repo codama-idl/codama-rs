@@ -7,15 +7,13 @@ pub struct InstructionAccountNode {
     pub name: CamelCaseString,
     pub is_writable: bool,
     pub is_signer: IsAccountSigner,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "crate::is_default")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_optional: bool,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub default_value: Option<InstructionInputValueNode>,
 }
 

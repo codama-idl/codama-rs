@@ -10,10 +10,9 @@ pub struct ProgramNode {
     pub name: CamelCaseString,
     pub public_key: String,
     pub version: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.
