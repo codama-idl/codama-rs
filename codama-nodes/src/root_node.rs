@@ -46,6 +46,7 @@ impl From<ProgramNode> for RootNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
@@ -112,7 +113,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#
+            r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"errors":[]},"additionalPrograms":[]}"#
         );
     }
 

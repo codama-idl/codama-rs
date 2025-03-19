@@ -5,7 +5,7 @@ use codama_nodes_derive::node;
 pub struct EnumTupleVariantTypeNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub discriminator: Option<usize>,
 
     // Children.

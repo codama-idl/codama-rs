@@ -10,23 +10,21 @@ pub struct ProgramNode {
     pub name: CamelCaseString,
     pub public_key: String,
     pub version: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.
+    #[serde(default)]
     pub accounts: Vec<AccountNode>,
+    #[serde(default)]
     pub instructions: Vec<InstructionNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub defined_types: Vec<DefinedTypeNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pdas: Vec<PdaNode>,
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<ErrorNode>,
 }
 
@@ -73,6 +71,7 @@ impl ProgramNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
@@ -135,13 +134,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]}"#
+            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"errors":[]}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]}"#;
+        let json = r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#;
         let node: ProgramNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

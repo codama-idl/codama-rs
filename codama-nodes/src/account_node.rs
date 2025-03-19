@@ -7,18 +7,16 @@ use codama_nodes_derive::node;
 pub struct AccountNode {
     // Data.
     pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub size: Option<usize>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Docs::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
     // Children.
     pub data: NestedTypeNode<StructTypeNode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "crate::is_default")]
     pub pda: Option<PdaLinkNode>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub discriminators: Vec<DiscriminatorNode>,
 }
 

@@ -96,7 +96,9 @@ fn get_idl() {
           }
         }
       }
-    ]
+    ],
+    "pdas": [],
+    "errors": []
   },
   "additionalPrograms": []
 }"#
