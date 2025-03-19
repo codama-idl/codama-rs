@@ -917,6 +917,7 @@ fn get_idl() {
         }
       }
     ],
+    "pdas": [],
     "errors": [
       {
         "kind": "errorNode",
