@@ -34,6 +34,7 @@ pub struct InstructionNode {
 #[serde(rename_all = "camelCase")]
 pub enum InstructionOptionalAccountStrategy {
     Omitted,
+    Default,
     #[default]
     ProgramId,
 }
