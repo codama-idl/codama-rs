@@ -38,6 +38,7 @@ pub trait KorokVisitor {
             codama_koroks::ItemKorok::Module(korok) => self.visit_module(korok),
             codama_koroks::ItemKorok::Struct(korok) => self.visit_struct(korok),
             codama_koroks::ItemKorok::Enum(korok) => self.visit_enum(korok),
+            codama_koroks::ItemKorok::Impl(korok) => self.visit_impl(korok),
             codama_koroks::ItemKorok::Const(korok) => self.visit_const(korok),
             codama_koroks::ItemKorok::Unsupported(korok) => self.visit_unsupported_item(korok),
         }
@@ -101,6 +102,15 @@ pub trait KorokVisitor {
     }
 
     fn visit_field(&mut self, _korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn visit_impl(&mut self, korok: &mut codama_koroks::ImplKorok) -> CodamaResult<()> {
+        korok
+            .constants
+            .iter_mut()
+            .map(|const_korok| self.visit_const(const_korok))
+            .collect_and_combine_errors()?;
         Ok(())
     }
 
