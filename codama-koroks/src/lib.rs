@@ -1,3 +1,4 @@
+mod const_korok;
 mod crate_korok;
 mod enum_korok;
 mod enum_variant_korok;
@@ -11,6 +12,7 @@ mod root_korok;
 mod struct_korok;
 mod unsupported_item_korok;
 
+pub use const_korok::*;
 pub use crate_korok::*;
 pub use enum_korok::*;
 pub use enum_variant_korok::*;
