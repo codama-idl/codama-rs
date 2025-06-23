@@ -5,16 +5,16 @@ use codama_nodes::Node;
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
-pub struct ConstKorok<'a> {
-    pub ast: &'a syn::ItemConst,
+pub struct ImplConstKorok<'a> {
+    pub ast: &'a syn::ImplItemConst,
     pub attributes: Attributes<'a>,
     pub node: Option<Node>,
 }
 
-impl<'a> ConstKorok<'a> {
-    pub fn parse(item: &'a syn::Item) -> CodamaResult<Self> {
-        let syn::Item::Const(ast) = item else {
-            return Err(item.error("Expected a const item").into());
+impl<'a> ImplConstKorok<'a> {
+    pub fn parse(item: &'a syn::ImplItem) -> CodamaResult<Self> {
+        let syn::ImplItem::Const(ast) = item else {
+            return Err(item.error("Expected a const impl item").into());
         };
         let attributes = Attributes::parse(&ast.attrs, item.into())?;
         Ok(Self {
@@ -25,7 +25,7 @@ impl<'a> ConstKorok<'a> {
     }
 }
 
-impl KorokTrait for ConstKorok<'_> {
+impl KorokTrait for ImplConstKorok<'_> {
     fn node(&self) -> &Option<Node> {
         &self.node
     }

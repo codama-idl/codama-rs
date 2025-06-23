@@ -1,18 +1,18 @@
-use crate::{ConstKorok, KorokTrait, UnsupportedImplItemKorok};
+use crate::{ImplConstKorok, KorokTrait, UnsupportedImplItemKorok};
 use codama_attributes::Attributes;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::Node;
 
 #[derive(Debug, PartialEq)]
 pub enum ImplItemKorok<'a> {
-    Const(ConstKorok<'a>),
+    Const(ImplConstKorok<'a>),
     Unsupported(UnsupportedImplItemKorok<'a>),
 }
 
 impl<'a> ImplItemKorok<'a> {
     pub fn parse(item: &'a syn::ImplItem) -> CodamaResult<Self> {
         match item {
-            syn::ImplItem::Const(_) => Ok(ImplItemKorok::Const(ConstKorok::parse_impl_item(item)?)),
+            syn::ImplItem::Const(_) => Ok(ImplItemKorok::Const(ImplConstKorok::parse(item)?)),
             _ => Ok(ImplItemKorok::Unsupported(UnsupportedImplItemKorok::parse(
                 item,
             )?)),
@@ -20,10 +20,7 @@ impl<'a> ImplItemKorok<'a> {
     }
 
     pub fn parse_all(items: &'a [syn::ImplItem]) -> CodamaResult<Vec<Self>> {
-        items
-            .iter()
-            .map(Self::parse)
-            .collect_and_combine_errors()
+        items.iter().map(Self::parse).collect_and_combine_errors()
     }
 }
 
