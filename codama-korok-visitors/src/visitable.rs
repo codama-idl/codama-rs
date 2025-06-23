@@ -161,10 +161,31 @@ impl KorokVisitable for codama_koroks::ImplKorok<'_> {
         visitor.visit_impl(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        self.constants
+        self.items
             .iter_mut()
             .map(|c| c as &mut dyn KorokVisitable)
             .collect()
+    }
+}
+
+impl KorokVisitable for codama_koroks::ImplItemKorok<'_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
+        visitor.visit_impl_item(self)
+    }
+    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
+        match self {
+            codama_koroks::ImplItemKorok::Const(k) => vec![k as &mut dyn KorokVisitable],
+            codama_koroks::ImplItemKorok::Unsupported(k) => vec![k as &mut dyn KorokVisitable],
+        }
+    }
+}
+
+impl KorokVisitable for codama_koroks::UnsupportedImplItemKorok<'_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
+        visitor.visit_unsupported_impl_item(self)
+    }
+    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
+        Vec::new()
     }
 }
 

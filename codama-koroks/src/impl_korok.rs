@@ -1,4 +1,4 @@
-use crate::{ConstKorok, ImplTraitKorok, KorokTrait};
+use crate::{ImplItemKorok, KorokTrait};
 use codama_attributes::Attributes;
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
@@ -8,8 +8,7 @@ use codama_syn_helpers::extensions::*;
 pub struct ImplKorok<'a> {
     pub ast: &'a syn::ItemImpl,
     pub attributes: Attributes<'a>,
-    pub constants: Vec<ConstKorok<'a>>,
-    pub trait_: Option<ImplTraitKorok>, // None means it's a Self impl
+    pub items: Vec<ImplItemKorok<'a>>,
     pub node: Option<Node>,
 }
 
@@ -18,16 +17,14 @@ impl<'a> ImplKorok<'a> {
         let syn::Item::Impl(ast) = item else {
             return Err(item.error("Expected an impl block").into());
         };
-        let (attributes, constants, trait_) = combine_errors!(
+        let (attributes, items) = combine_errors!(
             Attributes::parse(&ast.attrs, item.into()).map_err(CodamaError::from),
-            ConstKorok::parse_all_impl_items(&ast.items),
-            ImplTraitKorok::parse(&ast.trait_),
+            ImplItemKorok::parse_all(&ast.items),
         )?;
         Ok(Self {
             ast,
             attributes,
-            trait_,
-            constants,
+            items,
             node: None,
         })
     }

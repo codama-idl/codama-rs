@@ -107,14 +107,25 @@ pub trait KorokVisitor {
 
     fn visit_impl(&mut self, korok: &mut codama_koroks::ImplKorok) -> CodamaResult<()> {
         korok
-            .constants
+            .items
             .iter_mut()
-            .map(|const_korok| self.visit_const(const_korok))
+            .map(|impl_item_korok| self.visit_impl_item(impl_item_korok))
             .collect_and_combine_errors()?;
         Ok(())
     }
 
+    fn visit_impl_item(&mut self, korok: &mut codama_koroks::ImplItemKorok) -> CodamaResult<()> {
+        match korok {
+            codama_koroks::ImplItemKorok::Const(korok) => self.visit_const(korok),
+            codama_koroks::ImplItemKorok::Unsupported(korok) => self.visit_unsupported_impl_item(korok),
+        }
+    }
+
     fn visit_const(&mut self, _korok: &mut codama_koroks::ConstKorok) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn visit_unsupported_impl_item(&mut self, _korok: &mut codama_koroks::UnsupportedImplItemKorok) -> CodamaResult<()> {
         Ok(())
     }
 }

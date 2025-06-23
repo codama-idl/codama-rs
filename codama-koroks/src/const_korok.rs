@@ -30,7 +30,7 @@ impl<'a> ConstKorok<'a> {
         })
     }
 
-    fn parse_impl_item(item: &'a syn::ImplItem) -> CodamaResult<Self> {
+    pub fn parse_impl_item(item: &'a syn::ImplItem) -> CodamaResult<Self> {
         let syn::ImplItem::Const(ast) = item else {
             return Err(item.error("Expected a const impl item").into());
         };
@@ -40,13 +40,6 @@ impl<'a> ConstKorok<'a> {
             attributes,
             node: None,
         })
-    }
-
-    pub fn parse_all_impl_items(items: &'a [syn::ImplItem]) -> CodamaResult<Vec<Self>> {
-        Ok(items
-            .iter()
-            .filter_map(|item| Self::parse_impl_item(item).ok())
-            .collect())
     }
 }
 
