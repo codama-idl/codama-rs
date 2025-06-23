@@ -1,6 +1,6 @@
 use crate::KorokTrait;
 use codama_attributes::Attributes;
-use codama_errors::{CodamaResult, IteratorCombineErrors};
+use codama_errors::CodamaResult;
 use codama_nodes::Node;
 use codama_syn_helpers::extensions::*;
 
@@ -30,8 +30,11 @@ impl<'a> ConstKorok<'a> {
         })
     }
 
-    fn parse_impl_item(ast: &'a syn::ImplItemConst) -> CodamaResult<Self> {
-        let attributes = Attributes::parse(&ast.attrs, ast.into())?;
+    fn parse_impl_item(item: &'a syn::ImplItem) -> CodamaResult<Self> {
+        let syn::ImplItem::Const(ast) = item else {
+            return Err(item.error("Expected a const impl item").into());
+        };
+        let attributes = Attributes::parse(&ast.attrs, item.into())?;
         Ok(Self {
             ast: ConstAst::ImplItem(ast),
             attributes,
@@ -40,13 +43,10 @@ impl<'a> ConstKorok<'a> {
     }
 
     pub fn parse_all_impl_items(items: &'a [syn::ImplItem]) -> CodamaResult<Vec<Self>> {
-        items
+        Ok(items
             .iter()
-            .filter_map(|item| match item {
-                syn::ImplItem::Const(const_item) => Some(Self::parse_impl_item(const_item)),
-                _ => None,
-            })
-            .collect_and_combine_errors()
+            .filter_map(|item| Self::parse_impl_item(item).ok())
+            .collect())
     }
 }
 
