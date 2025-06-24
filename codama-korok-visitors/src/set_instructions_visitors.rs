@@ -192,7 +192,7 @@ fn get_instruction_account_nodes(
                 .attributes
                 .iter()
                 .filter_map(AccountDirective::filter)
-                .last();
+                .next_back();
             account_attribute.map(InstructionAccountNode::from)
         })
         .collect::<Vec<_>>();

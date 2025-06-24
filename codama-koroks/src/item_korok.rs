@@ -8,6 +8,7 @@ use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 use std::ops::AddAssign;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq)]
 pub enum ItemKorok<'a> {
     FileModule(FileModuleKorok<'a>),
