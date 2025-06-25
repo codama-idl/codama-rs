@@ -198,15 +198,6 @@ impl KorokVisitable for codama_koroks::ConstKorok<'_> {
     }
 }
 
-impl KorokVisitable for codama_koroks::ImplConstKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
-        visitor.visit_impl_const(self)
-    }
-    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        Vec::new()
-    }
-}
-
 impl KorokVisitable for codama_koroks::UnsupportedItemKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_unsupported_item(self)

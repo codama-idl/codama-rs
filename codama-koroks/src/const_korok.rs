@@ -6,9 +6,15 @@ use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct ConstKorok<'a> {
-    pub ast: &'a syn::ItemConst,
+    pub ast: ConstAst<'a>,
     pub attributes: Attributes<'a>,
     pub node: Option<Node>,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ConstAst<'a> {
+    Item(&'a syn::ItemConst),
+    ImplItem(&'a syn::ImplItemConst),
 }
 
 impl<'a> ConstKorok<'a> {
@@ -18,7 +24,19 @@ impl<'a> ConstKorok<'a> {
         };
         let attributes = Attributes::parse(&ast.attrs, item.into())?;
         Ok(Self {
-            ast,
+            ast: ConstAst::Item(ast),
+            attributes,
+            node: None,
+        })
+    }
+
+    pub fn parse_impl_item(item: &'a syn::ImplItem) -> CodamaResult<Self> {
+        let syn::ImplItem::Const(ast) = item else {
+            return Err(syn::Error::new_spanned(item, "Expected a const impl item").into());
+        };
+        let attributes = Attributes::parse(&ast.attrs, item.into())?;
+        Ok(Self {
+            ast: ConstAst::ImplItem(ast),
             attributes,
             node: None,
         })
