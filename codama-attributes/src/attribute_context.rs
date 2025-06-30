@@ -6,4 +6,5 @@ pub enum AttributeContext<'a> {
     Item(&'a syn::Item),
     Variant(&'a syn::Variant),
     Field(&'a syn::Field),
+    ImplItem(&'a syn::ImplItem),
 }

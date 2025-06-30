@@ -1,5 +1,6 @@
 use crate::{
-    EnumKorok, FileModuleKorok, KorokTrait, ModuleKorok, StructKorok, UnsupportedItemKorok,
+    ConstKorok, EnumKorok, FileModuleKorok, ImplKorok, KorokTrait, ModuleKorok, StructKorok,
+    UnsupportedItemKorok,
 };
 use codama_attributes::Attributes;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
@@ -7,12 +8,15 @@ use codama_nodes::Node;
 use codama_stores::FileModuleStore;
 use std::ops::AddAssign;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq)]
 pub enum ItemKorok<'a> {
     FileModule(FileModuleKorok<'a>),
     Module(ModuleKorok<'a>),
     Struct(StructKorok<'a>),
     Enum(EnumKorok<'a>),
+    Impl(ImplKorok<'a>),
+    Const(ConstKorok<'a>),
     Unsupported(UnsupportedItemKorok<'a>),
 }
 
@@ -39,6 +43,8 @@ impl<'a> ItemKorok<'a> {
             )),
             syn::Item::Struct(_) => Ok(ItemKorok::Struct(StructKorok::parse(item)?)),
             syn::Item::Enum(_) => Ok(ItemKorok::Enum(EnumKorok::parse(item)?)),
+            syn::Item::Impl(_) => Ok(ItemKorok::Impl(ImplKorok::parse(item)?)),
+            syn::Item::Const(_) => Ok(ItemKorok::Const(ConstKorok::parse(item)?)),
             _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok::parse(item)?)),
         }
     }
@@ -62,6 +68,8 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Enum(k) => k.node(),
             ItemKorok::FileModule(k) => k.node(),
             ItemKorok::Module(k) => k.node(),
+            ItemKorok::Impl(k) => k.node(),
+            ItemKorok::Const(k) => k.node(),
             ItemKorok::Unsupported(k) => k.node(),
         }
     }
@@ -72,6 +80,8 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Enum(k) => k.set_node(node),
             ItemKorok::FileModule(k) => k.set_node(node),
             ItemKorok::Module(k) => k.set_node(node),
+            ItemKorok::Impl(k) => k.set_node(node),
+            ItemKorok::Const(k) => k.set_node(node),
             ItemKorok::Unsupported(k) => k.set_node(node),
         }
     }
@@ -82,6 +92,8 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Enum(k) => k.attributes(),
             ItemKorok::FileModule(k) => k.attributes(),
             ItemKorok::Module(k) => k.attributes(),
+            ItemKorok::Impl(k) => k.attributes(),
+            ItemKorok::Const(k) => k.attributes(),
             ItemKorok::Unsupported(k) => k.attributes(),
         }
     }
