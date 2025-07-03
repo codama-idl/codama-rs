@@ -38,7 +38,10 @@ pub enum KorokMut<'a, 'b> {
     Module(&'b mut crate::ModuleKorok<'a>),
     Root(&'b mut crate::RootKorok<'a>),
     Struct(&'b mut crate::StructKorok<'a>),
+    Const(&'b mut crate::ConstKorok<'a>),
     UnsupportedItem(&'b mut crate::UnsupportedItemKorok<'a>),
+    ImplItem(&'b mut crate::ImplItemKorok<'a>),
+    UnsupportedImplItem(&'b mut crate::UnsupportedImplItemKorok<'a>),
 }
 
 impl KorokTrait for KorokMut<'_, '_> {
@@ -54,7 +57,10 @@ impl KorokTrait for KorokMut<'_, '_> {
             Self::Module(k) => k.node(),
             Self::Root(k) => k.node(),
             Self::Struct(k) => k.node(),
+            Self::Const(k) => k.node(),
             Self::UnsupportedItem(k) => k.node(),
+            Self::ImplItem(k) => k.node(),
+            Self::UnsupportedImplItem(k) => k.node(),
         }
     }
 
@@ -70,7 +76,10 @@ impl KorokTrait for KorokMut<'_, '_> {
             Self::Module(k) => k.set_node(node),
             Self::Root(k) => k.set_node(node),
             Self::Struct(k) => k.set_node(node),
+            Self::Const(k) => k.set_node(node),
             Self::UnsupportedItem(k) => k.set_node(node),
+            Self::ImplItem(k) => k.set_node(node),
+            Self::UnsupportedImplItem(k) => k.set_node(node),
         }
     }
 
@@ -86,7 +95,10 @@ impl KorokTrait for KorokMut<'_, '_> {
             Self::Module(k) => k.attributes(),
             Self::Root(k) => k.attributes(),
             Self::Struct(k) => k.attributes(),
+            Self::Const(k) => k.attributes(),
             Self::UnsupportedItem(k) => k.attributes(),
+            Self::ImplItem(k) => k.attributes(),
+            Self::UnsupportedImplItem(k) => k.attributes(),
         }
     }
 }
