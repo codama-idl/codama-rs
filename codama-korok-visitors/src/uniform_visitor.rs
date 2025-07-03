@@ -52,9 +52,24 @@ impl KorokVisitor for UniformVisitor {
         (self.callback)(korok.into(), self)
     }
 
+    fn visit_const(&mut self, korok: &mut codama_koroks::ConstKorok) -> CodamaResult<()> {
+        (self.callback)(korok.into(), self)
+    }
+
     fn visit_unsupported_item(
         &mut self,
         korok: &mut codama_koroks::UnsupportedItemKorok,
+    ) -> CodamaResult<()> {
+        (self.callback)(korok.into(), self)
+    }
+
+    fn visit_impl_item(&mut self, korok: &mut codama_koroks::ImplItemKorok) -> CodamaResult<()> {
+        (self.callback)(korok.into(), self)
+    }
+
+    fn visit_unsupported_impl_item(
+        &mut self,
+        korok: &mut codama_koroks::UnsupportedImplItemKorok,
     ) -> CodamaResult<()> {
         (self.callback)(korok.into(), self)
     }

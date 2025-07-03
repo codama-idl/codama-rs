@@ -19,7 +19,10 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Module(k) => k.accept(visitor),
             Self::Root(k) => k.accept(visitor),
             Self::Struct(k) => k.accept(visitor),
+            Self::Const(k) => k.accept(visitor),
             Self::UnsupportedItem(k) => k.accept(visitor),
+            Self::ImplItem(k) => k.accept(visitor),
+            Self::UnsupportedImplItem(k) => k.accept(visitor),
         }
     }
 
@@ -35,7 +38,10 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Module(k) => k.get_children(),
             Self::Root(k) => k.get_children(),
             Self::Struct(k) => k.get_children(),
+            Self::Const(k) => k.get_children(),
             Self::UnsupportedItem(k) => k.get_children(),
+            Self::ImplItem(k) => k.get_children(),
+            Self::UnsupportedImplItem(k) => k.get_children(),
         }
     }
 }
