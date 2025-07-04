@@ -1,7 +1,7 @@
 use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_koroks::KorokTrait;
-use codama_nodes::{Node, ProgramNode, RootNode};
+use codama_nodes::{HasName, Node, ProgramNode, RootNode};
 
 #[derive(Default)]
 pub struct CombineModulesVisitor;
@@ -104,23 +104,23 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
     for node in nodes {
         match node {
             Node::Account(node) => {
-                root.program.accounts.push(node);
+                add_or_replace_node_with_name(&mut root.program.accounts, node);
                 has_scraps = true
             }
             Node::Instruction(node) => {
-                root.program.instructions.push(node);
+                add_or_replace_node_with_name(&mut root.program.instructions, node);
                 has_scraps = true
             }
             Node::DefinedType(node) => {
-                root.program.defined_types.push(node);
+                add_or_replace_node_with_name(&mut root.program.defined_types, node);
                 has_scraps = true
             }
             Node::Error(node) => {
-                root.program.errors.push(node);
+                add_or_replace_node_with_name(&mut root.program.errors, node);
                 has_scraps = true
             }
             Node::Pda(node) => {
-                root.program.pdas.push(node);
+                add_or_replace_node_with_name(&mut root.program.pdas, node);
                 has_scraps = true
             }
             _ => (),
@@ -189,9 +189,29 @@ fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     if this.docs.is_empty() {
         this.docs = that.docs;
     }
-    this.accounts.extend(that.accounts);
-    this.instructions.extend(that.instructions);
-    this.defined_types.extend(that.defined_types);
-    this.errors.extend(that.errors);
-    this.pdas.extend(that.pdas);
+    merge_nodes_with_name(&mut this.accounts, that.accounts);
+    merge_nodes_with_name(&mut this.instructions, that.instructions);
+    merge_nodes_with_name(&mut this.defined_types, that.defined_types);
+    merge_nodes_with_name(&mut this.errors, that.errors);
+    merge_nodes_with_name(&mut this.pdas, that.pdas);
+}
+
+fn merge_nodes_with_name<T>(nodes: &mut Vec<T>, new_nodes: Vec<T>)
+where
+    T: HasName,
+{
+    for that in new_nodes {
+        add_or_replace_node_with_name(nodes, that);
+    }
+}
+
+fn add_or_replace_node_with_name<T>(nodes: &mut Vec<T>, new_node: T)
+where
+    T: HasName,
+{
+    if let Some(existing) = nodes.iter_mut().find(|d| d.name() == new_node.name()) {
+        *existing = new_node;
+    } else {
+        nodes.push(new_node);
+    }
 }
