@@ -4,16 +4,27 @@ use codama_koroks::KorokTrait;
 use codama_nodes::{HasName, Node, ProgramNode, RootNode};
 
 #[derive(Default)]
-pub struct CombineModulesVisitor;
+pub struct CombineModulesVisitor {
+    force: bool,
+}
 
 impl CombineModulesVisitor {
     pub fn new() -> Self {
-        Self
+        Self { force: false }
+    }
+
+    pub fn force() -> Self {
+        Self { force: true }
     }
 }
 
 impl KorokVisitor for CombineModulesVisitor {
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
+        // Unless forced, if the root node is already set, do not combine modules.
+        if !self.force && korok.node.is_some() {
+            return Ok(());
+        }
+
         self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.crates);
         Ok(())
