@@ -1,4 +1,4 @@
-use crate::CamelCaseString;
+use crate::{CamelCaseString, HasName};
 use codama_nodes_derive::node;
 
 #[node]
@@ -24,6 +24,12 @@ impl EnumEmptyVariantTypeNode {
             name: name.into(),
             discriminator: None,
         }
+    }
+}
+
+impl HasName for EnumEmptyVariantTypeNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

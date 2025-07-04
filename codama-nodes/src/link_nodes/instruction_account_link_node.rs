@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, InstructionLinkNode};
+use crate::{CamelCaseString, HasName, InstructionLinkNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -48,6 +48,12 @@ impl From<String> for InstructionAccountLinkNode {
 impl From<&str> for InstructionAccountLinkNode {
     fn from(name: &str) -> Self {
         Self::new(name)
+    }
+}
+
+impl HasName for InstructionAccountLinkNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

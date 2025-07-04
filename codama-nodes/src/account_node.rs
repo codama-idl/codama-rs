@@ -1,5 +1,5 @@
 use crate::{
-    CamelCaseString, DiscriminatorNode, Docs, NestedTypeNode, PdaLinkNode, StructTypeNode,
+    CamelCaseString, DiscriminatorNode, Docs, HasName, NestedTypeNode, PdaLinkNode, StructTypeNode,
 };
 use codama_nodes_derive::node;
 
@@ -34,6 +34,12 @@ impl AccountNode {
             pda: None,
             discriminators: vec![],
         }
+    }
+}
+
+impl HasName for AccountNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

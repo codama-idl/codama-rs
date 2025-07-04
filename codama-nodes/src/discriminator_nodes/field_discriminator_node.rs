@@ -1,4 +1,4 @@
-use crate::CamelCaseString;
+use crate::{CamelCaseString, HasName};
 use codama_nodes_derive::node;
 
 #[node]
@@ -23,6 +23,12 @@ impl FieldDiscriminatorNode {
             name: name.into(),
             offset,
         }
+    }
+}
+
+impl HasName for FieldDiscriminatorNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

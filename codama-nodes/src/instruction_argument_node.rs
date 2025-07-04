@@ -1,6 +1,6 @@
 use crate::{
-    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, StructFieldTypeNode,
-    StructTypeNode, TypeNode,
+    CamelCaseString, DefaultValueStrategy, Docs, HasName, InstructionInputValueNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_nodes_derive::node;
 
@@ -32,6 +32,12 @@ impl InstructionArgumentNode {
             r#type: r#type.into(),
             default_value: None,
         }
+    }
+}
+
+impl HasName for InstructionArgumentNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

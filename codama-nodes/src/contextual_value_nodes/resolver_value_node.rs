@@ -1,4 +1,4 @@
-use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs};
+use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs, HasName};
 use codama_nodes_derive::{node, node_union};
 
 #[node]
@@ -36,6 +36,12 @@ impl ResolverValueNode {
 pub enum ResolverDependency {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),
+}
+
+impl HasName for ResolverValueNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
+    }
 }
 
 #[cfg(test)]

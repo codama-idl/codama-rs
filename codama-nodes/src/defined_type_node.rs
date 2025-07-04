@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs, TypeNode};
+use crate::{CamelCaseString, Docs, HasName, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -23,6 +23,12 @@ impl DefinedTypeNode {
             docs: Docs::default(),
             r#type: r#type.into(),
         }
+    }
+}
+
+impl HasName for DefinedTypeNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

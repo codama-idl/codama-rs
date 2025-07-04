@@ -1,6 +1,6 @@
 use crate::{
     AccountValueNode, ArgumentValueNode, ArrayValueNode, BooleanValueNode, BytesValueNode,
-    CamelCaseString, ConstantValueNode, EnumValueNode, MapValueNode, NoneValueNode,
+    CamelCaseString, ConstantValueNode, EnumValueNode, HasName, MapValueNode, NoneValueNode,
     NumberValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode,
     StructValueNode, TupleValueNode,
 };
@@ -54,6 +54,12 @@ pub enum PdaSeedValueValueNode {
     String(StringValueNode),
     Struct(StructValueNode),
     Tuple(TupleValueNode),
+}
+
+impl HasName for PdaSeedValueNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
+    }
 }
 
 #[cfg(test)]
