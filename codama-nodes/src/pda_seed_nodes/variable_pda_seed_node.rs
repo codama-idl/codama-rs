@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs, TypeNode};
+use crate::{CamelCaseString, Docs, HasName, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -29,6 +29,12 @@ impl VariablePdaSeedNode {
             docs: Docs::default(),
             r#type: r#type.into(),
         }
+    }
+}
+
+impl HasName for VariablePdaSeedNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

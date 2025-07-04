@@ -1,4 +1,4 @@
-use crate::CamelCaseString;
+use crate::{CamelCaseString, HasName};
 use codama_nodes_derive::node;
 
 #[node]
@@ -19,6 +19,12 @@ impl AccountValueNode {
         T: Into<CamelCaseString>,
     {
         Self { name: name.into() }
+    }
+}
+
+impl HasName for AccountValueNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

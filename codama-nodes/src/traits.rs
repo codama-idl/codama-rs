@@ -1,3 +1,4 @@
+use crate::CamelCaseString;
 use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
@@ -26,4 +27,8 @@ pub trait NodeUnionTrait:
 
 pub trait HasKind {
     fn kind(&self) -> &'static str;
+}
+
+pub trait HasName {
+    fn name(&self) -> &CamelCaseString;
 }

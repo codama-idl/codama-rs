@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs};
+use crate::{CamelCaseString, Docs, HasName};
 use codama_nodes_derive::node;
 
 #[node]
@@ -9,6 +9,12 @@ pub struct ErrorNode {
     pub message: String,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
+}
+
+impl HasName for ErrorNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
+    }
 }
 
 impl ErrorNode {

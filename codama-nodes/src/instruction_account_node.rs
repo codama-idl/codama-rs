@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs, InstructionInputValueNode, IsAccountSigner};
+use crate::{CamelCaseString, Docs, HasName, InstructionInputValueNode, IsAccountSigner};
 use codama_nodes_derive::node;
 
 #[node]
@@ -31,6 +31,12 @@ impl InstructionAccountNode {
             docs: Docs::default(),
             default_value: None,
         }
+    }
+}
+
+impl HasName for InstructionAccountNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

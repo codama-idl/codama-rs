@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, DefaultValueStrategy, Docs, TypeNode, ValueNode};
+use crate::{CamelCaseString, DefaultValueStrategy, Docs, HasName, TypeNode, ValueNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -35,6 +35,12 @@ impl StructFieldTypeNode {
             r#type: r#type.into(),
             default_value: None,
         }
+    }
+}
+
+impl HasName for StructFieldTypeNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 

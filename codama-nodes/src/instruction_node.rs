@@ -1,6 +1,6 @@
 use crate::{
-    CamelCaseString, DiscriminatorNode, Docs, InstructionAccountNode, InstructionArgumentNode,
-    InstructionByteDeltaNode, InstructionRemainingAccountsNode,
+    CamelCaseString, DiscriminatorNode, Docs, HasName, InstructionAccountNode,
+    InstructionArgumentNode, InstructionByteDeltaNode, InstructionRemainingAccountsNode,
 };
 use codama_nodes_derive::node;
 use serde::{Deserialize, Serialize};
@@ -28,6 +28,12 @@ pub struct InstructionNode {
     pub discriminators: Vec<DiscriminatorNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub sub_instructions: Vec<InstructionNode>,
+}
+
+impl HasName for InstructionNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Serialize, Deserialize)]

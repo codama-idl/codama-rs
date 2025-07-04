@@ -1,5 +1,6 @@
 use crate::{
-    AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, InstructionNode, PdaNode,
+    AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, HasName, InstructionNode,
+    PdaNode,
 };
 use codama_nodes_derive::node;
 
@@ -65,6 +66,12 @@ impl ProgramNode {
     pub fn add_error(mut self, error: ErrorNode) -> Self {
         self.errors.push(error);
         self
+    }
+}
+
+impl HasName for ProgramNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
     }
 }
 
