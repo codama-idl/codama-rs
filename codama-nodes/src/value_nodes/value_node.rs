@@ -1,8 +1,8 @@
 use crate::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode, HasKind,
-    MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode, PublicKeyValueNode,
-    SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode, StructValueNode,
-    TupleValueNode,
+    MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode, ProgramIdValueNode,
+    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode,
+    StructValueNode, TupleValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 
@@ -17,6 +17,7 @@ pub enum RegisteredValueNode {
     Map(MapValueNode),
     None(NoneValueNode),
     Number(NumberValueNode),
+    ProgramId(ProgramIdValueNode),
     PublicKey(PublicKeyValueNode),
     Set(SetValueNode),
     Some(SomeValueNode),

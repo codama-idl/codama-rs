@@ -38,9 +38,10 @@ pub fn public_key_value_node_from_program(meta: &Meta) -> syn::Result<PublicKeyV
 mod tests {
     use super::*;
     use crate::{assert_value, assert_value_err};
+    use codama_nodes::ProgramIdValueNode;
 
     #[test]
-    fn ok() {
+    fn with_identifier() {
         assert_value!(
             { program("associated-token") },
             PublicKeyValueNode::new("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").into()
@@ -61,6 +62,16 @@ mod tests {
             { program("system") },
             PublicKeyValueNode::new("11111111111111111111111111111111").into()
         );
+    }
+
+    #[test]
+    fn no_parenthesis() {
+        assert_value!({ program }, ProgramIdValueNode::new().into());
+    }
+
+    #[test]
+    fn empty_parenthesis() {
+        assert_value!({ program() }, ProgramIdValueNode::new().into());
     }
 
     #[test]
