@@ -3,7 +3,7 @@ use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstruction
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     BooleanTypeNode, Docs, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NumberFormat::U64, NumberTypeNode, PayerValueNode, ProgramIdValueNode, PublicKeyValueNode,
+    NumberFormat::U64, NumberTypeNode, PayerValueNode, PublicKeyValueNode,
 };
 
 #[test]
@@ -152,7 +152,6 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
         #[derive(CodamaInstruction)]
         #[codama(account(name = "rent_sysvar", default_value = sysvar("rent")))]
         #[codama(account(name = "token_program", default_value = program("token")))]
-        #[codama(account(name = "current_program", default_value = program))]
         struct Initialize {
             #[codama(account)]
             authority: AccountMeta,
@@ -187,14 +186,6 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                             PublicKeyValueNode::new("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
                                 .into()
                         ),
-                        is_writable: false,
-                        is_signer: false.into(),
-                        is_optional: false,
-                        docs: Docs::default(),
-                    },
-                    InstructionAccountNode {
-                        name: "currentProgram".into(),
-                        default_value: Some(ProgramIdValueNode::new().into()),
                         is_writable: false,
                         is_signer: false.into(),
                         is_optional: false,

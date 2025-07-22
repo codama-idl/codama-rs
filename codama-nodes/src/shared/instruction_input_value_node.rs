@@ -51,7 +51,6 @@ impl From<ValueNode> for InstructionInputValueNode {
             ValueNode::Map(value) => Self::Map(value),
             ValueNode::None(value) => Self::None(value),
             ValueNode::Number(value) => Self::Number(value),
-            ValueNode::ProgramId(value) => Self::ProgramId(value),
             ValueNode::PublicKey(value) => Self::PublicKey(value),
             ValueNode::Set(value) => Self::Set(value),
             ValueNode::Some(value) => Self::Some(value),
