@@ -1,0 +1,5 @@
+error: program_identifier is already set
+ --> tests/codama_attribute/values_nodes/program/too_many_inputs.fail.rs:3:44
+  |
+3 | #[codama(default_value = program("system", "token"))]
+  |                                            ^^^^^^^
