@@ -305,10 +305,10 @@ pub enum CombineTypesVisitorParent {
 impl CombineTypesVisitorParent {
     pub fn identifier(&self) -> String {
         match self {
-            CombineTypesVisitorParent::Struct(name) => format!("struct `{}`", name),
-            CombineTypesVisitorParent::Enum(name) => format!("enum `{}`", name),
+            CombineTypesVisitorParent::Struct(name) => format!("struct `{name}`"),
+            CombineTypesVisitorParent::Enum(name) => format!("enum `{name}`"),
             CombineTypesVisitorParent::Variant(enum_name, variant_name) => {
-                format!("variant `{}` of enum `{}`", variant_name, enum_name)
+                format!("variant `{variant_name}` of enum `{enum_name}`")
             }
             CombineTypesVisitorParent::None => {
                 unreachable!("This should only be called inside a parent item")
