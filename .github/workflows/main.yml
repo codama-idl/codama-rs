@@ -25,6 +25,9 @@ jobs:
       - name: Rustup install rustfmt
         run: rustup component add rustfmt --toolchain nightly-2024-11-22
 
+      - name: Rustup install clippy
+        run: rustup component add clippy --toolchain nightly-2024-11-22
+
       - name: Run Cargo fmt
         run: cargo +nightly-2024-11-22 fmt --all -- --check
 
