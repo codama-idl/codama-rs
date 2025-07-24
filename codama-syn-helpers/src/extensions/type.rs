@@ -17,7 +17,7 @@ pub trait TypeExtension {
         let this = self.as_path()?;
         match this.is(path) {
             true => this.single_generic_type(),
-            false => Err(this.error(format!("expected path: {}", path)).into()),
+            false => Err(this.error(format!("expected path: {path}")).into()),
         }
     }
 }
