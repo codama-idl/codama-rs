@@ -29,7 +29,7 @@ jobs:
         run: cargo +nightly-2024-11-22 fmt --all -- --check
 
       - name: Run Cargo clippy
-        run: cargo clippy --all-targets --all-features
+        run: cargo +nightly-2024-11-22 clippy --all-targets --all-features
 
   test:
     name: Test Crates
