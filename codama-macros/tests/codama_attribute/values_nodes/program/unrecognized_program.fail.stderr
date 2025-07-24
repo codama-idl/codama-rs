@@ -1,0 +1,5 @@
+error: unrecognized program
+ --> tests/codama_attribute/values_nodes/program/unrecognized_program.fail.rs:3:34
+  |
+3 | #[codama(default_value = program("banana"))]
+  |                                  ^^^^^^^^

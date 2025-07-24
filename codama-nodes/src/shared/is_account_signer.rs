@@ -57,7 +57,7 @@ impl<'de> Deserialize<'de> for IsAccountSigner {
             {
                 match value {
                     "either" => Ok(IsAccountSigner::Either),
-                    _ => Err(E::custom(format!("unexpected value: {}", value))),
+                    _ => Err(E::custom(format!("unexpected value: {value}"))),
                 }
             }
         }

@@ -207,15 +207,11 @@ fn get_nested_struct_type_node_from_enum_variant(
 
     // Handle error.
     let message_prefix = match enum_name {
-        Some(name) => format!(
-            "The \"{}\" variant of the \"{}\" enum",
-            korok.ast.ident, name
-        ),
+        Some(name) => format!("The \"{}\" variant of the \"{name}\" enum", korok.ast.ident),
         None => format!("The \"{}\" variant", korok.ast.ident),
     };
     let message = format!(
-        "{} could not be used as an Account because we cannot get a `StructTypeNode` for it. This is likely because it is not using nammed fields.",
-        message_prefix
+        "{message_prefix} could not be used as an Account because we cannot get a `StructTypeNode` for it. This is likely because it is not using named fields.",
     );
     Err(korok.ast.error(message).into())
 }

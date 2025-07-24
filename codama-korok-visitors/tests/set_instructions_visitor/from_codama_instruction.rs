@@ -151,6 +151,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
         #[codama(account(name = "rent_sysvar", default_value = sysvar("rent")))]
+        #[codama(account(name = "token_program", default_value = program("token")))]
         struct Initialize {
             #[codama(account)]
             authority: AccountMeta,
@@ -172,6 +173,17 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         name: "rentSysvar".into(),
                         default_value: Some(
                             PublicKeyValueNode::new("SysvarRent111111111111111111111111111111111")
+                                .into()
+                        ),
+                        is_writable: false,
+                        is_signer: false.into(),
+                        is_optional: false,
+                        docs: Docs::default(),
+                    },
+                    InstructionAccountNode {
+                        name: "tokenProgram".into(),
+                        default_value: Some(
+                            PublicKeyValueNode::new("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
                                 .into()
                         ),
                         is_writable: false,

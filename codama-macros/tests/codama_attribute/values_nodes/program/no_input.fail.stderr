@@ -1,0 +1,11 @@
+error: expected a list: `program(...)` or `program = (...)`
+ --> tests/codama_attribute/values_nodes/program/no_input.fail.rs:3:26
+  |
+3 | #[codama(default_value = program)]
+  |                          ^^^^^^^
+
+error: program_identifier is missing
+ --> tests/codama_attribute/values_nodes/program/no_input.fail.rs:6:26
+  |
+6 | #[codama(default_value = program())]
+  |                          ^^^^^^^^^

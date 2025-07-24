@@ -34,11 +34,11 @@ impl DebugVisitor {
         self.write_indent();
         self.current_result.push_str(identifier);
         if let Some(text) = options {
-            self.current_result.push_str(&format!(" ({})", text));
+            self.current_result.push_str(&format!(" ({text})"));
         }
 
         let json = serde_json::to_string(&korok.node())?;
-        self.current_result.push_str(&format!(": {}\n", json));
+        self.current_result.push_str(&format!(": {json}\n"));
 
         self.current_indent += 1;
         self.visit_children(&mut korok)?;

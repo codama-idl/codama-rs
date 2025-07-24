@@ -1,0 +1,11 @@
+error: expected a string
+ --> tests/codama_attribute/values_nodes/program/invalid_input.fail.rs:3:34
+  |
+3 | #[codama(default_value = program(42))]
+  |                                  ^^
+
+error: expected a string
+ --> tests/codama_attribute/values_nodes/program/invalid_input.fail.rs:6:34
+  |
+6 | #[codama(default_value = program(banana))]
+  |                                  ^^^^^^
