@@ -17,15 +17,19 @@ pub enum Attribute<'a> {
 }
 
 impl<'a> Attribute<'a> {
-    pub fn parse(attr: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
+    pub fn parse(ast: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
+        // Check if the attribute is feature-gated.
+        let unfeatured = ast.unfeatured();
+        let attr = unfeatured.as_ref().unwrap_or(ast);
+
         let path = attr.path();
         match (path.prefix().as_str(), path.last_str().as_str()) {
             ("" | "codama_macros" | "codama", "codama") => {
-                Ok(CodamaAttribute::parse(attr, ctx)?.into())
+                Ok(CodamaAttribute::parse(ast, ctx)?.into())
             }
-            ("", "derive") => Ok(DeriveAttribute::parse(attr)?.into()),
-            ("", "repr") => Ok(ReprAttribute::parse(attr)?.into()),
-            _ => Ok(UnsupportedAttribute::new(attr).into()),
+            ("", "derive") => Ok(DeriveAttribute::parse(ast)?.into()),
+            ("", "repr") => Ok(ReprAttribute::parse(ast)?.into()),
+            _ => Ok(UnsupportedAttribute::new(ast).into()),
         }
     }
 
