@@ -44,7 +44,7 @@ impl Codama {
         self
     }
 
-    pub fn get_korok(&self) -> CodamaResult<RootKorok> {
+    pub fn get_korok<'a>(&'a self) -> CodamaResult<RootKorok<'a>> {
         RootKorok::parse(&self.store)
     }
 
@@ -55,7 +55,7 @@ impl Codama {
         }
     }
 
-    pub fn get_visited_korok(&self) -> CodamaResult<RootKorok> {
+    pub fn get_visited_korok<'a>(&'a self) -> CodamaResult<RootKorok<'a>> {
         let mut korok = self.get_korok()?;
         let run_plugins = resolve_plugins(self.get_plugins());
         run_plugins(&mut korok)?;
