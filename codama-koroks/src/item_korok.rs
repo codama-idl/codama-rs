@@ -86,7 +86,7 @@ impl KorokTrait for ItemKorok<'_> {
         }
     }
 
-    fn attributes(&self) -> Option<&Attributes> {
+    fn attributes(&self) -> Option<&Attributes<'_>> {
         match self {
             ItemKorok::Struct(k) => k.attributes(),
             ItemKorok::Enum(k) => k.attributes(),
