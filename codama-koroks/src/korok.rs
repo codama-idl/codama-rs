@@ -6,7 +6,7 @@ use std::fmt::Debug;
 pub trait KorokTrait: Debug {
     fn node(&self) -> &Option<Node>;
     fn set_node(&mut self, node: Option<Node>);
-    fn attributes(&self) -> Option<&Attributes> {
+    fn attributes(&self) -> Option<&Attributes<'_>> {
         None
     }
 }
@@ -83,7 +83,7 @@ impl KorokTrait for KorokMut<'_, '_> {
         }
     }
 
-    fn attributes(&self) -> Option<&Attributes> {
+    fn attributes(&self) -> Option<&Attributes<'_>> {
         match self {
             Self::Crate(k) => k.attributes(),
             Self::Enum(k) => k.attributes(),

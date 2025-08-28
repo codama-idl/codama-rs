@@ -50,7 +50,7 @@ impl KorokTrait for ModuleKorok<'_> {
         self.node = node;
     }
 
-    fn attributes(&self) -> Option<&Attributes> {
+    fn attributes(&self) -> Option<&Attributes<'_>> {
         Some(&self.attributes)
     }
 }

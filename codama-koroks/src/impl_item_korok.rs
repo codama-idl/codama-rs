@@ -39,7 +39,7 @@ impl KorokTrait for ImplItemKorok<'_> {
         }
     }
 
-    fn attributes(&self) -> Option<&Attributes> {
+    fn attributes(&self) -> Option<&Attributes<'_>> {
         match self {
             ImplItemKorok::Const(k) => k.attributes(),
             ImplItemKorok::Unsupported(k) => k.attributes(),
