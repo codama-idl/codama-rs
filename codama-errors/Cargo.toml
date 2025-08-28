@@ -1,7 +1,7 @@
 [package]
 name = "codama-errors"
 description = "Errors and result types for Codama"
-version = "0.5.1"
+version = "0.5.2"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
