@@ -7,7 +7,7 @@ on:
 
 env:
   RUSTFLAGS: "-Dwarnings"
-  RUST_TOOLCHAIN: "nightly-2024-11-22"
+  RUST_TOOLCHAIN: "nightly-2025-02-16"
 
 jobs:
   lint:
