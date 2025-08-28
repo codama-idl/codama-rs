@@ -7,7 +7,7 @@ env:
   # It also helps prevent rate limiting on the registry.
   PUBLISH_GRACE_SLEEP: 15
   RUSTFLAGS: "-Dwarnings"
-  RUST_TOOLCHAIN: "nightly-2024-11-22"
+  RUST_TOOLCHAIN: "nightly-2025-02-16"
 
 on:
   workflow_dispatch:
