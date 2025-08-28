@@ -6,6 +6,8 @@ env:
   # before it is used as a dependency in another crate.
   # It also helps prevent rate limiting on the registry.
   PUBLISH_GRACE_SLEEP: 15
+  RUSTFLAGS: "-Dwarnings"
+  RUST_TOOLCHAIN: "nightly-2024-11-22"
 
 on:
   workflow_dispatch:
@@ -65,6 +67,11 @@ jobs:
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
 
+      - name: Install Rust Toolchain and Components
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
       - name: Install Cargo Release
         run: which cargo-release || cargo install cargo-release
 
@@ -111,4 +118,4 @@ jobs:
               ;;
           esac
 
-          cargo release $LEVEL $OPTIONS
+          cargo +${{ env.RUST_TOOLCHAIN }} release $LEVEL $OPTIONS
