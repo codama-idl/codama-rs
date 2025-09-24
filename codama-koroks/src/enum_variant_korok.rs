@@ -1,7 +1,7 @@
 use crate::{FieldsKorok, KorokTrait};
-use codama_attributes::Attributes;
+use codama_attributes::{Attributes, NameDirective, TryFromFilter};
 use codama_errors::{combine_errors, CodamaError, CodamaResult, IteratorCombineErrors};
-use codama_nodes::Node;
+use codama_nodes::{CamelCaseString, Node};
 
 #[derive(Debug, PartialEq)]
 pub struct EnumVariantKorok<'a> {
@@ -32,6 +32,13 @@ impl<'a> EnumVariantKorok<'a> {
             .iter()
             .map(Self::parse)
             .collect_and_combine_errors()
+    }
+
+    pub fn name(&self) -> CamelCaseString {
+        self.attributes
+            .get_last(NameDirective::filter)
+            .map(|n| n.name.clone())
+            .unwrap_or(self.ast.ident.to_string().into())
     }
 }
 

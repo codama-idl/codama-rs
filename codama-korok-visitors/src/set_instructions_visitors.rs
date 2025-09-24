@@ -3,10 +3,10 @@ use codama_attributes::{AccountDirective, Attributes, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldsKorok;
 use codama_nodes::{
-    DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode,
-    NestedTypeNodeTrait, Node, NumberFormat::U8, NumberTypeNode, NumberValueNode, ProgramNode,
-    StructTypeNode, TypeNode,
+    CamelCaseString, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
+    FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    NestedTypeNode, NestedTypeNodeTrait, Node, NumberFormat::U8, NumberTypeNode, NumberValueNode,
+    ProgramNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -59,10 +59,10 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.combine_types.visit_struct(korok)?;
 
         // Transform the defined type into an instruction node.
-        let data = get_struct_type_node_from_struct(korok)?;
+        let (name, data) = parse_struct(korok)?;
         korok.node = Some(
             InstructionNode {
-                name: korok.ast.ident.to_string().into(),
+                name,
                 accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments: data.into(),
                 ..InstructionNode::default()
@@ -140,8 +140,9 @@ impl KorokVisitor for SetInstructionsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
-        let data = get_struct_type_node_from_enum_variant(korok, &self.enum_name)?;
+        let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let mut arguments: Vec<InstructionArgumentNode> = data.into();
+
         let discriminator_name = "discriminator".to_string(); // TODO: Offer a directive to customize this.
         let discriminator = InstructionArgumentNode {
             name: discriminator_name.clone().into(),
@@ -159,7 +160,7 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         korok.node = Some(
             InstructionNode {
-                name: korok.ast.ident.to_string().into(),
+                name,
                 accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments,
                 discriminators: vec![discriminator_node.into()],
@@ -204,14 +205,14 @@ fn get_instruction_account_nodes(
         .collect::<Vec<_>>()
 }
 
-fn get_struct_type_node_from_struct(
+fn parse_struct(
     korok: &codama_koroks::StructKorok,
-) -> CodamaResult<StructTypeNode> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
         if let TypeNode::Struct(data) = node.r#type.clone() {
-            return Ok(data);
+            return Ok((node.name.clone(), data));
         };
     };
 
@@ -223,10 +224,10 @@ fn get_struct_type_node_from_struct(
     Err(korok.ast.error(message).into())
 }
 
-fn get_struct_type_node_from_enum_variant(
+fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &Option<String>,
-) -> CodamaResult<StructTypeNode> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
@@ -235,11 +236,13 @@ fn get_struct_type_node_from_enum_variant(
                 // Ensure we have a non-nested `StructTypeNode`.
                 EnumVariantTypeNode::Struct(node) => {
                     if let NestedTypeNode::Value(data) = node.r#struct {
-                        return Ok(data);
+                        return Ok((node.name, data));
                     };
                 }
                 // Or an empty variant.
-                EnumVariantTypeNode::Empty(_) => return Ok(StructTypeNode::new(vec![])),
+                EnumVariantTypeNode::Empty(node) => {
+                    return Ok((node.name, StructTypeNode::new(vec![])))
+                }
                 _ => {}
             }
         };

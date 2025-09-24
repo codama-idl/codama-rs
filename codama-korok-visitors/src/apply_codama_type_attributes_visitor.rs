@@ -124,10 +124,8 @@ fn apply_type_directive(
     match input.korok {
         // If the `type` directive is applied to a named field then
         // we need to wrap the provided node in a `StructFieldTypeNode`.
-        KorokMut::Field(korok) => match (node.clone(), &korok.ast.ident) {
-            (type_node, Some(ident)) => Ok(Some(
-                StructFieldTypeNode::new(ident.to_string(), type_node).into(),
-            )),
+        KorokMut::Field(korok) => match (node.clone(), korok.name()) {
+            (type_node, Some(name)) => Ok(Some(StructFieldTypeNode::new(name, type_node).into())),
             _ => Ok(Some(node.into())),
         },
         _ => Ok(Some(node.into())),

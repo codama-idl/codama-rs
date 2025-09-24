@@ -513,3 +513,40 @@ fn no_overrides() -> CodamaResult<()> {
     assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }
+
+#[test]
+fn with_name_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            #[codama(name = "initialize")]
+            InitializeInstruction,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![InstructionArgumentNode {
+                        name: "discriminator".into(),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        docs: Docs::default(),
+                        r#type: NumberTypeNode::le(U8).into(),
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                    }],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}

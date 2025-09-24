@@ -1,0 +1,17 @@
+error: expected a string
+ --> tests/codama_attribute/name_directive/invalid_name.fail.rs:3:17
+  |
+3 | #[codama(name = 42)]
+  |                 ^^
+
+error: expected a string
+ --> tests/codama_attribute/name_directive/invalid_name.fail.rs:6:17
+  |
+6 | #[codama(name = invalid)]
+  |                 ^^^^^^^
+
+error: expected a valid expression
+ --> tests/codama_attribute/name_directive/invalid_name.fail.rs:9:17
+  |
+9 | #[codama(name = invalid(1, 2, 3))]
+  |                 ^^^^^^^^^^^^^^^^

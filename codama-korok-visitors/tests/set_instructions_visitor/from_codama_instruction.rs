@@ -266,3 +266,27 @@ fn no_overrides() -> CodamaResult<()> {
     assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }
+
+#[test]
+fn with_name_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(name = "initialize")]
+        struct InitializeInstruction;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "initialize".into(),
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
