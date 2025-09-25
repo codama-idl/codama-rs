@@ -81,6 +81,27 @@ impl<'a> Attributes<'a> {
             .filter_map(CodamaAttribute::filter)
             .any(|a| a.directive.name() == name)
     }
+
+    pub fn get_all<B: 'a, F>(&'a self, f: F) -> Vec<&'a B>
+    where
+        F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
+    {
+        self.iter().filter_map(f).collect()
+    }
+
+    pub fn get_first<B: 'a, F>(&'a self, f: F) -> Option<&'a B>
+    where
+        F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
+    {
+        self.iter().filter_map(f).next()
+    }
+
+    pub fn get_last<B: 'a, F>(&'a self, f: F) -> Option<&'a B>
+    where
+        F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
+    {
+        self.iter().filter_map(f).next_back()
+    }
 }
 
 impl<'a> Deref for Attributes<'a> {

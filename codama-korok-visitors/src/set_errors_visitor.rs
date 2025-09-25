@@ -107,7 +107,7 @@ impl KorokVisitor for SetErrorsVisitor {
 
         korok.node = Some(
             ErrorNode {
-                name: korok.ast.ident.to_string().into(),
+                name: korok.name(),
                 code,
                 message,
                 docs: Docs::default(),

@@ -146,3 +146,21 @@ fn it_fails_if_tuple_variant_fields_are_not_tuple_types() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn it_uses_the_name_directive() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! {
+        #[codama(name = "bar")]
+        Foo
+    };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+    korok.fields.node = None;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(EnumEmptyVariantTypeNode::new("bar").into())
+    );
+    Ok(())
+}

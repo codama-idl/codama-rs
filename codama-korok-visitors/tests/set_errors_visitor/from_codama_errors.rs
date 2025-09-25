@@ -324,3 +324,36 @@ fn no_overrides() -> CodamaResult<()> {
     assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }
+
+#[test]
+fn with_name_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaErrors)]
+        enum MyProgramErrors {
+            #[error("Too many apples")]
+            #[codama(name = "apple_overload")]
+            Apple,
+            #[error("Too many bananas")]
+            #[codama(name = "banana_overload")]
+            Banana,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetErrorsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                errors: vec![
+                    ErrorNode::new("appleOverload", 0, "Too many apples"),
+                    ErrorNode::new("bananaOverload", 1, "Too many bananas"),
+                ],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}

@@ -33,3 +33,21 @@ fn it_wraps_the_node_in_a_struct_field_for_named_field_koroks() -> CodamaResult<
     );
     Ok(())
 }
+
+#[test]
+fn it_uses_the_name_directive() -> CodamaResult<()> {
+    let item: syn::Field = syn::parse_quote! {
+        #[codama(name = "is_valid")]
+        #[codama(type = boolean)]
+        pub valid_mask: u8
+    };
+    let mut korok = FieldKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(StructFieldTypeNode::new("isValid", BooleanTypeNode::default()).into())
+    );
+    Ok(())
+}

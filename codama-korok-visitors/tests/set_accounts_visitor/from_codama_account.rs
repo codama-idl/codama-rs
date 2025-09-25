@@ -88,3 +88,21 @@ fn no_overrides() -> CodamaResult<()> {
     assert_eq!(korok.node, Some(BooleanTypeNode::default().into()));
     Ok(())
 }
+
+#[test]
+fn with_name_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        #[codama(name = "token")]
+        struct TokenAccount;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(AccountNode::new("token", StructTypeNode::new(vec![])).into())
+    );
+    Ok(())
+}

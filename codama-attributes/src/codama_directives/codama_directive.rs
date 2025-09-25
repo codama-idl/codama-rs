@@ -1,6 +1,6 @@
 use crate::{
     AccountDirective, AttributeContext, DefaultValueDirective, EncodingDirective, ErrorDirective,
-    FixedSizeDirective, SizePrefixDirective, TypeDirective,
+    FixedSizeDirective, NameDirective, SizePrefixDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -13,6 +13,9 @@ pub enum CodamaDirective {
     Encoding(EncodingDirective),
     FixedSize(FixedSizeDirective),
     SizePrefix(SizePrefixDirective),
+
+    // Multi-purpose directives.
+    Name(NameDirective),
 
     // Instruction directives.
     Account(AccountDirective),
@@ -32,6 +35,9 @@ impl CodamaDirective {
             "fixed_size" => Ok(FixedSizeDirective::parse(meta)?.into()),
             "size_prefix" => Ok(SizePrefixDirective::parse(meta)?.into()),
 
+            // Multi-purpose directives.
+            "name" => Ok(NameDirective::parse(meta)?.into()),
+
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
 
@@ -50,6 +56,9 @@ impl CodamaDirective {
             Self::Encoding(_) => "encoding",
             Self::FixedSize(_) => "fixed_size",
             Self::SizePrefix(_) => "size_prefix",
+
+            // Multi-purpose directives.
+            Self::Name(_) => "name",
 
             // Instruction directives.
             Self::Account(_) => "account",

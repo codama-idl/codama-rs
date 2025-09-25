@@ -366,3 +366,21 @@ fn it_fails_if_enum_variants_are_not_valid_enum_variant_nodes() -> CodamaResult<
     );
     Ok(())
 }
+
+#[test]
+fn it_uses_the_name_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaType)]
+        #[codama(name = "person")]
+        struct HumanData;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetDefinedTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(DefinedTypeNode::new("person", StructTypeNode::new(vec![])).into())
+    );
+    Ok(())
+}

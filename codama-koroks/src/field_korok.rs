@@ -1,7 +1,7 @@
 use crate::KorokTrait;
-use codama_attributes::Attributes;
+use codama_attributes::{Attributes, NameDirective, TryFromFilter};
 use codama_errors::CodamaResult;
-use codama_nodes::{Node, StructFieldTypeNode, TypeNode};
+use codama_nodes::{CamelCaseString, Node, StructFieldTypeNode, TypeNode};
 
 #[derive(Debug, PartialEq)]
 pub struct FieldKorok<'a> {
@@ -20,9 +20,16 @@ impl<'a> FieldKorok<'a> {
         })
     }
 
+    pub fn name(&self) -> Option<CamelCaseString> {
+        self.attributes
+            .get_last(NameDirective::filter)
+            .map(|n| n.name.clone())
+            .or_else(|| self.ast.ident.as_ref().map(|i| i.to_string().into()))
+    }
+
     pub fn set_type_node(&mut self, node: TypeNode) {
-        self.node = match &self.ast.ident {
-            Some(ident) => Some(StructFieldTypeNode::new(ident.to_string(), node).into()),
+        self.node = match self.name() {
+            Some(name) => Some(StructFieldTypeNode::new(name, node).into()),
             None => Some(node.into()),
         }
     }

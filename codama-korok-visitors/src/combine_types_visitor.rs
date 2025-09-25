@@ -135,12 +135,12 @@ impl KorokVisitor for CombineTypesVisitor {
         self.visit_children(korok)?;
         self.parent = CombineTypesVisitorParent::None;
 
-        let name = korok.ast.ident.to_string();
         korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
-            Ok(TypeNode::Tuple(tuple_node)) if tuple_node.items.len() == 1 => {
-                Some(DefinedTypeNode::new(name, tuple_node.items.first().unwrap().clone()).into())
-            }
-            Ok(type_node) => Some(DefinedTypeNode::new(name, type_node).into()),
+            Ok(TypeNode::Tuple(tuple_node)) if tuple_node.items.len() == 1 => Some(
+                DefinedTypeNode::new(korok.name(), tuple_node.items.first().unwrap().clone())
+                    .into(),
+            ),
+            Ok(type_node) => Some(DefinedTypeNode::new(korok.name(), type_node).into()),
             Err(_) => {
                 let message = match &korok.fields.node {
                     Some(node) => format!(
@@ -165,7 +165,6 @@ impl KorokVisitor for CombineTypesVisitor {
         self.visit_children(korok)?;
         self.parent = CombineTypesVisitorParent::None;
 
-        let enum_name = korok.ast.ident.to_string();
         let variants = korok
             .variants
             .iter()
@@ -181,7 +180,7 @@ impl KorokVisitor for CombineTypesVisitor {
 
         korok.node = Some(
             DefinedTypeNode::new(
-                enum_name,
+                korok.name(),
                 EnumTypeNode {
                     variants,
                     size: NestedTypeNode::Value(size),
@@ -207,7 +206,6 @@ impl KorokVisitor for CombineTypesVisitor {
         self.visit_children(korok)?;
         self.parent = original_parent_item;
 
-        let variant_name = korok.ast.ident.to_string();
         let discriminator = korok
             .ast
             .discriminant
@@ -217,14 +215,14 @@ impl KorokVisitor for CombineTypesVisitor {
         korok.node = match (&korok.ast.fields, &korok.fields.node) {
             (syn::Fields::Unit, _) => Some(
                 EnumEmptyVariantTypeNode {
-                    name: variant_name.into(),
+                    name: korok.name(),
                     discriminator,
                 }
                 .into(),
             ),
             (syn::Fields::Named(_), Some(Node::Type(RegisteredTypeNode::Struct(node)))) => Some(
                 EnumStructVariantTypeNode {
-                    name: variant_name.into(),
+                    name: korok.name(),
                     r#struct: node.clone().into(),
                     discriminator,
                 }
@@ -232,7 +230,7 @@ impl KorokVisitor for CombineTypesVisitor {
             ),
             (syn::Fields::Unnamed(_), Some(Node::Type(RegisteredTypeNode::Tuple(node)))) => Some(
                 EnumTupleVariantTypeNode {
-                    name: variant_name.into(),
+                    name: korok.name(),
                     tuple: node.clone().into(),
                     discriminator,
                 }

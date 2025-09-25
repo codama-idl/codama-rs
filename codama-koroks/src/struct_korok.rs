@@ -1,7 +1,7 @@
 use crate::{FieldsKorok, KorokTrait};
-use codama_attributes::Attributes;
+use codama_attributes::{Attributes, NameDirective, TryFromFilter};
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
-use codama_nodes::Node;
+use codama_nodes::{CamelCaseString, Node};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -27,6 +27,13 @@ impl<'a> StructKorok<'a> {
             fields,
             node: None,
         })
+    }
+
+    pub fn name(&self) -> CamelCaseString {
+        self.attributes
+            .get_last(NameDirective::filter)
+            .map(|n| n.name.clone())
+            .unwrap_or(self.ast.ident.to_string().into())
     }
 }
 
