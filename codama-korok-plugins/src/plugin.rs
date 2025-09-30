@@ -2,59 +2,42 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::KorokVisitable;
 
 pub trait KorokPlugin {
-    fn run(
-        &self,
-        visitable: &mut dyn KorokVisitable,
-        next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
-    ) -> CodamaResult<()>;
+    fn on_initialized(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn on_fields_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn on_program_items_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn on_root_node_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        Ok(())
+    }
 }
 
 pub type ResolvePluginsResult<'a> = Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()> + 'a>;
 
-/// Reduce all plugins into a single function that runs them in sequence.
-///
-/// For instance, imagine we have a list of plugins [A, B, C] implemented as:
-///
-/// ```rust
-/// use codama_errors::CodamaResult;
-/// use codama_korok_plugins::KorokPlugin;
-/// use codama_korok_visitors::KorokVisitable;
-///
-/// struct LoggingPluging;
-/// impl KorokPlugin for LoggingPluging {
-///     fn run(&self, visitable: &mut dyn KorokVisitable, next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>) -> CodamaResult<()> {
-///         println!("Plugin X - before");
-///         next(visitable)?;
-///         println!("Plugin X - after");
-///         Ok(())
-///     }
-/// }
-/// ```
-///
-/// Where `X` is `A`, `B`, or `C`. The `resolve_plugins` function will return a function that
-/// prints the following:
-///
-/// ```text
-/// Plugin C - before
-/// Plugin B - before
-/// Plugin A - before
-/// Plugin A - after
-/// Plugin B - after
-/// Plugin C - after
-/// ```
+/// Combine all plugins into a single function that runs them in sequence.
 pub fn resolve_plugins<'a>(plugins: &'a [Box<dyn KorokPlugin + 'a>]) -> ResolvePluginsResult<'a> {
-    // We fold from the left to ensure that any code before the
-    // `next` call is run before the previous plugin on the list.
-    plugins.iter().fold(
-        // Base case: a no-op `next` function.
-        Box::new(|_: &mut dyn KorokVisitable| Ok(()))
-            as Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>>,
-        // Wrap each plugin with a closure that calls the next plugin in the chain.
-        |next, plugin| {
-            Box::new(move |visitable: &mut dyn KorokVisitable| plugin.run(visitable, &next))
-                as Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>>
-        },
-    )
+    Box::new(move |visitable: &mut dyn KorokVisitable| {
+        plugins
+            .iter()
+            .try_for_each(|plugin| plugin.on_initialized(visitable))?;
+        plugins
+            .iter()
+            .try_for_each(|plugin| plugin.on_fields_set(visitable))?;
+        plugins
+            .iter()
+            .try_for_each(|plugin| plugin.on_program_items_set(visitable))?;
+        plugins
+            .iter()
+            .try_for_each(|plugin| plugin.on_root_node_set(visitable))?;
+        Ok(())
+    })
 }
 
 #[cfg(test)]
@@ -76,18 +59,28 @@ mod tests {
         }
     }
     impl KorokPlugin for LoggingPluging {
-        fn run(
-            &self,
-            visitable: &mut dyn KorokVisitable,
-            next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
-        ) -> CodamaResult<()> {
+        fn on_initialized(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
             self.logs
                 .borrow_mut()
-                .push(format!("Plugin {} - before", self.id));
-            next(visitable)?;
+                .push(format!("Plugin {} - initialized", self.id));
+            Ok(())
+        }
+        fn on_fields_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
             self.logs
                 .borrow_mut()
-                .push(format!("Plugin {} - after", self.id));
+                .push(format!("Plugin {} - on_fields_set", self.id));
+            Ok(())
+        }
+        fn on_program_items_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+            self.logs
+                .borrow_mut()
+                .push(format!("Plugin {} - on_program_items_set", self.id));
+            Ok(())
+        }
+        fn on_root_node_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+            self.logs
+                .borrow_mut()
+                .push(format!("Plugin {} - on_root_node_set", self.id));
             Ok(())
         }
     }
@@ -116,10 +109,14 @@ mod tests {
         assert_eq!(
             logs.borrow().as_slice(),
             &[
-                "Plugin B - before",
-                "Plugin A - before",
-                "Plugin A - after",
-                "Plugin B - after",
+                "Plugin A - initialized",
+                "Plugin B - initialized",
+                "Plugin A - on_fields_set",
+                "Plugin B - on_fields_set",
+                "Plugin A - on_program_items_set",
+                "Plugin B - on_program_items_set",
+                "Plugin A - on_root_node_set",
+                "Plugin B - on_root_node_set",
             ]
         );
         Ok(())

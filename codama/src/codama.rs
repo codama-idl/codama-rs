@@ -1,6 +1,5 @@
 use codama_errors::{CodamaError, CodamaResult};
 use codama_korok_plugins::{resolve_plugins, DefaultPlugin, KorokPlugin};
-use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::RootKorok;
 use codama_nodes::{HasKind, Node, NodeTrait, RootNode};
 use codama_stores::RootStore;
@@ -59,12 +58,6 @@ impl Codama {
         let mut korok = self.get_korok()?;
         let run_plugins = resolve_plugins(self.get_plugins());
         run_plugins(&mut korok)?;
-
-        // Combine all modules into a single RootNode.
-        // This could be part of the default plugin, but it would require
-        // every post-plugins to re-run the CombineModulesVisitor.
-        korok.accept(&mut CombineModulesVisitor::new())?;
-
         Ok(korok)
     }
 

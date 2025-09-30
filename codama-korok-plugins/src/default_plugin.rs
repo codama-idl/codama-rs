@@ -1,38 +1,32 @@
 use crate::KorokPlugin;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, ComposeVisitor, FilterItemsVisitor,
-    KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor, SetDefinedTypesVisitor,
-    SetErrorsVisitor, SetInstructionsVisitor, SetLinkTypesVisitor, SetProgramMetadataVisitor,
+    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, CombineModulesVisitor, KorokVisitable,
+    SetAccountsVisitor, SetBorshTypesVisitor, SetDefinedTypesVisitor, SetErrorsVisitor,
+    SetInstructionsVisitor, SetLinkTypesVisitor, SetProgramMetadataVisitor,
 };
-use codama_koroks::KorokTrait;
 
 pub struct DefaultPlugin;
 impl KorokPlugin for DefaultPlugin {
-    fn run(
-        &self,
-        visitable: &mut dyn KorokVisitable,
-        next: &dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()>,
-    ) -> CodamaResult<()> {
-        next(visitable)?;
-        visitable.accept(&mut get_default_visitor())?;
+    fn on_fields_set(&self, visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        visitable.accept(&mut SetBorshTypesVisitor::new())?;
+        visitable.accept(&mut SetLinkTypesVisitor::new())?;
+        visitable.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        visitable.accept(&mut ApplyTypeModifiersVisitor::new())?;
         Ok(())
     }
-}
 
-pub fn get_default_visitor<'a>() -> ComposeVisitor<'a> {
-    ComposeVisitor::new()
-        .with(FilterItemsVisitor::new(
-            |item| item.attributes().unwrap().has_any_codama_derive(),
-            ComposeVisitor::new()
-                .with(SetBorshTypesVisitor::new())
-                .with(SetLinkTypesVisitor::new()),
-        ))
-        .with(SetProgramMetadataVisitor::new())
-        .with(ApplyTypeOverridesVisitor::new())
-        .with(ApplyTypeModifiersVisitor::new())
-        .with(SetDefinedTypesVisitor::new())
-        .with(SetAccountsVisitor::new())
-        .with(SetInstructionsVisitor::new())
-        .with(SetErrorsVisitor::new())
+    fn on_program_items_set(&self, visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        visitable.accept(&mut SetDefinedTypesVisitor::new())?;
+        visitable.accept(&mut SetAccountsVisitor::new())?;
+        visitable.accept(&mut SetInstructionsVisitor::new())?;
+        visitable.accept(&mut SetErrorsVisitor::new())?;
+        Ok(())
+    }
+
+    fn on_root_node_set(&self, visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
+        visitable.accept(&mut SetProgramMetadataVisitor::new())?;
+        visitable.accept(&mut CombineModulesVisitor::new())?;
+        Ok(())
+    }
 }
