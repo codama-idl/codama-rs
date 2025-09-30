@@ -93,14 +93,14 @@ impl<'a> Attributes<'a> {
     where
         F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
     {
-        self.iter().filter_map(f).next()
+        self.iter().find_map(f)
     }
 
     pub fn get_last<B: 'a, F>(&'a self, f: F) -> Option<&'a B>
     where
         F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
     {
-        self.iter().filter_map(f).next_back()
+        self.iter().rev().find_map(f)
     }
 }
 

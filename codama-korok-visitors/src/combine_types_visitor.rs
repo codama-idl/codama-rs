@@ -173,8 +173,7 @@ impl KorokVisitor for CombineTypesVisitor {
 
         let size = korok
             .attributes
-            .iter()
-            .find_map(ReprAttribute::filter)
+            .get_first(ReprAttribute::filter)
             .and_then(|attr| attr.get_number_type_node())
             .unwrap_or(NumberTypeNode::le(U8));
 
