@@ -102,14 +102,6 @@ impl KorokVisitor for ComposeVisitor<'_> {
         Ok(())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
-        self.visitors
-            .iter_mut()
-            .map(|v| v.visit_fields(korok))
-            .collect_and_combine_errors()?;
-        Ok(())
-    }
-
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         self.visitors
             .iter_mut()

@@ -48,17 +48,12 @@ fn it_only_starts_the_child_visitor_on_filtered_items() -> CodamaResult<()> {
     assert_eq!(foo.node, Some(PublicKeyTypeNode::new().into()));
     assert_eq!(foo_struct.node, Some(PublicKeyTypeNode::new().into()));
     assert_eq!(
-        foo_struct.fields.node,
-        Some(PublicKeyTypeNode::new().into())
-    );
-    assert_eq!(
-        foo_struct.fields.all[0].node,
+        foo_struct.fields[0].node,
         Some(PublicKeyTypeNode::new().into())
     );
 
     assert_eq!(bar.node, None);
     assert_eq!(bar_struct.node, None);
-    assert_eq!(bar_struct.fields.node, None);
-    assert_eq!(bar_struct.fields.all[0].node, None);
+    assert_eq!(bar_struct.fields[0].node, None);
     Ok(())
 }

@@ -13,7 +13,6 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Enum(k) => k.accept(visitor),
             Self::EnumVariant(k) => k.accept(visitor),
             Self::Field(k) => k.accept(visitor),
-            Self::Fields(k) => k.accept(visitor),
             Self::FileModule(k) => k.accept(visitor),
             Self::Item(k) => k.accept(visitor),
             Self::Module(k) => k.accept(visitor),
@@ -32,7 +31,6 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Enum(k) => k.get_children(),
             Self::EnumVariant(k) => k.get_children(),
             Self::Field(k) => k.get_children(),
-            Self::Fields(k) => k.get_children(),
             Self::FileModule(k) => k.get_children(),
             Self::Item(k) => k.get_children(),
             Self::Module(k) => k.get_children(),
@@ -116,16 +114,7 @@ impl KorokVisitable for codama_koroks::StructKorok<'_> {
         visitor.visit_struct(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        vec![&mut self.fields as &mut dyn KorokVisitable]
-    }
-}
-
-impl KorokVisitable for codama_koroks::FieldsKorok<'_> {
-    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
-        visitor.visit_fields(self)
-    }
-    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        self.all
+        self.fields
             .iter_mut()
             .map(|f| f as &mut dyn KorokVisitable)
             .collect()
@@ -158,7 +147,10 @@ impl KorokVisitable for codama_koroks::EnumVariantKorok<'_> {
         visitor.visit_enum_variant(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-        vec![&mut self.fields as &mut dyn KorokVisitable]
+        self.fields
+            .iter_mut()
+            .map(|f| f as &mut dyn KorokVisitable)
+            .collect()
     }
 }
 

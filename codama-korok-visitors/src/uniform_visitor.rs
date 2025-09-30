@@ -74,10 +74,6 @@ impl KorokVisitor for UniformVisitor {
         (self.callback)(korok.into(), self)
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
-        (self.callback)(korok.into(), self)
-    }
-
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         (self.callback)(korok.into(), self)
     }

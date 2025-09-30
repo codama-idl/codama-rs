@@ -19,8 +19,7 @@ fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
         visitor.get_result(),
         format!(
             r#"Struct (Foo): null
-|   Fields: null
-|   |   Field (bar): {}
+|   Field (bar): {}
 "#,
             node_json
         )

@@ -1,7 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{AccountDirective, Attributes, TryFromFilter};
 use codama_errors::CodamaResult;
-use codama_koroks::FieldsKorok;
+use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
     FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
@@ -175,7 +175,7 @@ impl KorokVisitor for SetInstructionsVisitor {
 
 fn get_instruction_account_nodes(
     attributes: &Attributes,
-    fields: &FieldsKorok,
+    fields: &[FieldKorok],
 ) -> Vec<InstructionAccountNode> {
     // Gather the accounts from the struct attributes.
     let accounts_from_struct_attributes = attributes
@@ -186,7 +186,6 @@ fn get_instruction_account_nodes(
 
     // Gather the accounts from the fields.
     let accounts_from_fields = fields
-        .all
         .iter()
         .filter_map(|field| {
             field

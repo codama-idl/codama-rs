@@ -1,6 +1,6 @@
 use crate::KorokTrait;
 use codama_attributes::{Attributes, NameDirective, TryFromFilter};
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_nodes::{CamelCaseString, Node, RegisteredTypeNode, StructFieldTypeNode, TypeNode};
 
 #[derive(Debug, PartialEq)]
@@ -18,6 +18,18 @@ impl<'a> FieldKorok<'a> {
             attributes,
             node: None,
         })
+    }
+
+    pub fn parse_all(ast: &'a syn::Fields) -> CodamaResult<Vec<Self>> {
+        match ast {
+            syn::Fields::Named(f) => f.named.iter().map(Self::parse).collect_and_combine_errors(),
+            syn::Fields::Unnamed(f) => f
+                .unnamed
+                .iter()
+                .map(Self::parse)
+                .collect_and_combine_errors(),
+            syn::Fields::Unit => Ok(vec![]),
+        }
     }
 
     pub fn name(&self) -> Option<CamelCaseString> {

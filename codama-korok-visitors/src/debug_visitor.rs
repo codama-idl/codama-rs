@@ -134,10 +134,6 @@ impl KorokVisitor for DebugVisitor {
         self.write("UnsupportedImplItem", None, korok.into())
     }
 
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
-        self.write("Fields", None, korok.into())
-    }
-
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         let ident = korok
             .ast

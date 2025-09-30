@@ -1,4 +1,4 @@
-use crate::{FieldsKorok, KorokTrait};
+use crate::{FieldKorok, KorokTrait};
 use codama_attributes::{Attributes, NameDirective, TryFromFilter};
 use codama_errors::{combine_errors, CodamaError, CodamaResult, IteratorCombineErrors};
 use codama_nodes::{CamelCaseString, Node};
@@ -7,7 +7,7 @@ use codama_nodes::{CamelCaseString, Node};
 pub struct EnumVariantKorok<'a> {
     pub ast: &'a syn::Variant,
     pub attributes: Attributes<'a>,
-    pub fields: FieldsKorok<'a>,
+    pub fields: Vec<FieldKorok<'a>>,
     pub node: Option<Node>,
 }
 
@@ -15,7 +15,7 @@ impl<'a> EnumVariantKorok<'a> {
     pub fn parse(ast: &'a syn::Variant) -> CodamaResult<Self> {
         let (attributes, fields) = combine_errors!(
             Attributes::parse(&ast.attrs, ast.into()).map_err(CodamaError::from),
-            FieldsKorok::parse(&ast.fields),
+            FieldKorok::parse_all(&ast.fields),
         )?;
         Ok(Self {
             ast,
