@@ -7,7 +7,7 @@ use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
     FixedSizeTypeNode, HasKind, NestedTypeLeaf, NestedTypeNode, NestedTypeNodeTrait, Node,
-    RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, TypeNode,
+    RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -122,12 +122,7 @@ fn apply_type_directive(
 ) -> CodamaResult<Option<Node>> {
     let node = directive.node.clone();
     match input.korok {
-        // If the `type` directive is applied to a named field then
-        // we need to wrap the provided node in a `StructFieldTypeNode`.
-        KorokMut::Field(korok) => match (node.clone(), korok.name()) {
-            (type_node, Some(name)) => Ok(Some(StructFieldTypeNode::new(name, type_node).into())),
-            _ => Ok(Some(node.into())),
-        },
+        KorokMut::Field(korok) => Ok(korok.get_updated_type_node(node)),
         _ => Ok(Some(node.into())),
     }
 }
