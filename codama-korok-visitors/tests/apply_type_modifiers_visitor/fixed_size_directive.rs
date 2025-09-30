@@ -1,6 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyCodamaTypeAttributesVisitor, KorokVisitable, SetBorshTypesVisitor,
+    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, KorokVisitable, SetBorshTypesVisitor,
 };
 use codama_koroks::FieldKorok;
 use codama_nodes::{
@@ -17,7 +17,7 @@ fn it_wraps_any_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(FixedSizeTypeNode::new(NumberTypeNode::le(U32), 8).into())
@@ -35,7 +35,8 @@ fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> CodamaResult<()
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42).into())
@@ -54,7 +55,8 @@ fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> CodamaResult<()> 
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 222).into())
@@ -72,7 +74,7 @@ fn it_replaces_size_prefixed_type_nodes() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42).into())
@@ -90,7 +92,7 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut SetBorshTypesVisitor::new())?;
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(

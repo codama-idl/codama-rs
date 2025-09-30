@@ -1,6 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyCodamaTypeAttributesVisitor, KorokVisitable, SetBorshTypesVisitor,
+    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, KorokVisitable, SetBorshTypesVisitor,
 };
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
@@ -18,7 +18,8 @@ fn it_updates_the_encoding_of_string_type_nodes() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(korok.node, Some(StringTypeNode::base16().into()));
     Ok(())
 }
@@ -36,7 +37,7 @@ fn it_updates_the_encoding_of_nested_string_type_nodes() -> CodamaResult<()> {
         korok.node,
         Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into())
     );
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(SizePrefixTypeNode::new(StringTypeNode::base16(), NumberTypeNode::le(U32)).into())
@@ -54,7 +55,8 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(StructFieldTypeNode::new("field", StringTypeNode::base16()).into())
@@ -81,7 +83,7 @@ fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResul
             .into()
         )
     );
-    korok.accept(&mut ApplyCodamaTypeAttributesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
         Some(
@@ -105,7 +107,7 @@ fn it_fails_on_empty_nodes() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     let error = korok
-        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .accept(&mut ApplyTypeModifiersVisitor::new())
         .unwrap_err();
     assert_eq!(
         error.to_string(),
@@ -124,7 +126,7 @@ fn it_fails_on_non_type_nodes() -> CodamaResult<()> {
     korok.set_node(Some(StringValueNode::new("Some string value").into()));
 
     let error = korok
-        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .accept(&mut ApplyTypeModifiersVisitor::new())
         .unwrap_err();
     assert_eq!(
         error.to_string(),
@@ -145,7 +147,7 @@ fn it_fails_on_nested_type_nodes_that_are_not_string_types() -> CodamaResult<()>
     ));
 
     let error = korok
-        .accept(&mut ApplyCodamaTypeAttributesVisitor::new())
+        .accept(&mut ApplyTypeModifiersVisitor::new())
         .unwrap_err();
     assert_eq!(
         error.to_string(),
