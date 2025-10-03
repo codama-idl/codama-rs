@@ -91,8 +91,7 @@ impl KorokVisitor for SetErrorsVisitor {
         // Get #[codama(error)] attribute.
         let codama_error = korok
             .attributes
-            .iter()
-            .find_map(ErrorDirective::filter)
+            .get_first(ErrorDirective::filter)
             .cloned()
             .unwrap_or_default();
 

@@ -189,12 +189,10 @@ fn get_instruction_account_nodes(
         .all
         .iter()
         .filter_map(|field| {
-            let account_attribute = field
+            field
                 .attributes
-                .iter()
-                .filter_map(AccountDirective::filter)
-                .next_back();
-            account_attribute.map(InstructionAccountNode::from)
+                .get_last(AccountDirective::filter)
+                .map(InstructionAccountNode::from)
         })
         .collect::<Vec<_>>();
 
