@@ -16,7 +16,7 @@ path = "tests/mod.rs"
 [dev-dependencies]
 trybuild = { version = "1.0.49", features = ["diff"] }
 
-[dependencies]
+[target.'cfg(not(target_os = "solana"))'.dependencies]
 codama-attributes = { version = "0.5.3", path = "../codama-attributes" }
 codama-errors = { version = "0.5.3", path = "../codama-errors" }
 codama-koroks = { version = "0.5.3", path = "../codama-koroks" }
@@ -24,3 +24,8 @@ codama-stores = { version = "0.5.3", path = "../codama-stores" }
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["extra-traits"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(target_os, values("solana"))',
+] }
