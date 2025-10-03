@@ -11,20 +11,12 @@ use codama_syn_helpers::extensions::*;
 
 pub struct CombineTypesVisitor {
     pub r#override: bool,
-    pub get_enum_variant: fn(
-        korok: &EnumVariantKorok,
-        parent: CombineTypesVisitorParent,
-    ) -> Option<CodamaResult<EnumVariantTypeNode>>,
-    pub get_nammed_field: fn(
-        korok: &FieldKorok,
-        parent: CombineTypesVisitorParent,
-    ) -> Option<CodamaResult<StructFieldTypeNode>>,
-    pub get_unnammed_field: fn(
-        korok: &FieldKorok,
-        parent: CombineTypesVisitorParent,
-        index: usize,
-    ) -> Option<CodamaResult<TypeNode>>,
-    pub parent: CombineTypesVisitorParent,
+    pub get_enum_variant:
+        fn(korok: &EnumVariantKorok, parent: &str) -> Option<CodamaResult<EnumVariantTypeNode>>,
+    pub get_nammed_field:
+        fn(korok: &FieldKorok, parent: &str) -> Option<CodamaResult<StructFieldTypeNode>>,
+    pub get_unnammed_field:
+        fn(korok: &FieldKorok, parent: &str, index: usize) -> Option<CodamaResult<TypeNode>>,
     pub parent_enum: String,
 }
 
@@ -35,7 +27,6 @@ impl Default for CombineTypesVisitor {
             get_enum_variant: |x, _| Self::get_default_enum_variant(x),
             get_nammed_field: |x, _| Self::get_default_nammed_field(x),
             get_unnammed_field: |x, _, _| Self::get_default_unnammed_field(x),
-            parent: CombineTypesVisitorParent::None,
             parent_enum: String::new(),
         }
     }
@@ -77,7 +68,7 @@ impl CombineTypesVisitor {
     }
     pub fn get_strict_enum_variant(
         variant: &EnumVariantKorok,
-        parent: CombineTypesVisitorParent,
+        parent: &str,
     ) -> Option<CodamaResult<EnumVariantTypeNode>> {
         match Self::get_default_enum_variant(variant) {
             Some(result) => Some(result),
@@ -85,15 +76,14 @@ impl CombineTypesVisitor {
                 .ast
                 .error(format!(
                     "Variant `{}` of {} does not resolve to a `EnumVariantTypeNode`",
-                    variant.ast.ident,
-                    parent.identifier()
+                    variant.ast.ident, parent
                 ))
                 .into())),
         }
     }
     pub fn get_strict_nammed_field(
         field: &FieldKorok,
-        parent: CombineTypesVisitorParent,
+        parent: &str,
     ) -> Option<CodamaResult<StructFieldTypeNode>> {
         match Self::get_default_nammed_field(field) {
             Some(result) => Some(result),
@@ -102,14 +92,14 @@ impl CombineTypesVisitor {
                 .error(format!(
                     "Field `{}` in {} does not resolve to a `structFieldTypeNode`",
                     field.ast.ident.as_ref().unwrap(),
-                    parent.identifier()
+                    parent
                 ))
                 .into())),
         }
     }
     pub fn get_strict_unnammed_field(
         field: &FieldKorok,
-        parent: CombineTypesVisitorParent,
+        parent: &str,
         index: usize,
     ) -> Option<CodamaResult<TypeNode>> {
         match Self::get_default_unnammed_field(field) {
@@ -118,8 +108,7 @@ impl CombineTypesVisitor {
                 .ast
                 .error(format!(
                     "Field `{}` in {} does not resolve to a `TypeNode`",
-                    index,
-                    parent.identifier()
+                    index, parent
                 ))
                 .into())),
         }
@@ -134,13 +123,13 @@ impl KorokVisitor for CombineTypesVisitor {
 
         self.visit_children(korok)?;
 
-        let parent = CombineTypesVisitorParent::Struct(korok.ast.ident.to_string());
+        let parent = format!("struct `{}`", korok.ast.ident);
         let type_node: TypeNode = match korok.ast.fields {
             syn::Fields::Named(_) => {
                 let fields = korok
                     .fields
                     .iter()
-                    .filter_map(|field| (self.get_nammed_field)(field, parent.clone()))
+                    .filter_map(|field| (self.get_nammed_field)(field, &parent))
                     .collect_and_combine_errors()?;
                 StructTypeNode::new(fields).into()
             }
@@ -149,9 +138,7 @@ impl KorokVisitor for CombineTypesVisitor {
                     .fields
                     .iter()
                     .enumerate()
-                    .filter_map(|(index, field)| {
-                        (self.get_unnammed_field)(field, parent.clone(), index)
-                    })
+                    .filter_map(|(index, field)| (self.get_unnammed_field)(field, &parent, index))
                     .collect_and_combine_errors()?;
                 if items.len() == 1 {
                     items.first().unwrap().clone()
@@ -175,11 +162,11 @@ impl KorokVisitor for CombineTypesVisitor {
         self.visit_children(korok)?;
         self.parent_enum.clear();
 
-        let parent = CombineTypesVisitorParent::Enum(korok.ast.ident.to_string());
+        let parent = format!("enum `{}`", korok.ast.ident);
         let variants = korok
             .variants
             .iter()
-            .filter_map(|variant| (self.get_enum_variant)(variant, parent.clone()))
+            .filter_map(|variant| (self.get_enum_variant)(variant, &parent))
             .collect_and_combine_errors()?;
 
         let size = korok
@@ -211,9 +198,9 @@ impl KorokVisitor for CombineTypesVisitor {
 
         self.visit_children(korok)?;
 
-        let parent = CombineTypesVisitorParent::Variant(
-            self.parent_enum.clone(),
-            korok.ast.ident.to_string(),
+        let parent = format!(
+            "variant `{}` of enum `{}`",
+            korok.ast.ident, self.parent_enum
         );
         let discriminator = korok
             .ast
@@ -226,7 +213,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 let fields = korok
                     .fields
                     .iter()
-                    .filter_map(|field| (self.get_nammed_field)(field, parent.clone()))
+                    .filter_map(|field| (self.get_nammed_field)(field, &parent))
                     .collect_and_combine_errors()?;
                 Some(
                     EnumStructVariantTypeNode {
@@ -242,9 +229,7 @@ impl KorokVisitor for CombineTypesVisitor {
                     .fields
                     .iter()
                     .enumerate()
-                    .filter_map(|(index, field)| {
-                        (self.get_unnammed_field)(field, parent.clone(), index)
-                    })
+                    .filter_map(|(index, field)| (self.get_unnammed_field)(field, &parent, index))
                     .collect_and_combine_errors()?;
                 Some(
                     EnumTupleVariantTypeNode {
@@ -264,29 +249,5 @@ impl KorokVisitor for CombineTypesVisitor {
             ),
         };
         Ok(())
-    }
-}
-
-#[derive(Default, Clone)]
-pub enum CombineTypesVisitorParent {
-    Struct(String),
-    Enum(String),
-    Variant(String, String),
-    #[default]
-    None,
-}
-
-impl CombineTypesVisitorParent {
-    pub fn identifier(&self) -> String {
-        match self {
-            CombineTypesVisitorParent::Struct(name) => format!("struct `{name}`"),
-            CombineTypesVisitorParent::Enum(name) => format!("enum `{name}`"),
-            CombineTypesVisitorParent::Variant(enum_name, variant_name) => {
-                format!("variant `{variant_name}` of enum `{enum_name}`")
-            }
-            CombineTypesVisitorParent::None => {
-                unreachable!("This should only be called inside a parent item")
-            }
-        }
     }
 }
