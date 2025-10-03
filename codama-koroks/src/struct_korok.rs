@@ -1,4 +1,4 @@
-use crate::{FieldsKorok, KorokTrait};
+use crate::{FieldKorok, KorokTrait};
 use codama_attributes::{Attributes, NameDirective, TryFromFilter};
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::{CamelCaseString, Node};
@@ -8,7 +8,7 @@ use codama_syn_helpers::extensions::*;
 pub struct StructKorok<'a> {
     pub ast: &'a syn::ItemStruct,
     pub attributes: Attributes<'a>,
-    pub fields: FieldsKorok<'a>,
+    pub fields: Vec<FieldKorok<'a>>,
     pub node: Option<Node>,
 }
 
@@ -19,7 +19,7 @@ impl<'a> StructKorok<'a> {
         };
         let (attributes, fields) = combine_errors!(
             Attributes::parse(&ast.attrs, item.into()).map_err(CodamaError::from),
-            FieldsKorok::parse(&ast.fields),
+            FieldKorok::parse_all(&ast.fields),
         )?;
         Ok(Self {
             ast,

@@ -1,12 +1,11 @@
 use crate::KorokVisitor;
 use codama_attributes::{ReprAttribute, TryFromFilter};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
-use codama_koroks::{EnumVariantKorok, FieldKorok};
+use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, HasKind, NestedTypeNode, Node, NumberFormat::U8,
-    NumberTypeNode, RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNode,
+    EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, Node, NumberFormat::U8, NumberTypeNode,
+    RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -26,6 +25,7 @@ pub struct CombineTypesVisitor {
         index: usize,
     ) -> Option<CodamaResult<TypeNode>>,
     pub parent: CombineTypesVisitorParent,
+    pub parent_enum: String,
 }
 
 impl Default for CombineTypesVisitor {
@@ -36,6 +36,7 @@ impl Default for CombineTypesVisitor {
             get_nammed_field: |x, _| Self::get_default_nammed_field(x),
             get_unnammed_field: |x, _, _| Self::get_default_unnammed_field(x),
             parent: CombineTypesVisitorParent::None,
+            parent_enum: String::new(),
         }
     }
 }
@@ -131,27 +132,37 @@ impl KorokVisitor for CombineTypesVisitor {
             return Ok(());
         }
 
-        self.parent = CombineTypesVisitorParent::Struct(korok.ast.ident.to_string());
         self.visit_children(korok)?;
-        self.parent = CombineTypesVisitorParent::None;
 
-        korok.node = match TypeNode::try_from(korok.fields.node.clone()) {
-            Ok(TypeNode::Tuple(tuple_node)) if tuple_node.items.len() == 1 => Some(
-                DefinedTypeNode::new(korok.name(), tuple_node.items.first().unwrap().clone())
-                    .into(),
-            ),
-            Ok(type_node) => Some(DefinedTypeNode::new(korok.name(), type_node).into()),
-            Err(_) => {
-                let message = match &korok.fields.node {
-                    Some(node) => format!(
-                        "Cannot create a `definedTypeNode` from a node of kind `{}`",
-                        node.kind()
-                    ),
-                    _ => "Cannot create a `definedTypeNode` from `None`".to_string(),
-                };
-                return Err(korok.ast.error(message).into());
+        let parent = CombineTypesVisitorParent::Struct(korok.ast.ident.to_string());
+        let type_node: TypeNode = match korok.ast.fields {
+            syn::Fields::Named(_) => {
+                let fields = korok
+                    .fields
+                    .iter()
+                    .filter_map(|field| (self.get_nammed_field)(field, parent.clone()))
+                    .collect_and_combine_errors()?;
+                StructTypeNode::new(fields).into()
             }
+            syn::Fields::Unnamed(_) => {
+                let items = korok
+                    .fields
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, field)| {
+                        (self.get_unnammed_field)(field, parent.clone(), index)
+                    })
+                    .collect_and_combine_errors()?;
+                if items.len() == 1 {
+                    items.first().unwrap().clone()
+                } else {
+                    TupleTypeNode::new(items).into()
+                }
+            }
+            _ => StructTypeNode::new(vec![]).into(),
         };
+
+        korok.set_node(Some(DefinedTypeNode::new(korok.name(), type_node).into()));
         Ok(())
     }
 
@@ -160,11 +171,11 @@ impl KorokVisitor for CombineTypesVisitor {
             return Ok(());
         }
 
-        let parent = CombineTypesVisitorParent::Enum(korok.ast.ident.to_string());
-        self.parent = parent.clone();
+        self.parent_enum = korok.ast.ident.to_string();
         self.visit_children(korok)?;
-        self.parent = CombineTypesVisitorParent::None;
+        self.parent_enum.clear();
 
+        let parent = CombineTypesVisitorParent::Enum(korok.ast.ident.to_string());
         let variants = korok
             .variants
             .iter()
@@ -198,93 +209,59 @@ impl KorokVisitor for CombineTypesVisitor {
             return Ok(());
         }
 
-        let original_parent_item = self.parent.clone();
-        if let CombineTypesVisitorParent::Enum(name) = self.parent.clone() {
-            self.parent = CombineTypesVisitorParent::Variant(name, korok.ast.ident.to_string());
-        }
         self.visit_children(korok)?;
-        self.parent = original_parent_item;
 
+        let parent = CombineTypesVisitorParent::Variant(
+            self.parent_enum.clone(),
+            korok.ast.ident.to_string(),
+        );
         let discriminator = korok
             .ast
             .discriminant
             .as_ref()
             .and_then(|(_, x)| x.as_unsigned_integer::<usize>().ok());
 
-        korok.node = match (&korok.ast.fields, &korok.fields.node) {
-            (syn::Fields::Unit, _) => Some(
+        korok.node = match korok.ast.fields {
+            syn::Fields::Named(_) => {
+                let fields = korok
+                    .fields
+                    .iter()
+                    .filter_map(|field| (self.get_nammed_field)(field, parent.clone()))
+                    .collect_and_combine_errors()?;
+                Some(
+                    EnumStructVariantTypeNode {
+                        name: korok.name(),
+                        r#struct: StructTypeNode::new(fields).into(),
+                        discriminator,
+                    }
+                    .into(),
+                )
+            }
+            syn::Fields::Unnamed(_) => {
+                let items = korok
+                    .fields
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, field)| {
+                        (self.get_unnammed_field)(field, parent.clone(), index)
+                    })
+                    .collect_and_combine_errors()?;
+                Some(
+                    EnumTupleVariantTypeNode {
+                        name: korok.name(),
+                        tuple: TupleTypeNode::new(items).into(),
+                        discriminator,
+                    }
+                    .into(),
+                )
+            }
+            _ => Some(
                 EnumEmptyVariantTypeNode {
                     name: korok.name(),
                     discriminator,
                 }
                 .into(),
             ),
-            (syn::Fields::Named(_), Some(Node::Type(RegisteredTypeNode::Struct(node)))) => Some(
-                EnumStructVariantTypeNode {
-                    name: korok.name(),
-                    r#struct: node.clone().into(),
-                    discriminator,
-                }
-                .into(),
-            ),
-            (syn::Fields::Unnamed(_), Some(Node::Type(RegisteredTypeNode::Tuple(node)))) => Some(
-                EnumTupleVariantTypeNode {
-                    name: korok.name(),
-                    tuple: node.clone().into(),
-                    discriminator,
-                }
-                .into(),
-            ),
-            (syn::Fields::Named(_), _) => {
-                return Err(korok
-                    .ast
-                    .error(format!(
-                        "Invalid node for enum variant `{}`. Expected a struct node.",
-                        korok.ast.ident
-                    ))
-                    .into())
-            }
-            (syn::Fields::Unnamed(_), _) => {
-                return Err(korok
-                    .ast
-                    .error(format!(
-                        "Invalid node for enum variant `{}`. Expected a tuple node.",
-                        korok.ast.ident
-                    ))
-                    .into())
-            }
-        };
-        Ok(())
-    }
-
-    fn visit_fields(&mut self, korok: &mut codama_koroks::FieldsKorok) -> CodamaResult<()> {
-        if korok.node.is_some() && !self.r#override {
-            return Ok(());
-        }
-
-        self.visit_children(korok)?;
-
-        korok.node = match &korok.ast {
-            syn::Fields::Named(_) => {
-                let fields = korok
-                    .all
-                    .iter()
-                    .filter_map(|field| (self.get_nammed_field)(field, self.parent.clone()))
-                    .collect_and_combine_errors()?;
-                Some(StructTypeNode::new(fields).into())
-            }
-            syn::Fields::Unnamed(_) => {
-                let items = korok
-                    .all
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(size, field)| {
-                        (self.get_unnammed_field)(field, self.parent.clone(), size)
-                    })
-                    .collect_and_combine_errors()?;
-                Some(TupleTypeNode::new(items).into())
-            }
-            syn::Fields::Unit => Some(StructTypeNode::new(vec![]).into()),
         };
         Ok(())
     }

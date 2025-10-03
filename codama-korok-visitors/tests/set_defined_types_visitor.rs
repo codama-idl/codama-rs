@@ -218,7 +218,7 @@ fn it_fails_if_nammed_fields_are_not_struct_field_type_nodes() -> CodamaResult<(
         struct Foo { bar: NotStructFieldTypeNode }
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields.all[0].node = Some(StringTypeNode::utf8().into());
+    korok.fields[0].node = Some(StringTypeNode::utf8().into());
 
     assert_eq!(korok.node, None);
     let error = korok
@@ -257,7 +257,7 @@ fn it_fails_if_unnammed_fields_are_not_type_nodes() -> CodamaResult<()> {
         struct Foo (NotTypeNode);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields.all[0].node =
+    korok.fields[0].node =
         Some(StructFieldTypeNode::new("notATypeNode", BooleanTypeNode::default()).into());
 
     assert_eq!(korok.node, None);
@@ -297,7 +297,7 @@ fn it_fails_if_struct_enum_variant_fields_are_not_struct_field_type_nodes() -> C
         enum Foo { Bar { baz: NotStructFieldTypeNode } }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    korok.variants[0].fields.all[0].node = Some(StringTypeNode::utf8().into());
+    korok.variants[0].fields[0].node = Some(StringTypeNode::utf8().into());
 
     let error = korok
         .accept(&mut SetDefinedTypesVisitor::new())
@@ -335,7 +335,7 @@ fn it_fails_if_tuple_enum_variant_fields_are_not_type_nodes() -> CodamaResult<()
         enum Foo { Bar(NotTypeNode) }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    korok.variants[0].fields.all[0].node =
+    korok.variants[0].fields[0].node =
         Some(StructFieldTypeNode::new("notATypeNode", BooleanTypeNode::default()).into());
 
     let error = korok

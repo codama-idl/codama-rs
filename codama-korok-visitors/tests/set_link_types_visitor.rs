@@ -59,14 +59,16 @@ fn it_works_in_any_parent_koroks() -> CodamaResult<()> {
     let mut korok = StructKorok::parse(&item)?;
 
     korok.accept(&mut SetLinkTypesVisitor::new())?;
-    let fields = korok.fields.all;
     assert_eq!(
-        fields[0].node,
+        korok.fields[0].node,
         Some(DefinedTypeLinkNode::new("string").into())
     );
-    assert_eq!(fields[1].node, Some(DefinedTypeLinkNode::new("u8").into()));
     assert_eq!(
-        fields[2].node,
+        korok.fields[1].node,
+        Some(DefinedTypeLinkNode::new("u8").into())
+    );
+    assert_eq!(
+        korok.fields[2].node,
         Some(DefinedTypeLinkNode::new("membership").into())
     );
     Ok(())

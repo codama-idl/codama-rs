@@ -29,7 +29,7 @@ pub fn get_node_from_enum_variant(tt: TokenStream) -> Option<Node> {
 pub fn get_node_from_type(tt: TokenStream) -> Option<Node> {
     get_node(quote! { pub struct Foo(#tt); }, |k| {
         match &k.crates[0].items[0] {
-            ItemKorok::Struct(k) => k.fields.all[0].node.clone(),
+            ItemKorok::Struct(k) => k.fields[0].node.clone(),
             _ => None,
         }
     })

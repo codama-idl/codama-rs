@@ -15,17 +15,23 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
         }
     };
     let mut korok = StructKorok::parse(&item)?;
-    let struct_node = StructTypeNode::new(vec![
-        StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
-        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-    ]);
-    korok.fields.node = Some(struct_node.clone().into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("age", NumberTypeNode::le(U8)).into());
+    korok.fields[1].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(DefinedTypeNode::new("person", struct_node).into())
+        Some(
+            DefinedTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                ])
+            )
+            .into()
+        )
     );
     Ok(())
 }
@@ -36,17 +42,23 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
         struct Coordinates(u32, u32);
     };
     let mut korok = StructKorok::parse(&item)?;
-    let tuple_node = TupleTypeNode::new(vec![
-        NumberTypeNode::le(U32).into(),
-        NumberTypeNode::le(U32).into(),
-    ]);
-    korok.fields.node = Some(tuple_node.clone().into());
+    korok.fields[0].node = Some(NumberTypeNode::le(U32).into());
+    korok.fields[1].node = Some(NumberTypeNode::le(U32).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(DefinedTypeNode::new("coordinates", tuple_node).into())
+        Some(
+            DefinedTypeNode::new(
+                "coordinates",
+                TupleTypeNode::new(vec![
+                    NumberTypeNode::le(U32).into(),
+                    NumberTypeNode::le(U32).into(),
+                ])
+            )
+            .into()
+        )
     );
     Ok(())
 }
@@ -57,7 +69,7 @@ fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
         struct Slot(u64);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields.node = Some(TupleTypeNode::new(vec![NumberTypeNode::le(U64).into()]).into());
+    korok.fields[0].node = Some(NumberTypeNode::le(U64).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -90,13 +102,8 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
         struct Overriden(u32, u32);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields.node = Some(
-        TupleTypeNode::new(vec![
-            NumberTypeNode::le(U32).into(),
-            NumberTypeNode::le(U32).into(),
-        ])
-        .into(),
-    );
+    korok.fields[0].node = Some(NumberTypeNode::le(U32).into());
+    korok.fields[1].node = Some(NumberTypeNode::le(U32).into());
 
     let original_node = Some(Node::from(DefinedTypeNode::new(
         "original",
@@ -109,18 +116,41 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_if_fields_do_not_resolve_to_a_type_node() -> CodamaResult<()> {
+fn it_fails_if_fields_are_missing() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        struct Person {
+            age: u64,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.fields[0].node = None;
+
+    assert_eq!(korok.node, None);
+    let error = korok
+        .accept(&mut CombineTypesVisitor::strict())
+        .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Field `age` in struct `Person` does not resolve to a `structFieldTypeNode`"
+    );
+    Ok(())
+}
+
+#[test]
+fn it_fails_if_fields_do_not_resolve_to_type_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         struct Slot(u64);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields.node = Some(StringValueNode::new("Not a type node").into());
+    korok.fields[0].node = Some(StringValueNode::new("Not a type node").into());
 
     assert_eq!(korok.node, None);
-    let error = korok.accept(&mut CombineTypesVisitor::new()).unwrap_err();
+    let error = korok
+        .accept(&mut CombineTypesVisitor::strict())
+        .unwrap_err();
     assert_eq!(
         error.to_string(),
-        "Cannot create a `definedTypeNode` from a node of kind `stringValueNode`"
+        "Field `0` in struct `Slot` does not resolve to a `TypeNode`"
     );
     Ok(())
 }
