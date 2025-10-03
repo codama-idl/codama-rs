@@ -1,7 +1,7 @@
 use crate::KorokVisitor;
 use codama_attributes::{
     Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, FixedSizeDirective,
-    SizePrefixDirective, TypeDirective,
+    SizePrefixDirective,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
@@ -12,15 +12,15 @@ use codama_nodes::{
 use codama_syn_helpers::extensions::ToTokensExtension;
 
 #[derive(Default)]
-pub struct ApplyCodamaTypeAttributesVisitor;
+pub struct ApplyTypeModifiersVisitor;
 
-impl ApplyCodamaTypeAttributesVisitor {
+impl ApplyTypeModifiersVisitor {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
+impl KorokVisitor for ApplyTypeModifiersVisitor {
     fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         Ok(())
@@ -28,7 +28,7 @@ impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
 
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_file_module(
@@ -36,22 +36,22 @@ impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
         korok: &mut codama_koroks::FileModuleKorok,
     ) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_unsupported_item(
@@ -59,7 +59,7 @@ impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
         korok: &mut codama_koroks::UnsupportedItemKorok,
     ) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_enum_variant(
@@ -67,23 +67,23 @@ impl KorokVisitor for ApplyCodamaTypeAttributesVisitor {
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
-        apply_codama_attributes(korok.into())
+        apply_type_modifiers(korok.into())
     }
 }
 
 struct ApplyAttributeInput<'a, 'b> {
     node: Option<Node>,
     attribute: &'b CodamaAttribute<'b>,
-    korok: &'b KorokMut<'a, 'b>,
+    _korok: &'b KorokMut<'a, 'b>,
 }
 
 /// Apply codama attributes to the node from the bottom up.
-fn apply_codama_attributes(mut korok: KorokMut) -> CodamaResult<()> {
+fn apply_type_modifiers(mut korok: KorokMut) -> CodamaResult<()> {
     let Some(attributes) = korok.attributes() else {
         return Ok(());
     };
@@ -95,10 +95,10 @@ fn apply_codama_attributes(mut korok: KorokMut) -> CodamaResult<()> {
             _ => None,
         })
         .try_fold(korok.node().clone(), |current_node, attribute| {
-            apply_codama_attribute(ApplyAttributeInput {
+            apply_type_modifier(ApplyAttributeInput {
                 node: current_node,
                 attribute,
-                korok: &korok,
+                _korok: &korok,
             })
         })?;
 
@@ -106,24 +106,12 @@ fn apply_codama_attributes(mut korok: KorokMut) -> CodamaResult<()> {
     Ok(())
 }
 
-fn apply_codama_attribute(input: ApplyAttributeInput) -> CodamaResult<Option<Node>> {
+fn apply_type_modifier(input: ApplyAttributeInput) -> CodamaResult<Option<Node>> {
     match &input.attribute.directive {
-        CodamaDirective::Type(directive) => apply_type_directive(directive, input),
         CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, input),
         CodamaDirective::FixedSize(directive) => apply_fixed_size_directive(directive, input),
         CodamaDirective::SizePrefix(directive) => apply_size_prefix_directive(directive, input),
         _ => Ok(input.node),
-    }
-}
-
-fn apply_type_directive(
-    directive: &TypeDirective,
-    input: ApplyAttributeInput,
-) -> CodamaResult<Option<Node>> {
-    let node = directive.node.clone();
-    match input.korok {
-        KorokMut::Field(korok) => Ok(korok.get_updated_type_node(node)),
-        _ => Ok(Some(node.into())),
     }
 }
 
