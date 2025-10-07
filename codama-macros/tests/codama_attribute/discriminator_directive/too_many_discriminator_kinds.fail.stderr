@@ -1,0 +1,41 @@
+error: size cannot be used when field is set
+ --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:3:49
+  |
+3 | #[codama(discriminator(field = "discriminator", size = 100))]
+  |                                                 ^^^^^^^^^^
+
+error: field cannot be used when size is set
+ --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:6:36
+  |
+6 | #[codama(discriminator(size = 100, field = "discriminator"))]
+  |                                    ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: bytes cannot be used when field is set
+ --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:9:49
+  |
+9 | #[codama(discriminator(field = "discriminator", bytes = [1, 2, 3, 4]))]
+  |                                                 ^^^^^^^^^^^^^^^^^^^^
+
+error: field cannot be used when bytes is set
+  --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:12:46
+   |
+12 | #[codama(discriminator(bytes = [1, 2, 3, 4], field = "discriminator"))]
+   |                                              ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: bytes cannot be used when size is set
+  --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:15:36
+   |
+15 | #[codama(discriminator(size = 100, bytes = [1, 2, 3, 4]))]
+   |                                    ^^^^^^^^^^^^^^^^^^^^
+
+error: size cannot be used when bytes is set
+  --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:18:46
+   |
+18 | #[codama(discriminator(bytes = [1, 2, 3, 4], size = 100))]
+   |                                              ^^^^^^^^^^
+
+error: field cannot be used when bytes is set
+  --> tests/codama_attribute/discriminator_directive/too_many_discriminator_kinds.fail.rs:21:46
+   |
+21 | #[codama(discriminator(bytes = [1, 2, 3, 4], field = "discriminator", size = 100))]
+   |                                              ^^^^^^^^^^^^^^^^^^^^^^^

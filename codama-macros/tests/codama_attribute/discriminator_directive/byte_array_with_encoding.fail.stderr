@@ -1,0 +1,11 @@
+error: encoding cannot be set when bytes is an array
+ --> tests/codama_attribute/discriminator_directive/byte_array_with_encoding.fail.rs:3:46
+  |
+3 | #[codama(discriminator(bytes = [1, 2, 3, 4], encoding = "utf8"))]
+  |                                              ^^^^^^^^^^^^^^^^^
+
+error: bytes must be a string when encoding is set
+ --> tests/codama_attribute/discriminator_directive/byte_array_with_encoding.fail.rs:6:43
+  |
+6 | #[codama(discriminator(encoding = "utf8", bytes = [1, 2, 3, 4]))]
+  |                                           ^^^^^^^^^^^^^^^^^^^^

@@ -2,8 +2,9 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, Docs, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NumberFormat::U64, NumberTypeNode, PayerValueNode, PublicKeyValueNode,
+    BooleanTypeNode, Docs, FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode,
+    InstructionNode, NumberFormat::U64, NumberTypeNode, PayerValueNode, PublicKeyValueNode,
+    SizeDiscriminatorNode,
 };
 
 #[test]
@@ -283,6 +284,35 @@ fn with_name_directive() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 name: "initialize".into(),
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_discriminator_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(discriminator(size = 100))]
+        #[codama(discriminator(field = "discriminator"))]
+        struct MyInstruction;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "myInstruction".into(),
+                discriminators: vec![
+                    SizeDiscriminatorNode::new(100).into(),
+                    FieldDiscriminatorNode::new("discriminator", 0).into(),
+                ],
                 ..InstructionNode::default()
             }
             .into()

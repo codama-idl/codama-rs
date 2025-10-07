@@ -98,6 +98,18 @@ pub trait ExprExtension {
         }
     }
 
+    fn as_u8_array(&self) -> syn::Result<Vec<u8>> {
+        let this = self.get_self();
+        match this {
+            Expr::Array(array) => array
+                .elems
+                .iter()
+                .map(|expr| expr.as_unsigned_integer::<u8>())
+                .collect(),
+            _ => Err(this.error("expected an array")),
+        }
+    }
+
     /// Returns the path of the expression if it is a path.
     fn as_path(&self) -> syn::Result<&syn::Path> {
         let this = self.get_self();
@@ -191,7 +203,7 @@ mod tests {
 
     #[test]
     fn as_bool_ok() {
-        let expr: Expr = syn::parse_quote! { true};
+        let expr: Expr = syn::parse_quote! { true };
         let result = expr.as_bool().unwrap();
         assert!(result);
     }
@@ -215,5 +227,19 @@ mod tests {
         let expr: Expr = syn::parse_quote! { 40 + 2 };
         let error = expr.as_path().unwrap_err();
         assert_eq!(error.to_string(), "expected a path");
+    }
+
+    #[test]
+    fn as_u8_array_ok() {
+        let expr: Expr = syn::parse_quote! { [1, 2, 3, 4] };
+        let result = expr.as_u8_array().unwrap();
+        assert_eq!(result, vec![1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn as_u8_array_err() {
+        let expr: Expr = syn::parse_quote! { "hello world" };
+        let error = expr.as_u8_array().unwrap_err();
+        assert_eq!(error.to_string(), "expected an array");
     }
 }
