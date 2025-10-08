@@ -417,3 +417,43 @@ fn with_discriminator_directives() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn with_enum_discriminator_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        #[codama(enum_discriminator(name = "banana", size = number(u64)))]
+        enum MyProgramAccounts {
+            Token,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![AccountNode {
+                    name: "token".into(),
+                    size: None,
+                    docs: Docs::default(),
+                    data: StructTypeNode::new(vec![StructFieldTypeNode {
+                        name: "banana".into(),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        docs: Docs::default(),
+                        r#type: NumberTypeNode::le(U64).into(),
+                        default_value: Some(NumberValueNode::new(0u64).into()),
+                    }])
+                    .into(),
+                    pda: None,
+                    discriminators: vec![FieldDiscriminatorNode::new("banana", 0).into()],
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}

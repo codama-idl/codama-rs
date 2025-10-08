@@ -1,0 +1,5 @@
+error: size is already set
+ --> tests/codama_attribute/enum_discriminator_directive/too_many_sizes.fail.rs:3:49
+  |
+3 | #[codama(enum_discriminator(size = number(u16), size = number(u32)))]
+  |                                                 ^^^^^^^^^^^^^^^^^^

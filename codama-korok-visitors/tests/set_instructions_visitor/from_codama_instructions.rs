@@ -597,3 +597,40 @@ fn with_discriminator_directives() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn with_enum_discriminator_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        #[codama(enum_discriminator(name = "banana", size = number(u64)))]
+        enum MyProgramInstructions {
+            Initialize,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![InstructionArgumentNode {
+                        name: "banana".into(),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        docs: Docs::default(),
+                        r#type: NumberTypeNode::le(U64).into(),
+                        default_value: Some(NumberValueNode::new(0u64).into()),
+                    }],
+                    discriminators: vec![FieldDiscriminatorNode::new("banana", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}

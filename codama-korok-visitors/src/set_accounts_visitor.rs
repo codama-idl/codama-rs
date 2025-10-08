@@ -1,17 +1,17 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::DiscriminatorDirective;
+use codama_attributes::{DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    AccountNode, CamelCaseString, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
-    FieldDiscriminatorNode, NestedTypeNode, NestedTypeNodeTrait, Node, NumberFormat::U8,
-    NumberTypeNode, NumberValueNode, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
+    AccountNode, CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode,
+    FieldDiscriminatorNode, NestedTypeNode, NestedTypeNodeTrait, Node, NumberValueNode,
+    ProgramNode, StructFieldTypeNode, StructTypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
 pub struct SetAccountsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_name: Option<String>,
-    enum_size: Option<NumberTypeNode>,
+    enum_name: String,
+    enum_discriminator: EnumDiscriminatorDirective,
     enum_current_discriminator: usize,
 }
 
@@ -19,8 +19,8 @@ impl Default for SetAccountsVisitor {
     fn default() -> Self {
         Self {
             combine_types: CombineTypesVisitor::strict(),
-            enum_name: None,
-            enum_size: None,
+            enum_name: "".to_string(),
+            enum_discriminator: EnumDiscriminatorDirective::default(),
             enum_current_discriminator: 0,
         }
     }
@@ -51,12 +51,8 @@ impl KorokVisitor for SetAccountsVisitor {
         let (name, data) = parse_struct(korok)?;
         korok.node = Some(
             AccountNode {
-                name,
-                size: None,
-                docs: Docs::default(),
-                data,
-                pda: None,
                 discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+                ..AccountNode::new(name, data)
             }
             .into(),
         );
@@ -78,26 +74,18 @@ impl KorokVisitor for SetAccountsVisitor {
         // Create a `DefinedTypeNode` from the enum.
         self.combine_types.visit_enum(korok)?;
 
-        // Get details from the defined type enum.
-        let (enum_name, enum_size) = match &korok.node {
-            Some(Node::DefinedType(DefinedTypeNode { name, r#type, .. })) => match r#type {
-                TypeNode::Enum(data) => (
-                    Some(name.to_string()),
-                    Some(data.size.get_nested_type_node().clone()),
-                ),
-                _ => (Some(name.to_string()), None),
-            },
-            _ => (None, None),
-        };
+        // Get enum discriminator info.
+        let enum_discriminator = korok
+            .attributes
+            .get_last(EnumDiscriminatorDirective::filter)
+            .cloned()
+            .unwrap_or_else(|| EnumDiscriminatorDirective::from(&korok.node));
 
         // Transform each variant into an `AccountNode`.
-        self.enum_name = Some(enum_name.unwrap_or(korok.ast.ident.to_string()));
-        self.enum_size = enum_size;
+        self.enum_name = korok.ast.ident.to_string();
+        self.enum_discriminator = enum_discriminator;
         self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
-        self.enum_name = None;
-        self.enum_size = None;
-        self.enum_current_discriminator = 0;
 
         // Gather all accounts in a `ProgramNode`.
         let accounts = korok
@@ -131,18 +119,12 @@ impl KorokVisitor for SetAccountsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
-        let discriminator_name = "discriminator".to_string(); // TODO: Offer a directive to customize this.
         let discriminator = StructFieldTypeNode {
-            name: discriminator_name.clone().into(),
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            docs: Docs::default(),
-            r#type: self
-                .enum_size
-                .clone()
-                .unwrap_or(NumberTypeNode::le(U8))
-                .into(),
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
+            ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
+        let discriminator_name = discriminator.name.clone();
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let data = data.map_nested_type_node(|node| {
             let mut fields = node.fields;
@@ -155,12 +137,8 @@ impl KorokVisitor for SetAccountsVisitor {
 
         korok.node = Some(
             AccountNode {
-                name,
-                size: None,
-                docs: Docs::default(),
-                data,
-                pda: None,
                 discriminators,
+                ..AccountNode::new(name, data)
             }
             .into(),
         );
@@ -190,7 +168,7 @@ fn parse_struct(
 
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
-    enum_name: &Option<String>,
+    enum_name: &str,
 ) -> CodamaResult<(CamelCaseString, NestedTypeNode<StructTypeNode>)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
@@ -211,12 +189,9 @@ fn parse_enum_variant(
     };
 
     // Handle error.
-    let message_prefix = match enum_name {
-        Some(name) => format!("The \"{}\" variant of the \"{name}\" enum", korok.ast.ident),
-        None => format!("The \"{}\" variant", korok.ast.ident),
-    };
     let message = format!(
-        "{message_prefix} could not be used as an Account because we cannot get a `StructTypeNode` for it. This is likely because it is not using named fields.",
+        "The \"{}\" variant of the \"{enum_name}\" enum could not be used as an Account because we cannot get a `StructTypeNode` for it. This is likely because it is not using named fields.",
+        korok.ast.ident
     );
     Err(korok.ast.error(message).into())
 }
