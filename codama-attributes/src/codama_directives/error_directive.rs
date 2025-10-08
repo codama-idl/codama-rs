@@ -1,4 +1,7 @@
-use crate::{utils::SetOnce, Attribute, CodamaAttribute, CodamaDirective};
+use crate::{
+    utils::{FromMeta, SetOnce},
+    Attribute, CodamaAttribute, CodamaDirective,
+};
 use codama_errors::CodamaError;
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -20,16 +23,8 @@ impl ErrorDirective {
         let mut code = SetOnce::<usize>::new("code");
         let mut message = SetOnce::<String>::new("message");
         pl.each(|ref meta| match (meta.path_str().as_str(), meta) {
-            ("code", _) => code.set(
-                meta.as_path_value()?
-                    .value
-                    .as_expr()?
-                    .as_unsigned_integer()?,
-                meta,
-            ),
-            ("message", _) => {
-                message.set(meta.as_path_value()?.value.as_expr()?.as_string()?, meta)
-            }
+            ("code", _) => code.set(usize::from_meta(meta)?, meta),
+            ("message", _) => message.set(String::from_meta(meta)?, meta),
             (_, Meta::Expr(expr)) => {
                 if let Ok(value) = expr.as_unsigned_integer() {
                     code.set(value, meta)

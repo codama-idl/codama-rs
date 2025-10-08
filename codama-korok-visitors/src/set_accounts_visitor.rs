@@ -1,4 +1,5 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
+use codama_attributes::DiscriminatorDirective;
 use codama_errors::CodamaResult;
 use codama_nodes::{
     AccountNode, CamelCaseString, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
@@ -55,7 +56,7 @@ impl KorokVisitor for SetAccountsVisitor {
                 docs: Docs::default(),
                 data,
                 pda: None,
-                discriminators: vec![],
+                discriminators: DiscriminatorDirective::nodes(&korok.attributes),
             }
             .into(),
         );
@@ -148,7 +149,9 @@ impl KorokVisitor for SetAccountsVisitor {
             fields.insert(0, discriminator);
             StructTypeNode { fields }
         });
-        let discriminator_node = FieldDiscriminatorNode::new(discriminator_name, 0);
+
+        let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
+        discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
 
         korok.node = Some(
             AccountNode {
@@ -157,7 +160,7 @@ impl KorokVisitor for SetAccountsVisitor {
                 docs: Docs::default(),
                 data,
                 pda: None,
-                discriminators: vec![discriminator_node.into()],
+                discriminators,
             }
             .into(),
         );

@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountNode, BooleanTypeNode, NumberFormat::U64, NumberTypeNode, PublicKeyTypeNode,
-    StructFieldTypeNode, StructTypeNode,
+    AccountNode, BooleanTypeNode, FieldDiscriminatorNode, NumberFormat::U64, NumberTypeNode,
+    PublicKeyTypeNode, SizeDiscriminatorNode, StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -103,6 +103,34 @@ fn with_name_directive() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(AccountNode::new("token", StructTypeNode::new(vec![])).into())
+    );
+    Ok(())
+}
+
+#[test]
+fn with_discriminator_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        #[codama(discriminator(size = 100))]
+        #[codama(discriminator(field = "discriminator"))]
+        struct MyAccount;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            AccountNode {
+                discriminators: vec![
+                    SizeDiscriminatorNode::new(100).into(),
+                    FieldDiscriminatorNode::new("discriminator", 0).into(),
+                ],
+                ..AccountNode::new("myAccount", StructTypeNode::new(vec![]))
+            }
+            .into()
+        )
     );
     Ok(())
 }

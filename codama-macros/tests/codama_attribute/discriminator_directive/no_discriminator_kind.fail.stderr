@@ -1,0 +1,23 @@
+error: expected a list: `discriminator(...)` or `discriminator = (...)`
+ --> tests/codama_attribute/discriminator_directive/no_discriminator_kind.fail.rs:3:10
+  |
+3 | #[codama(discriminator)]
+  |          ^^^^^^^^^^^^^
+
+error: discriminator must specify one of: bytes, field, size
+ --> tests/codama_attribute/discriminator_directive/no_discriminator_kind.fail.rs:6:10
+  |
+6 | #[codama(discriminator())]
+  |          ^^^^^^^^^^^^^^^
+
+error: discriminator must specify one of: bytes, field, size
+ --> tests/codama_attribute/discriminator_directive/no_discriminator_kind.fail.rs:9:10
+  |
+9 | #[codama(discriminator(offset = 42))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: discriminator must specify one of: bytes, field, size
+  --> tests/codama_attribute/discriminator_directive/no_discriminator_kind.fail.rs:12:10
+   |
+12 | #[codama(discriminator(encoding = "utf8"))]
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

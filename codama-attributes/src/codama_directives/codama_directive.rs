@@ -1,6 +1,7 @@
 use crate::{
-    AccountDirective, AttributeContext, DefaultValueDirective, EncodingDirective, ErrorDirective,
-    FixedSizeDirective, NameDirective, SizePrefixDirective, TypeDirective,
+    AccountDirective, AttributeContext, DefaultValueDirective, DiscriminatorDirective,
+    EncodingDirective, ErrorDirective, FixedSizeDirective, NameDirective, SizePrefixDirective,
+    TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -16,6 +17,7 @@ pub enum CodamaDirective {
 
     // Multi-purpose directives.
     Name(NameDirective),
+    Discriminator(DiscriminatorDirective),
 
     // Instruction directives.
     Account(AccountDirective),
@@ -37,6 +39,7 @@ impl CodamaDirective {
 
             // Multi-purpose directives.
             "name" => Ok(NameDirective::parse(meta)?.into()),
+            "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
 
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
@@ -59,6 +62,7 @@ impl CodamaDirective {
 
             // Multi-purpose directives.
             Self::Name(_) => "name",
+            Self::Discriminator(_) => "discriminator",
 
             // Instruction directives.
             Self::Account(_) => "account",

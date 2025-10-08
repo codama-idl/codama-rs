@@ -1,5 +1,5 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::{AccountDirective, Attributes, TryFromFilter};
+use codama_attributes::{AccountDirective, Attributes, DiscriminatorDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
@@ -65,6 +65,7 @@ impl KorokVisitor for SetInstructionsVisitor {
                 name,
                 accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments: data.into(),
+                discriminators: DiscriminatorDirective::nodes(&korok.attributes),
                 ..InstructionNode::default()
             }
             .into(),
@@ -156,14 +157,16 @@ impl KorokVisitor for SetInstructionsVisitor {
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
         };
         arguments.insert(0, discriminator);
-        let discriminator_node = FieldDiscriminatorNode::new(discriminator_name, 0);
+
+        let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
+        discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
 
         korok.node = Some(
             InstructionNode {
                 name,
                 accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
                 arguments,
-                discriminators: vec![discriminator_node.into()],
+                discriminators,
                 ..InstructionNode::default()
             }
             .into(),

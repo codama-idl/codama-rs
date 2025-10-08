@@ -2,10 +2,11 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionAccountNode,
+    BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantValueNode,
+    DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionAccountNode,
     InstructionArgumentNode, InstructionNode,
     NumberFormat::{U32, U64, U8},
-    NumberTypeNode, NumberValueNode, ProgramNode,
+    NumberTypeNode, NumberValueNode, ProgramNode, SizeDiscriminatorNode,
 };
 
 #[test]
@@ -541,6 +542,52 @@ fn with_name_directives() -> CodamaResult<()> {
                         default_value: Some(NumberValueNode::new(0u8).into()),
                     }],
                     discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_discriminator_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            #[codama(discriminator(size = 100))]
+            #[codama(discriminator(bytes = "01020304", offset = 42))]
+            Initialize,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![InstructionArgumentNode {
+                        name: "discriminator".into(),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        docs: Docs::default(),
+                        r#type: NumberTypeNode::le(U8).into(),
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                    }],
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new("discriminator", 0).into(),
+                        SizeDiscriminatorNode::new(100).into(),
+                        ConstantDiscriminatorNode::new(
+                            ConstantValueNode::bytes(BytesEncoding::Base16, "01020304"),
+                            42
+                        )
+                        .into()
+                    ],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
