@@ -3,12 +3,11 @@ use codama_attributes::{
     Attribute, Attributes, ErrorDirective, TryFromFilter, UnsupportedAttribute,
 };
 use codama_errors::CodamaResult;
-use codama_nodes::{DefinedTypeNode, Docs, ErrorNode, Node, ProgramNode};
+use codama_nodes::{Docs, ErrorNode, Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
 
 pub struct SetErrorsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_name: Option<String>,
     enum_current_discriminator: usize,
 }
 
@@ -16,7 +15,6 @@ impl Default for SetErrorsVisitor {
     fn default() -> Self {
         Self {
             combine_types: CombineTypesVisitor::strict(),
-            enum_name: None,
             enum_current_discriminator: 0,
         }
     }
@@ -43,17 +41,9 @@ impl KorokVisitor for SetErrorsVisitor {
         // Create a `DefinedTypeNode` from the enum.
         self.combine_types.visit_enum(korok)?;
 
-        // Get details from the defined type enum.
-        let enum_name = match &korok.node {
-            Some(Node::DefinedType(DefinedTypeNode { name, .. })) => Some(name.to_string()),
-            _ => None,
-        };
-
         // Transform each variant into an `ErrorNode`.
-        self.enum_name = Some(enum_name.unwrap_or(korok.ast.ident.to_string()));
         self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
-        self.enum_name = None;
         self.enum_current_discriminator = 0;
 
         // Gather all errors in a `ProgramNode`.

@@ -1,19 +1,20 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::{AccountDirective, Attributes, DiscriminatorDirective, TryFromFilter};
+use codama_attributes::{
+    AccountDirective, Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter,
+};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, DefinedTypeNode, Docs, EnumVariantTypeNode,
-    FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NestedTypeNode, NestedTypeNodeTrait, Node, NumberFormat::U8, NumberTypeNode, NumberValueNode,
-    ProgramNode, StructTypeNode, TypeNode,
+    CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
+    NumberValueNode, ProgramNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
 pub struct SetInstructionsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_name: Option<String>,
-    enum_size: Option<NumberTypeNode>,
+    enum_name: String,
+    enum_discriminator: EnumDiscriminatorDirective,
     enum_current_discriminator: usize,
 }
 
@@ -30,8 +31,8 @@ impl Default for SetInstructionsVisitor {
                 },
                 ..CombineTypesVisitor::strict()
             },
-            enum_name: None,
-            enum_size: None,
+            enum_name: "".to_string(),
+            enum_discriminator: EnumDiscriminatorDirective::default(),
             enum_current_discriminator: 0,
         }
     }
@@ -88,26 +89,18 @@ impl KorokVisitor for SetInstructionsVisitor {
         // Create a `DefinedTypeNode` from the enum.
         self.combine_types.visit_enum(korok)?;
 
-        // Get details from the defined type enum.
-        let (enum_name, enum_size) = match &korok.node {
-            Some(Node::DefinedType(DefinedTypeNode { name, r#type, .. })) => match r#type {
-                TypeNode::Enum(data) => (
-                    Some(name.to_string()),
-                    Some(data.size.get_nested_type_node().clone()),
-                ),
-                _ => (Some(name.to_string()), None),
-            },
-            _ => (None, None),
-        };
+        // Get enum discriminator info.
+        let enum_discriminator = korok
+            .attributes
+            .get_last(EnumDiscriminatorDirective::filter)
+            .cloned()
+            .unwrap_or_else(|| EnumDiscriminatorDirective::from(&korok.node));
 
         // Transform each variant into an `InstructionNode`.
-        self.enum_name = Some(enum_name.unwrap_or(korok.ast.ident.to_string()));
-        self.enum_size = enum_size;
+        self.enum_name = korok.ast.ident.to_string();
+        self.enum_discriminator = enum_discriminator;
         self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
-        self.enum_name = None;
-        self.enum_size = None;
-        self.enum_current_discriminator = 0;
 
         // Gather all instructions in a `ProgramNode`.
         let instructions = korok
@@ -144,18 +137,12 @@ impl KorokVisitor for SetInstructionsVisitor {
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let mut arguments: Vec<InstructionArgumentNode> = data.into();
 
-        let discriminator_name = "discriminator".to_string(); // TODO: Offer a directive to customize this.
         let discriminator = InstructionArgumentNode {
-            name: discriminator_name.clone().into(),
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            docs: Docs::default(),
-            r#type: self
-                .enum_size
-                .clone()
-                .unwrap_or(NumberTypeNode::le(U8))
-                .into(),
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
+            ..InstructionArgumentNode::from(&self.enum_discriminator)
         };
+        let discriminator_name = discriminator.name.clone();
         arguments.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
@@ -226,7 +213,7 @@ fn parse_struct(
 
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
-    enum_name: &Option<String>,
+    enum_name: &str,
 ) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
@@ -249,16 +236,9 @@ fn parse_enum_variant(
     };
 
     // Handle error.
-    let message_prefix = match enum_name {
-        Some(name) => format!(
-            "The \"{}\" variant of the \"{}\" enum",
-            korok.ast.ident, name
-        ),
-        None => format!("The \"{}\" variant", korok.ast.ident),
-    };
     let message = format!(
-        "{} could not be used as an Instruction because we cannot get a `StructTypeNode` for it. This is likely because it is not using nammed fields.",
-        message_prefix
+        "The \"{}\" variant of the \"{enum_name}\" enum could not be used as an Instruction because we cannot get a `StructTypeNode` for it. This is likely because it is not using nammed fields.",
+        korok.ast.ident
     );
     Err(korok.ast.error(message).into())
 }

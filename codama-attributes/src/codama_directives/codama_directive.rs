@@ -1,7 +1,7 @@
 use crate::{
     AccountDirective, AttributeContext, DefaultValueDirective, DiscriminatorDirective,
-    EncodingDirective, ErrorDirective, FixedSizeDirective, NameDirective, SizePrefixDirective,
-    TypeDirective,
+    EncodingDirective, EnumDiscriminatorDirective, ErrorDirective, FixedSizeDirective,
+    NameDirective, SizePrefixDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -16,8 +16,9 @@ pub enum CodamaDirective {
     SizePrefix(SizePrefixDirective),
 
     // Multi-purpose directives.
-    Name(NameDirective),
     Discriminator(DiscriminatorDirective),
+    EnumDiscriminator(EnumDiscriminatorDirective),
+    Name(NameDirective),
 
     // Instruction directives.
     Account(AccountDirective),
@@ -38,8 +39,9 @@ impl CodamaDirective {
             "size_prefix" => Ok(SizePrefixDirective::parse(meta)?.into()),
 
             // Multi-purpose directives.
-            "name" => Ok(NameDirective::parse(meta)?.into()),
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
+            "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
+            "name" => Ok(NameDirective::parse(meta)?.into()),
 
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
@@ -61,8 +63,9 @@ impl CodamaDirective {
             Self::SizePrefix(_) => "size_prefix",
 
             // Multi-purpose directives.
-            Self::Name(_) => "name",
             Self::Discriminator(_) => "discriminator",
+            Self::EnumDiscriminator(_) => "enum_discriminator",
+            Self::Name(_) => "name",
 
             // Instruction directives.
             Self::Account(_) => "account",

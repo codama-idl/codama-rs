@@ -4,7 +4,7 @@ use codama_macros::codama;
 pub struct EmptyTest;
 
 #[codama(discriminator())]
-pub struct EmptyTest2;
+pub struct EmptyTestWithBraces;
 
 #[codama(discriminator(offset = 42))]
 pub struct TestWithOffsetOnly;
