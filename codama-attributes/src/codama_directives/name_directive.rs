@@ -1,7 +1,7 @@
-use crate::{Attribute, CodamaAttribute, CodamaDirective};
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
 use codama_nodes::CamelCaseString;
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct NameDirective {
@@ -10,9 +10,10 @@ pub struct NameDirective {
 
 impl NameDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        let pv = meta.assert_directive("name")?.as_path_value()?;
-        let name = pv.value.as_expr()?.as_string()?;
-        Ok(Self { name: name.into() })
+        meta.assert_directive("name")?;
+        Ok(Self {
+            name: String::from_meta(meta)?.into(),
+        })
     }
 }
 
