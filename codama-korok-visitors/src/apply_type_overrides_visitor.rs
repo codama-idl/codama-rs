@@ -2,6 +2,7 @@ use crate::KorokVisitor;
 use codama_attributes::{TryFromFilter, TypeDirective};
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
+use codama_nodes::TypeNode;
 
 #[derive(Default)]
 pub struct ApplyTypeOverridesVisitor;
@@ -77,10 +78,10 @@ fn apply_type_override(mut korok: KorokMut) -> CodamaResult<()> {
         return Ok(());
     };
 
-    let type_node = directive.node.clone();
-    match korok {
-        KorokMut::Field(korok) => korok.set_type_node(type_node),
-        _ => korok.set_node(Some(type_node.into())),
+    let registered_type_node = directive.node.clone();
+    match (&mut korok, TypeNode::try_from(registered_type_node.clone())) {
+        (KorokMut::Field(field_korok), Ok(type_node)) => field_korok.set_type_node(type_node),
+        _ => korok.set_node(Some(registered_type_node.into())),
     };
     Ok(())
 }
