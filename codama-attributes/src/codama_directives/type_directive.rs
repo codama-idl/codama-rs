@@ -1,17 +1,17 @@
 use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::TypeNode;
+use codama_nodes::RegisteredTypeNode;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct TypeDirective {
-    pub node: TypeNode,
+    pub node: RegisteredTypeNode,
 }
 
 impl TypeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pv = meta.assert_directive("type")?.as_path_value()?;
-        let node = TypeNode::from_meta(&pv.value)?;
+        let node = RegisteredTypeNode::from_meta(&pv.value)?;
         Ok(Self { node })
     }
 }
