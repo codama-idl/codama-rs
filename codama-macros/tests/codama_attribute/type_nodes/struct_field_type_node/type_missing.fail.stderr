@@ -1,0 +1,11 @@
+error: type is missing
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/type_missing.fail.rs:3:17
+  |
+3 | #[codama(type = field("age"))]
+  |                 ^^^^^^^^^^^^
+
+error: type is missing
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/type_missing.fail.rs:6:17
+  |
+6 | #[codama(type = field(name = "age"))]
+  |                 ^^^^^^^^^^^^^^^^^^^

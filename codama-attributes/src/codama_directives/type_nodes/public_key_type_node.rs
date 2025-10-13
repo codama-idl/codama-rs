@@ -4,6 +4,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for PublicKeyTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        meta.assert_directive("public_key")?;
         if !meta.is_path_or_empty_list() {
             return Err(meta.error("public_key does not accept any input"));
         }

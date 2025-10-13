@@ -5,10 +5,12 @@ use syn::{Expr, ExprPath};
 
 impl FromMeta for StringTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        meta.assert_directive("string")?;
         let mut encoding: SetOnce<BytesEncoding> = SetOnce::new("encoding");
         if meta.is_path_or_empty_list() {
             return Ok(StringTypeNode::utf8());
         }
+
         meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("encoding", _) => {
@@ -26,6 +28,7 @@ impl FromMeta for StringTypeNode {
                 }
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
+
         Ok(StringTypeNode::new(encoding.take(meta)?))
     }
 }

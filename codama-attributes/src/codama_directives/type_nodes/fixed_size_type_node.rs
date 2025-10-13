@@ -4,25 +4,27 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for FixedSizeTypeNode<TypeNode> {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        let pl = meta.assert_directive("fixed_size")?.as_path_list()?;
         let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
         let mut size: SetOnce<usize> = SetOnce::new("size");
-        meta.as_path_list()?
-            .each(|ref meta| match (meta.path_str().as_str(), meta) {
-                ("type", _) => {
-                    let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
-                    r#type.set(node, meta)
-                }
-                ("size", _) => size.set(
-                    meta.as_path_value()?
-                        .value
-                        .as_expr()?
-                        .as_unsigned_integer()?,
-                    meta,
-                ),
-                (_, m) if m.is_path_or_list() => r#type.set(TypeNode::from_meta(meta)?, meta),
-                (_, Meta::Expr(expr)) => size.set(expr.as_unsigned_integer()?, meta),
-                _ => Err(meta.error("unrecognized attribute")),
-            })?;
+
+        pl.each(|ref meta| match (meta.path_str().as_str(), meta) {
+            ("type", _) => {
+                let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
+                r#type.set(node, meta)
+            }
+            ("size", _) => size.set(
+                meta.as_path_value()?
+                    .value
+                    .as_expr()?
+                    .as_unsigned_integer()?,
+                meta,
+            ),
+            (_, m) if m.is_path_or_list() => r#type.set(TypeNode::from_meta(meta)?, meta),
+            (_, Meta::Expr(expr)) => size.set(expr.as_unsigned_integer()?, meta),
+            _ => Err(meta.error("unrecognized attribute")),
+        })?;
+
         let r#type = r#type.take(meta)?;
         Ok(Self::new(r#type, size.take(meta)?))
     }
