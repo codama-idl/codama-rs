@@ -1,7 +1,7 @@
 use crate::utils::FromMeta;
 use codama_nodes::{
     BooleanTypeNode, FixedSizeTypeNode, NumberTypeNode, PublicKeyTypeNode, RegisteredTypeNode,
-    StringTypeNode, TypeNode,
+    StringTypeNode, StructFieldTypeNode, TypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -9,6 +9,7 @@ impl FromMeta for RegisteredTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
             "boolean" => BooleanTypeNode::from_meta(meta).map(Self::from),
+            "field" => StructFieldTypeNode::from_meta(meta).map(Self::from),
             "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
             "number" => NumberTypeNode::from_meta(meta).map(Self::from),
             "public_key" => PublicKeyTypeNode::from_meta(meta).map(Self::from),

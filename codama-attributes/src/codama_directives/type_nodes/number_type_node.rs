@@ -5,9 +5,11 @@ use syn::{Expr, ExprPath};
 
 impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        let pl = meta.assert_directive("number")?.as_path_list()?;
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
-        meta.as_path_list()?.each(|ref meta| {
+
+        pl.each(|ref meta| {
             let path = meta.path()?;
             match (meta.path_str().as_str(), meta) {
                 ("format", _) => {
@@ -36,6 +38,7 @@ impl FromMeta for NumberTypeNode {
                 _ => Err(path.error("unrecognized attribute")),
             }
         })?;
+
         Ok(Self::new(format.take(meta)?, endian.take(meta)?))
     }
 }

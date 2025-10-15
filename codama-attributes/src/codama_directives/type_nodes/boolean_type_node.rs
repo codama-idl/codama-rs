@@ -4,10 +4,12 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        meta.assert_directive("boolean")?;
         let mut size: SetOnce<TypeNode> = SetOnce::new("size");
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default());
         }
+
         meta.as_path_list()?
             .each(|ref meta| match (meta.path_str().as_str(), meta) {
                 ("size", _) => {
@@ -17,6 +19,7 @@ impl FromMeta for BooleanTypeNode {
                 (_, m) if m.is_path_or_list() => size.set(TypeNode::from_meta(meta)?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             })?;
+
         let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {
             Ok(node) => node,
             Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
