@@ -1,0 +1,17 @@
+error: expected field(...) attribute
+ --> tests/codama_attribute/type_nodes/struct_type_node/invalid_fields.fail.rs:3:24
+  |
+3 | #[codama(type = struct(number(u32), boolean, field("age", number(u8)), 3 * 4))]
+  |                        ^^^^^^^^^^^
+
+error: expected field(...) attribute
+ --> tests/codama_attribute/type_nodes/struct_type_node/invalid_fields.fail.rs:3:37
+  |
+3 | #[codama(type = struct(number(u32), boolean, field("age", number(u8)), 3 * 4))]
+  |                                     ^^^^^^^
+
+error: expected field(...) attribute
+ --> tests/codama_attribute/type_nodes/struct_type_node/invalid_fields.fail.rs:3:72
+  |
+3 | #[codama(type = struct(number(u32), boolean, field("age", number(u8)), 3 * 4))]
+  |                                                                        ^^^^^
