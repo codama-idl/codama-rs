@@ -1,49 +1,23 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, Docs, StructFieldTypeNode, TypeNode, ValueNode,
+use crate::{
+    codama_directives::type_nodes::struct_field_meta_consumer::StructFieldMetaConsumer,
+    utils::{FromMeta, MetaConsumer},
 };
-use codama_syn_helpers::{extensions::*, Meta};
-
-// TODO: impl { partial_meta(meta) -> Result<Self, Vec<Meta>> } to reuse in other directives.
+use codama_nodes::{Docs, StructFieldTypeNode};
+use codama_syn_helpers::Meta;
 
 impl FromMeta for StructFieldTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("field")?.as_path_list()?;
-        let mut name = SetOnce::<CamelCaseString>::new("name");
-        let mut r#type = SetOnce::<TypeNode>::new("type");
-        let mut default_value = SetOnce::<ValueNode>::new("default_value");
-        let mut default_value_strategy =
-            SetOnce::<DefaultValueStrategy>::new("default_value_strategy");
+        meta.assert_directive("field")?;
+        let consumer = StructFieldMetaConsumer::from_meta(meta)?
+            .consume_field()?
+            .consume_default_value()?
+            .assert_fully_consumed()?;
 
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(String::from_meta(meta)?.into(), meta),
-            "type" => {
-                let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
-                r#type.set(node, meta)
-            }
-            "default_value" => {
-                let node = ValueNode::from_meta(&meta.as_path_value()?.value)?;
-                default_value.set(node, meta)
-            }
-            "default_value_omitted" => {
-                meta.as_path()?;
-                default_value_strategy.set(DefaultValueStrategy::Omitted, meta)
-            }
-            _ => {
-                if let Ok(value) = String::from_meta(meta) {
-                    return name.set(value.into(), meta);
-                }
-                if let Ok(node) = TypeNode::from_meta(meta) {
-                    return r#type.set(node, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
-            }
-        })?;
         Ok(StructFieldTypeNode {
-            name: name.take(meta)?,
-            r#type: r#type.take(meta)?,
-            default_value: default_value.option(),
-            default_value_strategy: default_value_strategy.option(),
+            name: consumer.name.take(meta)?,
+            r#type: consumer.r#type.take(meta)?,
+            default_value: consumer.default_value.option(),
+            default_value_strategy: consumer.default_value_strategy.option(),
             docs: Docs::default(),
         })
     }
@@ -51,10 +25,9 @@ impl FromMeta for StructFieldTypeNode {
 
 #[cfg(test)]
 mod tests {
-    use codama_nodes::{NumberFormat::U32, NumberTypeNode, NumberValueNode};
-
     use super::*;
     use crate::{assert_type, assert_type_err};
+    use codama_nodes::{DefaultValueStrategy, NumberFormat::U32, NumberTypeNode, NumberValueNode};
 
     #[test]
     fn implicit_minimum() {
