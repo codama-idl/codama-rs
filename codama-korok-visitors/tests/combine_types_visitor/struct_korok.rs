@@ -2,8 +2,9 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
 use codama_nodes::{
-    DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, StringTypeNode, StringValueNode,
-    StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32, U8,
+    BooleanTypeNode, DefaultValueStrategy, DefinedTypeNode, Node, NumberFormat::U64,
+    NumberTypeNode, NumberValueNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
+    StructTypeNode, TupleTypeNode, U32, U8,
 };
 
 #[test]
@@ -151,6 +152,134 @@ fn it_fails_if_fields_do_not_resolve_to_type_nodes() -> CodamaResult<()> {
     assert_eq!(
         error.to_string(),
         "Field `0` in struct `Slot` does not resolve to a `TypeNode`"
+    );
+    Ok(())
+}
+
+#[test]
+fn it_adds_attribute_fields_to_empty_structs() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(field("age", number(u8)))]
+        #[codama(field("name", string(utf8)))]
+        struct Person;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_prepends_attribute_fields_to_structs() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(field("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(field("age", number(u8)))]
+        struct Person {
+            name: String,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode {
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        ..StructFieldTypeNode::new("discriminator", NumberTypeNode::le(U8))
+                    },
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_appends_attribute_fields_to_structs() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(field(after, "age", number(u8)))]
+        #[codama(field(after, "is_member", boolean))]
+        struct Person {
+            name: String,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_prepends_and_appends_attribute_fields_to_structs() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(field("age", number(u8)))]
+        #[codama(field(after, "last_name", string(utf8)))]
+        #[codama(field("year_of_birth", number(u8)))]
+        #[codama(field(after, "is_member", boolean))]
+        struct Person {
+            name: String,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("year_of_birth", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("last_name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                ])
+            )
+            .into()
+        )
     );
     Ok(())
 }

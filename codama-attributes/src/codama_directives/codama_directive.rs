@@ -1,7 +1,7 @@
 use crate::{
     AccountDirective, AttributeContext, DefaultValueDirective, DiscriminatorDirective,
-    EncodingDirective, EnumDiscriminatorDirective, ErrorDirective, FixedSizeDirective,
-    NameDirective, SizePrefixDirective, TypeDirective,
+    EncodingDirective, EnumDiscriminatorDirective, ErrorDirective, FieldDirective,
+    FixedSizeDirective, NameDirective, SizePrefixDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -12,6 +12,7 @@ pub enum CodamaDirective {
     Type(TypeDirective),
     DefaultValue(DefaultValueDirective),
     Encoding(EncodingDirective),
+    Field(FieldDirective),
     FixedSize(FixedSizeDirective),
     SizePrefix(SizePrefixDirective),
 
@@ -35,6 +36,7 @@ impl CodamaDirective {
             "type" => Ok(TypeDirective::parse(meta)?.into()),
             "default_value" => Ok(DefaultValueDirective::parse(meta)?.into()),
             "encoding" => Ok(EncodingDirective::parse(meta)?.into()),
+            "field" => Ok(FieldDirective::parse(meta)?.into()),
             "fixed_size" => Ok(FixedSizeDirective::parse(meta)?.into()),
             "size_prefix" => Ok(SizePrefixDirective::parse(meta)?.into()),
 
@@ -59,6 +61,7 @@ impl CodamaDirective {
             Self::Type(_) => "type",
             Self::DefaultValue(_) => "default_value",
             Self::Encoding(_) => "encoding",
+            Self::Field(_) => "field",
             Self::FixedSize(_) => "fixed_size",
             Self::SizePrefix(_) => "size_prefix",
 

@@ -1,0 +1,17 @@
+error: name is missing
+ --> tests/codama_attribute/field_directive/invalid_field.fail.rs:3:10
+  |
+3 | #[codama(field())]
+  |          ^^^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/field_directive/invalid_field.fail.rs:6:10
+  |
+6 | #[codama(field(number(u8)))]
+  |          ^^^^^^^^^^^^^^^^^
+
+error: type is missing
+ --> tests/codama_attribute/field_directive/invalid_field.fail.rs:9:10
+  |
+9 | #[codama(field("age"))]
+  |          ^^^^^^^^^^^^

@@ -27,7 +27,7 @@ impl Default for SetInstructionsVisitor {
                     if korok.attributes.has_codama_attribute("account") {
                         return None;
                     }
-                    CombineTypesVisitor::get_strict_nammed_field(korok, parent)
+                    CombineTypesVisitor::get_strict_named_field(korok, parent)
                 },
                 ..CombineTypesVisitor::strict()
             },

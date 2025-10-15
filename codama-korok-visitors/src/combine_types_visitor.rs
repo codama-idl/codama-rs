@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_attributes::{ReprAttribute, TryFromFilter};
+use codama_attributes::{Attributes, FieldDirective, ReprAttribute, TryFromFilter};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
@@ -25,8 +25,8 @@ impl Default for CombineTypesVisitor {
         Self {
             r#override: false,
             get_enum_variant: |x, _| Self::get_default_enum_variant(x),
-            get_nammed_field: |x, _| Self::get_default_nammed_field(x),
-            get_unnammed_field: |x, _, _| Self::get_default_unnammed_field(x),
+            get_nammed_field: |x, _| Self::get_default_named_field(x),
+            get_unnammed_field: |x, _, _| Self::get_default_unnamed_field(x),
             parent_enum: String::new(),
         }
     }
@@ -39,8 +39,8 @@ impl CombineTypesVisitor {
     pub fn strict() -> Self {
         Self {
             get_enum_variant: Self::get_strict_enum_variant,
-            get_nammed_field: Self::get_strict_nammed_field,
-            get_unnammed_field: Self::get_strict_unnammed_field,
+            get_nammed_field: Self::get_strict_named_field,
+            get_unnammed_field: Self::get_strict_unnamed_field,
             ..Self::default()
         }
     }
@@ -55,7 +55,7 @@ impl CombineTypesVisitor {
             _ => None,
         }
     }
-    pub fn get_default_nammed_field(
+    pub fn get_default_named_field(
         field: &FieldKorok,
     ) -> Option<CodamaResult<StructFieldTypeNode>> {
         match &field.node {
@@ -63,7 +63,7 @@ impl CombineTypesVisitor {
             _ => None,
         }
     }
-    pub fn get_default_unnammed_field(field: &FieldKorok) -> Option<CodamaResult<TypeNode>> {
+    pub fn get_default_unnamed_field(field: &FieldKorok) -> Option<CodamaResult<TypeNode>> {
         TypeNode::try_from(field.node.clone()).ok().map(Ok)
     }
     pub fn get_strict_enum_variant(
@@ -81,11 +81,11 @@ impl CombineTypesVisitor {
                 .into())),
         }
     }
-    pub fn get_strict_nammed_field(
+    pub fn get_strict_named_field(
         field: &FieldKorok,
         parent: &str,
     ) -> Option<CodamaResult<StructFieldTypeNode>> {
-        match Self::get_default_nammed_field(field) {
+        match Self::get_default_named_field(field) {
             Some(result) => Some(result),
             None => Some(Err(field
                 .ast
@@ -97,12 +97,12 @@ impl CombineTypesVisitor {
                 .into())),
         }
     }
-    pub fn get_strict_unnammed_field(
+    pub fn get_strict_unnamed_field(
         field: &FieldKorok,
         parent: &str,
         index: usize,
     ) -> Option<CodamaResult<TypeNode>> {
-        match Self::get_default_unnammed_field(field) {
+        match Self::get_default_unnamed_field(field) {
             Some(result) => Some(result),
             None => Some(Err(field
                 .ast
@@ -112,6 +112,49 @@ impl CombineTypesVisitor {
                 ))
                 .into())),
         }
+    }
+
+    fn parse_named_fields(
+        &self,
+        fields: &[FieldKorok],
+        attributes: &Attributes,
+        parent: &str,
+    ) -> CodamaResult<Vec<StructFieldTypeNode>> {
+        let fields = fields
+            .iter()
+            .filter_map(|field| (self.get_nammed_field)(field, parent))
+            .collect_and_combine_errors()?;
+
+        let (before, after): (Vec<_>, Vec<_>) = attributes
+            .get_all(FieldDirective::filter)
+            .into_iter()
+            .partition(|attr| !attr.after);
+
+        let before = before
+            .into_iter()
+            .map(|attr| attr.field.clone())
+            .collect::<Vec<_>>();
+
+        let after = after
+            .into_iter()
+            .map(|attr| attr.field.clone())
+            .collect::<Vec<_>>();
+
+        Ok(before.into_iter().chain(fields).chain(after).collect())
+    }
+
+    fn parse_unnamed_fields(
+        &self,
+        fields: &[FieldKorok],
+        parent: &str,
+    ) -> CodamaResult<Vec<TypeNode>> {
+        let items = fields
+            .iter()
+            .enumerate()
+            .filter_map(|(index, field)| (self.get_unnammed_field)(field, parent, index))
+            .collect_and_combine_errors()?;
+
+        Ok(items)
     }
 }
 
@@ -126,27 +169,21 @@ impl KorokVisitor for CombineTypesVisitor {
         let parent = format!("struct `{}`", korok.ast.ident);
         let type_node: TypeNode = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields = korok
-                    .fields
-                    .iter()
-                    .filter_map(|field| (self.get_nammed_field)(field, &parent))
-                    .collect_and_combine_errors()?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
-                let items = korok
-                    .fields
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(index, field)| (self.get_unnammed_field)(field, &parent, index))
-                    .collect_and_combine_errors()?;
+                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
                 if items.len() == 1 {
                     items.first().unwrap().clone()
                 } else {
                     TupleTypeNode::new(items).into()
                 }
             }
-            _ => StructTypeNode::new(vec![]).into(),
+            _ => {
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                StructTypeNode::new(fields).into()
+            }
         };
 
         korok.set_node(Some(DefinedTypeNode::new(korok.name(), type_node).into()));
@@ -210,11 +247,7 @@ impl KorokVisitor for CombineTypesVisitor {
 
         korok.node = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields = korok
-                    .fields
-                    .iter()
-                    .filter_map(|field| (self.get_nammed_field)(field, &parent))
-                    .collect_and_combine_errors()?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 Some(
                     EnumStructVariantTypeNode {
                         name: korok.name(),
@@ -225,12 +258,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 )
             }
             syn::Fields::Unnamed(_) => {
-                let items = korok
-                    .fields
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(index, field)| (self.get_unnammed_field)(field, &parent, index))
-                    .collect_and_combine_errors()?;
+                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
                 Some(
                     EnumTupleVariantTypeNode {
                         name: korok.name(),
@@ -240,13 +268,27 @@ impl KorokVisitor for CombineTypesVisitor {
                     .into(),
                 )
             }
-            _ => Some(
-                EnumEmptyVariantTypeNode {
-                    name: korok.name(),
-                    discriminator,
+            _ => {
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                if !fields.is_empty() {
+                    Some(
+                        EnumStructVariantTypeNode {
+                            name: korok.name(),
+                            r#struct: StructTypeNode::new(fields).into(),
+                            discriminator,
+                        }
+                        .into(),
+                    )
+                } else {
+                    Some(
+                        EnumEmptyVariantTypeNode {
+                            name: korok.name(),
+                            discriminator,
+                        }
+                        .into(),
+                    )
                 }
-                .into(),
-            ),
+            }
         };
         Ok(())
     }
