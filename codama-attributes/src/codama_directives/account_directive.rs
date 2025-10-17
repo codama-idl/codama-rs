@@ -10,12 +10,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct AccountDirective {
-    pub name: CamelCaseString,
-    pub is_writable: bool,
-    pub is_signer: IsAccountSigner,
-    pub is_optional: bool,
-    pub default_value: Option<InstructionInputValueNode>,
-    // TODO: `docs` for account directives not attached to fields.
+    pub account: InstructionAccountNode,
 }
 
 impl AccountDirective {
@@ -49,11 +44,15 @@ impl AccountDirective {
                 })?,
         }
         Ok(AccountDirective {
-            name: name.take(meta)?,
-            is_writable: is_writable.take(meta)?,
-            is_signer: is_signer.take(meta)?,
-            is_optional: is_optional.take(meta)?,
-            default_value: default_value.option(),
+            account: InstructionAccountNode {
+                name: name.take(meta)?,
+                is_writable: is_writable.take(meta)?,
+                is_signer: is_signer.take(meta)?,
+                is_optional: is_optional.take(meta)?,
+                // TODO: `docs` for account directives not attached to fields.
+                docs: Docs::default(),
+                default_value: default_value.option(),
+            },
         })
     }
 }
@@ -80,19 +79,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
     }
 }
 
-impl From<&AccountDirective> for InstructionAccountNode {
-    fn from(value: &AccountDirective) -> Self {
-        Self {
-            name: value.name.clone(),
-            is_writable: value.is_writable,
-            is_signer: value.is_signer,
-            is_optional: value.is_optional,
-            docs: Docs::default(),
-            default_value: value.default_value.clone(),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,11 +93,14 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
-                is_writable: true,
-                is_signer: IsAccountSigner::True,
-                is_optional: true,
-                default_value: Some(PayerValueNode::new().into()),
+                account: InstructionAccountNode {
+                    name: "payer".into(),
+                    is_writable: true,
+                    is_signer: IsAccountSigner::True,
+                    is_optional: true,
+                    default_value: Some(PayerValueNode::new().into()),
+                    docs: Docs::default(),
+                },
             }
         );
     }
@@ -131,11 +120,14 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
-                is_writable: true,
-                is_signer: IsAccountSigner::Either,
-                is_optional: false,
-                default_value: Some(PayerValueNode::new().into()),
+                account: InstructionAccountNode {
+                    name: "payer".into(),
+                    is_writable: true,
+                    is_signer: IsAccountSigner::Either,
+                    is_optional: false,
+                    default_value: Some(PayerValueNode::new().into()),
+                    docs: Docs::default(),
+                },
             }
         );
     }
@@ -149,11 +141,14 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "authority".into(),
-                is_writable: false,
-                is_signer: IsAccountSigner::False,
-                is_optional: false,
-                default_value: None,
+                account: InstructionAccountNode {
+                    name: "authority".into(),
+                    is_writable: false,
+                    is_signer: IsAccountSigner::False,
+                    is_optional: false,
+                    default_value: None,
+                    docs: Docs::default(),
+                },
             }
         );
     }
