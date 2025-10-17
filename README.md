@@ -12,3 +12,5 @@ This project is still a work in progress but here's a super rough overview of wh
 - `codama-attributes`: Parses Codama-specific attributes into structured items so they can then be used by visitors and `codama-macros`.
 - `codama-macros`: A super small procedural macro crate that registers the Codama-specific attributes mentioned above.
 - `codama`: The final library that re-exports most of the ones above and provide a super high level API for parsing IDL from paths to your Rust code.
+
+Check out this [example project](https://github.com/lorisleiva/codama-demo-2025-08/tree/main/3-from-macros) to see how to use Codama macros in your Rust code using a `build.rs` script.
