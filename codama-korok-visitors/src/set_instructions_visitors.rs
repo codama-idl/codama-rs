@@ -167,7 +167,7 @@ fn parse_accounts(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<Instruc
     let accounts_from_struct_attributes = attributes
         .iter()
         .filter_map(AccountDirective::filter)
-        .map(InstructionAccountNode::from)
+        .map(|attr| attr.account.clone())
         .collect::<Vec<_>>();
 
     // Gather the accounts from the fields.
@@ -177,7 +177,7 @@ fn parse_accounts(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<Instruc
             field
                 .attributes
                 .get_last(AccountDirective::filter)
-                .map(InstructionAccountNode::from)
+                .map(|attr| attr.account.clone())
         })
         .collect::<Vec<_>>();
 
