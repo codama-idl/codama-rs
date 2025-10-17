@@ -1,6 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    AccountDirective, Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter,
+    AccountDirective, ArgumentDirective, Attributes, DiscriminatorDirective,
+    EnumDiscriminatorDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -64,8 +65,8 @@ impl KorokVisitor for SetInstructionsVisitor {
         korok.node = Some(
             InstructionNode {
                 name,
-                accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
-                arguments: data.into(),
+                accounts: parse_accounts(&korok.attributes, &korok.fields),
+                arguments: parse_arguments(&korok.attributes, data, None),
                 discriminators: DiscriminatorDirective::nodes(&korok.attributes),
                 ..InstructionNode::default()
             }
@@ -135,24 +136,22 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.enum_current_discriminator = current_discriminator + 1;
 
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
-        let mut arguments: Vec<InstructionArgumentNode> = data.into();
-
         let discriminator = InstructionArgumentNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
             ..InstructionArgumentNode::from(&self.enum_discriminator)
         };
-        let discriminator_name = discriminator.name.clone();
-        arguments.insert(0, discriminator);
-
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
-        discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
+        discriminators.insert(
+            0,
+            FieldDiscriminatorNode::new(discriminator.name.clone(), 0).into(),
+        );
 
         korok.node = Some(
             InstructionNode {
                 name,
-                accounts: get_instruction_account_nodes(&korok.attributes, &korok.fields),
-                arguments,
+                accounts: parse_accounts(&korok.attributes, &korok.fields),
+                arguments: parse_arguments(&korok.attributes, data, Some(discriminator)),
                 discriminators,
                 ..InstructionNode::default()
             }
@@ -163,10 +162,7 @@ impl KorokVisitor for SetInstructionsVisitor {
     }
 }
 
-fn get_instruction_account_nodes(
-    attributes: &Attributes,
-    fields: &[FieldKorok],
-) -> Vec<InstructionAccountNode> {
+fn parse_accounts(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<InstructionAccountNode> {
     // Gather the accounts from the struct attributes.
     let accounts_from_struct_attributes = attributes
         .iter()
@@ -190,6 +186,39 @@ fn get_instruction_account_nodes(
         .into_iter()
         .chain(accounts_from_fields)
         .collect::<Vec<_>>()
+}
+
+fn parse_arguments(
+    attributes: &Attributes,
+    data: StructTypeNode,
+    discriminator: Option<InstructionArgumentNode>,
+) -> Vec<InstructionArgumentNode> {
+    let (before, after): (Vec<_>, Vec<_>) = attributes
+        .get_all(ArgumentDirective::filter)
+        .into_iter()
+        .partition(|attr| !attr.after);
+
+    let before = before
+        .into_iter()
+        .map(|attr| attr.argument.clone())
+        .collect::<Vec<_>>();
+
+    let after = after
+        .into_iter()
+        .map(|attr| attr.argument.clone())
+        .collect::<Vec<_>>();
+
+    let mut arguments: Vec<InstructionArgumentNode> = before
+        .into_iter()
+        .chain(Vec::<InstructionArgumentNode>::from(data))
+        .chain(after)
+        .collect();
+
+    if let Some(discriminator) = discriminator {
+        arguments.insert(0, discriminator);
+    }
+
+    arguments
 }
 
 fn parse_struct(

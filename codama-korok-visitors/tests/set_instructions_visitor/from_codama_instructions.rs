@@ -634,3 +634,123 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn with_argument_attributes_only() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            #[codama(argument("space", number(u64)))]
+            #[codama(argument("lamports", number(u64)))]
+            Initialize,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![
+                        InstructionArgumentNode {
+                            default_value: Some(NumberValueNode::new(0u64).into()),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
+                        },
+                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
+                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64))
+                    ],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_prepended_argument_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            #[codama(argument("space", number(u64)))]
+            Initialize { lamports: u64 },
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![
+                        InstructionArgumentNode {
+                            default_value: Some(NumberValueNode::new(0u64).into()),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
+                        },
+                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
+                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64))
+                    ],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_appended_argument_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstructions)]
+        enum MyProgramInstructions {
+            #[codama(argument(after, "space", number(u64)))]
+            Initialize { lamports: u64 },
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "initialize".into(),
+                    arguments: vec![
+                        InstructionArgumentNode {
+                            default_value: Some(NumberValueNode::new(0u64).into()),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
+                        },
+                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64)),
+                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
+                    ],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}

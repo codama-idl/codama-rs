@@ -1,0 +1,17 @@
+error: name is missing
+ --> tests/codama_attribute/argument_directive/invalid_argument.fail.rs:3:10
+  |
+3 | #[codama(argument())]
+  |          ^^^^^^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/argument_directive/invalid_argument.fail.rs:6:10
+  |
+6 | #[codama(argument(number(u8)))]
+  |          ^^^^^^^^^^^^^^^^^^^^
+
+error: type is missing
+ --> tests/codama_attribute/argument_directive/invalid_argument.fail.rs:9:10
+  |
+9 | #[codama(argument("age"))]
+  |          ^^^^^^^^^^^^^^^
