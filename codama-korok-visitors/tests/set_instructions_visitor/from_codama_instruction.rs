@@ -2,9 +2,11 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, Docs, FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode,
-    InstructionNode, NumberFormat::U64, NumberTypeNode, PayerValueNode, PublicKeyValueNode,
-    SizeDiscriminatorNode,
+    BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionAccountNode,
+    InstructionArgumentNode, InstructionNode,
+    NumberFormat::{U64, U8},
+    NumberTypeNode, NumberValueNode, PayerValueNode, PublicKeyValueNode, SizeDiscriminatorNode,
+    StringTypeNode,
 };
 
 #[test]
@@ -312,6 +314,142 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
                     FieldDiscriminatorNode::new("discriminator", 0).into(),
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_argument_attributes_only() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(argument("age", number(u8)))]
+        #[codama(argument("name", string(utf8)))]
+        struct MyInstruction;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "myInstruction".into(),
+                arguments: vec![
+                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_prepended_argument_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(argument("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(argument("name", string(utf8)))]
+        struct MyInstruction {
+            age: u8,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "myInstruction".into(),
+                arguments: vec![
+                    InstructionArgumentNode {
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
+                    },
+                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
+                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_appended_argument_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(argument(after, "name", string(utf8)))]
+        #[codama(argument(after, "is_member", boolean))]
+        struct MyInstruction {
+            age: u8,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "myInstruction".into(),
+                arguments: vec![
+                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
+                    InstructionArgumentNode::new("is_member", BooleanTypeNode::default()),
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_prepended_and_appended_argument_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(field(after, "first_name", string(utf8)))]
+        #[codama(field("year_of_birth", number(u8)))]
+        #[codama(field(after, "last_name", string(utf8)))]
+        #[codama(field("is_member", boolean))]
+        struct MyInstruction {
+            age: u8,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "myInstruction".into(),
+                arguments: vec![
+                    InstructionArgumentNode::new("year_of_birth", NumberTypeNode::le(U8)),
+                    InstructionArgumentNode::new("is_member", BooleanTypeNode::default()),
+                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                    InstructionArgumentNode::new("first_name", StringTypeNode::utf8()),
+                    InstructionArgumentNode::new("last_name", StringTypeNode::utf8()),
                 ],
                 ..InstructionNode::default()
             }

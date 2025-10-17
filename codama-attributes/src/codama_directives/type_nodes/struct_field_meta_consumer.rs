@@ -9,7 +9,6 @@ pub(crate) struct StructFieldMetaConsumer {
     pub name: SetOnce<CamelCaseString>,
     pub r#type: SetOnce<TypeNode>,
     pub default_value: SetOnce<ValueNode>,
-    #[allow(dead_code)]
     pub argument_default_value: SetOnce<InstructionInputValueNode>,
     pub default_value_strategy: SetOnce<DefaultValueStrategy>,
     pub after: SetOnce<bool>,
@@ -80,7 +79,6 @@ impl StructFieldMetaConsumer {
         })
     }
 
-    #[allow(dead_code)]
     pub fn consume_argument_default_value(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "default_value" => {
