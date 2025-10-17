@@ -7,3 +7,5 @@ mod struct_field_meta_consumer;
 mod struct_field_type_node;
 mod struct_type_node;
 mod type_node;
+
+pub(crate) use struct_field_meta_consumer::*;

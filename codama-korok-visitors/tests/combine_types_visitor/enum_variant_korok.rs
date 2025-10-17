@@ -2,8 +2,9 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumVariantKorok;
 use codama_nodes::{
-    EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode, NumberTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
+    BooleanTypeNode, DefaultValueStrategy, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
+    EnumTupleVariantTypeNode, NumberFormat::U8, NumberTypeNode, NumberValueNode, StringTypeNode,
+    StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
 };
 
 #[test]
@@ -155,6 +156,99 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(EnumEmptyVariantTypeNode::new("bar").into())
+    );
+    Ok(())
+}
+
+#[test]
+fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! {
+        #[codama(field("age", number(u8)))]
+        #[codama(field("name", string(utf8)))]
+        Person
+    };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            EnumStructVariantTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! {
+        #[codama(field("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(field("age", number(u8)))]
+        Person {
+            name: String,
+        }
+    };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            EnumStructVariantTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode {
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                        ..StructFieldTypeNode::new("discriminator", NumberTypeNode::le(U8))
+                    },
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                ])
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
+    let ast: syn::Variant = syn::parse_quote! {
+        #[codama(field(after, "age", number(u8)))]
+        #[codama(field(after, "is_member", boolean))]
+        Person {
+            name: String,
+        }
+    };
+    let mut korok = EnumVariantKorok::parse(&ast)?;
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            EnumStructVariantTypeNode::new(
+                "person",
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                ])
+            )
+            .into()
+        )
     );
     Ok(())
 }

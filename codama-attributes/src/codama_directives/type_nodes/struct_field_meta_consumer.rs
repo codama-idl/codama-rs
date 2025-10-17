@@ -12,6 +12,7 @@ pub(crate) struct StructFieldMetaConsumer {
     #[allow(dead_code)]
     pub argument_default_value: SetOnce<InstructionInputValueNode>,
     pub default_value_strategy: SetOnce<DefaultValueStrategy>,
+    pub after: SetOnce<bool>,
 }
 
 impl MetaConsumer for StructFieldMetaConsumer {
@@ -23,6 +24,7 @@ impl MetaConsumer for StructFieldMetaConsumer {
             default_value: SetOnce::new("default_value"),
             argument_default_value: SetOnce::new("default_value"),
             default_value_strategy: SetOnce::new("default_value_strategy"),
+            after: SetOnce::new("after"),
         }
     }
 
@@ -84,6 +86,16 @@ impl StructFieldMetaConsumer {
             "default_value" => {
                 let node = InstructionInputValueNode::from_meta(&meta.as_path_value()?.value)?;
                 this.argument_default_value.set(node, meta)?;
+                Ok(None)
+            }
+            _ => Ok(Some(meta)),
+        })
+    }
+
+    pub fn consume_after(self) -> syn::Result<Self> {
+        self.consume_metas(|this, meta| match meta.path_str().as_str() {
+            "after" => {
+                this.after.set(bool::from_meta(&meta)?, meta)?;
                 Ok(None)
             }
             _ => Ok(Some(meta)),
