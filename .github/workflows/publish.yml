@@ -73,7 +73,7 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
 
       - name: Install Cargo Release
-        run: which cargo-release || cargo +${{ env.RUST_TOOLCHAIN }} install cargo-release
+        run: which cargo-release || cargo +${{ env.RUST_TOOLCHAIN }} install cargo-release --version 0.25.18
 
       - name: Ensure CARGO_REGISTRY_TOKEN variable is set
         env:
