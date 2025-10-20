@@ -10,7 +10,7 @@ license = { workspace = true }
 quote = "1.0"
 
 [dependencies]
-codama-attributes = { version = "0.6.0", path = "../codama-attributes" }
+codama-attributes = { version = "0.6.1", path = "../codama-attributes" }
 codama-errors = { version = "0.6.1", path = "../codama-errors" }
 codama-nodes = { version = "0.6.1", path = "../codama-nodes" }
 codama-stores = { version = "0.6.0", path = "../codama-stores" }
