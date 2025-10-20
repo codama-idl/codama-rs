@@ -15,7 +15,7 @@ codama-korok-plugins = { version = "0.6.0", path = "../codama-korok-plugins" }
 codama-korok-visitors = { version = "0.6.0", path = "../codama-korok-visitors" }
 codama-koroks = { version = "0.6.0", path = "../codama-koroks" }
 codama-nodes = { version = "0.6.1", path = "../codama-nodes" }
-codama-stores = { version = "0.6.0", path = "../codama-stores" }
+codama-stores = { version = "0.6.1", path = "../codama-stores" }
 proc-macro2 = "1.0"
 
 [lints.rust]

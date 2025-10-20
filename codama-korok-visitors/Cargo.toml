@@ -9,7 +9,7 @@ license = { workspace = true }
 [dev-dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-codama-stores = { path = "../codama-stores", version = "0.6.0" }
+codama-stores = { path = "../codama-stores", version = "0.6.1" }
 
 [dependencies]
 cargo_toml = "0.20"
