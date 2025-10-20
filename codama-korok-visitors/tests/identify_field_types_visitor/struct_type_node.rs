@@ -1,4 +1,4 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_item;
+use crate::identify_field_types_visitor::utils::get_node_from_item;
 use codama_nodes::{
     BooleanTypeNode, DefinedTypeNode, Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode,
     StructFieldTypeNode, StructTypeNode, U32, U8,

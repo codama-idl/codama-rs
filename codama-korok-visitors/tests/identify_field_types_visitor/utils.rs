@@ -1,4 +1,4 @@
-use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable, SetBorshTypesVisitor};
+use codama_korok_visitors::{CombineTypesVisitor, IdentifyFieldTypesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, KorokTrait, RootKorok};
 use codama_nodes::Node;
 use codama_stores::RootStore;
@@ -8,7 +8,7 @@ use quote::quote;
 pub fn get_node(tt: TokenStream, node_getter: fn(RootKorok) -> Option<Node>) -> Option<Node> {
     let store = RootStore::hydrate(tt).unwrap();
     let mut korok = RootKorok::parse(&store).unwrap();
-    korok.accept(&mut SetBorshTypesVisitor::new()).unwrap();
+    korok.accept(&mut IdentifyFieldTypesVisitor::new()).unwrap();
     korok.accept(&mut CombineTypesVisitor::new()).unwrap();
     node_getter(korok)
 }

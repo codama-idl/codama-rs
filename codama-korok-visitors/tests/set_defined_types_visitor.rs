@@ -1,5 +1,5 @@
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{KorokVisitable, SetBorshTypesVisitor, SetDefinedTypesVisitor};
+use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetDefinedTypesVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
@@ -21,7 +21,7 @@ fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -51,7 +51,7 @@ fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -78,7 +78,7 @@ fn it_sets_defined_types_on_structs_with_single_unnammed_fields() -> CodamaResul
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -117,7 +117,7 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,

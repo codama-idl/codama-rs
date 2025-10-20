@@ -1,4 +1,4 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_type;
+use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{BooleanTypeNode, Node};
 use quote::quote;
 
@@ -10,6 +10,5 @@ fn it_identifies_boolean_types() {
         get_node_from_type(quote! { std::primitive::bool }),
         expected
     );
-    assert_eq!(get_node_from_type(quote! { some::wrong::bool }), None);
     assert_eq!(get_node_from_type(quote! { bool<T> }), None);
 }

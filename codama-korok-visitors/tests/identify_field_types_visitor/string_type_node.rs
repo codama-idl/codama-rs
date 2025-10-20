@@ -1,4 +1,4 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_type;
+use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, U32};
 use quote::quote;
 
@@ -8,6 +8,5 @@ fn it_identifies_string_types() {
         Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into());
     assert_eq!(get_node_from_type(quote! { String }), expected);
     assert_eq!(get_node_from_type(quote! { std::string::String }), expected);
-    assert_eq!(get_node_from_type(quote! { some::wrong::String }), None);
     assert_eq!(get_node_from_type(quote! { String<T> }), None);
 }

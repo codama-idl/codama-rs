@@ -1,6 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, KorokVisitable, SetBorshTypesVisitor,
+    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
@@ -31,7 +31,7 @@ fn it_updates_the_encoding_of_nested_string_type_nodes() -> CodamaResult<()> {
         String
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
 
     assert_eq!(
         korok.node,
@@ -71,7 +71,7 @@ fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResul
         field: String
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
 
     assert_eq!(
         korok.node,
