@@ -15,7 +15,7 @@ codama-stores = { path = "../codama-stores", version = "0.6.1" }
 cargo_toml = "0.20"
 codama-attributes = { version = "0.6.1", path = "../codama-attributes" }
 codama-errors = { version = "0.6.1", path = "../codama-errors" }
-codama-koroks = { version = "0.6.0", path = "../codama-koroks" }
+codama-koroks = { version = "0.6.1", path = "../codama-koroks" }
 codama-nodes = { version = "0.6.1", path = "../codama-nodes" }
 codama-syn-helpers = { version = "0.6.1", path = "../codama-syn-helpers" }
 serde_json = "1.0"
