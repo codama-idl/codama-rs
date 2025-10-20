@@ -1,6 +1,7 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_type;
+use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{
-    BooleanTypeNode, MapTypeNode, Node, NumberTypeNode, PrefixedCountNode, U32, U64,
+    BooleanTypeNode, DefinedTypeLinkNode, MapTypeNode, Node, NumberTypeNode, PrefixedCountNode,
+    U32, U64,
 };
 use quote::quote;
 
@@ -24,7 +25,20 @@ fn it_identifies_map_types() {
         get_node_from_type(quote! { some::wrong::HashMap<u64, bool> }),
         None
     );
-    assert_eq!(get_node_from_type(quote! { HashMap }), None);
-    assert_eq!(get_node_from_type(quote! { HashMap<'a> }), None);
     assert_eq!(get_node_from_type(quote! { HashMap<u8> }), None);
+}
+
+#[test]
+fn it_identifies_maps_of_custom_types() {
+    assert_eq!(
+        get_node_from_type(quote! { HashMap<MyCustomType, u64> }),
+        Some(Node::Type(
+            MapTypeNode::new(
+                DefinedTypeLinkNode::new("myCustomType"),
+                NumberTypeNode::le(U64),
+                PrefixedCountNode::new(NumberTypeNode::le(U32))
+            )
+            .into()
+        ))
+    );
 }

@@ -1,22 +1,22 @@
 use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, FixedCountNode, MapTypeNode, NumberFormat::*, NumberTypeNode,
-    OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTypeNode,
-    StringTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, MapTypeNode,
+    NumberFormat::*, NumberTypeNode, OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode,
+    SetTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
 #[derive(Default)]
-pub struct SetBorshTypesVisitor;
+pub struct IdentifyFieldTypesVisitor;
 
-impl SetBorshTypesVisitor {
+impl IdentifyFieldTypesVisitor {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl KorokVisitor for SetBorshTypesVisitor {
+impl KorokVisitor for IdentifyFieldTypesVisitor {
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
         if korok.node.is_some() {
             return Ok(());
@@ -89,6 +89,7 @@ fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                         _ => None,
                     }
                 }
+                (_, name, []) => Some(DefinedTypeLinkNode::new(name).into()),
                 _ => None,
             }
         }

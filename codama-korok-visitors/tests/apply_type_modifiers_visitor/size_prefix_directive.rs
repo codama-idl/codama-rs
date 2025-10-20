@@ -1,6 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, KorokVisitable, SetBorshTypesVisitor,
+    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
 use codama_koroks::FieldKorok;
 use codama_nodes::{
@@ -18,7 +18,7 @@ fn it_wraps_any_type_into_a_size_prefix_type_node() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -36,7 +36,7 @@ fn it_accepts_nested_number_type_nodes_as_size_prefixes() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -119,7 +119,7 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,

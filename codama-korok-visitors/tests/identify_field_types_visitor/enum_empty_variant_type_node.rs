@@ -1,4 +1,4 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_enum_variant;
+use crate::identify_field_types_visitor::utils::get_node_from_enum_variant;
 use codama_nodes::{EnumEmptyVariantTypeNode, Node};
 use quote::quote;
 

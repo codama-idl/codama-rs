@@ -1,5 +1,5 @@
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{KorokVisitable, SetAccountsVisitor, SetBorshTypesVisitor};
+use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, FieldDiscriminatorNode, NumberFormat::U64, NumberTypeNode,
@@ -19,7 +19,7 @@ fn from_struct() -> CodamaResult<()> {
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -47,7 +47,7 @@ fn from_empty_struct() -> CodamaResult<()> {
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
@@ -68,7 +68,7 @@ fn from_enum() -> CodamaResult<()> {
     let mut korok = EnumKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(korok.node, None);
     // No visitor error because there is already is a compilation error.

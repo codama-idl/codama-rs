@@ -1,5 +1,5 @@
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{DebugVisitor, KorokVisitable, SetBorshTypesVisitor};
+use codama_korok_visitors::{DebugVisitor, IdentifyFieldTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
 use codama_nodes::{NumberFormat::U32, NumberTypeNode, StructFieldTypeNode};
 
@@ -7,7 +7,7 @@ use codama_nodes::{NumberFormat::U32, NumberTypeNode, StructFieldTypeNode};
 fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! { struct Foo { bar: u32 } };
     let mut korok = StructKorok::parse(&item)?;
-    korok.accept(&mut SetBorshTypesVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
 
     let mut visitor = DebugVisitor::new();
     korok.accept(&mut visitor)?;

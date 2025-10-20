@@ -1,7 +1,7 @@
-use crate::set_borsh_types_visitor::utils::get_node_from_type;
+use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, FixedCountNode, Node, NumberTypeNode, PrefixedCountNode, U32,
-    U8,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, Node, NumberTypeNode,
+    PrefixedCountNode, U32, U8,
 };
 use quote::quote;
 
@@ -21,8 +21,20 @@ fn it_identifies_vec_types() {
         ))
     );
     assert_eq!(get_node_from_type(quote! { some::wrong::Vec<bool> }), None);
-    assert_eq!(get_node_from_type(quote! { Vec }), None);
-    assert_eq!(get_node_from_type(quote! { Vec<'a> }), None);
+}
+
+#[test]
+fn it_identifies_vecs_of_custom_types() {
+    assert_eq!(
+        get_node_from_type(quote! { Vec<MyCustomType> }),
+        Some(Node::Type(
+            ArrayTypeNode::new(
+                DefinedTypeLinkNode::new("myCustomType"),
+                PrefixedCountNode::new(NumberTypeNode::le(U32))
+            )
+            .into()
+        ))
+    );
 }
 
 #[test]
@@ -40,5 +52,18 @@ fn it_identifies_fixed_array_types() {
         ))
     );
     assert_eq!(get_node_from_type(quote! { [bool; 1 + 2 * 4] }), None);
-    assert_eq!(get_node_from_type(quote! { [Vec; 5] }), None);
+}
+
+#[test]
+fn it_identifies_fixed_arrays_of_custom_types() {
+    assert_eq!(
+        get_node_from_type(quote! { [MyCustomType; 5] }),
+        Some(Node::Type(
+            ArrayTypeNode::new(
+                DefinedTypeLinkNode::new("myCustomType"),
+                FixedCountNode::new(5)
+            )
+            .into()
+        ))
+    );
 }
