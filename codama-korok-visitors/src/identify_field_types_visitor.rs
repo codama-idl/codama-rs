@@ -28,7 +28,7 @@ impl KorokVisitor for IdentifyFieldTypesVisitor {
     }
 }
 
-fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
+pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
     match ty {
         syn::Type::Path(syn::TypePath { path, .. }) => {
             if path.leading_colon.is_some() {
