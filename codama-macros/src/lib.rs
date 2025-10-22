@@ -52,6 +52,11 @@ pub fn codama_instructions_derive(input: TokenStream) -> TokenStream {
     codama_derive(input)
 }
 
+#[proc_macro_derive(CodamaPda, attributes(codama))]
+pub fn codama_pda_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input)
+}
+
 #[proc_macro_derive(CodamaType, attributes(codama))]
 pub fn codama_type_derive(input: TokenStream) -> TokenStream {
     codama_derive(input)

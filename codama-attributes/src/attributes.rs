@@ -61,6 +61,7 @@ impl<'a> Attributes<'a> {
             || self.has_codama_derive("CodamaErrors")
             || self.has_codama_derive("CodamaInstruction")
             || self.has_codama_derive("CodamaInstructions")
+            || self.has_codama_derive("CodamaPda")
             || self.has_codama_derive("CodamaType")
     }
 
@@ -72,7 +73,7 @@ impl<'a> Attributes<'a> {
         self.iter().filter_map(DeriveAttribute::filter).any(|attr| {
             attr.derives
                 .iter()
-                .any(|p| prefixes.contains(&p.prefix().as_str()) && p.last_str() == last)
+                .any(|p| p.last_str() == last && prefixes.contains(&p.prefix().as_str()))
         })
     }
 
