@@ -1,7 +1,8 @@
 use crate::{
     AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
     DiscriminatorDirective, EncodingDirective, EnumDiscriminatorDirective, ErrorDirective,
-    FieldDirective, FixedSizeDirective, NameDirective, SizePrefixDirective, TypeDirective,
+    FieldDirective, FixedSizeDirective, NameDirective, SeedDirective, SizePrefixDirective,
+    TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -20,6 +21,7 @@ pub enum CodamaDirective {
     Discriminator(DiscriminatorDirective),
     EnumDiscriminator(EnumDiscriminatorDirective),
     Name(NameDirective),
+    Seed(SeedDirective),
 
     // Instruction directives.
     Account(AccountDirective),
@@ -45,6 +47,7 @@ impl CodamaDirective {
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
             "name" => Ok(NameDirective::parse(meta)?.into()),
+            "seed" => Ok(SeedDirective::parse(meta, ctx)?.into()),
 
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
@@ -71,6 +74,7 @@ impl CodamaDirective {
             Self::Discriminator(_) => "discriminator",
             Self::EnumDiscriminator(_) => "enum_discriminator",
             Self::Name(_) => "name",
+            Self::Seed(_) => "seed",
 
             // Instruction directives.
             Self::Account(_) => "account",

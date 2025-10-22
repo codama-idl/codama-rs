@@ -1,0 +1,17 @@
+error: expected a list: `seed(...)` or `seed = (...)`
+ --> tests/codama_attribute/seed_directive/unrecognized_seed.fail.rs:3:10
+  |
+3 | #[codama(seed)]
+  |          ^^^^
+
+error: seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds
+ --> tests/codama_attribute/seed_directive/unrecognized_seed.fail.rs:6:10
+  |
+6 | #[codama(seed())]
+  |          ^^^^^^
+
+error: seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds
+ --> tests/codama_attribute/seed_directive/unrecognized_seed.fail.rs:9:10
+  |
+9 | #[codama(seed(type = number(u8)))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^
