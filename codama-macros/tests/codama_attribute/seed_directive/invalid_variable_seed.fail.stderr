@@ -1,0 +1,17 @@
+error: variable seeds cannot specify value
+ --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:3:32
+  |
+3 | #[codama(seed(name = "amount", value = 42))]
+  |                                ^^^^^^^^^^
+
+error: expected a string
+ --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:6:22
+  |
+6 | #[codama(seed(name = 42, type = number(u8)))]
+  |                      ^^
+
+error: unrecognized type
+ --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:9:42
+  |
+9 | #[codama(seed(name = "authority", type = invalid_type))]
+  |                                          ^^^^^^^^^^^^

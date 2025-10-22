@@ -16,6 +16,10 @@ impl<T> SetOnce<T> {
         }
     }
 
+    pub fn is_set(&self) -> bool {
+        self.is_set
+    }
+
     pub fn initial_value(mut self, value: T) -> Self {
         self.value = Some(value);
         self
