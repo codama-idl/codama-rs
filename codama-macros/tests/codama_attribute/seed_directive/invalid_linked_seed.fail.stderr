@@ -1,10 +1,10 @@
-error: Could not find field "missing_field". Either specify a `type` for the seed or use a name that matches a struct field.
+error: Could not find field "missing_field". Either specify a `type` for the seed or use a name that matches a struct or variant field.
  --> tests/codama_attribute/seed_directive/invalid_linked_seed.fail.rs:3:10
   |
 3 | #[codama(seed(name = "missing_field"))]
   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Could not find field "missing_field". Either specify a `type` for the seed or use a name that matches a struct field.
+error: Could not find field "missing_field". Either specify a `type` for the seed or use a name that matches a struct or variant field.
  --> tests/codama_attribute/seed_directive/invalid_linked_seed.fail.rs:6:10
   |
 6 | #[codama(seed(name = "missing_field"))]

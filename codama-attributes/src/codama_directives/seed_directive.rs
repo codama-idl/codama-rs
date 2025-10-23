@@ -47,23 +47,13 @@ impl SeedDirective {
         // Resolve linked seed if possible.
         if !constant_seed && !r#type.is_set() {
             let name = name.take(meta)?;
-            if let AttributeContext::Item(syn::Item::Struct(syn::ItemStruct {
-                fields: syn::Fields::Named(fields),
-                ..
-            })) = ctx
-            {
-                let has_matching_field = fields
-                    .named
-                    .iter()
-                    .any(|f| f.ident.as_ref().is_some_and(|id| id == &name));
-                if has_matching_field {
-                    return Ok(Self {
-                        seed: SeedDirectiveType::Linked(name),
-                    });
-                }
-            };
-            let message = format!("Could not find field \"{name}\". Either specify a `type` for the seed or use a name that matches a struct field.");
-            return Err(meta.error(message));
+            if !has_matching_field(ctx, &name) {
+                let message = format!("Could not find field \"{name}\". Either specify a `type` for the seed or use a name that matches a struct or variant field.");
+                return Err(meta.error(message));
+            }
+            return Ok(Self {
+                seed: SeedDirectiveType::Linked(name),
+            });
         }
 
         match constant_seed {
@@ -79,6 +69,17 @@ impl SeedDirective {
             }),
         }
     }
+}
+
+fn has_matching_field(ctx: &AttributeContext, name: &str) -> bool {
+    let Some(fields) = ctx.get_named_fields() else {
+        return false;
+    };
+
+    fields
+        .named
+        .iter()
+        .any(|f| f.ident.as_ref().is_some_and(|id| id == name))
 }
 
 impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a SeedDirective {
@@ -157,6 +158,20 @@ mod tests {
     }
 
     #[test]
+    fn linked_seed_in_variant() {
+        let meta: Meta = syn::parse_quote! { seed(name = "authority") };
+        let item: syn::Variant = syn::parse_quote! { Foo { authority: PubKey } };
+        let ctx = AttributeContext::Variant(&item);
+        let directive = SeedDirective::parse(&meta, &ctx).unwrap();
+        assert_eq!(
+            directive,
+            SeedDirective {
+                seed: SeedDirectiveType::Linked("authority".to_string()),
+            }
+        );
+    }
+
+    #[test]
     fn cannot_identify_seed_type() {
         let meta: Meta = syn::parse_quote! { seed(type = public_key) };
         let item = syn::parse_quote! { struct Foo; };
@@ -173,7 +188,7 @@ mod tests {
         let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
         assert_eq!(
             error.to_string(),
-            "Could not find field \"authority\". Either specify a `type` for the seed or use a name that matches a struct field."
+            "Could not find field \"authority\". Either specify a `type` for the seed or use a name that matches a struct or variant field."
         );
     }
 
