@@ -3,7 +3,8 @@ use codama_attributes::{Attributes, SeedDirective, SeedDirectiveType, TryFromFil
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode, TypeNode, VariablePdaSeedNode,
+    CamelCaseString, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode, TypeNode,
+    VariablePdaSeedNode,
 };
 
 #[derive(Default)]
@@ -22,15 +23,7 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(
-            PdaNode {
-                name: korok.name(),
-                seeds: get_pda_seed_nodes(&korok.attributes, &korok.fields),
-                docs: Docs::default(),
-                program_id: None,
-            }
-            .into(),
-        );
+        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &korok.fields).into());
         Ok(())
     }
 
@@ -40,20 +33,25 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(
-            PdaNode {
-                name: korok.name(),
-                seeds: get_pda_seed_nodes(&korok.attributes, &[]),
-                docs: Docs::default(),
-                program_id: None,
-            }
-            .into(),
-        );
+        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &[]).into());
         Ok(())
     }
 }
 
-fn get_pda_seed_nodes(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<PdaSeedNode> {
+pub fn parse_pda_node(
+    name: CamelCaseString,
+    attributes: &Attributes,
+    fields: &[FieldKorok],
+) -> PdaNode {
+    PdaNode {
+        name,
+        seeds: parse_pda_seed_nodes(attributes, fields),
+        docs: Docs::default(),
+        program_id: None,
+    }
+}
+
+pub fn parse_pda_seed_nodes(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<PdaSeedNode> {
     attributes
         .iter()
         .filter_map(SeedDirective::filter)

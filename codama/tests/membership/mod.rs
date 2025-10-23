@@ -65,6 +65,10 @@ fn get_idl() {
               }
             }
           ]
+        },
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "person"
         }
       }
     ],
@@ -100,7 +104,7 @@ fn get_idl() {
     "pdas": [
       {
         "kind": "pdaNode",
-        "name": "personPda",
+        "name": "person",
         "seeds": [
           {
             "kind": "constantPdaSeedNode",
@@ -115,7 +119,7 @@ fn get_idl() {
           },
           {
             "kind": "variablePdaSeedNode",
-            "name": "authority",
+            "name": "wallet",
             "type": {
               "kind": "publicKeyTypeNode"
             }

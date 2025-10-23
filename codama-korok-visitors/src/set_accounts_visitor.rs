@@ -1,10 +1,13 @@
-use crate::{CombineTypesVisitor, KorokVisitor};
-use codama_attributes::{DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter};
+use crate::{parse_pda_node, CombineTypesVisitor, KorokVisitor};
+use codama_attributes::{
+    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter,
+};
 use codama_errors::CodamaResult;
+use codama_koroks::FieldKorok;
 use codama_nodes::{
     AccountNode, CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode,
     FieldDiscriminatorNode, NestedTypeNode, NestedTypeNodeTrait, Node, NumberValueNode,
-    ProgramNode, StructFieldTypeNode, StructTypeNode,
+    PdaLinkNode, ProgramNode, StructFieldTypeNode, StructTypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -49,14 +52,16 @@ impl KorokVisitor for SetAccountsVisitor {
 
         // Transform the defined type into an account node.
         let (name, data) = parse_struct(korok)?;
-        korok.node = Some(
-            AccountNode {
-                discriminators: DiscriminatorDirective::nodes(&korok.attributes),
-                ..AccountNode::new(name, data)
-            }
-            .into(),
-        );
+        let account = AccountNode {
+            discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+            ..AccountNode::new(name, data)
+        };
 
+        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+            account,
+            &korok.attributes,
+            &korok.fields,
+        );
         Ok(())
     }
 
@@ -87,19 +92,32 @@ impl KorokVisitor for SetAccountsVisitor {
         self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
 
-        // Gather all accounts in a `ProgramNode`.
+        // Gather all accounts in the variants.
         let accounts = korok
             .variants
             .iter()
-            .filter_map(|variant| match &variant.node {
-                Some(Node::Account(account)) => Some(account.clone()),
-                _ => None,
+            .flat_map(|variant| match &variant.node {
+                Some(Node::Account(account)) => vec![account.clone()],
+                Some(Node::Program(program)) => program.accounts.clone(),
+                _ => vec![],
+            })
+            .collect::<Vec<_>>();
+
+        // Gather all PDAs the variants.
+        let pdas = korok
+            .variants
+            .iter()
+            .flat_map(|variant| match &variant.node {
+                Some(Node::Pda(pda)) => vec![pda.clone()],
+                Some(Node::Program(program)) => program.pdas.clone(),
+                _ => vec![],
             })
             .collect::<Vec<_>>();
 
         korok.node = Some(
             ProgramNode {
                 accounts,
+                pdas,
                 ..ProgramNode::default()
             }
             .into(),
@@ -135,14 +153,16 @@ impl KorokVisitor for SetAccountsVisitor {
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
         discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
 
-        korok.node = Some(
-            AccountNode {
-                discriminators,
-                ..AccountNode::new(name, data)
-            }
-            .into(),
-        );
+        let account = AccountNode {
+            discriminators,
+            ..AccountNode::new(name, data)
+        };
 
+        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+            account,
+            &korok.attributes,
+            &korok.fields,
+        );
         Ok(())
     }
 }
@@ -194,4 +214,31 @@ fn parse_enum_variant(
         korok.ast.ident
     );
     Err(korok.ast.error(message).into())
+}
+
+fn wrap_account_in_program_node_when_seeds_are_defined(
+    account: AccountNode,
+    attributes: &Attributes,
+    fields: &[FieldKorok],
+) -> Option<Node> {
+    // Return the AccountNode directly if there are no seed directives.
+    if !attributes.has_codama_attribute("seed") {
+        return Some(account.into());
+    }
+
+    // Create a PDA node from the seed directives.
+    let pda = parse_pda_node(account.name.clone(), attributes, fields);
+
+    // Add both the account and the linked PDA to a program node.
+    Some(
+        ProgramNode {
+            accounts: vec![AccountNode {
+                pda: Some(PdaLinkNode::new(pda.name.clone())),
+                ..account
+            }],
+            pdas: vec![pda],
+            ..ProgramNode::default()
+        }
+        .into(),
+    )
 }

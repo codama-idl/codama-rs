@@ -2,8 +2,10 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountNode, BooleanTypeNode, FieldDiscriminatorNode, NumberFormat::U64, NumberTypeNode,
-    PublicKeyTypeNode, SizeDiscriminatorNode, StructFieldTypeNode, StructTypeNode,
+    AccountNode, BooleanTypeNode, ConstantPdaSeedNode, FieldDiscriminatorNode,
+    NumberFormat::{U64, U8},
+    NumberTypeNode, PdaLinkNode, PdaNode, ProgramNode, PublicKeyTypeNode, SizeDiscriminatorNode,
+    StringTypeNode, StringValueNode, StructFieldTypeNode, StructTypeNode, VariablePdaSeedNode,
 };
 
 #[test]
@@ -128,6 +130,56 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                     FieldDiscriminatorNode::new("discriminator", 0).into(),
                 ],
                 ..AccountNode::new("myAccount", StructTypeNode::new(vec![]))
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_seed_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        #[codama(seed(type = string(utf8), value = "counter_pda"))]
+        #[codama(seed(name = "authority"))]
+        #[codama(seed(name = "identifier", type = number(u8)))]
+        struct Counter {
+            authority: Pubkey,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![AccountNode {
+                    pda: Some(PdaLinkNode::new("counter")),
+                    ..AccountNode::new(
+                        "counter",
+                        StructTypeNode::new(vec![StructFieldTypeNode::new(
+                            "authority",
+                            PublicKeyTypeNode::new()
+                        ),])
+                    )
+                }],
+                pdas: vec![PdaNode::new(
+                    "counter",
+                    vec![
+                        ConstantPdaSeedNode::new(
+                            StringTypeNode::utf8(),
+                            StringValueNode::new("counter_pda")
+                        )
+                        .into(),
+                        VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("identifier", NumberTypeNode::le(U8)).into(),
+                    ]
+                )],
+                ..ProgramNode::default()
             }
             .into()
         )
