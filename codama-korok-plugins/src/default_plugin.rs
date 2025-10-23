@@ -3,7 +3,7 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, CombineModulesVisitor,
     IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor, SetDefinedTypesVisitor,
-    SetErrorsVisitor, SetInstructionsVisitor, SetProgramMetadataVisitor,
+    SetErrorsVisitor, SetInstructionsVisitor, SetPdasVisitor, SetProgramMetadataVisitor,
 };
 
 pub struct DefaultPlugin;
@@ -17,6 +17,7 @@ impl KorokPlugin for DefaultPlugin {
 
     fn on_program_items_set(&self, visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         visitable.accept(&mut SetDefinedTypesVisitor::new())?;
+        visitable.accept(&mut SetPdasVisitor::new())?;
         visitable.accept(&mut SetAccountsVisitor::new())?;
         visitable.accept(&mut SetInstructionsVisitor::new())?;
         visitable.accept(&mut SetErrorsVisitor::new())?;
