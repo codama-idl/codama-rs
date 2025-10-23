@@ -97,7 +97,40 @@ fn get_idl() {
         }
       }
     ],
-    "pdas": [],
+    "pdas": [
+      {
+        "kind": "pdaNode",
+        "name": "personPda",
+        "seeds": [
+          {
+            "kind": "constantPdaSeedNode",
+            "type": {
+              "kind": "stringTypeNode",
+              "encoding": "utf8"
+            },
+            "value": {
+              "kind": "stringValueNode",
+              "string": "person_pda"
+            }
+          },
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "authority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            }
+          },
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "name",
+            "type": {
+              "kind": "stringTypeNode",
+              "encoding": "utf8"
+            }
+          }
+        ]
+      }
+    ],
     "errors": []
   },
   "additionalPrograms": []
