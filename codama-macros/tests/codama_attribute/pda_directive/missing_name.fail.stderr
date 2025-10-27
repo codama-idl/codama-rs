@@ -1,0 +1,13 @@
+error: expected a value for that path: `pda = ...`
+ --> tests/codama_attribute/pda_directive/missing_name.fail.rs:3:10
+  |
+3 | #[codama(pda)]
+  |          ^^^
+
+error: expected `=` followed by a single value: `pda = ...`
+ --> tests/codama_attribute/pda_directive/missing_name.fail.rs:6:1
+  |
+6 | #[codama(pda())]
+  | ^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `codama` (in Nightly builds, run with -Z macro-backtrace for more info)

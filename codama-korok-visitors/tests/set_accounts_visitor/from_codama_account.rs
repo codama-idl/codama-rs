@@ -186,3 +186,68 @@ fn with_seed_directives() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn with_pda_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        #[codama(pda = "my_counter_pda")]
+        struct Counter;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            AccountNode {
+                pda: Some(PdaLinkNode::new("myCounterPda")),
+                ..AccountNode::new("counter", StructTypeNode::default())
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_pda_and_seed_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccount)]
+        #[codama(pda = "my_counter_pda")]
+        #[codama(seed(name = "authority"))]
+        struct Counter {
+            authority: Pubkey,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![AccountNode {
+                    pda: Some(PdaLinkNode::new("myCounterPda")),
+                    ..AccountNode::new(
+                        "counter",
+                        StructTypeNode::new(vec![StructFieldTypeNode::new(
+                            "authority",
+                            PublicKeyTypeNode::new()
+                        ),])
+                    )
+                }],
+                pdas: vec![PdaNode::new(
+                    "myCounterPda",
+                    vec![VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),]
+                )],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
