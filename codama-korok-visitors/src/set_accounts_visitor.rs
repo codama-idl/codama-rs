@@ -1,6 +1,6 @@
 use crate::{parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, TryFromFilter,
+    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -54,6 +54,7 @@ impl KorokVisitor for SetAccountsVisitor {
         let (name, data) = parse_struct(korok)?;
         let account = AccountNode {
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+            pda: parse_pda_link_node(&korok.attributes),
             ..AccountNode::new(name, data)
         };
 
@@ -155,6 +156,7 @@ impl KorokVisitor for SetAccountsVisitor {
 
         let account = AccountNode {
             discriminators,
+            pda: parse_pda_link_node(&korok.attributes),
             ..AccountNode::new(name, data)
         };
 
@@ -216,6 +218,12 @@ fn parse_enum_variant(
     Err(korok.ast.error(message).into())
 }
 
+fn parse_pda_link_node(attributes: &Attributes) -> Option<PdaLinkNode> {
+    attributes
+        .get_last(PdaDirective::filter)
+        .map(|directive| directive.pda.clone())
+}
+
 fn wrap_account_in_program_node_when_seeds_are_defined(
     account: AccountNode,
     attributes: &Attributes,
@@ -227,13 +235,17 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
     }
 
     // Create a PDA node from the seed directives.
-    let pda = parse_pda_node(account.name.clone(), attributes, fields);
+    let pda_name = match &account.pda {
+        Some(pda_link) => pda_link.name.clone(),
+        None => account.name.clone(),
+    };
+    let pda = parse_pda_node(pda_name, attributes, fields);
 
     // Add both the account and the linked PDA to a program node.
     Some(
         ProgramNode {
             accounts: vec![AccountNode {
-                pda: Some(PdaLinkNode::new(pda.name.clone())),
+                pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
                 ..account
             }],
             pdas: vec![pda],

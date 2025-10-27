@@ -543,3 +543,92 @@ fn with_seed_directives() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn with_pda_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            #[codama(pda = "my_counter_pda")]
+            Counter,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![AccountNode {
+                    pda: Some(PdaLinkNode::new("myCounterPda")),
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..AccountNode::new(
+                        "counter",
+                        StructTypeNode::new(vec![StructFieldTypeNode {
+                            name: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: NumberTypeNode::le(U8).into(),
+                            default_value: Some(NumberValueNode::new(0u8).into()),
+                        },])
+                    )
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn with_pda_and_seed_directives() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            #[codama(pda = "my_counter_pda")]
+            #[codama(seed(name = "authority"))]
+            Counter {
+                authority: Pubkey,
+            },
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                accounts: vec![AccountNode {
+                    pda: Some(PdaLinkNode::new("myCounterPda")),
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..AccountNode::new(
+                        "counter",
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(0u8).into()),
+                            },
+                            StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                        ])
+                    )
+                }],
+                pdas: vec![PdaNode::new(
+                    "myCounterPda",
+                    vec![VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),]
+                )],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
