@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionAccountNode,
-    InstructionArgumentNode, InstructionNode,
+    AccountValueNode, BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode,
     NumberFormat::{U64, U8},
     NumberTypeNode, NumberValueNode, PayerValueNode, PublicKeyValueNode, SizeDiscriminatorNode,
     StringTypeNode,
@@ -202,6 +202,38 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         default_value: Some(PayerValueNode::new().into()),
                         is_optional: false,
                         docs: Docs::default(),
+                    },
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(account(name = "authority"))]
+        #[codama(account(name = "payer", default_value = account("authority")))]
+        struct Initialize;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "initialize".into(),
+                accounts: vec![
+                    InstructionAccountNode::new("authority", false, false),
+                    InstructionAccountNode {
+                        default_value: Some(AccountValueNode::new("authority").into()),
+                        ..InstructionAccountNode::new("payer", false, false)
                     },
                 ],
                 ..InstructionNode::default()

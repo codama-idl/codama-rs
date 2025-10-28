@@ -1,3 +1,4 @@
+mod account_value_node;
 mod boolean_value_node;
 mod instruction_input_value_node;
 mod number_value_node;
