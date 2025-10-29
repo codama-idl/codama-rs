@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountValueNode, BooleanTypeNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    AccountValueNode, ArgumentValueNode, BooleanTypeNode, DefaultValueStrategy, Docs,
+    FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
     NumberFormat::{U64, U8},
     NumberTypeNode, NumberValueNode, PayerValueNode, PublicKeyValueNode, SizeDiscriminatorNode,
     StringTypeNode,
@@ -234,6 +234,45 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
                     InstructionAccountNode {
                         default_value: Some(AccountValueNode::new("authority").into()),
                         ..InstructionAccountNode::new("payer", false, false)
+                    },
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(argument("capacity", number(u64)))]
+        #[codama(argument("max_capacity", number(u64), default_value = argument("capacity")))]
+        struct Initialize;
+    };
+    // TODO: Replace above with:
+    // struct Initialize {
+    //     capacity: u64,
+    //     #[codama(default_value = argument("capacity"))]
+    //     max_capacity: u64,
+    // }
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "initialize".into(),
+                arguments: vec![
+                    InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
+                    InstructionArgumentNode {
+                        default_value: Some(ArgumentValueNode::new("capacity").into()),
+                        ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
                     },
                 ],
                 ..InstructionNode::default()
