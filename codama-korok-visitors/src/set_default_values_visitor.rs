@@ -1,5 +1,5 @@
 use crate::KorokVisitor;
-use codama_attributes::{DefaultValueDirective, TryFromFilter};
+use codama_attributes::{Attributes, DefaultValueDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
@@ -77,24 +77,29 @@ fn set_default_values(mut korok: KorokMut) -> CodamaResult<()> {
         return Ok(());
     };
 
-    // Ensure it has a default value directive.
-    let Some(directive) = attributes.get_last(DefaultValueDirective::filter) else {
+    // Ensure there is a node to set a default value on.
+    let Some(node) = get_node_with_default_value(korok.node(), attributes) else {
         return Ok(());
     };
 
-    let node = match korok.node() {
+    korok.set_node(Some(node));
+    Ok(())
+}
+
+fn get_node_with_default_value(node: &Option<Node>, attributes: &Attributes) -> Option<Node> {
+    let directive = attributes.get_last(DefaultValueDirective::filter)?;
+
+    match node {
         // Handle struct fields.
         Some(Node::Type(RegisteredTypeNode::StructField(field))) => {
-            match ValueNode::try_from(directive.node.clone()) {
-                Ok(value) => Some(
-                    StructFieldTypeNode {
-                        default_value: Some(value),
-                        ..field.clone()
-                    }
-                    .into(),
-                ),
-                _ => return Ok(()),
-            }
+            let value = ValueNode::try_from(directive.node.clone()).ok()?;
+            Some(
+                StructFieldTypeNode {
+                    default_value: Some(value),
+                    ..field.clone()
+                }
+                .into(),
+            )
         }
         // Handle instruction arguments.
         Some(Node::InstructionArgument(argument)) => Some(
@@ -104,9 +109,6 @@ fn set_default_values(mut korok: KorokMut) -> CodamaResult<()> {
             }
             .into(),
         ),
-        _ => return Ok(()),
-    };
-
-    korok.set_node(node);
-    Ok(())
+        _ => None,
+    }
 }

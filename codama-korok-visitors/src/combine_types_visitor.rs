@@ -129,16 +129,8 @@ impl CombineTypesVisitor {
             .get_all(FieldDirective::filter)
             .into_iter()
             .partition(|attr| !attr.after);
-
-        let before = before
-            .into_iter()
-            .map(|attr| attr.field.clone())
-            .collect::<Vec<_>>();
-
-        let after = after
-            .into_iter()
-            .map(|attr| attr.field.clone())
-            .collect::<Vec<_>>();
+        let before = before.into_iter().map(|attr| attr.field.clone());
+        let after = after.into_iter().map(|attr| attr.field.clone());
 
         Ok(before.into_iter().chain(fields).chain(after).collect())
     }

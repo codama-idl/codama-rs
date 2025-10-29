@@ -1,9 +1,11 @@
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
+use codama_korok_visitors::{
+    IdentifyFieldTypesVisitor, KorokVisitable, SetDefaultValuesVisitor, SetInstructionsVisitor,
+};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountValueNode, ArgumentValueNode, BooleanTypeNode, DefaultValueStrategy, Docs,
-    FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    AccountValueNode, ArgumentValueNode, BooleanTypeNode, BooleanValueNode, DefaultValueStrategy,
+    Docs, FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
     NumberFormat::{U64, U8},
     NumberTypeNode, NumberValueNode, PayerValueNode, PublicKeyValueNode, SizeDiscriminatorNode,
     StringTypeNode,
@@ -213,6 +215,53 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
 }
 
 #[test]
+fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaInstruction)]
+        #[codama(argument("discriminator", number(u8), default_value = 0))]
+        struct Initialize {
+            capacity: u64,
+            #[codama(default_value = argument("capacity"))]
+            max_capacity: u64,
+            #[codama(default_value = false)]
+            with_metadata: bool,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetDefaultValuesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionNode {
+                name: "initialize".into(),
+                arguments: vec![
+                    InstructionArgumentNode {
+                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
+                    },
+                    InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
+                    InstructionArgumentNode {
+                        default_value: Some(ArgumentValueNode::new("capacity").into()),
+                        ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
+                    },
+                    InstructionArgumentNode {
+                        default_value: Some(BooleanValueNode::new(false).into()),
+                        ..InstructionArgumentNode::new("with_metadata", BooleanTypeNode::default())
+                    }
+                ],
+                ..InstructionNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
 fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
@@ -248,16 +297,12 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
 fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument("capacity", number(u64)))]
-        #[codama(argument("max_capacity", number(u64), default_value = argument("capacity")))]
-        struct Initialize;
+        struct Initialize {
+            capacity: u64,
+            #[codama(default_value = argument("capacity"))]
+            max_capacity: u64,
+        }
     };
-    // TODO: Replace above with:
-    // struct Initialize {
-    //     capacity: u64,
-    //     #[codama(default_value = argument("capacity"))]
-    //     max_capacity: u64,
-    // }
     let mut korok = StructKorok::parse(&item)?;
 
     assert_eq!(korok.node, None);
