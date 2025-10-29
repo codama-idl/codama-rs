@@ -186,7 +186,7 @@ fn it_adds_attribute_fields_to_empty_structs() -> CodamaResult<()> {
 #[test]
 fn it_prepends_attribute_fields_to_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(field("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(field("discriminator", number(u8), value = 0))]
         #[codama(field("age", number(u8)))]
         struct Person {
             name: String,

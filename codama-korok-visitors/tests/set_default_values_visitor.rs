@@ -31,6 +31,31 @@ fn it_sets_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_sets_omitted_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
+    let item: syn::Field = syn::parse_quote! {
+        #[codama(value = 42)]
+        pub amount: u8
+    };
+    let mut korok = FieldKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetDefaultValuesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            StructFieldTypeNode {
+                default_value: Some(NumberValueNode::new(42u8).into()),
+                default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
+                ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
 fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
     let item: syn::Field = syn::parse_quote! {
         #[codama(default_value = 2)]
@@ -72,6 +97,30 @@ fn it_sets_default_values_to_instruction_argument_nodes() -> CodamaResult<()> {
         Some(
             InstructionArgumentNode {
                 default_value: Some(PayerValueNode::new().into()),
+                ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_sets_omitted_default_values_to_instruction_argument_nodes() -> CodamaResult<()> {
+    let item: syn::Field = syn::parse_quote! {
+        #[codama(value = payer)]
+        pub authority: Pubkey
+    };
+    let mut korok = FieldKorok::parse(&item)?;
+    korok.node = Some(InstructionArgumentNode::new("authority", PublicKeyTypeNode::new()).into());
+
+    korok.accept(&mut SetDefaultValuesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            InstructionArgumentNode {
+                default_value: Some(PayerValueNode::new().into()),
+                default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
                 ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
             }
             .into()

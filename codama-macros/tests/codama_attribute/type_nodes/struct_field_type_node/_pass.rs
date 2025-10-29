@@ -9,7 +9,7 @@ pub struct ExplicitTest;
 #[codama(type = field("age", number(u32), default_value = 42))]
 pub struct TestWithDefaultValue;
 
-#[codama(type = field("age", number(u32), default_value = 42, default_value_omitted))]
+#[codama(type = field("age", number(u32), value = 42))]
 pub struct TestWithDefaultValueStrategy;
 
 fn main() {}

@@ -11,11 +11,13 @@ use derive_more::derive::From;
 pub enum CodamaDirective {
     // Type directives.
     Type(TypeDirective),
-    DefaultValue(DefaultValueDirective),
     Encoding(EncodingDirective),
     Field(FieldDirective),
     FixedSize(FixedSizeDirective),
     SizePrefix(SizePrefixDirective),
+
+    // Default value directive.
+    DefaultValue(DefaultValueDirective),
 
     // Multi-purpose directives.
     Discriminator(DiscriminatorDirective),
@@ -40,11 +42,14 @@ impl CodamaDirective {
         match path.to_string().as_str() {
             // Type directives.
             "type" => Ok(TypeDirective::parse(meta)?.into()),
-            "default_value" => Ok(DefaultValueDirective::parse(meta)?.into()),
             "encoding" => Ok(EncodingDirective::parse(meta)?.into()),
             "field" => Ok(FieldDirective::parse(meta)?.into()),
             "fixed_size" => Ok(FixedSizeDirective::parse(meta)?.into()),
             "size_prefix" => Ok(SizePrefixDirective::parse(meta)?.into()),
+
+            // Default value directive.
+            "default_value" => Ok(DefaultValueDirective::parse(meta)?.into()),
+            "value" => Ok(DefaultValueDirective::parse(meta)?.into()),
 
             // Multi-purpose directives.
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
@@ -70,11 +75,13 @@ impl CodamaDirective {
         match self {
             // Type directives.
             Self::Type(_) => "type",
-            Self::DefaultValue(_) => "default_value",
             Self::Encoding(_) => "encoding",
             Self::Field(_) => "field",
             Self::FixedSize(_) => "fixed_size",
             Self::SizePrefix(_) => "size_prefix",
+
+            // Default value directive.
+            Self::DefaultValue(_) => "default_value | value",
 
             // Multi-purpose directives.
             Self::Discriminator(_) => "discriminator",

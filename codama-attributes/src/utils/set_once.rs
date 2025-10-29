@@ -38,6 +38,10 @@ impl<T> SetOnce<T> {
         self.value
     }
 
+    pub fn option_ref(&self) -> Option<&T> {
+        self.value.as_ref()
+    }
+
     pub fn take<U: ToTokens>(mut self, tokens: U) -> syn::Result<T> {
         match self.value.take() {
             Some(value) => Ok(value),
