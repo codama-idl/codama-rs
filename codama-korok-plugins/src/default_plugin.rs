@@ -2,8 +2,9 @@ use crate::KorokPlugin;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, CombineModulesVisitor,
-    IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor, SetDefinedTypesVisitor,
-    SetErrorsVisitor, SetInstructionsVisitor, SetPdasVisitor, SetProgramMetadataVisitor,
+    IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor, SetDefaultValuesVisitor,
+    SetDefinedTypesVisitor, SetErrorsVisitor, SetInstructionsVisitor, SetPdasVisitor,
+    SetProgramMetadataVisitor,
 };
 
 pub struct DefaultPlugin;
@@ -12,6 +13,7 @@ impl KorokPlugin for DefaultPlugin {
         visitable.accept(&mut IdentifyFieldTypesVisitor::new())?;
         visitable.accept(&mut ApplyTypeOverridesVisitor::new())?;
         visitable.accept(&mut ApplyTypeModifiersVisitor::new())?;
+        visitable.accept(&mut SetDefaultValuesVisitor::new())?;
         Ok(())
     }
 
