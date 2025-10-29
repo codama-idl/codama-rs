@@ -1,6 +1,6 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    AccountDirective, ArgumentDirective, Attributes, DiscriminatorDirective,
+    AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
     EnumDiscriminatorDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
@@ -66,7 +66,7 @@ impl KorokVisitor for SetInstructionsVisitor {
             InstructionNode {
                 name,
                 accounts: parse_accounts(&korok.attributes, &korok.fields),
-                arguments: parse_arguments(&korok.attributes, data, None),
+                arguments: parse_arguments(&korok.attributes, &korok.fields, data, None),
                 discriminators: DiscriminatorDirective::nodes(&korok.attributes),
                 ..InstructionNode::default()
             }
@@ -151,7 +151,12 @@ impl KorokVisitor for SetInstructionsVisitor {
             InstructionNode {
                 name,
                 accounts: parse_accounts(&korok.attributes, &korok.fields),
-                arguments: parse_arguments(&korok.attributes, data, Some(discriminator)),
+                arguments: parse_arguments(
+                    &korok.attributes,
+                    &korok.fields,
+                    data,
+                    Some(discriminator),
+                ),
                 discriminators,
                 ..InstructionNode::default()
             }
@@ -190,27 +195,47 @@ fn parse_accounts(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<Instruc
 
 fn parse_arguments(
     attributes: &Attributes,
+    fields: &[FieldKorok],
     data: StructTypeNode,
     discriminator: Option<InstructionArgumentNode>,
 ) -> Vec<InstructionArgumentNode> {
+    // Here we must reconcile the struct fields combined in the `CombineTypesVisitor`
+    // with their original `FieldKoroks` to check for `default_value` directives
+    // that would have been ignored on fields but are relevant for instruction arguments.
+    let arguments_from_data =
+        Vec::<InstructionArgumentNode>::from(data)
+            .into_iter()
+            .map(|argument| {
+                if argument.default_value.is_some() {
+                    return argument;
+                }
+                let Some(field) = fields
+                    .iter()
+                    .find(|field| field.name().is_some_and(|name| name == argument.name))
+                else {
+                    return argument;
+                };
+                let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter)
+                else {
+                    return argument;
+                };
+
+                InstructionArgumentNode {
+                    default_value: Some(directive.node.clone()),
+                    ..argument
+                }
+            });
+
     let (before, after): (Vec<_>, Vec<_>) = attributes
         .get_all(ArgumentDirective::filter)
         .into_iter()
         .partition(|attr| !attr.after);
-
-    let before = before
-        .into_iter()
-        .map(|attr| attr.argument.clone())
-        .collect::<Vec<_>>();
-
-    let after = after
-        .into_iter()
-        .map(|attr| attr.argument.clone())
-        .collect::<Vec<_>>();
+    let before = before.into_iter().map(|attr| attr.argument.clone());
+    let after = after.into_iter().map(|attr| attr.argument.clone());
 
     let mut arguments: Vec<InstructionArgumentNode> = before
         .into_iter()
-        .chain(Vec::<InstructionArgumentNode>::from(data))
+        .chain(arguments_from_data)
         .chain(after)
         .collect();
 
