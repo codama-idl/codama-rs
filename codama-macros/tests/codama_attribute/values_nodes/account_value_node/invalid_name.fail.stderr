@@ -1,0 +1,17 @@
+error: expected a string
+ --> tests/codama_attribute/values_nodes/account_value_node/invalid_name.fail.rs:3:34
+  |
+3 | #[codama(default_value = account(42))]
+  |                                  ^^
+
+error: expected a string
+ --> tests/codama_attribute/values_nodes/account_value_node/invalid_name.fail.rs:6:34
+  |
+6 | #[codama(default_value = account(banana))]
+  |                                  ^^^^^^
+
+error: only 'name' attribute supported
+ --> tests/codama_attribute/values_nodes/account_value_node/invalid_name.fail.rs:9:34
+  |
+9 | #[codama(default_value = account(banana = "authority"))]
+  |                                  ^^^^^^
