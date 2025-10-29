@@ -96,6 +96,7 @@ fn get_node_with_default_value(node: &Option<Node>, attributes: &Attributes) -> 
             Some(
                 StructFieldTypeNode {
                     default_value: Some(value),
+                    default_value_strategy: directive.default_value_strategy,
                     ..field.clone()
                 }
                 .into(),
@@ -105,6 +106,7 @@ fn get_node_with_default_value(node: &Option<Node>, attributes: &Attributes) -> 
         Some(Node::InstructionArgument(argument)) => Some(
             InstructionArgumentNode {
                 default_value: Some(directive.node.clone()),
+                default_value_strategy: directive.default_value_strategy,
                 ..argument.clone()
             }
             .into(),

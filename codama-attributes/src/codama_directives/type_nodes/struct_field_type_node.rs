@@ -13,11 +13,14 @@ impl FromMeta for StructFieldTypeNode {
             .consume_default_value()?
             .assert_fully_consumed()?;
 
+        let default_value = consumer.default_value_node();
+        let default_value_strategy = consumer.default_value_strategy();
+
         Ok(StructFieldTypeNode {
             name: consumer.name.take(meta)?,
             r#type: consumer.r#type.take(meta)?,
-            default_value: consumer.default_value.option(),
-            default_value_strategy: consumer.default_value_strategy.option(),
+            default_value,
+            default_value_strategy,
             docs: Docs::default(),
         })
     }
@@ -58,16 +61,9 @@ mod tests {
     }
 
     #[test]
-    fn with_default_value_strategy() {
+    fn with_omitted_value() {
         assert_type!(
-            {
-                field(
-                    "age",
-                    number(u32),
-                    default_value = 42,
-                    default_value_omitted,
-                )
-            },
+            { field("age", number(u32), value = 42) },
             StructFieldTypeNode {
                 default_value: Some(NumberValueNode::new(42u32).into()),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),

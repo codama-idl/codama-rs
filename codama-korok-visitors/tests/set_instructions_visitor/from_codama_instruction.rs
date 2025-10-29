@@ -223,7 +223,7 @@ fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
             capacity: u64,
             #[codama(default_value = argument("capacity"))]
             max_capacity: u64,
-            #[codama(default_value = false)]
+            #[codama(value = false)]
             with_metadata: bool,
         }
     };
@@ -250,6 +250,7 @@ fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
                     },
                     InstructionArgumentNode {
                         default_value: Some(BooleanValueNode::new(false).into()),
+                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
                         ..InstructionArgumentNode::new("with_metadata", BooleanTypeNode::default())
                     }
                 ],
@@ -472,7 +473,7 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
 fn with_prepended_argument_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(argument("discriminator", number(u8), value = 0))]
         #[codama(argument("name", string(utf8)))]
         struct MyInstruction {
             age: u8,

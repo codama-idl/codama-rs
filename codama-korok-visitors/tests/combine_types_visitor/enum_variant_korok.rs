@@ -190,7 +190,7 @@ fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
 #[test]
 fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! {
-        #[codama(field("discriminator", number(u8), default_value = 0, default_value_omitted))]
+        #[codama(field("discriminator", number(u8), value = 0))]
         #[codama(field("age", number(u8)))]
         Person {
             name: String,

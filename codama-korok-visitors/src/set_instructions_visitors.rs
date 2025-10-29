@@ -222,6 +222,7 @@ fn parse_arguments(
 
                 InstructionArgumentNode {
                     default_value: Some(directive.node.clone()),
+                    default_value_strategy: directive.default_value_strategy,
                     ..argument
                 }
             });

@@ -22,14 +22,17 @@ impl FieldDirective {
             .consume_after()?
             .assert_fully_consumed()?;
 
+        let default_value = consumer.default_value_node();
+        let default_value_strategy = consumer.default_value_strategy();
+
         Ok(FieldDirective {
             after: consumer.after.option().unwrap_or(false),
             field: StructFieldTypeNode {
                 name: consumer.name.take(meta)?,
                 r#type: consumer.r#type.take(meta)?,
                 docs: Docs::default(),
-                default_value: consumer.default_value.option(),
-                default_value_strategy: consumer.default_value_strategy.option(),
+                default_value,
+                default_value_strategy,
             },
         })
     }

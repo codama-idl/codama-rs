@@ -1,4 +1,7 @@
-use crate::utils::{FromMeta, MetaConsumer, SetOnce};
+use crate::{
+    utils::{FromMeta, MetaConsumer, SetOnce},
+    DefaultValueDirective,
+};
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, InstructionInputValueNode, TypeNode, ValueNode,
 };
@@ -8,9 +11,7 @@ pub(crate) struct StructFieldMetaConsumer {
     pub metas: Vec<Meta>,
     pub name: SetOnce<CamelCaseString>,
     pub r#type: SetOnce<TypeNode>,
-    pub default_value: SetOnce<ValueNode>,
-    pub argument_default_value: SetOnce<InstructionInputValueNode>,
-    pub default_value_strategy: SetOnce<DefaultValueStrategy>,
+    pub default_value: SetOnce<DefaultValueDirective>,
     pub after: SetOnce<bool>,
 }
 
@@ -21,8 +22,6 @@ impl MetaConsumer for StructFieldMetaConsumer {
             name: SetOnce::new("name"),
             r#type: SetOnce::new("type"),
             default_value: SetOnce::new("default_value"),
-            argument_default_value: SetOnce::new("default_value"),
-            default_value_strategy: SetOnce::new("default_value_strategy"),
             after: SetOnce::new("after"),
         }
     }
@@ -48,12 +47,6 @@ impl StructFieldMetaConsumer {
                 this.r#type.set(node, meta)?;
                 Ok(None)
             }
-            "default_value_omitted" => {
-                meta.as_path()?;
-                this.default_value_strategy
-                    .set(DefaultValueStrategy::Omitted, meta)?;
-                Ok(None)
-            }
             _ => {
                 if let Ok(value) = String::from_meta(&meta) {
                     this.name.set(value.into(), meta)?;
@@ -70,9 +63,9 @@ impl StructFieldMetaConsumer {
 
     pub fn consume_default_value(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
-            "default_value" => {
-                let node = ValueNode::from_meta(&meta.as_path_value()?.value)?;
-                this.default_value.set(node, meta)?;
+            "default_value" | "value" => {
+                let directive = DefaultValueDirective::parse_value_nodes_only(&meta)?;
+                this.default_value.set(directive, meta)?;
                 Ok(None)
             }
             _ => Ok(Some(meta)),
@@ -81,9 +74,9 @@ impl StructFieldMetaConsumer {
 
     pub fn consume_argument_default_value(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
-            "default_value" => {
-                let node = InstructionInputValueNode::from_meta(&meta.as_path_value()?.value)?;
-                this.argument_default_value.set(node, meta)?;
+            "default_value" | "value" => {
+                let directive = DefaultValueDirective::parse(&meta)?;
+                this.default_value.set(directive, meta)?;
                 Ok(None)
             }
             _ => Ok(Some(meta)),
@@ -98,5 +91,23 @@ impl StructFieldMetaConsumer {
             }
             _ => Ok(Some(meta)),
         })
+    }
+
+    pub fn default_value_strategy(&self) -> Option<DefaultValueStrategy> {
+        self.default_value
+            .option_ref()
+            .and_then(|directive| directive.default_value_strategy)
+    }
+
+    pub fn default_value_node(&self) -> Option<ValueNode> {
+        self.default_value
+            .option_ref()
+            .and_then(|directive| ValueNode::try_from(directive.node.clone()).ok())
+    }
+
+    pub fn default_instruction_input_value_node(&self) -> Option<InstructionInputValueNode> {
+        self.default_value
+            .option_ref()
+            .map(|directive| directive.node.clone())
     }
 }
