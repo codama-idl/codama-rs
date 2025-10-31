@@ -1,0 +1,23 @@
+error: expected a list: `pda(...)` or `pda = (...)`
+ --> tests/codama_attribute/values_nodes/pda_value_node/missing_name.fail.rs:3:26
+  |
+3 | #[codama(default_value = pda)]
+  |                          ^^^
+
+error: name is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/missing_name.fail.rs:6:26
+  |
+6 | #[codama(default_value = pda())]
+  |                          ^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/missing_name.fail.rs:9:26
+  |
+9 | #[codama(default_value = pda(seeds = []))]
+  |                          ^^^^^^^^^^^^^^^
+
+error: name is missing
+  --> tests/codama_attribute/values_nodes/pda_value_node/missing_name.fail.rs:12:26
+   |
+12 | #[codama(default_value = pda([]))]
+   |                          ^^^^^^^

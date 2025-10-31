@@ -1,6 +1,7 @@
 mod attribute;
 mod derive_input;
 mod expr;
+mod expr_array;
 mod fields;
 mod file;
 mod generics;
@@ -14,6 +15,7 @@ mod r#type;
 pub use attribute::*;
 pub use derive_input::*;
 pub use expr::*;
+pub use expr_array::*;
 pub use fields::*;
 pub use file::*;
 pub use generics::*;
