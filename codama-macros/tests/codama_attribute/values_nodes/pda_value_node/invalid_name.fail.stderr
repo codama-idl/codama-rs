@@ -1,0 +1,11 @@
+error: expected a string
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_name.fail.rs:3:37
+  |
+3 | #[codama(default_value = pda(name = invalid))]
+  |                                     ^^^^^^^
+
+error: unrecognized attribute
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_name.fail.rs:6:30
+  |
+6 | #[codama(default_value = pda(invalid = "authority"))]
+  |                              ^^^^^^^^^^^^^^^^^^^^^

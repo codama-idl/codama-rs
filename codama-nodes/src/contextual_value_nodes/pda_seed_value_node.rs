@@ -2,7 +2,7 @@ use crate::{
     AccountValueNode, ArgumentValueNode, ArrayValueNode, BooleanValueNode, BytesValueNode,
     CamelCaseString, ConstantValueNode, EnumValueNode, HasName, MapValueNode, NoneValueNode,
     NumberValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode,
-    StructValueNode, TupleValueNode,
+    StructValueNode, TupleValueNode, ValueNode,
 };
 use codama_nodes_derive::{node, node_union};
 
@@ -34,6 +34,12 @@ impl PdaSeedValueNode {
     }
 }
 
+impl HasName for PdaSeedValueNode {
+    fn name(&self) -> &CamelCaseString {
+        &self.name
+    }
+}
+
 #[node_union]
 pub enum PdaSeedValueValueNode {
     Account(AccountValueNode),
@@ -56,9 +62,24 @@ pub enum PdaSeedValueValueNode {
     Tuple(TupleValueNode),
 }
 
-impl HasName for PdaSeedValueNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl From<ValueNode> for PdaSeedValueValueNode {
+    fn from(value: ValueNode) -> Self {
+        match value {
+            ValueNode::Array(value) => Self::Array(value),
+            ValueNode::Boolean(value) => Self::Boolean(value),
+            ValueNode::Bytes(value) => Self::Bytes(value),
+            ValueNode::Constant(value) => Self::Constant(value),
+            ValueNode::Enum(value) => Self::Enum(value),
+            ValueNode::Map(value) => Self::Map(value),
+            ValueNode::None(value) => Self::None(value),
+            ValueNode::Number(value) => Self::Number(value),
+            ValueNode::PublicKey(value) => Self::PublicKey(value),
+            ValueNode::Set(value) => Self::Set(value),
+            ValueNode::Some(value) => Self::Some(value),
+            ValueNode::String(value) => Self::String(value),
+            ValueNode::Struct(value) => Self::Struct(value),
+            ValueNode::Tuple(value) => Self::Tuple(value),
+        }
     }
 }
 

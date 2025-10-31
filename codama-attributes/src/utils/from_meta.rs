@@ -1,5 +1,5 @@
 use codama_nodes::{BytesEncoding, IsAccountSigner};
-use codama_syn_helpers::{extensions::*, Meta, PathList};
+use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
 
 pub trait FromMeta
@@ -67,21 +67,7 @@ pub fn get_expr_from_meta(meta: &Meta) -> syn::Result<&Expr> {
 pub fn get_expr_from_meta_with_path_lists_as_arrays(meta: &Meta) -> syn::Result<Expr> {
     match meta {
         Meta::Expr(expr) => Ok(expr.clone()),
-        Meta::PathList(pl) => Ok(get_array_expr_from_path_list(pl)?.into()),
+        Meta::PathList(pl) => Ok(pl.as_expr_array()?.into()),
         _ => meta.as_path_value()?.value.as_expr().cloned(),
     }
-}
-
-pub fn get_array_expr_from_path_list(pl: &PathList) -> syn::Result<syn::ExprArray> {
-    let syn::MacroDelimiter::Bracket(bracket_token) = pl.delimiter else {
-        return Err(pl.error("expected an array delimited with `[]`"));
-    };
-
-    Ok(syn::ExprArray {
-        attrs: vec![],
-        bracket_token,
-        elems: pl.as_meta_list().parse_args_with(
-            syn::punctuated::Punctuated::<Expr, syn::Token![,]>::parse_terminated,
-        )?,
-    })
 }

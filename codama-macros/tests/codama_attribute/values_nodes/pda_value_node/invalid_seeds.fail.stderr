@@ -1,0 +1,41 @@
+error: expected a path
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:40
+  |
+3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
+  |                                        ^^
+
+error: expected #[codama(seed)] attribute
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:44
+  |
+3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
+  |                                            ^^^^^^^
+
+error: expected a path
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:53
+  |
+3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
+  |                                                     ^^^^^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:6:40
+  |
+6 | #[codama(default_value = pda("token", [seed(42), seed(value = 43)]))]
+  |                                        ^^^^^^^^
+
+error: name is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:6:50
+  |
+6 | #[codama(default_value = pda("token", [seed(42), seed(value = 43)]))]
+  |                                                  ^^^^^^^^^^^^^^^^
+
+error: value is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:9:40
+  |
+9 | #[codama(default_value = pda("token", [seed("mint"), seed("owner")]))]
+  |                                        ^^^^^^^^^^^^
+
+error: value is missing
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:9:54
+  |
+9 | #[codama(default_value = pda("token", [seed("mint"), seed("owner")]))]
+  |                                                      ^^^^^^^^^^^^^

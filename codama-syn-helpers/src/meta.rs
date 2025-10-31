@@ -182,6 +182,20 @@ impl PathList {
     pub fn parse_comma_args<T: syn::parse::Parse>(&self) -> syn::Result<Vec<T>> {
         self.as_meta_list().parse_comma_args()
     }
+
+    pub fn as_expr_array(&self) -> syn::Result<syn::ExprArray> {
+        let syn::MacroDelimiter::Bracket(bracket_token) = self.delimiter else {
+            return Err(self.error("expected an array delimited with `[]`"));
+        };
+
+        Ok(syn::ExprArray {
+            attrs: vec![],
+            bracket_token,
+            elems: self.as_meta_list().parse_args_with(
+                syn::punctuated::Punctuated::<Expr, syn::Token![,]>::parse_terminated,
+            )?,
+        })
+    }
 }
 
 impl syn::parse::Parse for Meta {
