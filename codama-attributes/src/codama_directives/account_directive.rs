@@ -32,14 +32,14 @@ impl AccountDirective {
             false => meta
                 .as_path_list()?
                 .each(|ref meta| match meta.path_str().as_str() {
-                    "name" => name.set(String::from_meta(meta)?.into(), meta),
+                    "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
                     "signer" => is_signer.set(IsAccountSigner::from_meta(meta)?, meta),
                     "optional" => is_optional.set(bool::from_meta(meta)?, meta),
-                    "default_value" => {
-                        let value = &meta.as_path_value()?.value;
-                        default_value.set(InstructionInputValueNode::from_meta(value)?, meta)
-                    }
+                    "default_value" => default_value.set(
+                        InstructionInputValueNode::from_meta(meta.as_value()?)?,
+                        meta,
+                    ),
                     _ => Err(meta.error("unrecognized attribute")),
                 })?,
         }

@@ -1,7 +1,6 @@
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{Endian, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
-use syn::{Expr, ExprPath};
 
 impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
@@ -9,33 +8,31 @@ impl FromMeta for NumberTypeNode {
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
 
-        pl.each(|ref meta| {
-            let path = meta.path()?;
-            match (meta.path_str().as_str(), meta) {
-                ("format", _) => {
-                    let path = meta.as_path_value()?.value.as_path()?;
-                    match NumberFormat::try_from(path.to_string()) {
-                        Ok(value) => format.set(value, meta),
-                        _ => Err(path.error("invalid format")),
-                    }
+        pl.each(|ref meta| match meta.path_str().as_str() {
+            "format" => {
+                let path = meta.as_value()?.as_path()?;
+                match NumberFormat::try_from(path.to_string()) {
+                    Ok(value) => format.set(value, meta),
+                    _ => Err(path.error("invalid format")),
                 }
-                ("endian", _) => {
-                    let path = meta.as_path_value()?.value.as_path()?;
-                    match Endian::try_from(path.to_string()) {
-                        Ok(value) => endian.set(value, meta),
-                        _ => Err(path.error("invalid endian")),
-                    }
+            }
+            "endian" => {
+                let path = meta.as_value()?.as_path()?;
+                match Endian::try_from(path.to_string()) {
+                    Ok(value) => endian.set(value, meta),
+                    _ => Err(path.error("invalid endian")),
                 }
-                (_, Meta::Expr(Expr::Path(ExprPath { path, .. }))) => {
+            }
+            _ => {
+                if let Ok(path) = meta.as_path() {
                     if let Ok(value) = NumberFormat::try_from(path.to_string()) {
                         return format.set(value, meta);
                     }
                     if let Ok(value) = Endian::try_from(path.to_string()) {
                         return endian.set(value, meta);
                     }
-                    Err(path.error("unrecognized attribute"))
                 }
-                _ => Err(path.error("unrecognized attribute")),
+                Err(meta.path()?.error("unrecognized attribute"))
             }
         })?;
 

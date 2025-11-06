@@ -1,5 +1,5 @@
 use crate::{
-    utils::{get_expr_from_meta_with_path_lists_as_arrays, FromMeta, SetOnce},
+    utils::{FromMeta, SetOnce},
     Attribute, Attributes, CodamaAttribute, CodamaDirective, TryFromFilter,
 };
 use codama_errors::CodamaError;
@@ -66,19 +66,19 @@ impl DiscriminatorDirective {
                 if kind != DiscriminatorKind::Field {
                     return Err(meta.error(format!("field cannot be used when {kind} is set")));
                 }
-                field.set(String::from_meta(meta)?.into(), meta)
+                field.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta)
             }
             "offset" => {
                 if kind == DiscriminatorKind::Size {
                     return Err(meta.error(format!("offset cannot be used when {kind} is set")));
                 }
-                offset.set(usize::from_meta(meta)?, meta)
+                offset.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta)
             }
             "size" => {
                 if kind != DiscriminatorKind::Size {
                     return Err(meta.error(format!("size cannot be used when {kind} is set")));
                 }
-                size.set(usize::from_meta(meta)?, meta)
+                size.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta)
             }
             _ => Err(meta.error("unrecognized attribute")),
         })?;
@@ -161,14 +161,19 @@ enum BytesValue {
 
 impl FromMeta for BytesValue {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let expr = get_expr_from_meta_with_path_lists_as_arrays(meta)?;
+        let expr = match meta {
+            Meta::Expr(expr) => Ok(expr.clone()),
+            Meta::PathList(pl) => Ok(pl.as_expr_array()?.into()),
+            _ => meta.as_value()?.as_expr().cloned(),
+        }?;
+
         if let Ok(s) = expr.as_string() {
             return Ok(BytesValue::Encoded(s));
         }
-        match expr.as_u8_array() {
-            Ok(arr) => Ok(BytesValue::Array(arr)),
-            Err(_) => Err(expr.error("expected a string or a byte array")),
+        if let Ok(arr) = expr.as_u8_array() {
+            return Ok(BytesValue::Array(arr));
         }
+        Err(expr.error("expected a string or a byte array"))
     }
 }
 

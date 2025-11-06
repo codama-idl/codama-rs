@@ -4,7 +4,7 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{ConstantPdaSeedNode, PdaSeedNode, TypeNode, ValueNode, VariablePdaSeedNode};
-use codama_syn_helpers::{extensions::ToTokensExtension, Meta};
+use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct SeedDirective {
@@ -37,10 +37,10 @@ impl SeedDirective {
 
         pl.each(|ref meta| match (meta.path_str().as_str(), constant_seed) {
             ("name", true) => Err(meta.error("constant seeds cannot specify name")),
-            ("name", false) => name.set(String::from_meta(meta)?, meta),
-            ("value", true) => value.set(ValueNode::from_meta(&meta.as_path_value()?.value)?, meta),
+            ("name", false) => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            ("value", true) => value.set(ValueNode::from_meta(meta.as_value()?)?, meta),
             ("value", false) => Err(meta.error("variable seeds cannot specify value")),
-            ("type", _) => r#type.set(TypeNode::from_meta(&meta.as_path_value()?.value)?, meta),
+            ("type", _) => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 

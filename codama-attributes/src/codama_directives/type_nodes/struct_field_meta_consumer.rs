@@ -5,7 +5,7 @@ use crate::{
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, InstructionInputValueNode, TypeNode, ValueNode,
 };
-use codama_syn_helpers::Meta;
+use codama_syn_helpers::{extensions::*, Meta};
 
 pub(crate) struct StructFieldMetaConsumer {
     pub metas: Vec<Meta>,
@@ -39,16 +39,17 @@ impl StructFieldMetaConsumer {
     pub fn consume_field(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "name" => {
-                this.name.set(String::from_meta(&meta)?.into(), meta)?;
+                this.name
+                    .set(meta.as_value()?.as_expr()?.as_string()?.into(), meta)?;
                 Ok(None)
             }
             "type" => {
-                let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
-                this.r#type.set(node, meta)?;
+                this.r#type
+                    .set(TypeNode::from_meta(meta.as_value()?)?, meta)?;
                 Ok(None)
             }
             _ => {
-                if let Ok(value) = String::from_meta(&meta) {
+                if let Ok(value) = meta.as_expr().and_then(|e| e.as_string()) {
                     this.name.set(value.into(), meta)?;
                     return Ok(None);
                 }

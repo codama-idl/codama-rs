@@ -11,17 +11,11 @@ impl FromMeta for PdaValueNode {
         let mut seeds = SetOnce::<Vec<PdaSeedValueNode>>::new("seeds");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(
-                String::from_meta(&meta.as_path_value()?.value)?.into(),
-                meta,
-            ),
-            "program" => program.set(
-                String::from_meta(&meta.as_path_value()?.value)?.into(),
-                meta,
-            ),
+            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "program" => program.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
             "seeds" => seeds.set(parse_seed_value_nodes(meta.as_path_list()?)?, meta),
             _ => {
-                if let Ok(seed_name) = meta.as_expr().and_then(ExprExtension::as_string) {
+                if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     return name.set(seed_name.into(), meta);
                 }
                 if let Meta::Expr(syn::Expr::Array(array)) = meta {

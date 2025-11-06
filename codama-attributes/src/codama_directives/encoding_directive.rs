@@ -10,11 +10,10 @@ pub struct EncodingDirective {
 
 impl EncodingDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        let pv = meta.assert_directive("encoding")?.as_path_value()?;
-        let value = pv.value.as_path()?;
-        match BytesEncoding::try_from(value.to_string()) {
+        let path = meta.assert_directive("encoding")?.as_value()?.as_path()?;
+        match BytesEncoding::try_from(path.to_string()) {
             Ok(encoding) => Ok(Self { encoding }),
-            _ => Err(value.error("invalid encoding")),
+            _ => Err(path.error("invalid encoding")),
         }
     }
 }

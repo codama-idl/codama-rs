@@ -1,7 +1,6 @@
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{BytesEncoding, StringTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
-use syn::{Expr, ExprPath};
 
 impl FromMeta for StringTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
@@ -12,21 +11,24 @@ impl FromMeta for StringTypeNode {
         }
 
         meta.as_path_list()?
-            .each(|ref meta| match (meta.path_str().as_str(), meta) {
-                ("encoding", _) => {
-                    let path = meta.as_path_value()?.value.as_path()?;
+            .each(|ref meta| match meta.path_str().as_str() {
+                "encoding" => {
+                    let path = meta.as_value()?.as_path()?;
                     match BytesEncoding::try_from(path.to_string()) {
                         Ok(value) => encoding.set(value, meta),
                         _ => Err(path.error("invalid encoding")),
                     }
                 }
-                (_, Meta::Expr(Expr::Path(ExprPath { path, .. }))) => {
-                    if let Ok(value) = BytesEncoding::try_from(path.to_string()) {
+                _ => {
+                    if let Some(value) = meta
+                        .as_path()
+                        .ok()
+                        .and_then(|path| BytesEncoding::try_from(path.to_string()).ok())
+                    {
                         return encoding.set(value, meta);
                     }
-                    Err(path.error("unrecognized attribute"))
+                    Err(meta.error("unrecognized attribute"))
                 }
-                _ => Err(meta.error("unrecognized attribute")),
             })?;
 
         Ok(StringTypeNode::new(encoding.take(meta)?))

@@ -8,21 +8,21 @@ impl FromMeta for FixedSizeTypeNode<TypeNode> {
         let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
         let mut size: SetOnce<usize> = SetOnce::new("size");
 
-        pl.each(|ref meta| match (meta.path_str().as_str(), meta) {
-            ("type", _) => {
-                let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
+        pl.each(|ref meta| match meta.path_str().as_str() {
+            "type" => {
+                let node = TypeNode::from_meta(meta.as_value()?)?;
                 r#type.set(node, meta)
             }
-            ("size", _) => size.set(
-                meta.as_path_value()?
-                    .value
-                    .as_expr()?
-                    .as_unsigned_integer()?,
-                meta,
-            ),
-            (_, m) if m.is_path_or_list() => r#type.set(TypeNode::from_meta(meta)?, meta),
-            (_, Meta::Expr(expr)) => size.set(expr.as_unsigned_integer()?, meta),
-            _ => Err(meta.error("unrecognized attribute")),
+            "size" => size.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta),
+            _ => {
+                if meta.is_path_or_list() {
+                    return r#type.set(TypeNode::from_meta(meta)?, meta);
+                }
+                if let Ok(expr) = meta.as_expr() {
+                    return size.set(expr.as_unsigned_integer()?, meta);
+                }
+                Err(meta.error("unrecognized attribute"))
+            }
         })?;
 
         let r#type = r#type.take(meta)?;
