@@ -117,6 +117,14 @@ impl Meta {
         }
     }
 
+    pub fn as_value(&self) -> syn::Result<&Meta> {
+        self.as_path_value().map(|pv| pv.value.as_ref())
+    }
+
+    pub fn as_expr_or_value_expr(&self) -> syn::Result<&Expr> {
+        self.as_expr().or_else(|_| self.as_value()?.as_expr())
+    }
+
     pub fn as_expr(&self) -> syn::Result<&Expr> {
         match self {
             Meta::Expr(expr) => Ok(expr),

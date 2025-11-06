@@ -25,9 +25,9 @@ impl EnumDiscriminatorDirective {
         let mut size: SetOnce<NestedTypeNode<NumberTypeNode>> =
             SetOnce::<NestedTypeNode<NumberTypeNode>>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(String::from_meta(meta)?.into(), meta),
+            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
             "size" => {
-                let node = TypeNode::from_meta(&meta.as_path_value()?.value)?;
+                let node = TypeNode::from_meta(meta.as_value()?)?;
                 match NestedTypeNode::<NumberTypeNode>::try_from(node) {
                     Ok(node) => size.set(node, meta),
                     _ => Err(meta.error("size must be a NumberTypeNode")),

@@ -1,7 +1,4 @@
-use crate::{
-    utils::{FromMeta, SetOnce},
-    Attribute, CodamaAttribute, CodamaDirective,
-};
+use crate::{utils::SetOnce, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -22,19 +19,19 @@ impl ErrorDirective {
         let pl = meta.assert_directive("error")?.as_path_list()?;
         let mut code = SetOnce::<usize>::new("code");
         let mut message = SetOnce::<String>::new("message");
-        pl.each(|ref meta| match (meta.path_str().as_str(), meta) {
-            ("code", _) => code.set(usize::from_meta(meta)?, meta),
-            ("message", _) => message.set(String::from_meta(meta)?, meta),
-            (_, Meta::Expr(expr)) => {
-                if let Ok(value) = expr.as_unsigned_integer() {
-                    code.set(value, meta)
-                } else if let Ok(value) = expr.as_string() {
-                    message.set(value, meta)
-                } else {
-                    Err(expr.error("expected an integer or a string"))
+        pl.each(|ref meta| match meta.path_str().as_str() {
+            "code" => code.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta),
+            "message" => message.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            _ => {
+                if let Ok(expr) = meta.as_expr() {
+                    if let Ok(value) = expr.as_unsigned_integer() {
+                        return code.set(value, meta);
+                    } else if let Ok(value) = expr.as_string() {
+                        return message.set(value, meta);
+                    }
                 }
+                Err(meta.error("unrecognized attribute"))
             }
-            _ => Err(meta.error("unrecognized attribute")),
         })?;
         let directive = Self {
             code: code.option(),

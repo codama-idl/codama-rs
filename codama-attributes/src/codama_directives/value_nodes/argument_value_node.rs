@@ -11,9 +11,9 @@ impl FromMeta for ArgumentValueNode {
                 if !pv.path.is_strict("name") {
                     return Err(pv.path.error("only 'name' attribute supported"));
                 };
-                name.set(String::from_meta(meta)?, meta)
+                name.set(pv.value.as_expr()?.as_string()?, meta)
             }
-            _ => name.set(String::from_meta(meta)?, meta),
+            _ => name.set(meta.as_expr()?.as_string()?, meta),
         })?;
 
         Ok(ArgumentValueNode::new(name.take(meta)?))

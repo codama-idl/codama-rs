@@ -10,11 +10,11 @@ pub struct SizePrefixDirective {
 
 impl SizePrefixDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        let pv = meta.assert_directive("size_prefix")?.as_path_value()?;
-        let node = TypeNode::from_meta(&pv.value)?;
+        let value = meta.assert_directive("size_prefix")?.as_value()?;
+        let node = TypeNode::from_meta(value)?;
         let prefix = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
             Ok(node) => node,
-            Err(_) => return Err(pv.value.error("prefix must be a NumberTypeNode")),
+            Err(_) => return Err(value.error("prefix must be a NumberTypeNode")),
         };
         Ok(Self { prefix })
     }

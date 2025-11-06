@@ -1,6 +1,6 @@
-use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use crate::{Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_syn_helpers::Meta;
+use codama_syn_helpers::{extensions::ExprExtension, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct FixedSizeDirective {
@@ -11,7 +11,7 @@ impl FixedSizeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("fixed_size")?;
         Ok(Self {
-            size: usize::from_meta(meta)?,
+            size: meta.as_value()?.as_expr()?.as_unsigned_integer()?,
         })
     }
 }

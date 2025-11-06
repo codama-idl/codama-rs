@@ -32,16 +32,10 @@ impl FromMeta for PdaSeedValueNode {
             SetOnce::<PdaSeedValueValueNode>::new("value");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(
-                String::from_meta(&meta.as_path_value()?.value)?.into(),
-                meta,
-            ),
-            "value" => value.set(
-                PdaSeedValueValueNode::from_meta(&meta.as_path_value()?.value)?,
-                meta,
-            ),
+            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "value" => value.set(PdaSeedValueValueNode::from_meta(meta.as_value()?)?, meta),
             _ => {
-                if let Ok(seed_name) = String::from_meta(meta) {
+                if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     match name.is_set() {
                         false => return name.set(seed_name.into(), meta),
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),

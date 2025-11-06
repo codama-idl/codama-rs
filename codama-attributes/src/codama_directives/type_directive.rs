@@ -10,9 +10,10 @@ pub struct TypeDirective {
 
 impl TypeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        let pv = meta.assert_directive("type")?.as_path_value()?;
-        let node = RegisteredTypeNode::from_meta(&pv.value)?;
-        Ok(Self { node })
+        let value = meta.assert_directive("type")?.as_value()?;
+        Ok(Self {
+            node: RegisteredTypeNode::from_meta(value)?,
+        })
     }
 }
 
