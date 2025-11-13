@@ -7,7 +7,7 @@ env:
   # It also helps prevent rate limiting on the registry.
   PUBLISH_GRACE_SLEEP: 25
   RUSTFLAGS: "-Dwarnings"
-  RUST_TOOLCHAIN: "nightly-2025-02-16"
+  RUST_TOOLCHAIN: "1.91.1"
 
 on:
   workflow_dispatch:
@@ -73,7 +73,7 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
 
       - name: Install Cargo Release
-        run: which cargo-release || cargo +${{ env.RUST_TOOLCHAIN }} install cargo-release --version 0.25.18
+        run: which cargo-release || cargo +${{ env.RUST_TOOLCHAIN }} install cargo-release
 
       - name: Ensure CARGO_REGISTRY_TOKEN variable is set
         env:
