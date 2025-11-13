@@ -5,7 +5,7 @@ env:
   # This gives the published crate time to be available on the registry
   # before it is used as a dependency in another crate.
   # It also helps prevent rate limiting on the registry.
-  PUBLISH_GRACE_SLEEP: 15
+  PUBLISH_GRACE_SLEEP: 25
   RUSTFLAGS: "-Dwarnings"
   RUST_TOOLCHAIN: "nightly-2025-02-16"
 
