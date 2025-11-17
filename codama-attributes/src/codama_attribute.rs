@@ -5,7 +5,7 @@ use codama_syn_helpers::extensions::*;
 #[derive(Debug, PartialEq)]
 pub struct CodamaAttribute<'a> {
     pub ast: &'a syn::Attribute,
-    pub directive: CodamaDirective,
+    pub directive: Box<CodamaDirective>,
 }
 
 impl<'a> CodamaAttribute<'a> {
@@ -24,7 +24,7 @@ impl<'a> CodamaAttribute<'a> {
         list.each(|ref meta| directive.set(CodamaDirective::parse(meta, ctx)?, meta))?;
         Ok(Self {
             ast,
-            directive: directive.take(attr)?,
+            directive: Box::new(directive.take(attr)?),
         })
     }
 }
@@ -56,7 +56,10 @@ mod tests {
         let attribute = CodamaAttribute::parse(&ast, &ctx).unwrap();
 
         assert_eq!(attribute.ast, &ast);
-        assert!(matches!(attribute.directive, CodamaDirective::Type(_)));
+        assert!(matches!(
+            attribute.directive.as_ref(),
+            CodamaDirective::Type(_)
+        ));
     }
 
     #[test]
@@ -67,6 +70,9 @@ mod tests {
         let attribute = CodamaAttribute::parse(&ast, &ctx).unwrap();
 
         assert_eq!(attribute.ast, &ast);
-        assert!(matches!(attribute.directive, CodamaDirective::Type(_)));
+        assert!(matches!(
+            attribute.directive.as_ref(),
+            CodamaDirective::Type(_)
+        ));
     }
 }
