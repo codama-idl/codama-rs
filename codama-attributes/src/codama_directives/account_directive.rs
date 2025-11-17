@@ -61,7 +61,7 @@ impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a AccountDirective {
     type Error = CodamaError;
 
     fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
-        match attribute.directive {
+        match attribute.directive.as_ref() {
             CodamaDirective::Account(ref a) => Ok(a),
             _ => Err(CodamaError::InvalidCodamaDirective {
                 expected: "account".to_string(),

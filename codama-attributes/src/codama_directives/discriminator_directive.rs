@@ -103,7 +103,7 @@ impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a DiscriminatorDirective {
     type Error = CodamaError;
 
     fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
-        match attribute.directive {
+        match attribute.directive.as_ref() {
             CodamaDirective::Discriminator(ref a) => Ok(a),
             _ => Err(CodamaError::InvalidCodamaDirective {
                 expected: "discriminator".to_string(),

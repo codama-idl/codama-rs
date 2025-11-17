@@ -107,7 +107,7 @@ fn apply_type_modifiers(mut korok: KorokMut) -> CodamaResult<()> {
 }
 
 fn apply_type_modifier(input: ApplyAttributeInput) -> CodamaResult<Option<Node>> {
-    match &input.attribute.directive {
+    match input.attribute.directive.as_ref() {
         CodamaDirective::Encoding(directive) => apply_encoding_directive(directive, input),
         CodamaDirective::FixedSize(directive) => apply_fixed_size_directive(directive, input),
         CodamaDirective::SizePrefix(directive) => apply_size_prefix_directive(directive, input),

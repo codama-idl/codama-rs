@@ -26,7 +26,7 @@ impl<'a> Attributes<'a> {
 
         for attribute in self.0.iter().rev() {
             if let Attribute::Codama(attribute) = attribute {
-                match &attribute.directive {
+                match attribute.directive.as_ref() {
                     CodamaDirective::Type(_) if !has_seen_type => has_seen_type = true,
                     CodamaDirective::Type(_)
                     | CodamaDirective::Encoding(_)

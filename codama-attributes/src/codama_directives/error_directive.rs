@@ -48,7 +48,7 @@ impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a ErrorDirective {
     type Error = CodamaError;
 
     fn try_from(attribute: &'a CodamaAttribute) -> Result<Self, Self::Error> {
-        match attribute.directive {
+        match attribute.directive.as_ref() {
             CodamaDirective::Error(ref a) => Ok(a),
             _ => Err(CodamaError::InvalidCodamaDirective {
                 expected: "error".to_string(),
