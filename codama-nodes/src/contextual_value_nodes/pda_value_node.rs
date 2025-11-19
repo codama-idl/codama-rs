@@ -1,4 +1,4 @@
-use crate::{PdaLinkNode, PdaNode, PdaSeedValueNode};
+use crate::{AccountValueNode, ArgumentValueNode, PdaLinkNode, PdaNode, PdaSeedValueNode};
 use codama_nodes_derive::{node, node_union};
 
 #[node]
@@ -6,6 +6,14 @@ pub struct PdaValueNode {
     // Children.
     pub pda: PdaValue,
     pub seeds: Vec<PdaSeedValueNode>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub program_id: Box<Option<PdaProgramIdValueNode>>,
+}
+
+#[node_union]
+pub enum PdaProgramIdValueNode {
+    Account(AccountValueNode),
+    Argument(ArgumentValueNode),
 }
 
 impl From<PdaValueNode> for crate::Node {
@@ -22,6 +30,19 @@ impl PdaValueNode {
         Self {
             pda: pda.into(),
             seeds,
+            program_id: Box::new(None),
+        }
+    }
+
+    pub fn new_with_program_id<T, U>(pda: T, seeds: Vec<PdaSeedValueNode>, program_id: U) -> Self
+    where
+        T: Into<PdaValue>,
+        U: Into<PdaProgramIdValueNode>,
+    {
+        Self {
+            pda: pda.into(),
+            seeds,
+            program_id: Box::new(Some(program_id.into())),
         }
     }
 }
@@ -104,5 +125,19 @@ mod tests {
             r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[]}"#;
         let node: PdaValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]));
+    }
+
+    #[test]
+    fn to_json_with_program_id() {
+        let node = PdaValueNode::new_with_program_id(
+            PdaValue::Linked(PdaLinkNode::new("myPda")),
+            vec![],
+            AccountValueNode::new("myProgramAccount"),
+        );
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[],"programId":{"kind":"accountValueNode","name":"myProgramAccount"}}"#
+        );
     }
 }
