@@ -27,6 +27,7 @@ impl AccountDirective {
         let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
         let mut default_value = SetOnce::<InstructionInputValueNode>::new("default_value");
+        let mut docs = SetOnce::<String>::new("docs");
         match meta.is_path_or_empty_list() {
             true => (),
             false => meta
@@ -40,6 +41,7 @@ impl AccountDirective {
                         InstructionInputValueNode::from_meta(meta.as_value()?)?,
                         meta,
                     ),
+                    "docs" => docs.set(meta.as_value()?.as_expr()?.as_string()?, meta),
                     _ => Err(meta.error("unrecognized attribute")),
                 })?,
         }
@@ -49,8 +51,7 @@ impl AccountDirective {
                 is_writable: is_writable.take(meta)?,
                 is_signer: is_signer.take(meta)?,
                 is_optional: is_optional.take(meta)?,
-                // TODO: `docs` for account directives not attached to fields.
-                docs: Docs::default(),
+                docs: docs.option().map(|d| vec![d].into()).unwrap_or_default(),
                 default_value: default_value.option(),
             },
         })
@@ -160,5 +161,26 @@ mod tests {
         let ctx = AttributeContext::Item(&item);
         let error = AccountDirective::parse(&meta, &ctx).unwrap_err();
         assert_eq!(error.to_string(), "name is missing");
+    }
+
+    #[test]
+    fn with_docs() {
+        let meta: Meta = syn::parse_quote! { account(name = "stake", writable, docs = "what this account is for") };
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        let directive = AccountDirective::parse(&meta, &ctx).unwrap();
+        assert_eq!(
+            directive,
+            AccountDirective {
+                account: InstructionAccountNode {
+                    name: "stake".into(),
+                    is_writable: true,
+                    is_signer: IsAccountSigner::False,
+                    is_optional: false,
+                    default_value: None,
+                    docs: vec!["what this account is for".to_string()].into(),
+                },
+            }
+        );
     }
 }
