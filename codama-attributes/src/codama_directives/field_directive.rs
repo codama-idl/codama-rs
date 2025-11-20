@@ -4,7 +4,7 @@ use crate::{
     Attribute, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{Docs, StructFieldTypeNode};
+use codama_nodes::StructFieldTypeNode;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
@@ -19,6 +19,7 @@ impl FieldDirective {
         let consumer = StructFieldMetaConsumer::from_meta(meta)?
             .consume_field()?
             .consume_default_value()?
+            .consume_docs()?
             .consume_after()?
             .assert_fully_consumed()?;
 
@@ -30,7 +31,7 @@ impl FieldDirective {
             field: StructFieldTypeNode {
                 name: consumer.name.take(meta)?,
                 r#type: consumer.r#type.take(meta)?,
-                docs: Docs::default(),
+                docs: consumer.docs.option().unwrap_or_default(),
                 default_value,
                 default_value_strategy,
             },
@@ -104,6 +105,23 @@ mod tests {
                     ..StructFieldTypeNode::new("age", NumberTypeNode::le(U8))
                 },
             }
+        );
+    }
+
+    #[test]
+    fn with_docs_string() {
+        let meta: Meta = syn::parse_quote! { field("splines", number(u8), docs = "Splines") };
+        let directive = FieldDirective::parse(&meta).unwrap();
+        assert_eq!(directive.field.docs, vec!["Splines".to_string()].into());
+    }
+
+    #[test]
+    fn with_docs_array() {
+        let meta: Meta = syn::parse_quote! { field("age", number(u8), docs = ["Splines", "Must be pre-reticulated"]) };
+        let directive = FieldDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive.field.docs,
+            vec!["Splines".to_string(), "Must be pre-reticulated".to_string()].into()
         );
     }
 }

@@ -4,7 +4,7 @@ use crate::{
     Attribute, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{Docs, InstructionArgumentNode};
+use codama_nodes::InstructionArgumentNode;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
@@ -19,6 +19,7 @@ impl ArgumentDirective {
         let consumer = StructFieldMetaConsumer::from_meta(meta)?
             .consume_field()?
             .consume_argument_default_value()?
+            .consume_docs()?
             .consume_after()?
             .assert_fully_consumed()?;
 
@@ -30,7 +31,7 @@ impl ArgumentDirective {
             argument: InstructionArgumentNode {
                 name: consumer.name.take(meta)?,
                 r#type: consumer.r#type.take(meta)?,
-                docs: Docs::default(),
+                docs: consumer.docs.option().unwrap_or_default(),
                 default_value,
                 default_value_strategy,
             },
@@ -104,6 +105,23 @@ mod tests {
                     ..InstructionArgumentNode::new("age", NumberTypeNode::le(U8))
                 },
             }
+        );
+    }
+
+    #[test]
+    fn with_docs_string() {
+        let meta: Meta = syn::parse_quote! { argument("cake", number(u8), docs = "The cake") };
+        let directive = ArgumentDirective::parse(&meta).unwrap();
+        assert_eq!(directive.argument.docs, vec!["The cake".to_string()].into());
+    }
+
+    #[test]
+    fn with_docs_array() {
+        let meta: Meta = syn::parse_quote! { argument("cake", number(u8), docs = ["The cake", "must be a lie"]) };
+        let directive = ArgumentDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive.argument.docs,
+            vec!["The cake".to_string(), "must be a lie".to_string()].into()
         );
     }
 }
