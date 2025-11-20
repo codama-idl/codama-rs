@@ -50,6 +50,10 @@ impl StructFieldMetaConsumer {
                     .set(TypeNode::from_meta(meta.as_value()?)?, meta)?;
                 Ok(None)
             }
+            "docs" => {
+                this.docs.set(Docs::from_meta(&meta)?, meta)?;
+                Ok(None)
+            }
             _ => {
                 if let Ok(value) = meta.as_expr().and_then(|e| e.as_string()) {
                     this.name.set(value.into(), meta)?;
@@ -90,16 +94,6 @@ impl StructFieldMetaConsumer {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "after" => {
                 this.after.set(bool::from_meta(&meta)?, meta)?;
-                Ok(None)
-            }
-            _ => Ok(Some(meta)),
-        })
-    }
-
-    pub fn consume_docs(self) -> syn::Result<Self> {
-        self.consume_metas(|this, meta| match meta.path_str().as_str() {
-            "docs" => {
-                this.docs.set(Docs::from_meta(&meta)?, meta)?;
                 Ok(None)
             }
             _ => Ok(Some(meta)),

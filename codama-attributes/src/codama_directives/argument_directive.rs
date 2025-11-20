@@ -19,7 +19,6 @@ impl ArgumentDirective {
         let consumer = StructFieldMetaConsumer::from_meta(meta)?
             .consume_field()?
             .consume_argument_default_value()?
-            .consume_docs()?
             .consume_after()?
             .assert_fully_consumed()?;
 
