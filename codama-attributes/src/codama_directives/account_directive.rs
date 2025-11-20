@@ -27,7 +27,7 @@ impl AccountDirective {
         let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
         let mut default_value = SetOnce::<InstructionInputValueNode>::new("default_value");
-        let mut docs = SetOnce::<String>::new("docs");
+        let mut docs = SetOnce::<Docs>::new("docs");
         match meta.is_path_or_empty_list() {
             true => (),
             false => meta
@@ -41,7 +41,7 @@ impl AccountDirective {
                         InstructionInputValueNode::from_meta(meta.as_value()?)?,
                         meta,
                     ),
-                    "docs" => docs.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+                    "docs" => docs.set(Docs::from_meta(meta)?, meta),
                     _ => Err(meta.error("unrecognized attribute")),
                 })?,
         }
@@ -51,7 +51,7 @@ impl AccountDirective {
                 is_writable: is_writable.take(meta)?,
                 is_signer: is_signer.take(meta)?,
                 is_optional: is_optional.take(meta)?,
-                docs: docs.option().map(|d| vec![d].into()).unwrap_or_default(),
+                docs: docs.option().unwrap_or_default(),
                 default_value: default_value.option(),
             },
         })
@@ -179,6 +179,32 @@ mod tests {
                     is_optional: false,
                     default_value: None,
                     docs: vec!["what this account is for".to_string()].into(),
+                },
+            }
+        );
+    }
+
+    #[test]
+    fn with_docs_array() {
+        let meta: Meta = syn::parse_quote! { account(name = "authority", signer, docs = ["Line 1", "Line 2", "Line 3"]) };
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        let directive = AccountDirective::parse(&meta, &ctx).unwrap();
+        assert_eq!(
+            directive,
+            AccountDirective {
+                account: InstructionAccountNode {
+                    name: "authority".into(),
+                    is_writable: false,
+                    is_signer: IsAccountSigner::True,
+                    is_optional: false,
+                    default_value: None,
+                    docs: vec![
+                        "Line 1".to_string(),
+                        "Line 2".to_string(),
+                        "Line 3".to_string()
+                    ]
+                    .into(),
                 },
             }
         );
