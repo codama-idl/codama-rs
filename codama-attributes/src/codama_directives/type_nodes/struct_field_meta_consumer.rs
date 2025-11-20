@@ -3,7 +3,7 @@ use crate::{
     DefaultValueDirective,
 };
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, InstructionInputValueNode, TypeNode, ValueNode,
+    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -13,6 +13,7 @@ pub(crate) struct StructFieldMetaConsumer {
     pub r#type: SetOnce<TypeNode>,
     pub default_value: SetOnce<DefaultValueDirective>,
     pub after: SetOnce<bool>,
+    pub docs: SetOnce<Docs>,
 }
 
 impl MetaConsumer for StructFieldMetaConsumer {
@@ -23,6 +24,7 @@ impl MetaConsumer for StructFieldMetaConsumer {
             r#type: SetOnce::new("type"),
             default_value: SetOnce::new("default_value"),
             after: SetOnce::new("after"),
+            docs: SetOnce::new("docs"),
         }
     }
 
@@ -46,6 +48,10 @@ impl StructFieldMetaConsumer {
             "type" => {
                 this.r#type
                     .set(TypeNode::from_meta(meta.as_value()?)?, meta)?;
+                Ok(None)
+            }
+            "docs" => {
+                this.docs.set(Docs::from_meta(&meta)?, meta)?;
                 Ok(None)
             }
             _ => {

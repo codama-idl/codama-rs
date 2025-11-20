@@ -1,4 +1,4 @@
-use codama_nodes::{BytesEncoding, IsAccountSigner};
+use codama_nodes::{BytesEncoding, Docs, IsAccountSigner};
 use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
 
@@ -42,5 +42,23 @@ impl FromMeta for BytesEncoding {
             }
         }
         Err(expr.error("expected one of: \"base16\", \"base58\", \"base64\", \"utf8\""))
+    }
+}
+
+impl FromMeta for Docs {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        match meta {
+            Meta::PathList(pl) if pl.eq_token.is_some() => {
+                let strings: Vec<String> = pl
+                    .as_meta_list()
+                    .parse_comma_args::<syn::LitStr>()?
+                    .into_iter()
+                    .map(|lit| lit.value())
+                    .collect();
+                Ok(strings.into())
+            }
+            Meta::PathValue(pv) => pv.value.as_expr()?.as_string().map(|s| vec![s].into()),
+            _ => Err(meta.error("expected a string or array of strings")),
+        }
     }
 }
