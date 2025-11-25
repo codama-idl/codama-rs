@@ -49,7 +49,7 @@ fn test_generate_idl_with_pretty_flag() {
 #[test]
 fn test_generate_idl_with_output_flag() {
     let temp_dir = std::env::temp_dir();
-    let output_file = temp_dir.join("test_idl.json");
+    let output_file = temp_dir.join(format!("test_idl_{:?}.json", std::thread::current().id()));
 
     let _ = fs::remove_file(&output_file);
 
