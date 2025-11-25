@@ -21,6 +21,7 @@ on:
           - workspace
           - codama
           - codama-attributes
+          - codama-cli
           - codama-errors
           - codama-korok-plugins
           - codama-korok-visitors
