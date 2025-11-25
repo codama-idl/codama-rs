@@ -13,12 +13,13 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Generate IDL from a Rust project
-    Generate {
+    #[command(name = "generate-idl")]
+    GenerateIdl {
         /// Path to the Rust project (defaults to current directory)
         #[arg(default_value = ".")]
         path: PathBuf,
 
-        /// Output file path 
+        /// Output file path
         #[arg(short, long)]
         output: Option<PathBuf>,
 
@@ -32,7 +33,7 @@ fn main() -> CodamaResult<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Generate { path, output, pretty } => {
+        Commands::GenerateIdl { path, output, pretty } => {
             let codama = Codama::load(&path)?;
             let idl = codama.get_idl()?;
             

@@ -1,0 +1,8 @@
+[package]
+name = "test-simple-account"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+codama = { version = "0.6.3", path = "../../../codama" }
+solana-pubkey = "1.18"

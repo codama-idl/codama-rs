@@ -7,38 +7,38 @@ use std::fs;
 // See: https://github.com/assert-rs/assert_cmd/issues/139
 #[allow(deprecated)]
 fn get_cli_command() -> assert_cmd::Command {
-    assert_cmd::Command::cargo_bin("codama-cli").unwrap()
+    assert_cmd::Command::cargo_bin("codama-rs").unwrap()
 }
 
 #[test]
-fn test_generate_codama_nodes() {
+fn test_generate_idl_simple_account() {
     let mut cmd = get_cli_command();
-    
-    let crate_path = fs::canonicalize("../codama-nodes").unwrap();
 
-    cmd.arg("generate")
+    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
+
+    cmd.arg("generate-idl")
         .arg(crate_path)
         .assert()
         .success()
         .stdout(predicate::str::contains(r#""kind":"rootNode""#))
-        .stdout(predicate::str::contains(r#""name":"codamaNodes""#));
+        .stdout(predicate::str::contains(r#""name":"testSimpleAccount""#));
 }
 
 #[test]
-fn test_generate_current_dir_fail() {
+fn test_generate_idl_current_dir_fail() {
     let mut cmd = get_cli_command();
-    cmd.arg("generate")
+    cmd.arg("generate-idl")
         .arg("non_existent_path")
         .assert()
         .failure();
 }
 
 #[test]
-fn test_generate_with_pretty_flag() {
+fn test_generate_idl_with_pretty_flag() {
     let mut cmd = get_cli_command();
-    let crate_path = fs::canonicalize("../codama-nodes").unwrap();
+    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
 
-    cmd.arg("generate")
+    cmd.arg("generate-idl")
         .arg(crate_path)
         .arg("--pretty")
         .assert()
@@ -47,16 +47,16 @@ fn test_generate_with_pretty_flag() {
 }
 
 #[test]
-fn test_generate_with_output_flag() {
+fn test_generate_idl_with_output_flag() {
     let temp_dir = std::env::temp_dir();
     let output_file = temp_dir.join("test_idl.json");
-    
+
     let _ = fs::remove_file(&output_file);
 
     let mut cmd = get_cli_command();
-    let crate_path = fs::canonicalize("../codama-nodes").unwrap();
+    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
 
-    cmd.arg("generate")
+    cmd.arg("generate-idl")
         .arg(crate_path)
         .arg("--output")
         .arg(&output_file)
