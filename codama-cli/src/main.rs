@@ -33,10 +33,14 @@ fn main() -> CodamaResult<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::GenerateIdl { path, output, pretty } => {
+        Commands::GenerateIdl {
+            path,
+            output,
+            pretty,
+        } => {
             let codama = Codama::load(&path)?;
             let idl = codama.get_idl()?;
-            
+
             let json = if pretty {
                 serde_json::to_string_pretty(&idl)?
             } else {
