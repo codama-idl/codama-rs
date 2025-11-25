@@ -19,25 +19,25 @@ cargo build --release -p codama-cli
 ### Generate IDL to stdout
 
 ```bash
-codama-cli generate ./my-program
+codama-rs generate-idl ./my-program
 ```
 
 ### Pretty-print the output
 
 ```bash
-codama-cli generate ./my-program --pretty
+codama-rs generate-idl ./my-program --pretty
 ```
 
 ### Save to file
 
 ```bash
-codama-cli generate ./my-program -o idl.json
+codama-rs generate-idl ./my-program -o idl.json
 ```
 
 ### Combine flags
 
 ```bash
-codama-cli generate ./my-program --pretty --output idl.json
+codama-rs generate-idl ./my-program --pretty --output idl.json
 ```
 
 ## Command Reference
@@ -45,23 +45,23 @@ codama-cli generate ./my-program --pretty --output idl.json
 ```
 Command-line interface for Codama
 
-Usage: codama-cli <COMMAND>
+Usage: codama-rs <COMMAND>
 
 Commands:
-  generate  Generate IDL from a Rust project
-  help      Print this message or the help of the given subcommand(s)
+  generate-idl  Generate IDL from a Rust project
+  help          Print this message or the help of the given subcommand(s)
 
 Options:
   -h, --help     Print help
   -V, --version  Print version
 ```
 
-### `generate` subcommand
+### `generate-idl` subcommand
 
 ```
 Generate IDL from a Rust project
 
-Usage: codama-cli generate [OPTIONS] [PATH]
+Usage: codama-rs generate-idl [OPTIONS] [PATH]
 
 Arguments:
   [PATH]  Path to the Rust project (defaults to current directory) [default: .]
@@ -78,13 +78,13 @@ Options:
 
 ```bash
 cd my-solana-program
-codama-cli generate
+codama-rs generate-idl
 ```
 
 ### Example 2: Generate with formatted JSON
 
 ```bash
-codama-cli generate ./programs/my-program --pretty
+codama-rs generate-idl ./programs/my-program --pretty
 ```
 
 Output:
@@ -104,7 +104,7 @@ Output:
 ### Example 3: Save to file for processing
 
 ```bash
-codama-cli generate ./my-program -o idl.json
+codama-rs generate-idl ./my-program -o idl.json
 # IDL written to: idl.json
 ```
 
