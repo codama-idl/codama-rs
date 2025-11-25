@@ -88,11 +88,11 @@ codama-rs generate-idl ./programs/my-program --pretty
 ```
 
 Output:
+
 ```json
 {
   "kind": "rootNode",
   "standard": "codama",
-  "version": "0.6.3",
   "program": {
     "kind": "programNode",
     "name": "myProgram",
