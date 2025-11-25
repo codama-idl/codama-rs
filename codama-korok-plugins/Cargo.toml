@@ -1,12 +1,12 @@
 [package]
 name = "codama-korok-plugins"
 description = "Korok plugins definitions"
-version = "0.6.4"
+version = "0.6.5"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-errors = { version = "0.6.4", path = "../codama-errors" }
-codama-korok-visitors = { version = "0.6.4", path = "../codama-korok-visitors" }
-codama-koroks = { version = "0.6.4", path = "../codama-koroks" }
+codama-errors = { version = "0.6.5", path = "../codama-errors" }
+codama-korok-visitors = { version = "0.6.5", path = "../codama-korok-visitors" }
+codama-koroks = { version = "0.6.5", path = "../codama-koroks" }
