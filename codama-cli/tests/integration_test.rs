@@ -1,5 +1,6 @@
 use predicates::prelude::*;
 use std::fs;
+use std::path::Path;
 
 // Helper function to create CLI command for testing.
 // Uses Command::cargo_bin which is deprecated, but this is the recommended
@@ -10,11 +11,17 @@ fn get_cli_command() -> assert_cmd::Command {
     assert_cmd::Command::cargo_bin("codama-rs").unwrap()
 }
 
+fn simple_account_fixture_path() -> std::path::PathBuf {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    fs::canonicalize(Path::new(manifest_dir).join("tests/fixtures/test-simple-account"))
+        .expect("fixture directory should exist")
+}
+
 #[test]
 fn test_generate_idl_simple_account() {
     let mut cmd = get_cli_command();
 
-    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
+    let crate_path = simple_account_fixture_path();
 
     cmd.arg("generate-idl")
         .arg(crate_path)
@@ -36,7 +43,7 @@ fn test_generate_idl_current_dir_fail() {
 #[test]
 fn test_generate_idl_with_pretty_flag() {
     let mut cmd = get_cli_command();
-    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
+    let crate_path = simple_account_fixture_path();
 
     cmd.arg("generate-idl")
         .arg(crate_path)
@@ -54,7 +61,7 @@ fn test_generate_idl_with_output_flag() {
     let _ = fs::remove_file(&output_file);
 
     let mut cmd = get_cli_command();
-    let crate_path = fs::canonicalize("tests/fixtures/test-simple-account").unwrap();
+    let crate_path = simple_account_fixture_path();
 
     cmd.arg("generate-idl")
         .arg(crate_path)
