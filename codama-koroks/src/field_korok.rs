@@ -48,8 +48,11 @@ impl<'a> FieldKorok<'a> {
                 }
                 .into(),
             ),
-            _ => match self.name() {
-                Some(name) => Some(StructFieldTypeNode::new(name, node).into()),
+            // Only wrap in StructFieldTypeNode for named fields (those with an AST ident).
+            // Tuple fields store the raw TypeNode; callers use field.name() to get custom
+            // names from #[codama(name = "...")] when needed.
+            _ => match self.ast.ident.as_ref() {
+                Some(_) => Some(StructFieldTypeNode::new(self.name().unwrap(), node).into()),
                 None => Some(node.into()),
             },
         }

@@ -897,3 +897,63 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
+    // Tuple args can have custom names via #[codama(name = "...")].
+    let store = CrateStore::hydrate(quote! {
+        #[derive(CodamaType)]
+        struct Percentage(u64);
+
+        #[derive(CodamaInstructions)]
+        enum FluxCapacitorInstructions {
+            #[codama(account(name = "clock_sysvar"))]
+            Charge(
+                #[codama(name = "percentage")]
+                Percentage,
+                #[codama(name = "is_valid")]
+                bool,
+            ),
+        }
+    })
+    .unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
+
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetInstructionsVisitor::new())?;
+
+    let codama_koroks::ItemKorok::Enum(instructions_korok) = &korok.items[1] else {
+        panic!("Expected enum korok");
+    };
+
+    assert_eq!(
+        instructions_korok.node,
+        Some(
+            ProgramNode {
+                instructions: vec![InstructionNode {
+                    name: "charge".into(),
+                    accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
+                    arguments: vec![
+                        InstructionArgumentNode {
+                            name: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: NumberTypeNode::le(U8).into(),
+                            default_value: Some(NumberValueNode::new(0u8).into()),
+                        },
+                        InstructionArgumentNode::new(
+                            "percentage",
+                            DefinedTypeLinkNode::new("percentage")
+                        ),
+                        InstructionArgumentNode::new("isValid", BooleanTypeNode::default()),
+                    ],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    ..InstructionNode::default()
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
