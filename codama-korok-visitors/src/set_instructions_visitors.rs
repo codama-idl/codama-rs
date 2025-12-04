@@ -8,7 +8,7 @@ use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
     InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
-    NumberValueNode, ProgramNode, StructTypeNode, TypeNode,
+    NumberValueNode, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -202,30 +202,37 @@ fn parse_arguments(
     // Here we must reconcile the struct fields combined in the `CombineTypesVisitor`
     // with their original `FieldKoroks` to check for `default_value` directives
     // that would have been ignored on fields but are relevant for instruction arguments.
-    let arguments_from_data =
-        Vec::<InstructionArgumentNode>::from(data)
-            .into_iter()
-            .map(|argument| {
-                if argument.default_value.is_some() {
-                    return argument;
-                }
-                let Some(field) = fields
-                    .iter()
-                    .find(|field| field.name().is_some_and(|name| name == argument.name))
-                else {
-                    return argument;
-                };
-                let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter)
-                else {
-                    return argument;
-                };
+    //
+    // For struct fields: match by name (accounts may be filtered, so positions don't align).
+    // For tuple fields: match by index (no filtering, positions align directly).
+    let arguments_from_data = Vec::<InstructionArgumentNode>::from(data)
+        .into_iter()
+        .enumerate()
+        .map(|(i, argument)| {
+            if argument.default_value.is_some() {
+                return argument;
+            }
+            let field = fields
+                .iter()
+                .enumerate()
+                .find_map(|(fi, field)| match field.name() {
+                    Some(name) if name == argument.name => Some(field),
+                    None if fi == i => Some(field),
+                    _ => None,
+                });
+            let Some(field) = field else {
+                return argument;
+            };
+            let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter) else {
+                return argument;
+            };
 
-                InstructionArgumentNode {
-                    default_value: Some(directive.node.clone()),
-                    default_value_strategy: directive.default_value_strategy,
-                    ..argument
-                }
-            });
+            InstructionArgumentNode {
+                default_value: Some(directive.node.clone()),
+                default_value_strategy: directive.default_value_strategy,
+                ..argument
+            }
+        });
 
     let (before, after): (Vec<_>, Vec<_>) = attributes
         .get_all(ArgumentDirective::filter)
@@ -285,14 +292,26 @@ fn parse_enum_variant(
                 EnumVariantTypeNode::Empty(node) => {
                     return Ok((node.name, StructTypeNode::new(vec![])))
                 }
-                _ => {}
+                // Or a tuple variant — convert items to struct fields with synthetic names.
+                EnumVariantTypeNode::Tuple(node) => {
+                    if let NestedTypeNode::Value(tuple) = node.tuple {
+                        let fields = tuple
+                            .items
+                            .into_iter()
+                            .enumerate()
+                            .map(|(i, item)| StructFieldTypeNode::new(format!("arg{}", i), item))
+                            .collect();
+                        return Ok((node.name, StructTypeNode::new(fields)));
+                    };
+                }
             }
         };
     };
 
     // Handle error.
     let message = format!(
-        "The \"{}\" variant of the \"{enum_name}\" enum could not be used as an Instruction because we cannot get a `StructTypeNode` for it. This is likely because it is not using nammed fields.",
+        "The \"{}\" variant of the \"{enum_name}\" enum could not be parsed as an instruction. \
+        Ensure all variant fields resolve to valid type nodes.",
         korok.ast.ident
     );
     Err(korok.ast.error(message).into())
