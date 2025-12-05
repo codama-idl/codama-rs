@@ -292,14 +292,23 @@ fn parse_enum_variant(
                 EnumVariantTypeNode::Empty(node) => {
                     return Ok((node.name, StructTypeNode::new(vec![])))
                 }
-                // Or a tuple variant — convert items to struct fields with synthetic names.
+                // Or a tuple variant — convert items to struct fields.
+                // Use field.name() which returns #[codama(name = "...")] if provided,
+                // otherwise fall back to synthetic names like "arg0", "arg1".
                 EnumVariantTypeNode::Tuple(node) => {
                     if let NestedTypeNode::Value(tuple) = node.tuple {
                         let fields = tuple
                             .items
                             .into_iter()
                             .enumerate()
-                            .map(|(i, item)| StructFieldTypeNode::new(format!("arg{}", i), item))
+                            .map(|(i, item)| {
+                                let name = korok
+                                    .fields
+                                    .get(i)
+                                    .and_then(|f| f.name())
+                                    .unwrap_or_else(|| format!("arg{}", i).into());
+                                StructFieldTypeNode::new(name, item)
+                            })
                             .collect();
                         return Ok((node.name, StructTypeNode::new(fields)));
                     };
