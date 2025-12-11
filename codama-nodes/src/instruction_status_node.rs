@@ -49,8 +49,10 @@ mod tests {
 
     #[test]
     fn with_message() {
-        let node =
-            InstructionStatusNode::with_message(InstructionStatus::Deprecated, "Use newInstruction");
+        let node = InstructionStatusNode::with_message(
+            InstructionStatus::Deprecated,
+            "Use newInstruction",
+        );
         assert_eq!(node.lifecycle, InstructionStatus::Deprecated);
         assert_eq!(node.message, "Use newInstruction");
     }
@@ -87,8 +89,7 @@ mod tests {
 
     #[test]
     fn from_json_with_message() {
-        let json =
-            r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#;
+        let json = r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
         assert_eq!(node.lifecycle, InstructionStatus::Deprecated);
         assert_eq!(node.message, "Use newInstruction instead");
