@@ -5,22 +5,22 @@ use serde::{Deserialize, Serialize};
 #[derive(Default)]
 pub struct InstructionStatusNode {
     // Data.
-    pub status: InstructionStatus,
+    pub lifecycle: InstructionStatus,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub message: String,
 }
 
 impl InstructionStatusNode {
-    pub fn new(status: InstructionStatus) -> Self {
+    pub fn new(lifecycle: InstructionStatus) -> Self {
         Self {
-            status,
+            lifecycle,
             message: String::default(),
         }
     }
 
-    pub fn with_message<S: Into<String>>(status: InstructionStatus, message: S) -> Self {
+    pub fn with_message<S: Into<String>>(lifecycle: InstructionStatus, message: S) -> Self {
         Self {
-            status,
+            lifecycle,
             message: message.into(),
         }
     }
@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn new() {
         let node = InstructionStatusNode::new(InstructionStatus::Live);
-        assert_eq!(node.status, InstructionStatus::Live);
+        assert_eq!(node.lifecycle, InstructionStatus::Live);
         assert_eq!(node.message, String::default());
     }
 
@@ -51,7 +51,7 @@ mod tests {
     fn with_message() {
         let node =
             InstructionStatusNode::with_message(InstructionStatus::Deprecated, "Use newInstruction");
-        assert_eq!(node.status, InstructionStatus::Deprecated);
+        assert_eq!(node.lifecycle, InstructionStatus::Deprecated);
         assert_eq!(node.message, "Use newInstruction");
     }
 
@@ -61,15 +61,15 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"instructionStatusNode","status":"live"}"#
+            r#"{"kind":"instructionStatusNode","lifecycle":"live"}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"instructionStatusNode","status":"live"}"#;
+        let json = r#"{"kind":"instructionStatusNode","lifecycle":"live"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node.status, InstructionStatus::Live);
+        assert_eq!(node.lifecycle, InstructionStatus::Live);
     }
 
     #[test]
@@ -81,16 +81,16 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"instructionStatusNode","status":"deprecated","message":"Use newInstruction instead"}"#
+            r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#
         );
     }
 
     #[test]
     fn from_json_with_message() {
         let json =
-            r#"{"kind":"instructionStatusNode","status":"deprecated","message":"Use newInstruction instead"}"#;
+            r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node.status, InstructionStatus::Deprecated);
+        assert_eq!(node.lifecycle, InstructionStatus::Deprecated);
         assert_eq!(node.message, "Use newInstruction instead");
     }
 }
