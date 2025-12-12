@@ -10,12 +10,20 @@ pub struct CodamaAttribute<'a> {
 
 impl<'a> CodamaAttribute<'a> {
     pub fn parse(ast: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
-        // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
-        let attr = unfeatured.as_ref().unwrap_or(ast);
+        let effective = unfeatured.as_ref().unwrap_or(ast);
+        Self::parse_from(ast, effective, ctx)
+    }
 
-        // Check if the attribute is a #[codama(...)] attribute.
-        let list = attr.meta.require_list()?;
+    /// Parse a codama attribute using the effective attribute for content extraction.
+    /// `ast` is stored as the original attribute reference (for error spans).
+    /// `effective` is used to parse the actual directive content.
+    pub fn parse_from(
+        ast: &'a syn::Attribute,
+        effective: &syn::Attribute,
+        ctx: &AttributeContext,
+    ) -> syn::Result<Self> {
+        let list = effective.meta.require_list()?;
         if !list.path.is_strict("codama") {
             return Err(list.path.error("expected #[codama(...)]"));
         };
@@ -24,7 +32,7 @@ impl<'a> CodamaAttribute<'a> {
         list.each(|ref meta| directive.set(CodamaDirective::parse(meta, ctx)?, meta))?;
         Ok(Self {
             ast,
-            directive: Box::new(directive.take(attr)?),
+            directive: Box::new(directive.take(effective)?),
         })
     }
 }

@@ -11,17 +11,20 @@ pub struct ReprAttribute<'a> {
 
 impl<'a> ReprAttribute<'a> {
     pub fn parse(ast: &'a syn::Attribute) -> syn::Result<Self> {
-        // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
-        let attr = unfeatured.as_ref().unwrap_or(ast);
+        let effective = unfeatured.as_ref().unwrap_or(ast);
+        Self::parse_from(ast, effective)
+    }
 
-        // Check if the attribute is a #[repr(...)] attribute.
-        let list = attr.meta.require_list()?;
+    /// Parse a repr attribute using the effective attribute for content extraction.
+    /// `ast` is stored as the original attribute reference (for error spans).
+    /// `effective` is used to parse the actual repr list.
+    pub fn parse_from(ast: &'a syn::Attribute, effective: &syn::Attribute) -> syn::Result<Self> {
+        let list = effective.meta.require_list()?;
         if !list.path.is_strict("repr") {
             return Err(list.path.error("expected #[repr(...)]"));
         };
 
-        // Parse the list of metas.
         let metas = list.parse_comma_args::<syn::Meta>()?;
         Ok(Self { ast, metas })
     }
