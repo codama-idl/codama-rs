@@ -1,13 +1,13 @@
 [package]
 name = "codama-syn-helpers"
 description = "Extension of syn for Codama"
-version = "0.6.5"
+version = "0.7.0"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-errors = { version = "0.6.5", path = "../codama-errors" }
+codama-errors = { version = "0.7.0", path = "../codama-errors" }
 derive_more = { version = "1.0", features = ["from"] }
 proc-macro2 = "1.0"
 quote = "1.0"

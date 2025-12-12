@@ -145,7 +145,7 @@ checksum = "a1d728cc89cf3aee9ff92b05e62b19ee65a02b5702cff7d5a377e32c6ae29d8d"
 
 [[package]]
 name = "codama"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "codama-korok-plugins",
@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "codama-attributes"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "codama-cli"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -184,7 +184,7 @@ dependencies = [
 
 [[package]]
 name = "codama-errors"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "cargo_toml",
  "proc-macro2",
@@ -195,7 +195,7 @@ dependencies = [
 
 [[package]]
 name = "codama-korok-plugins"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "codama-korok-visitors",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "codama-korok-visitors"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "cargo_toml",
  "codama-attributes",
@@ -221,7 +221,7 @@ dependencies = [
 
 [[package]]
 name = "codama-koroks"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
@@ -236,7 +236,7 @@ dependencies = [
 
 [[package]]
 name = "codama-macros"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
@@ -250,7 +250,7 @@ dependencies = [
 
 [[package]]
 name = "codama-nodes"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "codama-nodes-derive",
@@ -262,7 +262,7 @@ dependencies = [
 
 [[package]]
 name = "codama-nodes-derive"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "codama-syn-helpers",
@@ -287,7 +287,7 @@ dependencies = [
 
 [[package]]
 name = "codama-stores"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "cargo_toml",
  "codama-errors",
@@ -298,7 +298,7 @@ dependencies = [
 
 [[package]]
 name = "codama-syn-helpers"
-version = "0.6.5"
+version = "0.7.0"
 dependencies = [
  "codama-errors",
  "derive_more",
