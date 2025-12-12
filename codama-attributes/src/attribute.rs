@@ -18,17 +18,26 @@ pub enum Attribute<'a> {
 
 impl<'a> Attribute<'a> {
     pub fn parse(ast: &'a syn::Attribute, ctx: &AttributeContext) -> syn::Result<Self> {
-        // Check if the attribute is feature-gated.
         let unfeatured = ast.unfeatured();
-        let attr = unfeatured.as_ref().unwrap_or(ast);
+        let effective = unfeatured.as_ref().unwrap_or(ast);
+        Self::parse_from(ast, effective, ctx)
+    }
 
-        let path = attr.path();
+    /// Parse an attribute using the effective attribute for content extraction.
+    /// `ast` is stored as the original attribute reference (for error spans).
+    /// `effective` is used to determine the attribute type and parse its content.
+    pub fn parse_from(
+        ast: &'a syn::Attribute,
+        effective: &syn::Attribute,
+        ctx: &AttributeContext,
+    ) -> syn::Result<Self> {
+        let path = effective.path();
         match (path.prefix().as_str(), path.last_str().as_str()) {
             ("" | "codama_macros" | "codama", "codama") => {
-                Ok(CodamaAttribute::parse(ast, ctx)?.into())
+                Ok(CodamaAttribute::parse_from(ast, effective, ctx)?.into())
             }
-            ("", "derive") => Ok(DeriveAttribute::parse(ast)?.into()),
-            ("", "repr") => Ok(ReprAttribute::parse(ast)?.into()),
+            ("", "derive") => Ok(DeriveAttribute::parse_from(ast, effective)?.into()),
+            ("", "repr") => Ok(ReprAttribute::parse_from(ast, effective)?.into()),
             _ => Ok(UnsupportedAttribute::new(ast).into()),
         }
     }
