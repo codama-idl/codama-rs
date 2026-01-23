@@ -1,21 +1,21 @@
 [package]
 name = "codama"
 description = "Generate clients, CLIs, documentation and more from your Solana programs"
-version = "0.7.1"
+version = "0.7.2"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-macros = { version = "0.7.1", path = "../codama-macros" }
+codama-macros = { version = "0.7.2", path = "../codama-macros" }
 
 [target.'cfg(not(target_os = "solana"))'.dependencies]
-codama-errors = { version = "0.7.1", path = "../codama-errors" }
-codama-korok-plugins = { version = "0.7.1", path = "../codama-korok-plugins" }
-codama-korok-visitors = { version = "0.7.1", path = "../codama-korok-visitors" }
-codama-koroks = { version = "0.7.1", path = "../codama-koroks" }
-codama-nodes = { version = "0.7.1", path = "../codama-nodes" }
-codama-stores = { version = "0.7.1", path = "../codama-stores" }
+codama-errors = { version = "0.7.2", path = "../codama-errors" }
+codama-korok-plugins = { version = "0.7.2", path = "../codama-korok-plugins" }
+codama-korok-visitors = { version = "0.7.2", path = "../codama-korok-visitors" }
+codama-koroks = { version = "0.7.2", path = "../codama-koroks" }
+codama-nodes = { version = "0.7.2", path = "../codama-nodes" }
+codama-stores = { version = "0.7.2", path = "../codama-stores" }
 proc-macro2 = "1.0"
 
 [lints.rust]
