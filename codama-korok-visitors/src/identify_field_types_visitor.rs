@@ -61,6 +61,9 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                 ("" | "solana_sdk::pubkey" | "solana_program" | "solana_pubkey", "Pubkey", []) => {
                     Some(PublicKeyTypeNode::new().into())
                 }
+                ("" | "solana_address" | "solana_address::address", "Address", []) => {
+                    Some(PublicKeyTypeNode::new().into())
+                }
                 ("" | "std::string", "String", []) => Some(
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
                 ),
