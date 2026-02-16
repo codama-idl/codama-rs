@@ -103,6 +103,7 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
             get_type_node(elem)
                 .map(|item| ArrayTypeNode::new(item, FixedCountNode::new(size)).into())
         }
+        syn::Type::Reference(syn::TypeReference { elem, .. }) => get_type_node(elem),
         _ => None,
     }
 }

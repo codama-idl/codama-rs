@@ -9,10 +9,11 @@ use quote::quote;
 fn it_wraps_all_named_fields_in_a_defined_struct() {
     assert_eq!(
         get_node_from_item(quote! {
-            pub struct Person {
+            pub struct Person<'a> {
                 pub name: String,
                 pub age: u8,
                 pub member: bool,
+                pub is_alive: &'a u8
             }
         }),
         Some(Node::DefinedType(DefinedTypeNode::new(
@@ -24,6 +25,7 @@ fn it_wraps_all_named_fields_in_a_defined_struct() {
                 ),
                 StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
                 StructFieldTypeNode::new("member", BooleanTypeNode::default()),
+                StructFieldTypeNode::new("is_alive", NumberTypeNode::le(U8))
             ])
         )))
     );
