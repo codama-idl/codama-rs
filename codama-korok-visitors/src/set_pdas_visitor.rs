@@ -1,9 +1,11 @@
 use crate::KorokVisitor;
-use codama_attributes::{Attributes, SeedDirective, SeedDirectiveType, TryFromFilter};
+use codama_attributes::{
+    Attributes, ProgramDirective, SeedDirective, SeedDirectiveType, TryFromFilter,
+};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    CamelCaseString, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode, TypeNode,
+    CamelCaseString, Docs, Node, PdaNode, PdaSeedNode, ProgramNode, RegisteredTypeNode, TypeNode,
     VariablePdaSeedNode,
 };
 
@@ -23,7 +25,11 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &korok.fields).into());
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &korok.fields);
+        korok.node = Some(wrap_pda_in_program_node_when_program_directive_exists(
+            pda,
+            &korok.attributes,
+        ));
         Ok(())
     }
 
@@ -33,7 +39,11 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &[]).into());
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &[]);
+        korok.node = Some(wrap_pda_in_program_node_when_program_directive_exists(
+            pda,
+            &korok.attributes,
+        ));
         Ok(())
     }
 }
@@ -76,4 +86,21 @@ pub fn parse_pda_seed_nodes(attributes: &Attributes, fields: &[FieldKorok]) -> V
             }),
         })
         .collect()
+}
+
+fn wrap_pda_in_program_node_when_program_directive_exists(
+    pda: PdaNode,
+    attributes: &Attributes,
+) -> Node {
+    let Some(program_directive) = attributes.get_last(ProgramDirective::filter) else {
+        return pda.into();
+    };
+
+    ProgramNode {
+        name: program_directive.name.clone().into(),
+        public_key: program_directive.address.clone(),
+        pdas: vec![pda],
+        ..ProgramNode::default()
+    }
+    .into()
 }

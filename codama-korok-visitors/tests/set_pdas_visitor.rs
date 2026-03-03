@@ -4,7 +4,7 @@ use codama_korok_visitors::{
 };
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    ConstantPdaSeedNode, NumberFormat::U8, NumberTypeNode, PdaNode, PublicKeyTypeNode,
+    ConstantPdaSeedNode, NumberFormat::U8, NumberTypeNode, PdaNode, ProgramNode, PublicKeyTypeNode,
     StringTypeNode, StringValueNode, VariablePdaSeedNode,
 };
 
@@ -187,6 +187,76 @@ fn it_defines_pdas_from_enums() -> CodamaResult<()> {
                     VariablePdaSeedNode::new("identifier", NumberTypeNode::le(U8)).into(),
                 ]
             )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_wraps_pda_in_program_node_with_program_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaPda)]
+        #[codama(program(name = "associatedToken", address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"))]
+        #[codama(seed(name = "owner", type = public_key))]
+        #[codama(seed(name = "tokenProgram", type = public_key))]
+        #[codama(seed(name = "mint", type = public_key))]
+        struct AssociatedToken;
+    };
+    let mut korok = StructKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetPdasVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                name: "associatedToken".into(),
+                public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
+                pdas: vec![PdaNode::new(
+                    "associatedToken",
+                    vec![
+                        VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("tokenProgram", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
+                    ]
+                )],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_wraps_pda_in_program_node_from_enum_with_program_directive() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaPda)]
+        #[codama(program(name = "associatedToken", address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"))]
+        #[codama(seed(name = "owner", type = public_key))]
+        #[codama(seed(name = "mint", type = public_key))]
+        enum AssociatedToken { V1, V2 }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut SetPdasVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            ProgramNode {
+                name: "associatedToken".into(),
+                public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
+                pdas: vec![PdaNode::new(
+                    "associatedToken",
+                    vec![
+                        VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
+                    ]
+                )],
+                ..ProgramNode::default()
+            }
             .into()
         )
     );
