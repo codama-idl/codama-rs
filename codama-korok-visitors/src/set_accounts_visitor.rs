@@ -1,6 +1,7 @@
 use crate::{parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, TryFromFilter,
+    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
+    TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -63,6 +64,7 @@ impl KorokVisitor for SetAccountsVisitor {
             &korok.attributes,
             &korok.fields,
         );
+        apply_program_directive(&mut korok.node, &korok.attributes);
         Ok(())
     }
 
@@ -115,14 +117,16 @@ impl KorokVisitor for SetAccountsVisitor {
             })
             .collect::<Vec<_>>();
 
-        korok.node = Some(
-            ProgramNode {
-                accounts,
-                pdas,
-                ..ProgramNode::default()
-            }
-            .into(),
-        );
+        let mut program = ProgramNode {
+            accounts,
+            pdas,
+            ..ProgramNode::default()
+        };
+        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
+            program.name = pd.name.clone().into();
+            program.public_key = pd.address.clone();
+        }
+        korok.node = Some(program.into());
 
         Ok(())
     }
@@ -227,6 +231,30 @@ fn parse_pda_link_node(attributes: &Attributes) -> Option<PdaLinkNode> {
     attributes
         .get_last(PdaDirective::filter)
         .map(|directive| directive.pda.clone())
+}
+
+fn apply_program_directive(node: &mut Option<Node>, attributes: &Attributes) {
+    let Some(pd) = attributes.get_last(ProgramDirective::filter) else {
+        return;
+    };
+    let Some(inner) = node.take() else {
+        return;
+    };
+    *node = Some(match inner {
+        Node::Program(mut program) => {
+            program.name = pd.name.clone().into();
+            program.public_key = pd.address.clone();
+            program.into()
+        }
+        Node::Account(account) => ProgramNode {
+            name: pd.name.clone().into(),
+            public_key: pd.address.clone(),
+            accounts: vec![account],
+            ..ProgramNode::default()
+        }
+        .into(),
+        other => other,
+    });
 }
 
 fn wrap_account_in_program_node_when_seeds_are_defined(
