@@ -2,7 +2,7 @@ use crate::{
     AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
     DiscriminatorDirective, EncodingDirective, EnumDiscriminatorDirective, ErrorDirective,
     FieldDirective, FixedSizeDirective, NameDirective, PdaDirective, SeedDirective,
-    SizePrefixDirective, TypeDirective,
+    SizePrefixDirective, SkipDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -31,6 +31,9 @@ pub enum CodamaDirective {
     // Instruction directives.
     Account(AccountDirective),
     Argument(ArgumentDirective),
+
+    // Skip directive.
+    Skip(SkipDirective),
 
     // Error directives.
     Error(ErrorDirective),
@@ -64,6 +67,9 @@ impl CodamaDirective {
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
             "argument" => Ok(ArgumentDirective::parse(meta)?.into()),
 
+            // Skip directive.
+            "skip" => Ok(SkipDirective::parse(meta)?.into()),
+
             // Error directives.
             "error" => Ok(ErrorDirective::parse(meta)?.into()),
 
@@ -95,6 +101,9 @@ impl CodamaDirective {
             // Instruction directives.
             Self::Account(_) => "account",
             Self::Argument(_) => "argument",
+
+            // Skip directive.
+            Self::Skip(_) => "skip",
 
             // Error directives.
             Self::Error(_) => "error",

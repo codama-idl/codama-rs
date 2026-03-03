@@ -15,6 +15,7 @@ mod name_directive;
 mod pda_directive;
 mod seed_directive;
 mod size_prefix_directive;
+mod skip_directive;
 mod type_directive;
 
 pub use account_directive::*;
@@ -31,4 +32,5 @@ pub use name_directive::*;
 pub use pda_directive::*;
 pub use seed_directive::*;
 pub use size_prefix_directive::*;
+pub use skip_directive::*;
 pub use type_directive::*;
