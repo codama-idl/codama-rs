@@ -1,7 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
-    EnumDiscriminatorDirective, TryFromFilter,
+    EnumDiscriminatorDirective, ProgramDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -62,16 +62,24 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         // Transform the defined type into an instruction node.
         let (name, data) = parse_struct(korok)?;
-        korok.node = Some(
-            InstructionNode {
-                name,
-                accounts: parse_accounts(&korok.attributes, &korok.fields),
-                arguments: parse_arguments(&korok.attributes, &korok.fields, data, None),
-                discriminators: DiscriminatorDirective::nodes(&korok.attributes),
-                ..InstructionNode::default()
+        let instruction = InstructionNode {
+            name,
+            accounts: parse_accounts(&korok.attributes, &korok.fields),
+            arguments: parse_arguments(&korok.attributes, &korok.fields, data, None),
+            discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+            ..InstructionNode::default()
+        };
+
+        korok.node = Some(match korok.attributes.get_last(ProgramDirective::filter) {
+            Some(pd) => ProgramNode {
+                name: pd.name.clone().into(),
+                public_key: pd.address.clone(),
+                instructions: vec![instruction],
+                ..ProgramNode::default()
             }
             .into(),
-        );
+            None => instruction.into(),
+        });
 
         Ok(())
     }
@@ -113,13 +121,15 @@ impl KorokVisitor for SetInstructionsVisitor {
             })
             .collect::<Vec<_>>();
 
-        korok.node = Some(
-            ProgramNode {
-                instructions,
-                ..ProgramNode::default()
-            }
-            .into(),
-        );
+        let mut program = ProgramNode {
+            instructions,
+            ..ProgramNode::default()
+        };
+        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
+            program.name = pd.name.clone().into();
+            program.public_key = pd.address.clone();
+        }
+        korok.node = Some(program.into());
 
         Ok(())
     }
