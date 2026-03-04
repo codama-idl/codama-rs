@@ -23,14 +23,12 @@ pub enum CodamaDirective {
     Discriminator(DiscriminatorDirective),
     EnumDiscriminator(EnumDiscriminatorDirective),
     Name(NameDirective),
+    Program(ProgramDirective),
     Seed(SeedDirective),
     Skip(SkipDirective),
 
     // Account directives.
     Pda(PdaDirective),
-
-    // Program directives.
-    Program(ProgramDirective),
 
     // Instruction directives.
     Account(AccountDirective),
@@ -59,14 +57,12 @@ impl CodamaDirective {
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
             "name" => Ok(NameDirective::parse(meta)?.into()),
+            "program" => Ok(ProgramDirective::parse(meta)?.into()),
             "seed" => Ok(SeedDirective::parse(meta, ctx)?.into()),
             "skip" => Ok(SkipDirective::parse(meta)?.into()),
 
             // Account directives.
             "pda" => Ok(PdaDirective::parse(meta)?.into()),
-
-            // Program directives.
-            "program" => Ok(ProgramDirective::parse(meta)?.into()),
 
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
@@ -95,14 +91,12 @@ impl CodamaDirective {
             Self::Discriminator(_) => "discriminator",
             Self::EnumDiscriminator(_) => "enum_discriminator",
             Self::Name(_) => "name",
+            Self::Program(_) => "program",
             Self::Seed(_) => "seed",
             Self::Skip(_) => "skip",
 
             // Account directives.
             Self::Pda(_) => "pda",
-
-            // Program directives.
-            Self::Program(_) => "program",
 
             // Instruction directives.
             Self::Account(_) => "account",
