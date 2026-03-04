@@ -57,11 +57,6 @@ impl KorokVisitor for SetInstructionsVisitor {
             return Ok(());
         };
 
-        // Skip structs with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
-            return Ok(());
-        };
-
         // Create a `DefinedTypeNode` from the struct, if it doesn't already exist.
         self.combine_types.visit_struct(korok)?;
 
@@ -133,23 +128,17 @@ impl KorokVisitor for SetInstructionsVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
-        // Skip variants with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
-            // Still advance the discriminator counter past this variant.
-            let current_discriminator = match &korok.ast.discriminant {
-                Some((_, expr)) => expr.as_unsigned_integer()?,
-                _ => self.enum_current_discriminator,
-            };
-            self.enum_current_discriminator = current_discriminator + 1;
-            return Ok(());
-        };
-
         // Update current discriminator.
         let current_discriminator = match &korok.ast.discriminant {
             Some((_, expr)) => expr.as_unsigned_integer()?,
             _ => self.enum_current_discriminator,
         };
         self.enum_current_discriminator = current_discriminator + 1;
+
+        // Skip variants with #[codama(skip)] directive.
+        if korok.attributes.has_codama_attribute("skip") {
+            return Ok(());
+        };
 
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let discriminator = InstructionArgumentNode {

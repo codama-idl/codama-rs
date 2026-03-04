@@ -24,6 +24,7 @@ pub enum CodamaDirective {
     EnumDiscriminator(EnumDiscriminatorDirective),
     Name(NameDirective),
     Seed(SeedDirective),
+    Skip(SkipDirective),
 
     // Account directives.
     Pda(PdaDirective),
@@ -31,9 +32,6 @@ pub enum CodamaDirective {
     // Instruction directives.
     Account(AccountDirective),
     Argument(ArgumentDirective),
-
-    // Skip directive.
-    Skip(SkipDirective),
 
     // Error directives.
     Error(ErrorDirective),
@@ -59,6 +57,7 @@ impl CodamaDirective {
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
             "name" => Ok(NameDirective::parse(meta)?.into()),
             "seed" => Ok(SeedDirective::parse(meta, ctx)?.into()),
+            "skip" => Ok(SkipDirective::parse(meta)?.into()),
 
             // Account directives.
             "pda" => Ok(PdaDirective::parse(meta)?.into()),
@@ -66,9 +65,6 @@ impl CodamaDirective {
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
             "argument" => Ok(ArgumentDirective::parse(meta)?.into()),
-
-            // Skip directive.
-            "skip" => Ok(SkipDirective::parse(meta)?.into()),
 
             // Error directives.
             "error" => Ok(ErrorDirective::parse(meta)?.into()),
@@ -94,6 +90,7 @@ impl CodamaDirective {
             Self::EnumDiscriminator(_) => "enum_discriminator",
             Self::Name(_) => "name",
             Self::Seed(_) => "seed",
+            Self::Skip(_) => "skip",
 
             // Account directives.
             Self::Pda(_) => "pda",
@@ -101,9 +98,6 @@ impl CodamaDirective {
             // Instruction directives.
             Self::Account(_) => "account",
             Self::Argument(_) => "argument",
-
-            // Skip directive.
-            Self::Skip(_) => "skip",
 
             // Error directives.
             Self::Error(_) => "error",
