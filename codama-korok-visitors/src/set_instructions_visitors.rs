@@ -135,6 +135,11 @@ impl KorokVisitor for SetInstructionsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
+        // Skip variants with #[codama(skip)] directive.
+        if korok.attributes.has_codama_attribute("skip") {
+            return Ok(());
+        };
+
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let discriminator = InstructionArgumentNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),

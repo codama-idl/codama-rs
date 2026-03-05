@@ -138,6 +138,11 @@ impl KorokVisitor for SetAccountsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
+        // Skip variants with #[codama(skip)] directive.
+        if korok.attributes.has_codama_attribute("skip") {
+            return Ok(());
+        };
+
         let discriminator = StructFieldTypeNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),

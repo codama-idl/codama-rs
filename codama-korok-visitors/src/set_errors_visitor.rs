@@ -78,6 +78,11 @@ impl KorokVisitor for SetErrorsVisitor {
         };
         self.enum_current_discriminator = current_discriminator + 1;
 
+        // Skip variants with #[codama(skip)] directive.
+        if korok.attributes.has_codama_attribute("skip") {
+            return Ok(());
+        };
+
         // Get #[codama(error)] attribute.
         let codama_error = korok
             .attributes
