@@ -70,16 +70,10 @@ impl KorokVisitor for SetInstructionsVisitor {
             ..InstructionNode::default()
         };
 
-        korok.node = Some(match korok.attributes.get_last(ProgramDirective::filter) {
-            Some(pd) => ProgramNode {
-                name: pd.name.clone().into(),
-                public_key: pd.address.clone(),
-                instructions: vec![instruction],
-                ..ProgramNode::default()
-            }
-            .into(),
-            None => instruction.into(),
-        });
+        korok.node = Some(ProgramDirective::apply(
+            &korok.attributes,
+            instruction.into(),
+        ));
 
         Ok(())
     }
@@ -121,15 +115,12 @@ impl KorokVisitor for SetInstructionsVisitor {
             })
             .collect::<Vec<_>>();
 
-        let mut program = ProgramNode {
+        let node: Node = ProgramNode {
             instructions,
             ..ProgramNode::default()
-        };
-        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
-            program.name = pd.name.clone().into();
-            program.public_key = pd.address.clone();
         }
-        korok.node = Some(program.into());
+        .into();
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
 
         Ok(())
     }

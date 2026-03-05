@@ -59,12 +59,12 @@ impl KorokVisitor for SetAccountsVisitor {
             ..AccountNode::new(name, data)
         };
 
-        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+        let node = wrap_account_in_program_node_when_seeds_are_defined(
             account,
             &korok.attributes,
             &korok.fields,
         );
-        apply_program_directive(&mut korok.node, &korok.attributes);
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
         Ok(())
     }
 
@@ -117,16 +117,13 @@ impl KorokVisitor for SetAccountsVisitor {
             })
             .collect::<Vec<_>>();
 
-        let mut program = ProgramNode {
+        let node: Node = ProgramNode {
             accounts,
             pdas,
             ..ProgramNode::default()
-        };
-        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
-            program.name = pd.name.clone().into();
-            program.public_key = pd.address.clone();
         }
-        korok.node = Some(program.into());
+        .into();
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
 
         Ok(())
     }
@@ -169,11 +166,11 @@ impl KorokVisitor for SetAccountsVisitor {
             ..AccountNode::new(name, data)
         };
 
-        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+        korok.node = Some(wrap_account_in_program_node_when_seeds_are_defined(
             account,
             &korok.attributes,
             &korok.fields,
-        );
+        ));
         Ok(())
     }
 }
@@ -233,38 +230,14 @@ fn parse_pda_link_node(attributes: &Attributes) -> Option<PdaLinkNode> {
         .map(|directive| directive.pda.clone())
 }
 
-fn apply_program_directive(node: &mut Option<Node>, attributes: &Attributes) {
-    let Some(pd) = attributes.get_last(ProgramDirective::filter) else {
-        return;
-    };
-    let Some(inner) = node.take() else {
-        return;
-    };
-    *node = Some(match inner {
-        Node::Program(mut program) => {
-            program.name = pd.name.clone().into();
-            program.public_key = pd.address.clone();
-            program.into()
-        }
-        Node::Account(account) => ProgramNode {
-            name: pd.name.clone().into(),
-            public_key: pd.address.clone(),
-            accounts: vec![account],
-            ..ProgramNode::default()
-        }
-        .into(),
-        other => other,
-    });
-}
-
 fn wrap_account_in_program_node_when_seeds_are_defined(
     account: AccountNode,
     attributes: &Attributes,
     fields: &[FieldKorok],
-) -> Option<Node> {
+) -> Node {
     // Return the AccountNode directly if there are no seed directives.
     if !attributes.has_codama_attribute("seed") {
-        return Some(account.into());
+        return account.into();
     }
 
     // Create a PDA node from the seed directives.
@@ -275,15 +248,13 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
     let pda = parse_pda_node(pda_name, attributes, fields);
 
     // Add both the account and the linked PDA to a program node.
-    Some(
-        ProgramNode {
-            accounts: vec![AccountNode {
-                pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
-                ..account
-            }],
-            pdas: vec![pda],
-            ..ProgramNode::default()
-        }
-        .into(),
-    )
+    ProgramNode {
+        accounts: vec![AccountNode {
+            pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
+            ..account
+        }],
+        pdas: vec![pda],
+        ..ProgramNode::default()
+    }
+    .into()
 }

@@ -56,15 +56,12 @@ impl KorokVisitor for SetErrorsVisitor {
             })
             .collect::<Vec<_>>();
 
-        let mut program = ProgramNode {
+        let node: Node = ProgramNode {
             errors,
             ..ProgramNode::default()
-        };
-        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
-            program.name = pd.name.clone().into();
-            program.public_key = pd.address.clone();
         }
-        korok.node = Some(program.into());
+        .into();
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
 
         Ok(())
     }
