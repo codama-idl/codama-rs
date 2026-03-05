@@ -1,4 +1,5 @@
 use crate::KorokVisitor;
+use codama_attributes::ProgramDirective;
 use codama_errors::CodamaResult;
 use codama_koroks::KorokTrait;
 use codama_nodes::{HasName, Node, ProgramNode, RootNode};
@@ -48,6 +49,12 @@ impl KorokVisitor for CombineModulesVisitor {
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
         self.visit_children(korok)?;
         korok.node = combine_koroks(&korok.node, &korok.items);
+
+        // Apply program directive on the module if present.
+        if let Some(node) = korok.node.take() {
+            korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
+        }
+
         Ok(())
     }
 }

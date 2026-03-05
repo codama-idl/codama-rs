@@ -1,5 +1,7 @@
 use crate::KorokVisitor;
-use codama_attributes::{Attributes, SeedDirective, SeedDirectiveType, TryFromFilter};
+use codama_attributes::{
+    Attributes, ProgramDirective, SeedDirective, SeedDirectiveType, TryFromFilter,
+};
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
@@ -23,7 +25,8 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &korok.fields).into());
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &korok.fields);
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
 
@@ -33,7 +36,8 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        korok.node = Some(parse_pda_node(korok.name(), &korok.attributes, &[]).into());
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &[]);
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
 }

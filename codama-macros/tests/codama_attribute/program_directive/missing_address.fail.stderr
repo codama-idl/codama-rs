@@ -1,0 +1,5 @@
+error: address is missing
+ --> tests/codama_attribute/program_directive/missing_address.fail.rs:3:10
+  |
+3 | #[codama(program(name = "associatedToken"))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
