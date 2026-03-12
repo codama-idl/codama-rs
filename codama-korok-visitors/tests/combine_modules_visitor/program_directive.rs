@@ -62,6 +62,59 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
 }
 
 #[test]
+fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResult<()> {
+    let store = CrateStore::hydrate(quote! {
+        solana_program::declare_id!("MainProg1111111111111111111111111111111111111");
+
+        mod my_module {
+            #[derive(CodamaAccount)]
+            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            struct ExternalAccount {
+                amount: u64,
+            }
+
+            #[derive(CodamaAccount)]
+            struct MyAccount {
+                owner: Pubkey,
+            }
+        }
+    })?;
+    let mut korok = CrateKorok::parse(&store)?;
+
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    korok.accept(&mut CombineModulesVisitor::new())?;
+
+    let Some(Node::Root(root)) = &korok.node else {
+        panic!("Expected a RootNode");
+    };
+
+    // MyAccount belongs to the main program.
+    assert_eq!(
+        root.program.public_key,
+        "MainProg1111111111111111111111111111111111111"
+    );
+    assert_eq!(root.program.accounts.len(), 1);
+    assert_eq!(root.program.accounts[0].name, "myAccount".into());
+
+    // ExternalAccount is in an additional program.
+    assert_eq!(root.additional_programs.len(), 1);
+    assert_eq!(root.additional_programs[0].name, "externalProgram".into());
+    assert_eq!(
+        root.additional_programs[0].public_key,
+        "ExtProg111111111111111111111111111111111111"
+    );
+    assert_eq!(root.additional_programs[0].accounts.len(), 1);
+    assert_eq!(
+        root.additional_programs[0].accounts[0].name,
+        "externalAccount".into()
+    );
+
+    Ok(())
+}
+
+#[test]
 fn it_merges_multiple_items_with_same_program_directive() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MainProg1111111111111111111111111111111111111");
