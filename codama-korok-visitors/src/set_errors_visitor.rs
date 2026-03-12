@@ -1,6 +1,6 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    Attribute, Attributes, ErrorDirective, TryFromFilter, UnsupportedAttribute,
+    Attribute, Attributes, ErrorDirective, ProgramDirective, TryFromFilter, UnsupportedAttribute,
 };
 use codama_errors::CodamaResult;
 use codama_nodes::{Docs, ErrorNode, Node, ProgramNode};
@@ -56,13 +56,12 @@ impl KorokVisitor for SetErrorsVisitor {
             })
             .collect::<Vec<_>>();
 
-        korok.node = Some(
-            ProgramNode {
-                errors,
-                ..ProgramNode::default()
-            }
-            .into(),
-        );
+        let node: Node = ProgramNode {
+            errors,
+            ..ProgramNode::default()
+        }
+        .into();
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
 
         Ok(())
     }

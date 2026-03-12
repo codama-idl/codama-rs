@@ -1,0 +1,5 @@
+error: name is missing
+ --> tests/codama_attribute/program_directive/missing_name.fail.rs:3:10
+  |
+3 | #[codama(program(address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

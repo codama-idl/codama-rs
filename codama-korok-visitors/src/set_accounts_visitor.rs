@@ -1,6 +1,7 @@
 use crate::{parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, TryFromFilter,
+    Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
+    TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -58,11 +59,12 @@ impl KorokVisitor for SetAccountsVisitor {
             ..AccountNode::new(name, data)
         };
 
-        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+        let node = wrap_account_in_program_node_when_seeds_are_defined(
             account,
             &korok.attributes,
             &korok.fields,
         );
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
         Ok(())
     }
 
@@ -115,14 +117,13 @@ impl KorokVisitor for SetAccountsVisitor {
             })
             .collect::<Vec<_>>();
 
-        korok.node = Some(
-            ProgramNode {
-                accounts,
-                pdas,
-                ..ProgramNode::default()
-            }
-            .into(),
-        );
+        let node: Node = ProgramNode {
+            accounts,
+            pdas,
+            ..ProgramNode::default()
+        }
+        .into();
+        korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
 
         Ok(())
     }
@@ -165,11 +166,11 @@ impl KorokVisitor for SetAccountsVisitor {
             ..AccountNode::new(name, data)
         };
 
-        korok.node = wrap_account_in_program_node_when_seeds_are_defined(
+        korok.node = Some(wrap_account_in_program_node_when_seeds_are_defined(
             account,
             &korok.attributes,
             &korok.fields,
-        );
+        ));
         Ok(())
     }
 }
@@ -233,10 +234,10 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
     account: AccountNode,
     attributes: &Attributes,
     fields: &[FieldKorok],
-) -> Option<Node> {
+) -> Node {
     // Return the AccountNode directly if there are no seed directives.
     if !attributes.has_codama_attribute("seed") {
-        return Some(account.into());
+        return account.into();
     }
 
     // Create a PDA node from the seed directives.
@@ -247,15 +248,13 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
     let pda = parse_pda_node(pda_name, attributes, fields);
 
     // Add both the account and the linked PDA to a program node.
-    Some(
-        ProgramNode {
-            accounts: vec![AccountNode {
-                pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
-                ..account
-            }],
-            pdas: vec![pda],
-            ..ProgramNode::default()
-        }
-        .into(),
-    )
+    ProgramNode {
+        accounts: vec![AccountNode {
+            pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
+            ..account
+        }],
+        pdas: vec![pda],
+        ..ProgramNode::default()
+    }
+    .into()
 }

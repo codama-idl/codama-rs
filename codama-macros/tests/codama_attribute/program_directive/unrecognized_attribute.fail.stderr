@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/program_directive/unrecognized_attribute.fail.rs:3:102
+  |
+3 | #[codama(program(name = "associatedToken", address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL", banana = "yes"))]
+  |                                                                                                      ^^^^^^^^^^^^^^
