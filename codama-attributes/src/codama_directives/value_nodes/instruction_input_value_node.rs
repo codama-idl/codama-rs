@@ -5,12 +5,15 @@ use codama_nodes::{
 };
 use codama_syn_helpers::Meta;
 
+use super::ata_value_node::parse_ata_value_node;
+
 impl FromMeta for InstructionInputValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
             "account" => AccountValueNode::from_meta(meta).map(Self::from),
             "account_bump" => AccountBumpValueNode::from_meta(meta).map(Self::from),
             "argument" => ArgumentValueNode::from_meta(meta).map(Self::from),
+            "ata" => parse_ata_value_node(meta).map(Self::from),
             "payer" => PayerValueNode::from_meta(meta).map(Self::from),
             "pda" => PdaValueNode::from_meta(meta).map(Self::from),
             _ => ValueNode::from_meta(meta).map(Self::from),

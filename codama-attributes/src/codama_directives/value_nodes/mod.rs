@@ -1,6 +1,7 @@
 mod account_bump_value_node;
 mod account_value_node;
 mod argument_value_node;
+mod ata_value_node;
 mod boolean_value_node;
 mod instruction_input_value_node;
 mod number_value_node;
