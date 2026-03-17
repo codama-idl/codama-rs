@@ -1,16 +1,23 @@
 use crate::{
     codama_directives::type_nodes::StructFieldMetaConsumer,
     utils::{FromMeta, MetaConsumer},
-    Attribute, CodamaAttribute, CodamaDirective,
+    Attribute, CodamaAttribute, CodamaDirective, Resolvable,
 };
-use codama_errors::CodamaError;
-use codama_nodes::InstructionArgumentNode;
+use codama_errors::{CodamaError, CodamaResult};
+use codama_nodes::{
+    CamelCaseString, DefaultValueStrategy, Docs, InstructionArgumentNode,
+    InstructionInputValueNode, TypeNode,
+};
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct ArgumentDirective {
     pub after: bool,
-    pub argument: InstructionArgumentNode,
+    pub name: CamelCaseString,
+    pub r#type: Resolvable<TypeNode>,
+    pub docs: Docs,
+    pub default_value: Option<Resolvable<InstructionInputValueNode>>,
+    pub default_value_strategy: Option<DefaultValueStrategy>,
 }
 
 impl ArgumentDirective {
@@ -27,13 +34,27 @@ impl ArgumentDirective {
 
         Ok(ArgumentDirective {
             after: consumer.after.option().unwrap_or(false),
-            argument: InstructionArgumentNode {
-                name: consumer.name.take(meta)?,
-                r#type: consumer.r#type.take(meta)?,
-                docs: consumer.docs.option().unwrap_or_default(),
-                default_value,
-                default_value_strategy,
-            },
+            name: consumer.name.take(meta)?,
+            r#type: consumer.r#type.take(meta)?,
+            docs: consumer.docs.option().unwrap_or_default(),
+            default_value,
+            default_value_strategy,
+        })
+    }
+
+    /// Construct an `InstructionArgumentNode` from this directive.
+    /// Returns an error if any unresolved directives remain.
+    pub fn to_instruction_argument_node(&self) -> CodamaResult<InstructionArgumentNode> {
+        Ok(InstructionArgumentNode {
+            name: self.name.clone(),
+            r#type: self.r#type.try_resolved()?.clone(),
+            docs: self.docs.clone(),
+            default_value: self
+                .default_value
+                .as_ref()
+                .map(|r| r.try_resolved().cloned())
+                .transpose()?,
+            default_value_strategy: self.default_value_strategy,
         })
     }
 }
@@ -73,7 +94,11 @@ mod tests {
             directive,
             ArgumentDirective {
                 after: false,
-                argument: InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: None,
+                default_value_strategy: None,
             }
         );
     }
@@ -86,7 +111,11 @@ mod tests {
             directive,
             ArgumentDirective {
                 after: true,
-                argument: InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: None,
+                default_value_strategy: None,
             }
         );
     }
@@ -99,10 +128,11 @@ mod tests {
             directive,
             ArgumentDirective {
                 after: false,
-                argument: InstructionArgumentNode {
-                    default_value: Some(PayerValueNode::new().into()),
-                    ..InstructionArgumentNode::new("age", NumberTypeNode::le(U8))
-                },
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
+                default_value_strategy: None,
             }
         );
     }
@@ -111,7 +141,7 @@ mod tests {
     fn with_docs_string() {
         let meta: Meta = syn::parse_quote! { argument("cake", number(u8), docs = "The cake") };
         let directive = ArgumentDirective::parse(&meta).unwrap();
-        assert_eq!(directive.argument.docs, vec!["The cake".to_string()].into());
+        assert_eq!(directive.docs, vec!["The cake".to_string()].into());
     }
 
     #[test]
@@ -119,7 +149,7 @@ mod tests {
         let meta: Meta = syn::parse_quote! { argument("cake", number(u8), docs = ["The cake", "must be a lie"]) };
         let directive = ArgumentDirective::parse(&meta).unwrap();
         assert_eq!(
-            directive.argument.docs,
+            directive.docs,
             vec!["The cake".to_string(), "must be a lie".to_string()].into()
         );
     }

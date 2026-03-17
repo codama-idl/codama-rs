@@ -129,8 +129,14 @@ impl CombineTypesVisitor {
             .get_all(FieldDirective::filter)
             .into_iter()
             .partition(|attr| !attr.after);
-        let before = before.into_iter().map(|attr| attr.field.clone());
-        let after = after.into_iter().map(|attr| attr.field.clone());
+        let before = before
+            .into_iter()
+            .map(|attr| attr.to_struct_field_type_node())
+            .collect::<CodamaResult<Vec<_>>>()?;
+        let after = after
+            .into_iter()
+            .map(|attr| attr.to_struct_field_type_node())
+            .collect::<CodamaResult<Vec<_>>>()?;
 
         Ok(before.into_iter().chain(fields).chain(after).collect())
     }

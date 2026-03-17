@@ -38,6 +38,9 @@ pub enum CodamaError {
 
     #[error("Invalid Codama directive, Expected {expected}, got {actual}")]
     InvalidCodamaDirective { expected: String, actual: String },
+
+    #[error("Unresolved directive: {namespace}::{name}")]
+    UnresolvedDirective { namespace: String, name: String },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

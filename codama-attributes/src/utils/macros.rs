@@ -4,7 +4,7 @@ macro_rules! assert_type {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { type = $($attr)* };
             let node = $crate::TypeDirective::parse(&meta).unwrap().node;
-            assert_eq!(node, $expected);
+            assert_eq!(node, $crate::Resolvable::Resolved($expected));
         }
     };
 }
@@ -26,7 +26,7 @@ macro_rules! assert_value {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { default_value = $($attr)* };
             let node = $crate::DefaultValueDirective::parse(&meta).unwrap().node;
-            assert_eq!(node, $expected);
+            assert_eq!(node, $crate::Resolvable::Resolved($expected));
         }
     };
 }

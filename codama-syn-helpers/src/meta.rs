@@ -10,7 +10,7 @@ use syn::{
     Expr, MacroDelimiter, MetaList, Path, Token,
 };
 
-#[derive(Debug, From)]
+#[derive(Debug, Clone, From)]
 pub enum Meta {
     /// A path followed by an equal sign and a single Meta — e.g. `my_attribute = my_value`.
     PathValue(PathValue),
@@ -24,19 +24,45 @@ pub enum Meta {
     Verbatim(TokenStream),
 }
 
-#[derive(Debug)]
+impl PartialEq for Meta {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Meta::PathValue(a), Meta::PathValue(b)) => a == b,
+            (Meta::PathList(a), Meta::PathList(b)) => a == b,
+            (Meta::Expr(a), Meta::Expr(b)) => a == b,
+            (Meta::Verbatim(a), Meta::Verbatim(b)) => a.to_string() == b.to_string(),
+            _ => false,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct PathValue {
     pub path: Path,
     pub eq_token: Token![=],
     pub value: Box<Meta>,
 }
 
-#[derive(Debug)]
+impl PartialEq for PathValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path && self.value == other.value
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct PathList {
     pub path: Path,
     pub eq_token: Option<Token![=]>,
     pub delimiter: MacroDelimiter,
     pub tokens: TokenStream,
+}
+
+impl PartialEq for PathList {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path
+            && self.eq_token.is_some() == other.eq_token.is_some()
+            && self.tokens.to_string() == other.tokens.to_string()
+    }
 }
 
 impl Meta {

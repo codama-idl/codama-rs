@@ -1,11 +1,11 @@
-use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use crate::{Attribute, CodamaAttribute, CodamaDirective, Resolvable};
 use codama_errors::CodamaError;
 use codama_nodes::{DefaultValueStrategy, InstructionInputValueNode, ValueNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct DefaultValueDirective {
-    pub node: InstructionInputValueNode,
+    pub node: Resolvable<InstructionInputValueNode>,
     pub default_value_strategy: Option<DefaultValueStrategy>,
 }
 
@@ -29,8 +29,10 @@ impl DefaultValueDirective {
         };
 
         let node = match value_nodes_only {
-            true => ValueNode::from_meta(&pv.value)?.into(),
-            false => InstructionInputValueNode::from_meta(&pv.value)?,
+            true => {
+                Resolvable::<ValueNode>::from_meta(&pv.value)?.map(InstructionInputValueNode::from)
+            }
+            false => Resolvable::<InstructionInputValueNode>::from_meta(&pv.value)?,
         };
 
         let default_value_strategy = match is_value {
@@ -81,7 +83,7 @@ mod tests {
         assert_eq!(
             directive,
             DefaultValueDirective {
-                node: PayerValueNode::new().into(),
+                node: Resolvable::Resolved(PayerValueNode::new().into()),
                 default_value_strategy: None,
             }
         );
@@ -95,7 +97,7 @@ mod tests {
         assert_eq!(
             directive,
             DefaultValueDirective {
-                node: PayerValueNode::new().into(),
+                node: Resolvable::Resolved(PayerValueNode::new().into()),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
             }
         );
@@ -109,7 +111,7 @@ mod tests {
         assert_eq!(
             directive,
             DefaultValueDirective {
-                node: BooleanValueNode::new(true).into(),
+                node: Resolvable::Resolved(BooleanValueNode::new(true).into()),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
             }
         );

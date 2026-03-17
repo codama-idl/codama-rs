@@ -5,8 +5,8 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    CamelCaseString, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode, TypeNode,
-    VariablePdaSeedNode,
+    CamelCaseString, ConstantPdaSeedNode, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode,
+    TypeNode, VariablePdaSeedNode,
 };
 
 #[derive(Default)]
@@ -25,7 +25,7 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        let pda = parse_pda_node(korok.name(), &korok.attributes, &korok.fields);
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &korok.fields)?;
         korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
@@ -36,7 +36,7 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        let pda = parse_pda_node(korok.name(), &korok.attributes, &[]);
+        let pda = parse_pda_node(korok.name(), &korok.attributes, &[])?;
         korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
@@ -46,38 +46,56 @@ pub fn parse_pda_node(
     name: CamelCaseString,
     attributes: &Attributes,
     fields: &[FieldKorok],
-) -> PdaNode {
-    PdaNode {
+) -> CodamaResult<PdaNode> {
+    Ok(PdaNode {
         name,
-        seeds: parse_pda_seed_nodes(attributes, fields),
+        seeds: parse_pda_seed_nodes(attributes, fields)?,
         docs: Docs::default(),
         program_id: None,
-    }
+    })
 }
 
-pub fn parse_pda_seed_nodes(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<PdaSeedNode> {
-    attributes
-        .iter()
-        .filter_map(SeedDirective::filter)
-        .filter_map(|directive| match &directive.seed {
-            SeedDirectiveType::Defined(node) => Some(node.clone()),
-            SeedDirectiveType::Linked(name) => fields.iter().find_map(|field| {
-                if field.ast.ident.as_ref().is_none_or(|ident| ident != name) {
-                    return None;
-                }
-                let (name, type_node) = match &field.node {
-                    Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => {
-                        (struct_field.name.clone(), struct_field.r#type.clone())
+pub fn parse_pda_seed_nodes(
+    attributes: &Attributes,
+    fields: &[FieldKorok],
+) -> CodamaResult<Vec<PdaSeedNode>> {
+    let mut seeds = Vec::new();
+    for directive in attributes.iter().filter_map(SeedDirective::filter) {
+        match &directive.seed {
+            SeedDirectiveType::Variable { name, r#type } => {
+                let type_node = r#type.try_resolved()?.clone();
+                seeds.push(VariablePdaSeedNode::new(name.as_str(), type_node).into());
+            }
+            SeedDirectiveType::Constant { r#type, value } => {
+                let type_node = r#type.try_resolved()?.clone();
+                let value_node = value.try_resolved()?.clone();
+                seeds.push(ConstantPdaSeedNode::new(type_node, value_node).into());
+            }
+            SeedDirectiveType::Linked(name) => {
+                // Linked seeds resolve by finding a matching field.
+                // If no field matches, the seed is silently skipped (pre-existing behavior).
+                let seed = fields.iter().find_map(|field| {
+                    if field.ast.ident.as_ref().is_none_or(|ident| ident != name) {
+                        return None;
                     }
-                    _ => match TypeNode::try_from(field.node.clone()) {
-                        Ok(type_node) => (name.clone().into(), type_node),
-                        Err(_) => return None,
-                    },
-                };
-                Some(PdaSeedNode::Variable(VariablePdaSeedNode::new(
-                    name, type_node,
-                )))
-            }),
-        })
-        .collect()
+                    let (name, type_node) = match &field.node {
+                        Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => {
+                            (struct_field.name.clone(), struct_field.r#type.clone())
+                        }
+                        _ => match TypeNode::try_from(field.node.clone()) {
+                            Ok(type_node) => (name.clone().into(), type_node),
+                            Err(_) => return None,
+                        },
+                    };
+                    Some(PdaSeedNode::Variable(VariablePdaSeedNode::new(
+                        name, type_node,
+                    )))
+                });
+                if let Some(seed) = seed {
+                    seeds.push(seed);
+                }
+            }
+        }
+    }
+    Ok(seeds)
 }

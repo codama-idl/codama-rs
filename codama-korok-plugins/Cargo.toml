@@ -7,6 +7,11 @@ edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
+codama-attributes = { version = "0.7.4", path = "../codama-attributes" }
 codama-errors = { version = "0.7.4", path = "../codama-errors" }
 codama-korok-visitors = { version = "0.7.4", path = "../codama-korok-visitors" }
 codama-koroks = { version = "0.7.4", path = "../codama-koroks" }
+codama-nodes = { version = "0.7.4", path = "../codama-nodes" }
+
+[dev-dependencies]
+syn = { version = "2.0", features = ["extra-traits", "full"] }

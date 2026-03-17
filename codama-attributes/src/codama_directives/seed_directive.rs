@@ -1,9 +1,8 @@
 use crate::{
-    utils::{FromMeta, SetOnce},
-    Attribute, AttributeContext, CodamaAttribute, CodamaDirective,
+    utils::SetOnce, Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{ConstantPdaSeedNode, PdaSeedNode, TypeNode, ValueNode, VariablePdaSeedNode};
+use codama_nodes::{TypeNode, ValueNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
@@ -13,8 +12,18 @@ pub struct SeedDirective {
 
 #[derive(Debug, PartialEq)]
 pub enum SeedDirectiveType {
+    /// A seed that references a field by name. The type is inferred from the field.
     Linked(String),
-    Defined(PdaSeedNode),
+    /// A variable seed with a name and type (which may be a plugin directive).
+    Variable {
+        name: String,
+        r#type: Resolvable<TypeNode>,
+    },
+    /// A constant seed with a type and value (which may be plugin directives).
+    Constant {
+        r#type: Resolvable<TypeNode>,
+        value: Resolvable<ValueNode>,
+    },
 }
 
 impl SeedDirective {
@@ -32,15 +41,17 @@ impl SeedDirective {
             .ok_or_else(|| meta.error("seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds"))?;
 
         let mut name = SetOnce::<String>::new("name");
-        let mut r#type = SetOnce::<TypeNode>::new("type");
-        let mut value = SetOnce::<ValueNode>::new("value");
+        let mut r#type = SetOnce::<Resolvable<TypeNode>>::new("type");
+        let mut value = SetOnce::<Resolvable<ValueNode>>::new("value");
 
         pl.each(|ref meta| match (meta.path_str().as_str(), constant_seed) {
             ("name", true) => Err(meta.error("constant seeds cannot specify name")),
             ("name", false) => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
-            ("value", true) => value.set(ValueNode::from_meta(meta.as_value()?)?, meta),
+            ("value", true) => {
+                value.set(Resolvable::<ValueNode>::from_meta(meta.as_value()?)?, meta)
+            }
             ("value", false) => Err(meta.error("variable seeds cannot specify value")),
-            ("type", _) => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
+            ("type", _) => r#type.set(Resolvable::<TypeNode>::from_meta(meta.as_value()?)?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 
@@ -58,14 +69,16 @@ impl SeedDirective {
 
         match constant_seed {
             true => Ok(Self {
-                seed: SeedDirectiveType::Defined(
-                    ConstantPdaSeedNode::new(r#type.take(meta)?, value.take(meta)?).into(),
-                ),
+                seed: SeedDirectiveType::Constant {
+                    r#type: r#type.take(meta)?,
+                    value: value.take(meta)?,
+                },
             }),
             false => Ok(Self {
-                seed: SeedDirectiveType::Defined(
-                    VariablePdaSeedNode::new(name.take(meta)?, r#type.take(meta)?).into(),
-                ),
+                seed: SeedDirectiveType::Variable {
+                    name: name.take(meta)?,
+                    r#type: r#type.take(meta)?,
+                },
             }),
         }
     }
@@ -119,10 +132,10 @@ mod tests {
         assert_eq!(
             directive,
             SeedDirective {
-                seed: SeedDirectiveType::Defined(
-                    ConstantPdaSeedNode::new(NumberTypeNode::le(U8), NumberValueNode::new(42u8))
-                        .into()
-                ),
+                seed: SeedDirectiveType::Constant {
+                    r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                    value: Resolvable::Resolved(NumberValueNode::new(42u8).into()),
+                },
             }
         );
     }
@@ -136,9 +149,10 @@ mod tests {
         assert_eq!(
             directive,
             SeedDirective {
-                seed: SeedDirectiveType::Defined(
-                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into()
-                ),
+                seed: SeedDirectiveType::Variable {
+                    name: "authority".to_string(),
+                    r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
+                },
             }
         );
     }

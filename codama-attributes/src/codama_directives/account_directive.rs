@@ -1,8 +1,8 @@
 use crate::{
     utils::{FromMeta, SetOnce},
-    Attribute, AttributeContext, CodamaAttribute, CodamaDirective,
+    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
 };
-use codama_errors::CodamaError;
+use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
     CamelCaseString, Docs, InstructionAccountNode, InstructionInputValueNode, IsAccountSigner,
 };
@@ -10,7 +10,12 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct AccountDirective {
-    pub account: InstructionAccountNode,
+    pub name: CamelCaseString,
+    pub is_writable: bool,
+    pub is_signer: IsAccountSigner,
+    pub is_optional: bool,
+    pub docs: Docs,
+    pub default_value: Option<Resolvable<InstructionInputValueNode>>,
 }
 
 impl AccountDirective {
@@ -26,7 +31,8 @@ impl AccountDirective {
         let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
         let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
-        let mut default_value = SetOnce::<InstructionInputValueNode>::new("default_value");
+        let mut default_value =
+            SetOnce::<Resolvable<InstructionInputValueNode>>::new("default_value");
         let mut docs = SetOnce::<Docs>::new("docs");
         match meta.is_path_or_empty_list() {
             true => (),
@@ -38,7 +44,7 @@ impl AccountDirective {
                     "signer" => is_signer.set(IsAccountSigner::from_meta(meta)?, meta),
                     "optional" => is_optional.set(bool::from_meta(meta)?, meta),
                     "default_value" => default_value.set(
-                        InstructionInputValueNode::from_meta(meta.as_value()?)?,
+                        Resolvable::<InstructionInputValueNode>::from_meta(meta.as_value()?)?,
                         meta,
                     ),
                     "docs" => docs.set(Docs::from_meta(meta)?, meta),
@@ -46,14 +52,29 @@ impl AccountDirective {
                 })?,
         }
         Ok(AccountDirective {
-            account: InstructionAccountNode {
-                name: name.take(meta)?,
-                is_writable: is_writable.take(meta)?,
-                is_signer: is_signer.take(meta)?,
-                is_optional: is_optional.take(meta)?,
-                docs: docs.option().unwrap_or_default(),
-                default_value: default_value.option(),
-            },
+            name: name.take(meta)?,
+            is_writable: is_writable.take(meta)?,
+            is_signer: is_signer.take(meta)?,
+            is_optional: is_optional.take(meta)?,
+            docs: docs.option().unwrap_or_default(),
+            default_value: default_value.option(),
+        })
+    }
+
+    /// Construct an `InstructionAccountNode` from this directive.
+    /// Returns an error if any unresolved directives remain.
+    pub fn to_instruction_account_node(&self) -> CodamaResult<InstructionAccountNode> {
+        Ok(InstructionAccountNode {
+            name: self.name.clone(),
+            is_writable: self.is_writable,
+            is_signer: self.is_signer,
+            is_optional: self.is_optional,
+            docs: self.docs.clone(),
+            default_value: self
+                .default_value
+                .as_ref()
+                .map(|r| r.try_resolved().cloned())
+                .transpose()?,
         })
     }
 }
@@ -94,14 +115,12 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                account: InstructionAccountNode {
-                    name: "payer".into(),
-                    is_writable: true,
-                    is_signer: IsAccountSigner::True,
-                    is_optional: true,
-                    default_value: Some(PayerValueNode::new().into()),
-                    docs: Docs::default(),
-                },
+                name: "payer".into(),
+                is_writable: true,
+                is_signer: IsAccountSigner::True,
+                is_optional: true,
+                default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
+                docs: Docs::default(),
             }
         );
     }
@@ -121,14 +140,12 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                account: InstructionAccountNode {
-                    name: "payer".into(),
-                    is_writable: true,
-                    is_signer: IsAccountSigner::Either,
-                    is_optional: false,
-                    default_value: Some(PayerValueNode::new().into()),
-                    docs: Docs::default(),
-                },
+                name: "payer".into(),
+                is_writable: true,
+                is_signer: IsAccountSigner::Either,
+                is_optional: false,
+                default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
+                docs: Docs::default(),
             }
         );
     }
@@ -142,14 +159,12 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                account: InstructionAccountNode {
-                    name: "authority".into(),
-                    is_writable: false,
-                    is_signer: IsAccountSigner::False,
-                    is_optional: false,
-                    default_value: None,
-                    docs: Docs::default(),
-                },
+                name: "authority".into(),
+                is_writable: false,
+                is_signer: IsAccountSigner::False,
+                is_optional: false,
+                default_value: None,
+                docs: Docs::default(),
             }
         );
     }
@@ -172,14 +187,12 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                account: InstructionAccountNode {
-                    name: "stake".into(),
-                    is_writable: true,
-                    is_signer: IsAccountSigner::False,
-                    is_optional: false,
-                    default_value: None,
-                    docs: vec!["what this account is for".to_string()].into(),
-                },
+                name: "stake".into(),
+                is_writable: true,
+                is_signer: IsAccountSigner::False,
+                is_optional: false,
+                default_value: None,
+                docs: vec!["what this account is for".to_string()].into(),
             }
         );
     }
@@ -193,19 +206,17 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                account: InstructionAccountNode {
-                    name: "authority".into(),
-                    is_writable: false,
-                    is_signer: IsAccountSigner::True,
-                    is_optional: false,
-                    default_value: None,
-                    docs: vec![
-                        "Line 1".to_string(),
-                        "Line 2".to_string(),
-                        "Line 3".to_string()
-                    ]
-                    .into(),
-                },
+                name: "authority".into(),
+                is_writable: false,
+                is_signer: IsAccountSigner::True,
+                is_optional: false,
+                default_value: None,
+                docs: vec![
+                    "Line 1".to_string(),
+                    "Line 2".to_string(),
+                    "Line 3".to_string()
+                ]
+                .into(),
             }
         );
     }

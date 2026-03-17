@@ -1,16 +1,22 @@
 use crate::{
     codama_directives::type_nodes::StructFieldMetaConsumer,
     utils::{FromMeta, MetaConsumer},
-    Attribute, CodamaAttribute, CodamaDirective,
+    Attribute, CodamaAttribute, CodamaDirective, Resolvable,
 };
-use codama_errors::CodamaError;
-use codama_nodes::StructFieldTypeNode;
+use codama_errors::{CodamaError, CodamaResult};
+use codama_nodes::{
+    CamelCaseString, DefaultValueStrategy, Docs, StructFieldTypeNode, TypeNode, ValueNode,
+};
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldDirective {
     pub after: bool,
-    pub field: StructFieldTypeNode,
+    pub name: CamelCaseString,
+    pub r#type: Resolvable<TypeNode>,
+    pub docs: Docs,
+    pub default_value: Option<Resolvable<ValueNode>>,
+    pub default_value_strategy: Option<DefaultValueStrategy>,
 }
 
 impl FieldDirective {
@@ -27,13 +33,27 @@ impl FieldDirective {
 
         Ok(FieldDirective {
             after: consumer.after.option().unwrap_or(false),
-            field: StructFieldTypeNode {
-                name: consumer.name.take(meta)?,
-                r#type: consumer.r#type.take(meta)?,
-                docs: consumer.docs.option().unwrap_or_default(),
-                default_value,
-                default_value_strategy,
-            },
+            name: consumer.name.take(meta)?,
+            r#type: consumer.r#type.take(meta)?,
+            docs: consumer.docs.option().unwrap_or_default(),
+            default_value,
+            default_value_strategy,
+        })
+    }
+
+    /// Construct a `StructFieldTypeNode` from this directive.
+    /// Returns an error if any unresolved directives remain.
+    pub fn to_struct_field_type_node(&self) -> CodamaResult<StructFieldTypeNode> {
+        Ok(StructFieldTypeNode {
+            name: self.name.clone(),
+            r#type: self.r#type.try_resolved()?.clone(),
+            docs: self.docs.clone(),
+            default_value: self
+                .default_value
+                .as_ref()
+                .map(|r| r.try_resolved().cloned())
+                .transpose()?,
+            default_value_strategy: self.default_value_strategy,
         })
     }
 }
@@ -73,7 +93,11 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                field: StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: None,
+                default_value_strategy: None,
             }
         );
     }
@@ -86,7 +110,11 @@ mod tests {
             directive,
             FieldDirective {
                 after: true,
-                field: StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: None,
+                default_value_strategy: None,
             }
         );
     }
@@ -99,10 +127,11 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                field: StructFieldTypeNode {
-                    default_value: Some(NumberValueNode::new(42u8).into()),
-                    ..StructFieldTypeNode::new("age", NumberTypeNode::le(U8))
-                },
+                name: "age".into(),
+                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: Some(Resolvable::Resolved(NumberValueNode::new(42u8).into())),
+                default_value_strategy: None,
             }
         );
     }
@@ -111,7 +140,7 @@ mod tests {
     fn with_docs_string() {
         let meta: Meta = syn::parse_quote! { field("splines", number(u8), docs = "Splines") };
         let directive = FieldDirective::parse(&meta).unwrap();
-        assert_eq!(directive.field.docs, vec!["Splines".to_string()].into());
+        assert_eq!(directive.docs, vec!["Splines".to_string()].into());
     }
 
     #[test]
@@ -119,7 +148,7 @@ mod tests {
         let meta: Meta = syn::parse_quote! { field("age", number(u8), docs = ["Splines", "Must be pre-reticulated"]) };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(
-            directive.field.docs,
+            directive.docs,
             vec!["Splines".to_string(), "Must be pre-reticulated".to_string()].into()
         );
     }

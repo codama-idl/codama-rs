@@ -197,9 +197,12 @@ dependencies = [
 name = "codama-korok-plugins"
 version = "0.7.4"
 dependencies = [
+ "codama-attributes",
  "codama-errors",
  "codama-korok-visitors",
  "codama-koroks",
+ "codama-nodes",
+ "syn",
 ]
 
 [[package]]

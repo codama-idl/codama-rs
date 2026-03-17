@@ -78,7 +78,7 @@ fn set_default_values(mut korok: KorokMut) -> CodamaResult<()> {
     };
 
     // Ensure there is a node to set a default value on.
-    let Some(node) = get_node_with_default_value(korok.node(), attributes) else {
+    let Some(node) = get_node_with_default_value(korok.node(), attributes)? else {
         return Ok(());
     };
 
@@ -86,31 +86,37 @@ fn set_default_values(mut korok: KorokMut) -> CodamaResult<()> {
     Ok(())
 }
 
-fn get_node_with_default_value(node: &Option<Node>, attributes: &Attributes) -> Option<Node> {
-    let directive = attributes.get_last(DefaultValueDirective::filter)?;
+fn get_node_with_default_value(
+    node: &Option<Node>,
+    attributes: &Attributes,
+) -> CodamaResult<Option<Node>> {
+    let Some(directive) = attributes.get_last(DefaultValueDirective::filter) else {
+        return Ok(None);
+    };
+    let resolved_node = directive.node.try_resolved()?;
 
     match node {
         // Handle struct fields.
         Some(Node::Type(RegisteredTypeNode::StructField(field))) => {
-            let value = ValueNode::try_from(directive.node.clone()).ok()?;
-            Some(
+            let value = ValueNode::try_from(resolved_node.clone()).ok();
+            Ok(value.map(|value| {
                 StructFieldTypeNode {
                     default_value: Some(value),
                     default_value_strategy: directive.default_value_strategy,
                     ..field.clone()
                 }
-                .into(),
-            )
+                .into()
+            }))
         }
         // Handle instruction arguments.
-        Some(Node::InstructionArgument(argument)) => Some(
+        Some(Node::InstructionArgument(argument)) => Ok(Some(
             InstructionArgumentNode {
-                default_value: Some(directive.node.clone()),
+                default_value: Some(resolved_node.clone()),
                 default_value_strategy: directive.default_value_strategy,
                 ..argument.clone()
             }
             .into(),
-        ),
-        _ => None,
+        )),
+        _ => Ok(None),
     }
 }

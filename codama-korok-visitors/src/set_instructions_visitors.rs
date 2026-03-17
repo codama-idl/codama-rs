@@ -64,8 +64,8 @@ impl KorokVisitor for SetInstructionsVisitor {
         let (name, data) = parse_struct(korok)?;
         let instruction = InstructionNode {
             name,
-            accounts: parse_accounts(&korok.attributes, &korok.fields),
-            arguments: parse_arguments(&korok.attributes, &korok.fields, data, None),
+            accounts: parse_accounts(&korok.attributes, &korok.fields)?,
+            arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
             ..InstructionNode::default()
         };
@@ -156,13 +156,13 @@ impl KorokVisitor for SetInstructionsVisitor {
         korok.node = Some(
             InstructionNode {
                 name,
-                accounts: parse_accounts(&korok.attributes, &korok.fields),
+                accounts: parse_accounts(&korok.attributes, &korok.fields)?,
                 arguments: parse_arguments(
                     &korok.attributes,
                     &korok.fields,
                     data,
                     Some(discriminator),
-                ),
+                )?,
                 discriminators,
                 ..InstructionNode::default()
             }
@@ -173,30 +173,29 @@ impl KorokVisitor for SetInstructionsVisitor {
     }
 }
 
-fn parse_accounts(attributes: &Attributes, fields: &[FieldKorok]) -> Vec<InstructionAccountNode> {
+fn parse_accounts(
+    attributes: &Attributes,
+    fields: &[FieldKorok],
+) -> CodamaResult<Vec<InstructionAccountNode>> {
     // Gather the accounts from the struct attributes.
     let accounts_from_struct_attributes = attributes
         .iter()
         .filter_map(AccountDirective::filter)
-        .map(|attr| attr.account.clone())
-        .collect::<Vec<_>>();
+        .map(|attr| attr.to_instruction_account_node())
+        .collect::<CodamaResult<Vec<_>>>()?;
 
     // Gather the accounts from the fields.
     let accounts_from_fields = fields
         .iter()
-        .filter_map(|field| {
-            field
-                .attributes
-                .get_last(AccountDirective::filter)
-                .map(|attr| attr.account.clone())
-        })
-        .collect::<Vec<_>>();
+        .filter_map(|field| field.attributes.get_last(AccountDirective::filter))
+        .map(|attr| attr.to_instruction_account_node())
+        .collect::<CodamaResult<Vec<_>>>()?;
 
     // Concatenate the accounts.
-    accounts_from_struct_attributes
+    Ok(accounts_from_struct_attributes
         .into_iter()
         .chain(accounts_from_fields)
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>())
 }
 
 fn parse_arguments(
@@ -204,7 +203,7 @@ fn parse_arguments(
     fields: &[FieldKorok],
     data: StructTypeNode,
     discriminator: Option<InstructionArgumentNode>,
-) -> Vec<InstructionArgumentNode> {
+) -> CodamaResult<Vec<InstructionArgumentNode>> {
     // Here we must reconcile the struct fields combined in the `CombineTypesVisitor`
     // with their original `FieldKoroks` to check for `default_value` directives
     // that would have been ignored on fields but are relevant for instruction arguments.
@@ -216,7 +215,7 @@ fn parse_arguments(
         .enumerate()
         .map(|(i, argument)| {
             if argument.default_value.is_some() {
-                return argument;
+                return Ok(argument);
             }
             let field = fields
                 .iter()
@@ -227,25 +226,32 @@ fn parse_arguments(
                     _ => None,
                 });
             let Some(field) = field else {
-                return argument;
+                return Ok(argument);
             };
             let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter) else {
-                return argument;
+                return Ok(argument);
             };
 
-            InstructionArgumentNode {
-                default_value: Some(directive.node.clone()),
+            Ok(InstructionArgumentNode {
+                default_value: Some(directive.node.try_resolved()?.clone()),
                 default_value_strategy: directive.default_value_strategy,
                 ..argument
-            }
-        });
+            })
+        })
+        .collect::<CodamaResult<Vec<_>>>()?;
 
     let (before, after): (Vec<_>, Vec<_>) = attributes
         .get_all(ArgumentDirective::filter)
         .into_iter()
         .partition(|attr| !attr.after);
-    let before = before.into_iter().map(|attr| attr.argument.clone());
-    let after = after.into_iter().map(|attr| attr.argument.clone());
+    let before = before
+        .into_iter()
+        .map(|attr| attr.to_instruction_argument_node())
+        .collect::<CodamaResult<Vec<_>>>()?;
+    let after = after
+        .into_iter()
+        .map(|attr| attr.to_instruction_argument_node())
+        .collect::<CodamaResult<Vec<_>>>()?;
 
     let mut arguments: Vec<InstructionArgumentNode> = before
         .into_iter()
@@ -257,7 +263,7 @@ fn parse_arguments(
         arguments.insert(0, discriminator);
     }
 
-    arguments
+    Ok(arguments)
 }
 
 fn parse_struct(

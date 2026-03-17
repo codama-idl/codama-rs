@@ -3,7 +3,7 @@ use crate::{
     utils::{FromMeta, MetaConsumer},
 };
 use codama_nodes::{Docs, StructFieldTypeNode};
-use codama_syn_helpers::Meta;
+use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for StructFieldTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
@@ -13,12 +13,23 @@ impl FromMeta for StructFieldTypeNode {
             .consume_default_value()?
             .assert_fully_consumed()?;
 
-        let default_value = consumer.default_value_node();
         let default_value_strategy = consumer.default_value_strategy();
+        let default_value = consumer
+            .default_value_node()
+            .map(|r| r.try_into_resolved().map_err(|e| meta.error(e.to_string())))
+            .transpose()?;
+
+        // When used as a type node (e.g., `type = field("age", number(u8))`),
+        // unresolved directives must already be resolved.
+        let r#type = consumer
+            .r#type
+            .take(meta)?
+            .try_into_resolved()
+            .map_err(|e| meta.error(e.to_string()))?;
 
         Ok(StructFieldTypeNode {
             name: consumer.name.take(meta)?,
-            r#type: consumer.r#type.take(meta)?,
+            r#type,
             default_value,
             default_value_strategy,
             docs: Docs::default(),

@@ -1,18 +1,18 @@
-use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use crate::{Attribute, CodamaAttribute, CodamaDirective, Resolvable};
 use codama_errors::CodamaError;
 use codama_nodes::RegisteredTypeNode;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct TypeDirective {
-    pub node: RegisteredTypeNode,
+    pub node: Resolvable<RegisteredTypeNode>,
 }
 
 impl TypeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let value = meta.assert_directive("type")?.as_value()?;
         Ok(Self {
-            node: RegisteredTypeNode::from_meta(value)?,
+            node: Resolvable::<RegisteredTypeNode>::from_meta(value)?,
         })
     }
 }
@@ -48,9 +48,24 @@ mod tests {
     #[test]
     fn ok() {
         let meta: Meta = parse_quote! { type = number(u16, le) };
-        let node = TypeDirective::parse(&meta).unwrap().node;
+        let directive = TypeDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive.node,
+            Resolvable::Resolved(NumberTypeNode::le(U16).into())
+        );
+    }
 
-        assert_eq!(node, NumberTypeNode::le(U16).into());
+    #[test]
+    fn resolvable_directive() {
+        let meta: Meta = parse_quote! { type = foo::custom_type };
+        let directive = TypeDirective::parse(&meta).unwrap();
+
+        assert!(directive.node.is_unresolved());
+        let Resolvable::Unresolved(ref d) = directive.node else {
+            panic!("expected unresolved directive");
+        };
+        assert_eq!(d.namespace, "foo");
+        assert_eq!(d.name, "custom_type");
     }
 
     #[test]
