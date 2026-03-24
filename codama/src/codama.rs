@@ -1,7 +1,7 @@
 use codama_errors::{CodamaError, CodamaResult};
-use codama_plugin_core::{resolve_plugins, DefaultPlugin, KorokPlugin};
 use codama_koroks::RootKorok;
 use codama_nodes::{HasKind, Node, NodeTrait, RootNode};
+use codama_plugin_core::{resolve_plugins, DefaultPlugin, KorokPlugin};
 use codama_stores::RootStore;
 use std::path::Path;
 
