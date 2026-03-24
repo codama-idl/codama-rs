@@ -5,7 +5,7 @@ members = [
   "codama-attributes",
   "codama-errors",
   "codama-koroks",
-  "codama-korok-plugins",
+  "codama-plugin-core",
   "codama-korok-visitors",
   "codama-macros",
   "codama-nodes",

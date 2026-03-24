@@ -148,11 +148,11 @@ name = "codama"
 version = "0.7.4"
 dependencies = [
  "codama-errors",
- "codama-korok-plugins",
  "codama-korok-visitors",
  "codama-koroks",
  "codama-macros",
  "codama-nodes",
+ "codama-plugin-core",
  "codama-stores",
  "proc-macro2",
 ]
@@ -191,18 +191,6 @@ dependencies = [
  "serde_json",
  "syn",
  "thiserror",
-]
-
-[[package]]
-name = "codama-korok-plugins"
-version = "0.7.4"
-dependencies = [
- "codama-attributes",
- "codama-errors",
- "codama-korok-visitors",
- "codama-koroks",
- "codama-nodes",
- "syn",
 ]
 
 [[package]]
@@ -286,6 +274,18 @@ dependencies = [
  "serde",
  "serde_json",
  "trybuild",
+]
+
+[[package]]
+name = "codama-plugin-core"
+version = "0.7.4"
+dependencies = [
+ "codama-attributes",
+ "codama-errors",
+ "codama-korok-visitors",
+ "codama-koroks",
+ "codama-nodes",
+ "syn",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 [package]
-name = "codama-korok-plugins"
+name = "codama-plugin-core"
 description = "Korok plugins definitions"
 version = "0.7.4"
 repository = { workspace = true }

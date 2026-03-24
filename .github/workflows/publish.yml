@@ -23,7 +23,7 @@ on:
           - codama-attributes
           - codama-cli
           - codama-errors
-          - codama-korok-plugins
+          - codama-plugin-core
           - codama-korok-visitors
           - codama-koroks
           - codama-macros

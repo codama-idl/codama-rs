@@ -11,7 +11,7 @@ codama-macros = { version = "0.7.4", path = "../codama-macros" }
 
 [target.'cfg(not(target_os = "solana"))'.dependencies]
 codama-errors = { version = "0.7.4", path = "../codama-errors" }
-codama-korok-plugins = { version = "0.7.4", path = "../codama-korok-plugins" }
+codama-plugin-core = { version = "0.7.4", path = "../codama-plugin-core" }
 codama-korok-visitors = { version = "0.7.4", path = "../codama-korok-visitors" }
 codama-koroks = { version = "0.7.4", path = "../codama-koroks" }
 codama-nodes = { version = "0.7.4", path = "../codama-nodes" }
