@@ -1,0 +1,5 @@
+error: CodamaPdaHelpers generated a duplicate parameter name `token_program` from seed `token_program`; it conflicts with `token-program`
+ --> tests/codama_pda_helpers_derive/duplicate_param.fail.rs:6:1
+  |
+6 | #[codama(seed(name = "token_program", type = public_key))]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

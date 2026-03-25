@@ -1,0 +1,6 @@
+error: CodamaPdaHelpers currently supports structs only
+ --> tests/codama_pda_helpers_derive/enum_target.fail.rs:4:1
+  |
+4 | / #[codama(seed(type = string(utf8), value = "counter"))]
+5 | | pub enum Counter {}
+  | |___________________^

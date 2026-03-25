@@ -1,0 +1,5 @@
+error: CodamaPdaHelpers requires at least one #[codama(seed(...))] attribute
+ --> tests/codama_pda_helpers_derive/no_seed_attributes.fail.rs:4:12
+  |
+4 | pub struct Counter;
+  |            ^^^^^^^
