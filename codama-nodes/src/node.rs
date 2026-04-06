@@ -1,6 +1,6 @@
 use crate::{
     AccountNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode,
-    HasKind, InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode,
+    EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode,
     InstructionNode, InstructionRemainingAccountsNode, InstructionStatusNode, LinkNode,
     NodeUnionTrait, PdaNode, PdaSeedNode, ProgramNode, RegisteredContextualValueNode,
     RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode, ValueNode,
@@ -24,6 +24,7 @@ pub enum Node {
     Account(AccountNode),
     DefinedType(DefinedTypeNode),
     Error(ErrorNode),
+    Event(EventNode),
     Instruction(InstructionNode),
     InstructionAccount(InstructionAccountNode),
     InstructionArgument(InstructionArgumentNode),
@@ -70,6 +71,7 @@ impl HasKind for Node {
             Node::Account(node) => node.kind(),
             Node::DefinedType(node) => node.kind(),
             Node::Error(node) => node.kind(),
+            Node::Event(node) => node.kind(),
             Node::Instruction(node) => node.kind(),
             Node::InstructionAccount(node) => node.kind(),
             Node::InstructionArgument(node) => node.kind(),

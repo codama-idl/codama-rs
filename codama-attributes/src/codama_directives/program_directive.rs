@@ -75,6 +75,13 @@ impl ProgramDirective {
                 ..ProgramNode::default()
             }
             .into(),
+            Node::Event(event) => ProgramNode {
+                name: self.name.clone(),
+                public_key: self.address.clone(),
+                events: vec![event],
+                ..ProgramNode::default()
+            }
+            .into(),
             other => other,
         }
     }

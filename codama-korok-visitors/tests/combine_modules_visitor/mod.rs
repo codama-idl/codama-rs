@@ -1,6 +1,7 @@
 mod account_node;
 mod defined_type_node;
 mod error_node;
+mod event_node;
 mod instruction_node;
 mod pda_node;
 mod program_directive;

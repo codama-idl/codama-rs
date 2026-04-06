@@ -3,8 +3,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, CombineModulesVisitor,
     IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor, SetDefaultValuesVisitor,
-    SetDefinedTypesVisitor, SetErrorsVisitor, SetInstructionsVisitor, SetPdasVisitor,
-    SetProgramMetadataVisitor,
+    SetDefinedTypesVisitor, SetErrorsVisitor, SetEventsVisitor, SetInstructionsVisitor,
+    SetPdasVisitor, SetProgramMetadataVisitor,
 };
 
 pub struct DefaultPlugin;
@@ -23,6 +23,7 @@ impl KorokPlugin for DefaultPlugin {
         visitable.accept(&mut SetAccountsVisitor::new())?;
         visitable.accept(&mut SetInstructionsVisitor::new())?;
         visitable.accept(&mut SetErrorsVisitor::new())?;
+        visitable.accept(&mut SetEventsVisitor::new())?;
         Ok(())
     }
 

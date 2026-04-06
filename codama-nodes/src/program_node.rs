@@ -1,6 +1,6 @@
 use crate::{
-    AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, HasName, InstructionNode,
-    PdaNode,
+    AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, EventNode, HasName,
+    InstructionNode, PdaNode,
 };
 use codama_nodes_derive::node;
 
@@ -25,6 +25,8 @@ pub struct ProgramNode {
     pub defined_types: Vec<DefinedTypeNode>,
     #[serde(default)]
     pub pdas: Vec<PdaNode>,
+    #[serde(default)]
+    pub events: Vec<EventNode>,
     #[serde(default)]
     pub errors: Vec<ErrorNode>,
 }
@@ -63,6 +65,11 @@ impl ProgramNode {
         self
     }
 
+    pub fn add_event(mut self, event: EventNode) -> Self {
+        self.events.push(event);
+        self
+    }
+
     pub fn add_error(mut self, error: ErrorNode) -> Self {
         self.errors.push(error);
         self
@@ -92,6 +99,7 @@ mod tests {
         assert_eq!(node.instructions, vec![]);
         assert_eq!(node.defined_types, vec![]);
         assert_eq!(node.pdas, vec![]);
+        assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
     }
 
@@ -107,6 +115,7 @@ mod tests {
         assert_eq!(node.instructions, vec![]);
         assert_eq!(node.defined_types, vec![]);
         assert_eq!(node.pdas, vec![]);
+        assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
     }
 
@@ -127,6 +136,7 @@ mod tests {
         assert_eq!(node.instructions, vec![]);
         assert_eq!(node.defined_types, vec![]);
         assert_eq!(node.pdas, vec![]);
+        assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
     }
 
@@ -141,7 +151,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"errors":[]}"#
+            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[]}"#
         );
     }
 

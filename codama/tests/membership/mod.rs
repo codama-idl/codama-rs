@@ -135,6 +135,7 @@ fn get_idl() {
         ]
       }
     ],
+    "events": [],
     "errors": []
   },
   "additionalPrograms": []

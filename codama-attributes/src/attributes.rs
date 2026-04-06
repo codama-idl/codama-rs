@@ -72,6 +72,8 @@ impl<'a> Attributes<'a> {
         self.has_codama_derive("CodamaAccount")
             || self.has_codama_derive("CodamaAccounts")
             || self.has_codama_derive("CodamaErrors")
+            || self.has_codama_derive("CodamaEvent")
+            || self.has_codama_derive("CodamaEvents")
             || self.has_codama_derive("CodamaInstruction")
             || self.has_codama_derive("CodamaInstructions")
             || self.has_codama_derive("CodamaPda")

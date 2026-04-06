@@ -1,7 +1,7 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
-    AccountNode, DefinedTypeNode, Docs, ErrorNode, InstructionNode, Node, PdaNode, ProgramNode,
-    RootNode, StructTypeNode,
+    AccountNode, DefinedTypeNode, Docs, ErrorNode, EventNode, InstructionNode, Node, PdaNode,
+    ProgramNode, RootNode, StructTypeNode,
 };
 
 #[test]
@@ -30,6 +30,7 @@ fn it_merges_node_arrays_together() {
         concat(program_a.defined_types, program_b.defined_types)
     );
     assert_eq!(program.pdas, concat(program_a.pdas, program_b.pdas));
+    assert_eq!(program.events, concat(program_a.events, program_b.events));
     assert_eq!(program.errors, concat(program_a.errors, program_b.errors));
 }
 
@@ -98,6 +99,10 @@ fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
             StructTypeNode::default(),
         )],
         pdas: vec![PdaNode::new(format!("pda_{}", identifier), vec![])],
+        events: vec![EventNode::new(
+            format!("event_{}", identifier),
+            StructTypeNode::default(),
+        )],
         errors: vec![ErrorNode::new(
             format!("error_{}", identifier),
             42,
