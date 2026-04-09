@@ -11,14 +11,7 @@ fn it_merges_events_into_root_nodes() {
                 .add_node(transfer.clone())
                 .add_node(burn.clone())
         ),
-        Some(
-            RootNode::new(
-                ProgramNode::default()
-                    .add_event(transfer)
-                    .add_event(burn)
-            )
-            .into()
-        )
+        Some(RootNode::new(ProgramNode::default().add_event(transfer).add_event(burn)).into())
     );
 }
 
@@ -34,14 +27,7 @@ fn it_merges_events_inside_programs_into_root_nodes() {
                 .add_node(program_a)
                 .add_node(program_b)
         ),
-        Some(
-            RootNode::new(
-                ProgramNode::default()
-                    .add_event(event_a)
-                    .add_event(event_b)
-            )
-            .into()
-        )
+        Some(RootNode::new(ProgramNode::default().add_event(event_a).add_event(event_b)).into())
     );
 }
 

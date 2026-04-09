@@ -344,9 +344,7 @@ fn with_name_directives() -> CodamaResult<()> {
                         default_value: Some(NumberValueNode::new(0u8).into()),
                     }])
                     .into(),
-                    discriminators: vec![
-                        FieldDiscriminatorNode::new("discriminator", 0).into()
-                    ],
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                 }],
                 ..ProgramNode::default()
             }
