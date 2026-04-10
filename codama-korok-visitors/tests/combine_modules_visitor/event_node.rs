@@ -1,5 +1,9 @@
 use super::utils::{combine_modules, CombineModulesInput};
-use codama_nodes::{EventNode, ProgramNode, RootNode, StructTypeNode};
+use codama_nodes::{
+    EventNode,
+    NumberFormat::{U32, U64},
+    NumberTypeNode, ProgramNode, RootNode, StructFieldTypeNode, StructTypeNode,
+};
 
 #[test]
 fn it_merges_events_into_root_nodes() {
@@ -36,16 +40,16 @@ fn it_deduplicates_events_with_identical_names_by_using_the_last_one() {
     let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
         "duplicated",
-        StructTypeNode::new(vec![codama_nodes::StructFieldTypeNode::new(
+        StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            codama_nodes::NumberTypeNode::le(codama_nodes::NumberFormat::U64),
+            NumberTypeNode::le(U64),
         )]),
     );
     let third = EventNode::new(
         "duplicated",
-        StructTypeNode::new(vec![codama_nodes::StructFieldTypeNode::new(
+        StructTypeNode::new(vec![StructFieldTypeNode::new(
             "value",
-            codama_nodes::NumberTypeNode::le(codama_nodes::NumberFormat::U32),
+            NumberTypeNode::le(U32),
         )]),
     );
     assert_eq!(
@@ -64,9 +68,9 @@ fn it_deduplicates_events_with_identical_names_inside_programs() {
     let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
         "duplicated",
-        StructTypeNode::new(vec![codama_nodes::StructFieldTypeNode::new(
+        StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            codama_nodes::NumberTypeNode::le(codama_nodes::NumberFormat::U64),
+            NumberTypeNode::le(U64),
         )]),
     );
     let program_a = ProgramNode::default().add_event(first);
@@ -86,9 +90,9 @@ fn it_deduplicates_events_with_identical_names_with_an_initial_program_node() {
     let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
         "duplicated",
-        StructTypeNode::new(vec![codama_nodes::StructFieldTypeNode::new(
+        StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            codama_nodes::NumberTypeNode::le(codama_nodes::NumberFormat::U64),
+            NumberTypeNode::le(U64),
         )]),
     );
     let program_a = ProgramNode::default().add_event(first);
