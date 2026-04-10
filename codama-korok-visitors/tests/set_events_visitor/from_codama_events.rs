@@ -1,12 +1,15 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
-use codama_koroks::{EnumKorok, StructKorok};
+use codama_koroks::{CrateKorok, EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, DefaultValueStrategy, Docs, EventNode, FieldDiscriminatorNode,
+    BooleanTypeNode, DefaultValueStrategy, DefinedTypeLinkNode, Docs, EventNode,
+    FieldDiscriminatorNode,
     NumberFormat::{U32, U64, U8},
     NumberTypeNode, NumberValueNode, ProgramNode, PublicKeyTypeNode, StructFieldTypeNode,
     StructTypeNode,
 };
+use codama_stores::CrateStore;
+use quote::quote;
 
 #[test]
 fn from_enum() -> CodamaResult<()> {
@@ -346,6 +349,141 @@ fn with_name_directives() -> CodamaResult<()> {
                     .into(),
                     discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                 }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_enum_with_tuple_variants() -> CodamaResult<()> {
+    let store = CrateStore::hydrate(quote! {
+        #[derive(CodamaType)]
+        struct Percentage(u64);
+
+        #[derive(CodamaEvents)]
+        enum MyProgramEvents {
+            Transfer(Percentage, bool),
+        }
+    })
+    .unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
+
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetEventsVisitor::new())?;
+
+    let codama_koroks::ItemKorok::Enum(events_korok) = &korok.items[1] else {
+        panic!("Expected enum korok");
+    };
+
+    assert_eq!(
+        events_korok.node,
+        Some(
+            ProgramNode {
+                events: vec![EventNode {
+                    name: "transfer".into(),
+                    docs: Docs::default(),
+                    data: StructTypeNode::new(vec![
+                        StructFieldTypeNode {
+                            name: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: NumberTypeNode::le(U8).into(),
+                            default_value: Some(NumberValueNode::new(0u8).into()),
+                        },
+                        StructFieldTypeNode::new("arg0", DefinedTypeLinkNode::new("percentage")),
+                        StructFieldTypeNode::new("arg1", BooleanTypeNode::default()),
+                    ])
+                    .into(),
+                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                }],
+                ..ProgramNode::default()
+            }
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn from_enum_with_mixed_variants() -> CodamaResult<()> {
+    let store = CrateStore::hydrate(quote! {
+        #[derive(CodamaEvents)]
+        enum MyProgramEvents {
+            Transfer { amount: u64 },
+            Ping(bool),
+            Pong,
+        }
+    })
+    .unwrap();
+    let mut korok = CrateKorok::parse(&store)?;
+
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetEventsVisitor::new())?;
+
+    let codama_koroks::ItemKorok::Enum(events_korok) = &korok.items[0] else {
+        panic!("Expected enum korok");
+    };
+
+    assert_eq!(
+        events_korok.node,
+        Some(
+            ProgramNode {
+                events: vec![
+                    EventNode {
+                        name: "transfer".into(),
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(0u8).into()),
+                            },
+                            StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
+                        ])
+                        .into(),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                        ],
+                    },
+                    EventNode {
+                        name: "ping".into(),
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                name: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: NumberTypeNode::le(U8).into(),
+                                default_value: Some(NumberValueNode::new(1u8).into()),
+                            },
+                            StructFieldTypeNode::new("arg0", BooleanTypeNode::default()),
+                        ])
+                        .into(),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                        ],
+                    },
+                    EventNode {
+                        name: "pong".into(),
+                        docs: Docs::default(),
+                        data: StructTypeNode::new(vec![StructFieldTypeNode {
+                            name: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: NumberTypeNode::le(U8).into(),
+                            default_value: Some(NumberValueNode::new(2u8).into()),
+                        }])
+                        .into(),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                        ],
+                    },
+                ],
                 ..ProgramNode::default()
             }
             .into()
