@@ -86,9 +86,10 @@ impl KorokVisitor for SetEventsVisitor {
         // Transform each variant into an `EventNode`.
         self.enum_name = korok.ast.ident.to_string();
         self.enum_discriminator = enum_discriminator;
-        self.enum_current_discriminator = 0;
 
+        self.enum_current_discriminator = 0;
         self.visit_children(korok)?;
+        self.enum_current_discriminator = 0;
 
         // Gather all events in the variants.
         let events = korok
