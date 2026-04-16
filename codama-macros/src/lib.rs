@@ -3,6 +3,8 @@ use proc_macro::TokenStream;
 mod attributes;
 #[cfg(not(target_os = "solana"))]
 mod derives;
+#[cfg(not(target_os = "solana"))]
+mod pda_helpers;
 
 fn codama_derive(input: TokenStream) -> TokenStream {
     #[cfg(not(target_os = "solana"))]
@@ -65,6 +67,20 @@ pub fn codama_instructions_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(CodamaPda, attributes(codama))]
 pub fn codama_pda_derive(input: TokenStream) -> TokenStream {
     codama_derive(input)
+}
+
+#[proc_macro_derive(CodamaPdaHelpers, attributes(codama))]
+pub fn codama_pda_helpers_derive(input: TokenStream) -> TokenStream {
+    #[cfg(not(target_os = "solana"))]
+    {
+        pda_helpers::codama_pda_helpers_derive_impl(input.into())
+            .unwrap_or_else(codama_errors::CodamaError::into_compile_error)
+            .into()
+    }
+    #[cfg(target_os = "solana")]
+    {
+        input
+    }
 }
 
 #[proc_macro_derive(CodamaType, attributes(codama))]

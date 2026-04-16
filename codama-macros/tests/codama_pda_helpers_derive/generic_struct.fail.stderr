@@ -1,0 +1,5 @@
+error: CodamaPdaHelpers does not support generic structs
+ --> tests/codama_pda_helpers_derive/generic_struct.fail.rs:5:19
+  |
+5 | pub struct Counter<T>(T);
+  |                   ^^^

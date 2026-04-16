@@ -1,0 +1,28 @@
+error[E0592]: duplicate definitions with name `seeds`
+ --> tests/codama_pda_helpers_derive/duplicate_method.fail.rs:3:25
+  |
+3 | #[derive(CodamaAccount, CodamaPdaHelpers)]
+  |                         ^^^^^^^^^^^^^^^^ duplicate definitions for `seeds`
+...
+8 |     pub fn seeds() -> [&'static [u8]; 0] {
+  |     ------------------------------------ other definition for `seeds`
+  |
+  = note: this error originates in the derive macro `CodamaPdaHelpers` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0034]: multiple applicable items in scope
+ --> tests/codama_pda_helpers_derive/duplicate_method.fail.rs:3:25
+  |
+3 | #[derive(CodamaAccount, CodamaPdaHelpers)]
+  |                         ^^^^^^^^^^^^^^^^ multiple `seeds` found
+  |
+note: candidate #1 is defined in an impl for the type `Counter`
+ --> tests/codama_pda_helpers_derive/duplicate_method.fail.rs:3:25
+  |
+3 | #[derive(CodamaAccount, CodamaPdaHelpers)]
+  |                         ^^^^^^^^^^^^^^^^
+note: candidate #2 is defined in an impl for the type `Counter`
+ --> tests/codama_pda_helpers_derive/duplicate_method.fail.rs:8:5
+  |
+8 |     pub fn seeds() -> [&'static [u8]; 0] {
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  = note: this error originates in the derive macro `CodamaPdaHelpers` (in Nightly builds, run with -Z macro-backtrace for more info)

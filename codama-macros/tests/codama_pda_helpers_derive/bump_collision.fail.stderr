@@ -1,0 +1,5 @@
+error: CodamaPdaHelpers generated a duplicate parameter name `bump` from seed `bump`; it conflicts with `<generated bump parameter>`
+ --> tests/codama_pda_helpers_derive/bump_collision.fail.rs:5:1
+  |
+5 | #[codama(seed(name = "bump", type = number(u8)))]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

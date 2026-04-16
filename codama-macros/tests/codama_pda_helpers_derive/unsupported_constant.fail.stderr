@@ -1,0 +1,5 @@
+error: CodamaPdaHelpers currently supports constant seeds only for string(utf8) and integer number(...) types
+ --> tests/codama_pda_helpers_derive/unsupported_constant.fail.rs:4:1
+  |
+4 | #[codama(seed(type = string(base64), value = "cHJlZml4"))]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
