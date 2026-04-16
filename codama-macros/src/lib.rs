@@ -42,6 +42,16 @@ pub fn codama_errors_derive(input: TokenStream) -> TokenStream {
     codama_derive(input)
 }
 
+#[proc_macro_derive(CodamaEvent, attributes(codama))]
+pub fn codama_event_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input)
+}
+
+#[proc_macro_derive(CodamaEvents, attributes(codama))]
+pub fn codama_events_derive(input: TokenStream) -> TokenStream {
+    codama_derive(input)
+}
+
 #[proc_macro_derive(CodamaInstruction, attributes(codama))]
 pub fn codama_instruction_derive(input: TokenStream) -> TokenStream {
     codama_derive(input)

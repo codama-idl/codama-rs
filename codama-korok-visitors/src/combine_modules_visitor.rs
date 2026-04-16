@@ -141,6 +141,10 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
                 add_or_replace_node_with_name(&mut root.program.pdas, node);
                 has_scraps = true
             }
+            Node::Event(node) => {
+                add_or_replace_node_with_name(&mut root.program.events, node);
+                has_scraps = true
+            }
             _ => (),
         }
     }
@@ -210,8 +214,9 @@ fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     merge_nodes_with_name(&mut this.accounts, that.accounts);
     merge_nodes_with_name(&mut this.instructions, that.instructions);
     merge_nodes_with_name(&mut this.defined_types, that.defined_types);
-    merge_nodes_with_name(&mut this.errors, that.errors);
     merge_nodes_with_name(&mut this.pdas, that.pdas);
+    merge_nodes_with_name(&mut this.events, that.events);
+    merge_nodes_with_name(&mut this.errors, that.errors);
 }
 
 fn merge_nodes_with_name<T>(nodes: &mut Vec<T>, new_nodes: Vec<T>)

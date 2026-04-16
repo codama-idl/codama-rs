@@ -6,5 +6,6 @@ mod debug_visitor;
 mod identify_field_types_visitor;
 mod set_accounts_visitor;
 mod set_errors_visitor;
+mod set_events_visitor;
 mod set_instructions_visitor;
 mod set_program_metadata_visitor;
