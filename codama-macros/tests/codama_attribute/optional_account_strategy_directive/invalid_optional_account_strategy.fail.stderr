@@ -1,0 +1,5 @@
+error: expected `omitted` or `program_id`
+ --> tests/codama_attribute/optional_account_strategy_directive/invalid_optional_account_strategy.fail.rs:5:42
+  |
+5 |     #[codama(optional_account_strategy = invalid)]
+  |                                          ^^^^^^^

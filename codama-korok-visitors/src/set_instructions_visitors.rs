@@ -1,14 +1,15 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
-    EnumDiscriminatorDirective, ProgramDirective, TryFromFilter,
+    EnumDiscriminatorDirective, OptionalAccountStrategyDirective, ProgramDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
-    NumberValueNode, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode,
+    InstructionOptionalAccountStrategy, NestedTypeNode, Node, NumberValueNode, ProgramNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -64,6 +65,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         let (name, data) = parse_struct(korok)?;
         let instruction = InstructionNode {
             name,
+            optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
             accounts: parse_accounts(&korok.attributes, &korok.fields)?,
             arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
@@ -156,6 +158,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         korok.node = Some(
             InstructionNode {
                 name,
+                optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
                 accounts: parse_accounts(&korok.attributes, &korok.fields)?,
                 arguments: parse_arguments(
                     &korok.attributes,
@@ -171,6 +174,13 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         Ok(())
     }
+}
+
+fn parse_optional_account_strategy(attributes: &Attributes) -> InstructionOptionalAccountStrategy {
+    attributes
+        .get_last(OptionalAccountStrategyDirective::filter)
+        .map(|directive| directive.strategy)
+        .unwrap_or_default()
 }
 
 fn parse_accounts(

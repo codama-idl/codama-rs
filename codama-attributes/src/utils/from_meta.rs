@@ -1,4 +1,4 @@
-use codama_nodes::{BytesEncoding, Docs, IsAccountSigner};
+use codama_nodes::{BytesEncoding, Docs, InstructionOptionalAccountStrategy, IsAccountSigner};
 use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
 
@@ -42,6 +42,18 @@ impl FromMeta for BytesEncoding {
             }
         }
         Err(expr.error("expected one of: \"base16\", \"base58\", \"base64\", \"utf8\""))
+    }
+}
+
+impl FromMeta for InstructionOptionalAccountStrategy {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        let expr = meta.as_expr_or_value_expr()?;
+        let path = expr.as_path()?;
+        match path.to_string().as_str() {
+            "omitted" => Ok(Self::Omitted),
+            "program_id" => Ok(Self::ProgramId),
+            _ => Err(path.error("expected `omitted` or `program_id`")),
+        }
     }
 }
 
