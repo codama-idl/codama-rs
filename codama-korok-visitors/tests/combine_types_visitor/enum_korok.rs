@@ -3,8 +3,9 @@ use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
     DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, NestedTypeNode, Node, NumberFormat::U32, NumberTypeNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32,
+    EnumTypeNode, NestedTypeNode, Node,
+    NumberFormat::{U32, U8},
+    NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32,
 };
 
 #[test]
@@ -112,6 +113,97 @@ fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaR
                 EnumTypeNode {
                     variants: vec![variant_hello.into(), variant_bye.into(),],
                     size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                }
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directives(
+) -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(enum_discriminator(size = number(u32)))]
+        enum Message { Hello, Bye }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    let variant_hello = EnumEmptyVariantTypeNode::new("hello");
+    let variant_bye = EnumEmptyVariantTypeNode::new("bye");
+    korok.variants[0].node = Some(variant_hello.clone().into());
+    korok.variants[1].node = Some(variant_bye.clone().into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "message",
+                EnumTypeNode {
+                    variants: vec![variant_hello.into(), variant_bye.into()],
+                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                }
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_prefers_enum_discriminator_sizes_over_repr_attributes() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(enum_discriminator(size = number(u32)))]
+        #[repr(u8)]
+        enum Message { Hello, Bye }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    let variant_hello = EnumEmptyVariantTypeNode::new("hello");
+    let variant_bye = EnumEmptyVariantTypeNode::new("bye");
+    korok.variants[0].node = Some(variant_hello.clone().into());
+    korok.variants[1].node = Some(variant_bye.clone().into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "message",
+                EnumTypeNode {
+                    variants: vec![variant_hello.into(), variant_bye.into()],
+                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                }
+            )
+            .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_defaults_defined_enums_to_u8_without_repr_or_enum_discriminator() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        enum Message { Hello, Bye }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    let variant_hello = EnumEmptyVariantTypeNode::new("hello");
+    let variant_bye = EnumEmptyVariantTypeNode::new("bye");
+    korok.variants[0].node = Some(variant_hello.clone().into());
+    korok.variants[1].node = Some(variant_bye.clone().into());
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut CombineTypesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            DefinedTypeNode::new(
+                "message",
+                EnumTypeNode {
+                    variants: vec![variant_hello.into(), variant_bye.into()],
+                    size: NestedTypeNode::Value(NumberTypeNode::le(U8)),
                 }
             )
             .into()
