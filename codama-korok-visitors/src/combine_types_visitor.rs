@@ -1,5 +1,7 @@
 use crate::KorokVisitor;
-use codama_attributes::{Attributes, FieldDirective, ReprAttribute, TryFromFilter};
+use codama_attributes::{
+    Attributes, EnumDiscriminatorDirective, FieldDirective, ReprAttribute, TryFromFilter,
+};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
@@ -206,20 +208,17 @@ impl KorokVisitor for CombineTypesVisitor {
 
         let size = korok
             .attributes
-            .get_first(ReprAttribute::filter)
-            .and_then(|attr| attr.get_number_type_node())
-            .unwrap_or(NumberTypeNode::le(U8));
+            .get_last(EnumDiscriminatorDirective::filter)
+            .and_then(|directive| directive.size.clone())
+            .or(korok
+                .attributes
+                .get_first(ReprAttribute::filter)
+                .and_then(|attr| attr.get_number_type_node())
+                .map(NestedTypeNode::Value))
+            .unwrap_or(NestedTypeNode::Value(NumberTypeNode::le(U8)));
 
-        korok.node = Some(
-            DefinedTypeNode::new(
-                korok.name(),
-                EnumTypeNode {
-                    variants,
-                    size: NestedTypeNode::Value(size),
-                },
-            )
-            .into(),
-        );
+        korok.node =
+            Some(DefinedTypeNode::new(korok.name(), EnumTypeNode { variants, size }).into());
         Ok(())
     }
 
