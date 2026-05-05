@@ -1,6 +1,6 @@
 use crate::{
-    AccountNode, CamelCaseString, DefinedTypeNode, Docs, ErrorNode, EventNode, HasName,
-    InstructionNode, PdaNode,
+    AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode,
+    HasName, InstructionNode, PdaNode,
 };
 use codama_nodes_derive::node;
 
@@ -29,6 +29,8 @@ pub struct ProgramNode {
     pub events: Vec<EventNode>,
     #[serde(default)]
     pub errors: Vec<ErrorNode>,
+    #[serde(default)]
+    pub constants: Vec<ConstantNode>,
 }
 
 impl ProgramNode {
@@ -74,6 +76,11 @@ impl ProgramNode {
         self.errors.push(error);
         self
     }
+
+    pub fn add_constant(mut self, constant: ConstantNode) -> Self {
+        self.constants.push(constant);
+        self
+    }
 }
 
 impl HasName for ProgramNode {
@@ -101,6 +108,7 @@ mod tests {
         assert_eq!(node.pdas, vec![]);
         assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
+        assert_eq!(node.constants, vec![]);
     }
 
     #[test]
@@ -117,6 +125,7 @@ mod tests {
         assert_eq!(node.pdas, vec![]);
         assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
+        assert_eq!(node.constants, vec![]);
     }
 
     #[test]
@@ -138,6 +147,7 @@ mod tests {
         assert_eq!(node.pdas, vec![]);
         assert_eq!(node.events, vec![]);
         assert_eq!(node.errors, vec![]);
+        assert_eq!(node.constants, vec![]);
     }
 
     #[test]
@@ -151,7 +161,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[]}"#
+            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[],"constants":[]}"#
         );
     }
 
