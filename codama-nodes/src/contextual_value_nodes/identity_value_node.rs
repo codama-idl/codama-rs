@@ -1,7 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Default)]
+#[derive(Copy, Default)]
 pub struct IdentityValueNode {}
 
 impl From<IdentityValueNode> for crate::Node {

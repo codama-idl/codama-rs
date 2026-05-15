@@ -1,3 +1,5 @@
+#![warn(missing_copy_implementations)]
+
 mod account_node;
 mod contextual_value_nodes;
 mod count_nodes;

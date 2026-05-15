@@ -1,7 +1,7 @@
 use codama_nodes_derive::type_node;
 
 #[type_node]
-#[derive(Default)]
+#[derive(Copy, Default)]
 pub struct PublicKeyTypeNode {}
 
 impl From<PublicKeyTypeNode> for crate::Node {

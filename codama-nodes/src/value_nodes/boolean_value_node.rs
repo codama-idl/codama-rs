@@ -1,6 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Copy)]
 pub struct BooleanValueNode {
     // Data.
     pub boolean: bool,
