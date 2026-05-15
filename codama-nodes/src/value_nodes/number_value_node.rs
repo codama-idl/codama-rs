@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Number as JsonNumber;
 
 #[node]
+#[derive(Copy)]
 pub struct NumberValueNode {
     // Data.
     pub number: Number,

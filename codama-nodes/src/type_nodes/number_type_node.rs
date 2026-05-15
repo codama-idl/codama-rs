@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub use NumberFormat::*;
 
 #[type_node]
+#[derive(Copy)]
 pub struct NumberTypeNode {
     // Data.
     pub format: NumberFormat,
