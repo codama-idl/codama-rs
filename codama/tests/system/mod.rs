@@ -974,7 +974,8 @@ fn get_idl() {
         "code": 8,
         "message": "specified nonce does not match stored nonce"
       }
-    ]
+    ],
+    "constants": []
   },
   "additionalPrograms": []
 }"#

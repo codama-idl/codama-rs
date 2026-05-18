@@ -1,6 +1,7 @@
 #![warn(missing_copy_implementations)]
 
 mod account_node;
+mod constant_node;
 mod contextual_value_nodes;
 mod count_nodes;
 mod defined_type_node;
@@ -25,6 +26,7 @@ mod type_nodes;
 mod value_nodes;
 
 pub use account_node::*;
+pub use constant_node::*;
 pub use contextual_value_nodes::*;
 pub use count_nodes::*;
 pub use defined_type_node::*;

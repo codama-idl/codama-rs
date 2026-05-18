@@ -1,9 +1,10 @@
 use crate::{
-    AccountNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode, ErrorNode,
-    EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode, InstructionByteDeltaNode,
-    InstructionNode, InstructionRemainingAccountsNode, InstructionStatusNode, LinkNode,
-    NodeUnionTrait, PdaNode, PdaSeedNode, ProgramNode, RegisteredContextualValueNode,
-    RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode, ValueNode,
+    AccountNode, ConstantNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode,
+    ErrorNode, EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode,
+    InstructionByteDeltaNode, InstructionNode, InstructionRemainingAccountsNode,
+    InstructionStatusNode, LinkNode, NodeUnionTrait, PdaNode, PdaSeedNode, ProgramNode,
+    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode,
+    ValueNode,
 };
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,7 @@ pub enum Node {
 
     // Nodes.
     Account(AccountNode),
+    Constant(ConstantNode),
     DefinedType(DefinedTypeNode),
     Error(ErrorNode),
     Event(EventNode),
@@ -69,6 +71,7 @@ impl HasKind for Node {
             Node::Type(node) => node.kind(),
             Node::Value(node) => node.kind(),
             Node::Account(node) => node.kind(),
+            Node::Constant(node) => node.kind(),
             Node::DefinedType(node) => node.kind(),
             Node::Error(node) => node.kind(),
             Node::Event(node) => node.kind(),
@@ -97,7 +100,7 @@ impl HasKind for Option<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, U32};
+    use crate::{NumberTypeNode, NumberValueNode, U32};
 
     #[test]
     fn kind() {
@@ -142,6 +145,35 @@ mod tests {
         assert_eq!(
             node,
             Node::DefinedType(DefinedTypeNode::new("myType", NumberTypeNode::le(U32)))
+        );
+    }
+
+    #[test]
+    fn constant_to_json() {
+        let node: Node = ConstantNode::new(
+            "myConstant",
+            NumberTypeNode::le(U32),
+            NumberValueNode::new(42u32),
+        )
+        .into();
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"constantNode","name":"myConstant","type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#
+        );
+    }
+
+    #[test]
+    fn constant_from_json() {
+        let json = r#"{"kind":"constantNode","name":"myConstant","type":{"kind":"numberTypeNode","format":"u32","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#;
+        let node: Node = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            Node::Constant(ConstantNode::new(
+                "myConstant",
+                NumberTypeNode::le(U32),
+                NumberValueNode::new(42u32)
+            ))
         );
     }
 }

@@ -54,6 +54,13 @@ impl ProgramDirective {
                 ..ProgramNode::default()
             }
             .into(),
+            Node::Constant(constant) => ProgramNode {
+                name: self.name.clone(),
+                public_key: self.address.clone(),
+                constants: vec![constant],
+                ..ProgramNode::default()
+            }
+            .into(),
             Node::Instruction(instruction) => ProgramNode {
                 name: self.name.clone(),
                 public_key: self.address.clone(),
