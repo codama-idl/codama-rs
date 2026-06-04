@@ -52,23 +52,6 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /**
- * Spec union names the generator must NOT emit because their Rust
- * counterpart is bespoke hand-written code that can't be reproduced
- * mechanically.
- *
- *   - `valueNode` is the category dispatch union for the `value`
- *     category, but in Rust it's the auto-derived standalone twin of
- *     `RegisteredValueNode` (`#[derive(RegisteredNodes)]`), which has
- *     the `registered`/`standalone` split with `#[registered]`
- *     variants. The generator doesn't model that yet; the
- *     hand-written `value_nodes/value_node.rs` stays canonical.
- *
- * Per-node structs in these categories are still generated normally;
- * only the category union itself is skipped.
- */
-export const HAND_WRITTEN_UNIONS: ReadonlySet<string> = new Set(['valueNode']);
-
-/**
  * Per-field Rust-type overrides for cases where the spec's TypeExpr
  * maps to a bespoke Rust type that can't be expressed mechanically.
  * Keyed by `"<nodeKind>.<attrName>"`.

@@ -6,5 +6,6 @@ export * from './modPage';
 export * from './nodePage';
 export * from './nodeStructFragment';
 export * from './page';
+export * from './registeredUnionPage';
 export * from './typeExpr';
 export * from './unionPage';

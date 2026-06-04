@@ -1,8 +1,6 @@
 import { pascalCase } from '@codama/fragments';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { HAND_WRITTEN_UNIONS } from './defaults';
-
 /**
  * Spec unions starting with `registered` are category-registry unions
  * (e.g. `registeredLinkNode`); the Rust crate exposes one flattened
@@ -22,10 +20,6 @@ const REGISTERED_UNION_PREFIX = 'registered';
  *     twin AND referenced by at least one node attribute somewhere
  *     in the spec. This rule is derived from the spec; no hand-list.
  *
- * Unions in {@link HAND_WRITTEN_UNIONS} are skipped — their Rust
- * counterpart is bespoke (e.g. `valueNode` → `RegisteredValueNode`
- * with `#[derive(RegisteredNodes)]`).
- *
  * Sorted alphabetically by name for stable output.
  */
 export function getEmittableUnions(category: Spec['categories'][number], spec: Spec): readonly UnionSpec[] {
@@ -33,9 +27,43 @@ export function getEmittableUnions(category: Spec['categories'][number], spec: S
     const allUnionNames = new Set(spec.categories.flatMap(c => c.unions).map(u => u.name));
     return category.unions
         .filter(u => !u.name.startsWith(REGISTERED_UNION_PREFIX))
-        .filter(u => !HAND_WRITTEN_UNIONS.has(u.name))
         .filter(u => hasRegisteredTwin(u.name, allUnionNames) || isInlineUnion(u, allUnionNames, referenced))
         .toSorted((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * `true` when the standalone `union` is the twin of a
+ * `registered<PascalCase>` that contains members the standalone
+ * doesn't (i.e. the `registered<X>` has at least one
+ * `#[registered]`-only variant). Such unions need the
+ * `#[derive(RegisteredNodes)]` emission mode — see
+ * `registeredUnionPage.ts`. Categories like `link`/`count` whose
+ * registered twin is identical to the standalone do NOT match.
+ */
+export function isRegisteredCategoryUnion(union: UnionSpec, spec: Spec): boolean {
+    const twin = spec.categories
+        .flatMap(c => c.unions)
+        .find(u => u.name === `${REGISTERED_UNION_PREFIX}${pascalCase(union.name)}`);
+    if (!twin) return false;
+    const standaloneKinds = new Set([...flattenNodeUnion(union, spec)].map(n => n.kind));
+    const twinKinds = [...flattenNodeUnion(twin, spec)].map(n => n.kind);
+    return twinKinds.some(k => !standaloneKinds.has(k));
+}
+
+/**
+ * The leaf node kinds that are present in the `registered<X>` twin
+ * but NOT in the standalone `<X>` — i.e. the variants that must be
+ * marked `#[registered]` in the emitted enum. Returned in spec
+ * declaration order (the `registered<X>` union's member order),
+ * since that order is deterministic and has no semantic effect.
+ */
+export function getRegisteredOnlyLeafKinds(union: UnionSpec, spec: Spec): readonly string[] {
+    const twin = spec.categories
+        .flatMap(c => c.unions)
+        .find(u => u.name === `${REGISTERED_UNION_PREFIX}${pascalCase(union.name)}`);
+    if (!twin) return [];
+    const standaloneKinds = new Set([...flattenNodeUnion(union, spec)].map(n => n.kind));
+    return [...flattenNodeUnion(twin, spec)].map(n => n.kind).filter(k => !standaloneKinds.has(k));
 }
 
 /**

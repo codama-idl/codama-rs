@@ -15,6 +15,7 @@ mod string_value_node;
 mod struct_field_value_node;
 mod struct_value_node;
 mod tuple_value_node;
+mod value_node;
 
 pub use array_value_node::*;
 pub use boolean_value_node::*;
@@ -33,3 +34,4 @@ pub use string_value_node::*;
 pub use struct_field_value_node::*;
 pub use struct_value_node::*;
 pub use tuple_value_node::*;
+pub use value_node::*;

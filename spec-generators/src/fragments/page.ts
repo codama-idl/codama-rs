@@ -4,9 +4,12 @@ import { type Fragment, fragment, type ImportMap, importMapToString, mergeFragme
  * Render a Rust source page from a body fragment: prepend a `use`
  * block built from the fragment's import map, then the body content.
  *
- * `use crate::Foo;` lines are collapsed into a single
- * `use crate::{Foo, Bar};` to match the hand-written convention;
- * non-`crate::` paths stay on their own lines, sorted alphabetically.
+ * Imports sharing the same module prefix are collapsed into a single
+ * grouped `use <module>::{A, B};` line (e.g. `use crate::{Foo, Bar};`,
+ * `use codama_nodes_derive::{node_union, RegisteredNodes};`) to match
+ * the hand-written convention. Single-import modules stay on their
+ * own line (`use crate::Foo;`). Lines are sorted alphabetically by
+ * module path.
  *
  * This grouping has to happen here because stable `rustfmt` (the
  * codama-rs toolchain) sorts `use` lines but won't merge them —
@@ -19,23 +22,32 @@ export function getPageFragment(body: Fragment): Fragment {
 }
 
 function formatImports(importMap: ImportMap): string {
+    // Each line is `use <path>;`. Split each path into `<module>::<name>`,
+    // grouping by module so multiple imports from the same module collapse.
     const lines = importMapToString(importMap)
         .split('\n')
         .filter(line => line !== '');
 
-    const crateRefs: string[] = [];
-    const other: string[] = [];
+    const byModule = new Map<string, string[]>();
+    const ungroupable: string[] = [];
     for (const line of lines) {
-        const match = /^use crate::([A-Za-z0-9_]+);$/.exec(line);
-        if (match) crateRefs.push(match[1]);
-        else other.push(line);
+        const match = /^use (.+)::([A-Za-z0-9_]+);$/.exec(line);
+        if (!match) {
+            ungroupable.push(line);
+            continue;
+        }
+        const [, mod, name] = match;
+        const names = byModule.get(mod) ?? [];
+        names.push(name);
+        byModule.set(mod, names);
     }
 
-    const output: string[] = [];
-    if (crateRefs.length > 0) {
-        const sorted = [...crateRefs].toSorted((a, b) => a.localeCompare(b));
-        output.push(sorted.length === 1 ? `use crate::${sorted[0]};` : `use crate::{${sorted.join(', ')}};`);
+    const grouped: string[] = [];
+    for (const [mod, names] of byModule) {
+        const sorted = [...names].toSorted((a, b) => a.localeCompare(b));
+        grouped.push(sorted.length === 1 ? `use ${mod}::${sorted[0]};` : `use ${mod}::{${sorted.join(', ')}};`);
     }
-    output.push(...other.toSorted((a, b) => a.localeCompare(b)));
+
+    const output = [...grouped, ...ungroupable].toSorted((a, b) => a.localeCompare(b));
     return output.join('\n');
 }
