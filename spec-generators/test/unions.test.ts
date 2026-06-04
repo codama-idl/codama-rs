@@ -1,37 +1,56 @@
 import { getSpec } from '@codama/spec';
 import { describe, expect, it } from 'vitest';
 
-import { flattenNodeUnion, getEmittableUnions } from '../src/unions';
+import { flattenNodeUnion, getEmittableUnions, getInlineUnionStripSuffix } from '../src/unions';
 
 const spec = getSpec();
 const linkCategory = spec.categories.find(c => c.name === 'link')!;
 const pdaSeedCategory = spec.categories.find(c => c.name === 'pdaSeed')!;
+const valueCategory = spec.categories.find(c => c.name === 'value')!;
 
 describe('getEmittableUnions', () => {
-    it('returns the category-main union (the standalone twin of a `registered…`), sorted alphabetically', () => {
-        // `pdaSeed` also has `constantPdaSeedValue` in INLINE_UNIONS,
-        // so both are emittable; the sort puts `constantPdaSeedValue`
-        // before `pdaSeedNode`.
-        expect(getEmittableUnions(linkCategory).map(u => u.name)).toEqual(['linkNode']);
-        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).toEqual(['constantPdaSeedValue', 'pdaSeedNode']);
+    it('returns the category-main union (the standalone twin of a `registered…`) plus any referenced inline unions, sorted alphabetically', () => {
+        // `pdaSeed` also has `constantPdaSeedValue` (inline,
+        // referenced by `constantPdaSeedNode.value`), so both are
+        // emittable; the sort puts `constantPdaSeedValue` first.
+        expect(getEmittableUnions(linkCategory, spec).map(u => u.name)).toEqual(['linkNode']);
+        expect(getEmittableUnions(pdaSeedCategory, spec).map(u => u.name)).toEqual([
+            'constantPdaSeedValue',
+            'pdaSeedNode',
+        ]);
     });
 
     it('skips category-registry unions (`registered*`)', () => {
-        expect(getEmittableUnions(linkCategory).map(u => u.name)).not.toContain('registeredLinkNode');
+        expect(getEmittableUnions(linkCategory, spec).map(u => u.name)).not.toContain('registeredLinkNode');
     });
 
-    it('skips inline / synthetic unions that are NOT in the INLINE_UNIONS allowlist', () => {
-        // `linkNode`'s category has no inline-union members, so we can
-        // just confirm no spurious emission. A category with inline
-        // unions out of the allowlist would also be filtered out (no
-        // such case in pdaSeed today — constantPdaSeedValue IS in the
-        // allowlist, so it appears).
-        const names = getEmittableUnions(linkCategory).map(u => u.name);
+    it('skips inline unions that are not referenced anywhere in the spec', () => {
+        // The derived rule only emits an inline union if at least one
+        // node attribute references it. linkCategory has no inline
+        // members at all, so the rule yields just `linkNode`.
+        const names = getEmittableUnions(linkCategory, spec).map(u => u.name);
         for (const u of linkCategory.unions) {
-            if (u.name.startsWith('registered')) continue;
-            if (u.name === 'linkNode') continue;
+            if (u.name.startsWith('registered') || u.name === 'linkNode') continue;
             expect(names).not.toContain(u.name);
         }
+    });
+
+    it('skips HAND_WRITTEN_UNIONS even when they have a registered twin (e.g. value/valueNode)', () => {
+        expect(getEmittableUnions(valueCategory, spec).map(u => u.name)).not.toContain('valueNode');
+    });
+});
+
+describe('getInlineUnionStripSuffix', () => {
+    it('returns the longest common PascalCase suffix shared by every flattened leaf', () => {
+        const constantPdaSeedValue = pdaSeedCategory.unions.find(u => u.name === 'constantPdaSeedValue')!;
+        // Leaves include `programIdValueNode` + every `valueNode` leaf
+        // (all suffixed `ValueNode`).
+        expect(getInlineUnionStripSuffix(constantPdaSeedValue, spec)).toBe('ValueNode');
+    });
+
+    it('handles a small inline union (enumValuePayload: structValueNode | tupleValueNode)', () => {
+        const enumValuePayload = valueCategory.unions.find(u => u.name === 'enumValuePayload')!;
+        expect(getInlineUnionStripSuffix(enumValuePayload, spec)).toBe('ValueNode');
     });
 });
 

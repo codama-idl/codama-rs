@@ -29,8 +29,6 @@ export {
     CATEGORY_ROUTING,
     FIELD_TYPE_OVERRIDES,
     HAND_WRITTEN_UNIONS,
-    type InlineUnionConfig,
-    INLINE_UNIONS,
 } from './defaults';
 export {
     buildRenderScope,
@@ -103,7 +101,7 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             const path = joinPath(folder, `${snakeCase(node.kind)}.rs`);
             entries[path] = getPageFragment(getNodePageFragment(node, routing));
         }
-        for (const union of getEmittableUnions(category)) {
+        for (const union of getEmittableUnions(category, spec)) {
             // The on-disk file name follows the spec union name in
             // snake_case (e.g. `linkNode` → `link_node.rs`).
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
