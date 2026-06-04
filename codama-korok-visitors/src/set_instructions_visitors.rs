@@ -7,9 +7,9 @@ use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    InstructionOptionalAccountStrategy, NestedTypeNode, Node, NumberValueNode, ProgramNode,
-    StructFieldTypeNode, StructTypeNode, TypeNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
+    NumberValueNode, OptionalAccountStrategy, ProgramNode, StructFieldTypeNode, StructTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -176,7 +176,7 @@ impl KorokVisitor for SetInstructionsVisitor {
     }
 }
 
-fn parse_optional_account_strategy(attributes: &Attributes) -> InstructionOptionalAccountStrategy {
+fn parse_optional_account_strategy(attributes: &Attributes) -> OptionalAccountStrategy {
     attributes
         .get_last(OptionalAccountStrategyDirective::filter)
         .map(|directive| directive.strategy)

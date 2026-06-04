@@ -28,15 +28,15 @@ impl DateTimeTypeNode {
 mod tests {
     use super::*;
     use crate::{
-        Endian, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
+        Endianness, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
     };
 
     #[test]
     fn new() {
-        let node = DateTimeTypeNode::new(NumberTypeNode::new(U64, Endian::Big));
+        let node = DateTimeTypeNode::new(NumberTypeNode::new(U64, Endianness::Big));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
     }
 

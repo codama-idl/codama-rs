@@ -3,7 +3,6 @@ import {
     deleteDirectory,
     joinPath,
     mergeRenderMaps,
-    pascalCase,
     type Path,
     type RenderMap,
     snakeCase,
@@ -12,7 +11,7 @@ import {
 import { type Fragment } from '@codama/fragments/rust';
 import { getSpec, type Spec } from '@codama/spec';
 
-import { CATEGORY_ROUTING, UNION_NAME_OVERRIDES } from './defaults';
+import { CATEGORY_ROUTING } from './defaults';
 import { getModPagesRenderMap, getNodePageFragment, getPageFragment, getUnionPageFragment } from './fragments';
 import {
     buildRenderScope,
@@ -28,12 +27,10 @@ export {
     CATEGORY_DIRECTORIES,
     type CategoryRouting,
     CATEGORY_ROUTING,
-    ENUMERATION_NAME_OVERRIDES,
     FIELD_TYPE_OVERRIDES,
     HAND_WRITTEN_UNIONS,
     type InlineUnionConfig,
     INLINE_UNIONS,
-    UNION_NAME_OVERRIDES,
 } from './defaults';
 export {
     buildRenderScope,
@@ -107,14 +104,9 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             entries[path] = getPageFragment(getNodePageFragment(node, routing));
         }
         for (const union of getEmittableUnions(category)) {
-            // The on-disk file name follows the *Rust* enum name in
-            // snake_case (e.g. `linkNode` → `link_node.rs`), respecting
-            // any {@link UNION_NAME_OVERRIDES}. Honouring the override
-            // keeps the file name equal to the Rust type name (e.g.
-            // `enumValuePayload` → `EnumVariantData` →
-            // `enum_variant_data.rs`).
-            const rustName = UNION_NAME_OVERRIDES.get(union.name) ?? pascalCase(union.name);
-            const path = joinPath(folder, `${snakeCase(rustName)}.rs`);
+            // The on-disk file name follows the spec union name in
+            // snake_case (e.g. `linkNode` → `link_node.rs`).
+            const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
             entries[path] = getPageFragment(getUnionPageFragment(union, spec));
         }
     }

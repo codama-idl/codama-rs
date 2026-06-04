@@ -67,10 +67,7 @@ describe('getRenderMap', () => {
             'value_nodes/bytes_value_node.rs',
             'value_nodes/constant_value_node.rs',
             'value_nodes/enum_value_node.rs',
-            // `enumValuePayload` renames to `EnumVariantData` in
-            // `UNION_NAME_OVERRIDES`; the generated file follows the
-            // override name, not the spec name.
-            'value_nodes/enum_variant_data.rs',
+            'value_nodes/enum_value_payload.rs',
             'value_nodes/map_entry_value_node.rs',
             'value_nodes/map_value_node.rs',
             'value_nodes/mod.rs',
@@ -248,7 +245,7 @@ describe('getRenderMap', () => {
 
         it('applies the box-all-union rule on optional union fields (Box<Option<T>>)', () => {
             const entry = getFromRenderMap(map, 'value_nodes/enum_value_node.rs');
-            expect(entry.content).toContain('pub value: Box<Option<EnumVariantData>>,');
+            expect(entry.content).toContain('pub value: Box<Option<EnumValuePayload>>,');
         });
 
         it('does NOT box Vec<union> fields (arrayValueNode / setValueNode / tupleValueNode)', () => {
@@ -272,9 +269,9 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('pub struct NoneValueNode {}');
         });
 
-        it('emits the EnumVariantData inline-union enum (renamed from enumValuePayload) with Struct/Tuple variants', () => {
-            const entry = getFromRenderMap(map, 'value_nodes/enum_variant_data.rs');
-            expect(entry.content).toContain('pub enum EnumVariantData {');
+        it('emits the EnumValuePayload inline-union enum with Struct/Tuple variants', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/enum_value_payload.rs');
+            expect(entry.content).toContain('pub enum EnumValuePayload {');
             expect(entry.content).toContain('Struct(StructValueNode),');
             expect(entry.content).toContain('Tuple(TupleValueNode),');
         });

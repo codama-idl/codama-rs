@@ -2,7 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { INLINE_UNIONS, UNION_NAME_OVERRIDES } from '../defaults';
+import { INLINE_UNIONS } from '../defaults';
 import { flattenNodeUnion } from '../unions';
 import { getUnionHasNameImplFragment } from './hasNameImpl';
 import { use } from './helpers';
@@ -19,7 +19,7 @@ import { use } from './helpers';
  *      `name: stringIdentifier()` attribute.
  */
 export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
-    const unionName = UNION_NAME_OVERRIDES.get(union.name) ?? pascalCase(union.name);
+    const unionName = pascalCase(union.name);
     const variants = buildVariants(union, spec);
 
     const enumFragment = buildEnumFragment(unionName, variants);

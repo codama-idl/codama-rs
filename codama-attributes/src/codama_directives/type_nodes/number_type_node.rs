@@ -1,12 +1,12 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{Endian, NumberFormat, NumberTypeNode};
+use codama_nodes::{Endianness, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("number")?.as_path_list()?;
         let mut format = SetOnce::<NumberFormat>::new("format");
-        let mut endian = SetOnce::<Endian>::new("endian").initial_value(Endian::Little);
+        let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Little);
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "format" => {
@@ -18,7 +18,7 @@ impl FromMeta for NumberTypeNode {
             }
             "endian" => {
                 let path = meta.as_value()?.as_path()?;
-                match Endian::try_from(path.to_string()) {
+                match Endianness::try_from(path.to_string()) {
                     Ok(value) => endian.set(value, meta),
                     _ => Err(path.error("invalid endian")),
                 }
@@ -28,7 +28,7 @@ impl FromMeta for NumberTypeNode {
                     if let Ok(value) = NumberFormat::try_from(path.to_string()) {
                         return format.set(value, meta);
                     }
-                    if let Ok(value) = Endian::try_from(path.to_string()) {
+                    if let Ok(value) = Endianness::try_from(path.to_string()) {
                         return endian.set(value, meta);
                     }
                 }

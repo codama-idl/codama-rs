@@ -12,7 +12,7 @@ pub struct PdaSeedValueNode {
     pub name: CamelCaseString,
 
     // Children.
-    pub value: PdaSeedValueValueNode,
+    pub value: PdaSeedValueValue,
 }
 
 impl From<PdaSeedValueNode> for crate::Node {
@@ -25,7 +25,7 @@ impl PdaSeedValueNode {
     pub fn new<T, U>(name: T, value: U) -> Self
     where
         T: Into<CamelCaseString>,
-        U: Into<PdaSeedValueValueNode>,
+        U: Into<PdaSeedValueValue>,
     {
         Self {
             name: name.into(),
@@ -41,7 +41,7 @@ impl HasName for PdaSeedValueNode {
 }
 
 #[node_union]
-pub enum PdaSeedValueValueNode {
+pub enum PdaSeedValueValue {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),
 
@@ -62,7 +62,7 @@ pub enum PdaSeedValueValueNode {
     Tuple(TupleValueNode),
 }
 
-impl From<ValueNode> for PdaSeedValueValueNode {
+impl From<ValueNode> for PdaSeedValueValue {
     fn from(value: ValueNode) -> Self {
         match value {
             ValueNode::Array(value) => Self::Array(value),
@@ -95,7 +95,7 @@ mod tests {
         assert_eq!(node.name, CamelCaseString::from("answer"));
         assert_eq!(
             node.value,
-            PdaSeedValueValueNode::Number(NumberValueNode::new(42))
+            PdaSeedValueValue::Number(NumberValueNode::new(42))
         );
     }
 

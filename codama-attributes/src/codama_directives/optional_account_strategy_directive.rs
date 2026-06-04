@@ -1,17 +1,17 @@
 use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::InstructionOptionalAccountStrategy;
+use codama_nodes::OptionalAccountStrategy;
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct OptionalAccountStrategyDirective {
-    pub strategy: InstructionOptionalAccountStrategy,
+    pub strategy: OptionalAccountStrategy,
 }
 
 impl OptionalAccountStrategyDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         Ok(Self {
-            strategy: InstructionOptionalAccountStrategy::from_meta(
+            strategy: OptionalAccountStrategy::from_meta(
                 meta.assert_directive("optional_account_strategy")?,
             )?,
         })
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(
             directive,
             OptionalAccountStrategyDirective {
-                strategy: InstructionOptionalAccountStrategy::Omitted,
+                strategy: OptionalAccountStrategy::Omitted,
             }
         );
     }

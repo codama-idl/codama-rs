@@ -1,4 +1,4 @@
-use codama_nodes::{BytesEncoding, Docs, InstructionOptionalAccountStrategy, IsAccountSigner};
+use codama_nodes::{BytesEncoding, Docs, IsAccountSigner, OptionalAccountStrategy};
 use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
 
@@ -45,7 +45,7 @@ impl FromMeta for BytesEncoding {
     }
 }
 
-impl FromMeta for InstructionOptionalAccountStrategy {
+impl FromMeta for OptionalAccountStrategy {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let expr = meta.as_expr_or_value_expr()?;
         let path = expr.as_path()?;
