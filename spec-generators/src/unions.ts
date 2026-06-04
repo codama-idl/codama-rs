@@ -1,6 +1,8 @@
 import { pascalCase } from '@codama/fragments';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
+import { INLINE_UNIONS } from './defaults';
+
 /**
  * Spec unions starting with `registered` are category-registry unions
  * (e.g. `registeredLinkNode`); the Rust crate exposes one flattened
@@ -11,19 +13,22 @@ const REGISTERED_UNION_PREFIX = 'registered';
 
 /**
  * The spec unions in a category that the generator emits Rust enums
- * for. A union is "emittable" when it has a `registered<PascalCase>`
- * sibling in the same category — i.e. it's the category's main union
- * (the standalone twin of a registered/dispatch union). Inline /
- * synthetic unions (e.g. `constantPdaSeedValue`) don't have a twin
- * and aren't emitted as Rust enums; they're either name-aliased to an
- * existing type (via {@link UNION_NAME_OVERRIDES}) or handled
- * bespoke. Sorted alphabetically by name for stable output.
+ * for. A union is "emittable" when:
+ *
+ *   - It has a `registered<PascalCase>` sibling in the same category —
+ *     i.e. it's the category's main union (the standalone twin of a
+ *     registered/dispatch union); OR
+ *   - It appears in the {@link INLINE_UNIONS} allowlist — an
+ *     opt-in registry of inline / synthetic unions the generator
+ *     should emit despite not having a registered twin.
+ *
+ * Sorted alphabetically by name for stable output.
  */
 export function getEmittableUnions(category: Spec['categories'][number]): readonly UnionSpec[] {
     const unionNames = new Set(category.unions.map(u => u.name));
     return category.unions
         .filter(u => !u.name.startsWith(REGISTERED_UNION_PREFIX))
-        .filter(u => unionNames.has(`${REGISTERED_UNION_PREFIX}${pascalCase(u.name)}`))
+        .filter(u => unionNames.has(`${REGISTERED_UNION_PREFIX}${pascalCase(u.name)}`) || INLINE_UNIONS.has(u.name))
         .toSorted((a, b) => a.name.localeCompare(b.name));
 }
 

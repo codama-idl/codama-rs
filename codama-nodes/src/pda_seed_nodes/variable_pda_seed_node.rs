@@ -1,22 +1,4 @@
-use crate::{CamelCaseString, Docs, HasName, TypeNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct VariablePdaSeedNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub r#type: TypeNode,
-}
-
-impl From<VariablePdaSeedNode> for crate::Node {
-    fn from(val: VariablePdaSeedNode) -> Self {
-        crate::Node::PdaSeed(val.into())
-    }
-}
+use crate::{CamelCaseString, Docs, TypeNode, VariablePdaSeedNode};
 
 impl VariablePdaSeedNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
@@ -27,14 +9,8 @@ impl VariablePdaSeedNode {
         Self {
             name: name.into(),
             docs: Docs::default(),
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
         }
-    }
-}
-
-impl HasName for VariablePdaSeedNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
@@ -47,7 +23,7 @@ mod tests {
     fn new() {
         let node = VariablePdaSeedNode::new("my_seed", NumberTypeNode::le(U32));
         assert_eq!(node.name, CamelCaseString::new("mySeed"));
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
@@ -55,11 +31,11 @@ mod tests {
         let node = VariablePdaSeedNode {
             name: "mySeed".into(),
             docs: vec!["Hello".to_string()].into(),
-            r#type: NumberTypeNode::le(U32).into(),
+            r#type: Box::new(NumberTypeNode::le(U32).into()),
         };
         assert_eq!(node.name, CamelCaseString::new("mySeed"));
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]

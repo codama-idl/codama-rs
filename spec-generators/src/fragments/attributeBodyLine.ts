@@ -19,11 +19,19 @@ const RUST_KEYWORDS: ReadonlySet<string> = new Set(['type']);
  *   - Optional single              → `Option<T>` + `#[serde(skip_serializing_if = "crate::is_default")]`.
  *   - Optional Vec                 → bare `Vec<T>` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
  *   - `docs` field                 → `Docs` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
+ *
+ * Box rule (box-all-union): every direct (non-`Vec`) field whose type
+ * is a `union` is wrapped in `Box<…>`. Required → `Box<T>`; optional
+ * → `Box<Option<T>>` (box outside Option). This keeps every
+ * category-union variant pointer-sized for its union fields, which is
+ * what `clippy::large_enum_variant` actually cares about. `array(…)`,
+ * `nestedUnion`, `node`, and scalar fields are never boxed.
  */
 export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
     const inner = getTypeExprFragment(attr.type);
     const isOptional = attr.optional === true;
     const isVecLike = isVecLikeType(attr.type);
+    const isUnion = isUnionType(attr.type);
 
     let typeFragment: Fragment;
     let serdeAttr: string;
@@ -39,10 +47,17 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
         if (isVecLike) {
             typeFragment = inner;
             serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
+        } else if (isUnion) {
+            // Optional union → `Box<Option<T>>` (box outside Option).
+            typeFragment = fragment`Box<Option<${inner}>>`;
+            serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';
         } else {
             typeFragment = fragment`Option<${inner}>`;
             serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';
         }
+    } else if (isUnion) {
+        typeFragment = fragment`Box<${inner}>`;
+        serdeAttr = '';
     } else {
         typeFragment = inner;
         serdeAttr = '';
@@ -56,6 +71,10 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
 
 function isVecLikeType(type: TypeExpr): boolean {
     return type.kind === 'array';
+}
+
+function isUnionType(type: TypeExpr): boolean {
+    return type.kind === 'union';
 }
 
 function isDocsType(type: TypeExpr): boolean {

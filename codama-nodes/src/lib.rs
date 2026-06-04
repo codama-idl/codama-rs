@@ -41,7 +41,6 @@ pub use instruction_remaining_accounts_node::*;
 pub use instruction_status_node::*;
 pub use node::*;
 pub use pda_node::*;
-pub use pda_seed_nodes::*;
 pub use program_node::*;
 pub use root_node::*;
 pub use shared::*;

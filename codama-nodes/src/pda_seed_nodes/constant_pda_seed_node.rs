@@ -1,28 +1,39 @@
-use crate::{TypeNode, ValueNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct ConstantPdaSeedNode {
-    // Children.
-    pub r#type: TypeNode,
-    pub value: ValueNode,
-}
-
-impl From<ConstantPdaSeedNode> for crate::Node {
-    fn from(val: ConstantPdaSeedNode) -> Self {
-        crate::Node::PdaSeed(val.into())
-    }
-}
+use crate::{ConstantPdaSeedNode, ConstantPdaSeedValue, TypeNode, ValueNode};
 
 impl ConstantPdaSeedNode {
     pub fn new<T, U>(r#type: T, value: U) -> Self
     where
         T: Into<TypeNode>,
-        U: Into<ValueNode>,
+        U: Into<ConstantPdaSeedValue>,
     {
         Self {
-            r#type: r#type.into(),
-            value: value.into(),
+            r#type: Box::new(r#type.into()),
+            value: Box::new(value.into()),
+        }
+    }
+}
+
+/// Bridge from the broader value-node union into a `constantPdaSeedNode`
+/// value. The spec union `constantPdaSeedValue` is `programIdValueNode |
+/// valueNode`, so every `ValueNode` cleanly maps to its same-named
+/// `ConstantPdaSeedValue` variant.
+impl From<ValueNode> for ConstantPdaSeedValue {
+    fn from(value: ValueNode) -> Self {
+        match value {
+            ValueNode::Array(n) => Self::Array(n),
+            ValueNode::Boolean(n) => Self::Boolean(n),
+            ValueNode::Bytes(n) => Self::Bytes(n),
+            ValueNode::Constant(n) => Self::Constant(n),
+            ValueNode::Enum(n) => Self::Enum(n),
+            ValueNode::Map(n) => Self::Map(n),
+            ValueNode::None(n) => Self::None(n),
+            ValueNode::Number(n) => Self::Number(n),
+            ValueNode::PublicKey(n) => Self::PublicKey(n),
+            ValueNode::Set(n) => Self::Set(n),
+            ValueNode::Some(n) => Self::Some(n),
+            ValueNode::String(n) => Self::String(n),
+            ValueNode::Struct(n) => Self::Struct(n),
+            ValueNode::Tuple(n) => Self::Tuple(n),
         }
     }
 }
@@ -35,8 +46,11 @@ mod tests {
     #[test]
     fn new() {
         let node = ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42u64)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(
+            *node.value,
+            ConstantPdaSeedValue::Number(NumberValueNode::new(42u64))
+        );
     }
 
     #[test]
