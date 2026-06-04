@@ -27,6 +27,7 @@ export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
     ['discriminator', { nodeVariant: 'Discriminator' }],
     ['link', { nodeVariant: 'Link' }],
     ['pdaSeed', { nodeVariant: 'PdaSeed' }],
+    ['value', { nodeVariant: 'Value' }],
 ]);
 
 /**
@@ -64,6 +65,7 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
  */
 export const UNION_NAME_OVERRIDES: ReadonlyMap<string, string> = new Map([
     ['conditionalValueCondition', 'ConditionNode'],
+    ['enumValuePayload', 'EnumVariantData'],
     ['instructionByteDeltaValue', 'InstructionByteDeltaNodeValue'],
     ['instructionRemainingAccountsValue', 'InstructionRemainingAccountsNodeValue'],
     ['pdaSeedValueValue', 'PdaSeedValueValueNode'],
@@ -107,4 +109,38 @@ export interface InlineUnionConfig {
 
 export const INLINE_UNIONS: ReadonlyMap<string, InlineUnionConfig> = new Map([
     ['constantPdaSeedValue', { stripSuffix: 'ValueNode' }],
+    ['enumValuePayload', { stripSuffix: 'ValueNode' }],
 ]);
+
+/**
+ * Spec union names the generator must NOT emit because their Rust
+ * counterpart is bespoke hand-written code that can't be reproduced
+ * mechanically.
+ *
+ *   - `valueNode` is the category dispatch union for the `value`
+ *     category, but in Rust it's the auto-derived standalone twin of
+ *     `RegisteredValueNode` (`#[derive(RegisteredNodes)]`), which has
+ *     the `registered`/`standalone` split with `#[registered]`
+ *     variants. The generator doesn't model that yet; the
+ *     hand-written `value_nodes/value_node.rs` stays canonical.
+ *
+ * Per-node structs in these categories are still generated normally;
+ * only the category union itself is skipped.
+ */
+export const HAND_WRITTEN_UNIONS: ReadonlySet<string> = new Set(['valueNode']);
+
+/**
+ * Per-field Rust-type overrides for cases where the spec's TypeExpr
+ * maps to a bespoke Rust type that can't be expressed mechanically.
+ * Keyed by `"<nodeKind>.<attrName>"`.
+ *
+ *   - `numberValueNode.number`: spec says `float(f64)` but the Rust
+ *     crate uses a bespoke `Number` enum
+ *     (`UnsignedInteger(u64) | SignedInteger(i64) | Float(f64)`) with
+ *     a custom `serde(from/into = "JsonNumber")` and 8 `From<uN/iN/fN>`
+ *     impls. The struct + derives are still generated; the field type
+ *     resolves to `crate::Number` via this override and the `Number`
+ *     enum + its impls stay hand-written in
+ *     `value_nodes/number_value_node.rs`.
+ */
+export const FIELD_TYPE_OVERRIDES: ReadonlyMap<string, string> = new Map([['numberValueNode.number', 'crate::Number']]);

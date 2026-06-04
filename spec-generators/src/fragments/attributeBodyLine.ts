@@ -2,10 +2,12 @@ import { snakeCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { AttributeSpec, TypeExpr } from '@codama/spec';
 
+import { FIELD_TYPE_OVERRIDES } from '../defaults';
+import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
 
 /** Spec attribute names that collide with Rust keywords and need `r#` escaping. */
-const RUST_KEYWORDS: ReadonlySet<string> = new Set(['type']);
+const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'type']);
 
 /**
  * Render one spec attribute as a Rust struct field plus any preceding
@@ -27,11 +29,12 @@ const RUST_KEYWORDS: ReadonlySet<string> = new Set(['type']);
  * what `clippy::large_enum_variant` actually cares about. `array(…)`,
  * `nestedUnion`, `node`, and scalar fields are never boxed.
  */
-export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
-    const inner = getTypeExprFragment(attr.type);
+export function getAttributeBodyLineFragment(nodeKind: string, attr: AttributeSpec): Fragment {
+    const override = FIELD_TYPE_OVERRIDES.get(`${nodeKind}.${attr.name}`);
+    const inner = override !== undefined ? use(override) : getTypeExprFragment(attr.type);
     const isOptional = attr.optional === true;
-    const isVecLike = isVecLikeType(attr.type);
-    const isUnion = isUnionType(attr.type);
+    const isVecLike = override !== undefined ? false : isVecLikeType(attr.type);
+    const isUnion = override !== undefined ? false : isUnionType(attr.type);
 
     let typeFragment: Fragment;
     let serdeAttr: string;

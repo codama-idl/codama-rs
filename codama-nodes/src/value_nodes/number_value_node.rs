@@ -1,20 +1,7 @@
-use codama_nodes_derive::node;
+use crate::NumberValueNode;
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
 use serde_json::Number as JsonNumber;
-
-#[node]
-#[derive(Copy)]
-pub struct NumberValueNode {
-    // Data.
-    pub number: Number,
-}
-
-impl From<NumberValueNode> for crate::Node {
-    fn from(val: NumberValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
 
 impl NumberValueNode {
     pub fn new<T>(number: T) -> Self
