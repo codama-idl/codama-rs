@@ -1,0 +1,34 @@
+{
+    "name": "@codama-internal/rust-spec-generators",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Private code generators that produce parts of the Codama Rust monorepo from the encoded `@codama/spec`",
+    "type": "module",
+    "scripts": {
+        "build": "rimraf dist && tsup",
+        "generate": "pnpm build && node ./dist/generate.mjs && (cd .. && cargo fmt -p codama-nodes)",
+        "lint": "oxlint && oxfmt --check .",
+        "lint:fix": "oxlint --fix && oxfmt .",
+        "test": "pnpm test:types && pnpm test:unit",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
+    },
+    "dependencies": {
+        "@codama/fragments": "^0.1.0",
+        "@codama/spec": "^1.6.0-rc.6"
+    },
+    "devDependencies": {
+        "@solana-config/oxc": "^0.1.1",
+        "@types/node": "^25",
+        "oxfmt": "^0.51.0",
+        "oxlint": "^1.66.0",
+        "oxlint-tsgolint": "^0.23.0",
+        "rimraf": "^6.1.3",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.16"
+    },
+    "engines": {
+        "node": ">=22.12.0"
+    }
+}
