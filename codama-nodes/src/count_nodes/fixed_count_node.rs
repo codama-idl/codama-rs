@@ -1,20 +1,7 @@
-use codama_nodes_derive::node;
-
-#[node]
-#[derive(Copy)]
-pub struct FixedCountNode {
-    // Data.
-    pub value: usize,
-}
-
-impl From<FixedCountNode> for crate::Node {
-    fn from(val: FixedCountNode) -> Self {
-        crate::Node::Count(val.into())
-    }
-}
+use crate::FixedCountNode;
 
 impl FixedCountNode {
-    pub fn new(value: usize) -> Self {
+    pub fn new(value: u64) -> Self {
         Self { value }
     }
 }

@@ -29,7 +29,7 @@ impl ArrayTypeNode {
         }
     }
 
-    pub fn fixed<T>(item: T, value: usize) -> Self
+    pub fn fixed<T>(item: T, value: u64) -> Self
     where
         T: Into<TypeNode>,
     {

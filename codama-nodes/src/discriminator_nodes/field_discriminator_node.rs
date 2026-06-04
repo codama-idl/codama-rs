@@ -1,21 +1,7 @@
-use crate::{CamelCaseString, HasName};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct FieldDiscriminatorNode {
-    // Data.
-    pub name: CamelCaseString,
-    pub offset: usize,
-}
-
-impl From<FieldDiscriminatorNode> for crate::Node {
-    fn from(val: FieldDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}
+use crate::{CamelCaseString, FieldDiscriminatorNode};
 
 impl FieldDiscriminatorNode {
-    pub fn new<T>(name: T, offset: usize) -> Self
+    pub fn new<T>(name: T, offset: u64) -> Self
     where
         T: Into<CamelCaseString>,
     {
@@ -23,12 +9,6 @@ impl FieldDiscriminatorNode {
             name: name.into(),
             offset,
         }
-    }
-}
-
-impl HasName for FieldDiscriminatorNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 

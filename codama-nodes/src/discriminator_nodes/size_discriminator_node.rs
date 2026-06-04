@@ -1,20 +1,7 @@
-use codama_nodes_derive::node;
-
-#[node]
-#[derive(Copy)]
-pub struct SizeDiscriminatorNode {
-    // Data.
-    pub size: usize,
-}
-
-impl From<SizeDiscriminatorNode> for crate::Node {
-    fn from(val: SizeDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}
+use crate::SizeDiscriminatorNode;
 
 impl SizeDiscriminatorNode {
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: u64) -> Self {
         Self { size }
     }
 }

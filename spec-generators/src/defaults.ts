@@ -22,7 +22,11 @@ export interface CategoryRouting {
  * v1. Categories absent from this map are not generated yet (today
  * that's every category except `link`).
  */
-export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([['link', { nodeVariant: 'Link' }]]);
+export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
+    ['count', { nodeVariant: 'Count' }],
+    ['discriminator', { nodeVariant: 'Discriminator' }],
+    ['link', { nodeVariant: 'Link' }],
+]);
 
 /**
  * Mapping from spec category name to the output subdirectory the

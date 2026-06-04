@@ -1,4 +1,13 @@
-import { attribute, defineNode, node, optionalAttribute, stringIdentifier } from '@codama/spec/api';
+import {
+    attribute,
+    boolean,
+    defineNode,
+    enumeration,
+    node,
+    optionalAttribute,
+    stringIdentifier,
+    u64,
+} from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import { getNodeStructFragment } from '../../src/fragments/nodeStructFragment';
@@ -56,5 +65,38 @@ describe('getNodeStructFragment', () => {
         const out = getNodeStructFragment(spec).content;
         expect(out).not.toContain('// Data.');
         expect(out).toContain('// Children.');
+    });
+
+    it('emits an empty `{}` struct body with #[derive(Copy, Default)] for an attribute-less node', () => {
+        const spec = defineNode('remainderCountNode', { attributes: [] });
+        const out = getNodeStructFragment(spec).content;
+        expect(out).toContain('#[derive(Copy, Default)]');
+        expect(out).toContain('pub struct RemainderCountNode {}');
+        expect(out).not.toContain('// Data.');
+        expect(out).not.toContain('// Children.');
+    });
+
+    it('derives Copy when every attribute is a scalar kind (integer / float / boolean / enumeration)', () => {
+        const spec = defineNode('fixedCountNode', { attributes: [attribute('value', u64())] });
+        expect(getNodeStructFragment(spec).content).toContain('#[derive(Copy)]');
+        const mixed = defineNode('numberTypeNode', {
+            attributes: [
+                attribute('format', enumeration('numberFormat')),
+                attribute('endian', enumeration('endianness')),
+                attribute('signed', boolean()),
+            ],
+        });
+        expect(getNodeStructFragment(mixed).content).toContain('#[derive(Copy)]');
+    });
+
+    it('does NOT derive Copy when any attribute is a non-scalar (string / node / union / docs / …)', () => {
+        const withString = defineNode('fieldDiscriminatorNode', {
+            attributes: [attribute('name', stringIdentifier()), attribute('offset', u64())],
+        });
+        expect(getNodeStructFragment(withString).content).not.toContain('#[derive(');
+        const withNode = defineNode('constantDiscriminatorNode', {
+            attributes: [attribute('offset', u64()), attribute('constant', node('constantValueNode'))],
+        });
+        expect(getNodeStructFragment(withNode).content).not.toContain('#[derive(');
     });
 });

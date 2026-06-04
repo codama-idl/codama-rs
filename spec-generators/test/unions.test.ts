@@ -5,16 +5,24 @@ import { flattenNodeUnion, getEmittableUnions } from '../src/unions';
 
 const spec = getSpec();
 const linkCategory = spec.categories.find(c => c.name === 'link')!;
+const pdaSeedCategory = spec.categories.find(c => c.name === 'pdaSeed')!;
 
 describe('getEmittableUnions', () => {
-    it('returns spec unions whose name does NOT start with `registered`, sorted alphabetically', () => {
-        const names = getEmittableUnions(linkCategory).map(u => u.name);
-        expect(names).toEqual(['linkNode']);
+    it('returns the category-main union (the standalone twin of a `registered…`), sorted alphabetically', () => {
+        expect(getEmittableUnions(linkCategory).map(u => u.name)).toEqual(['linkNode']);
+        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).toEqual(['pdaSeedNode']);
     });
 
     it('skips category-registry unions (`registered*`)', () => {
-        const names = getEmittableUnions(linkCategory).map(u => u.name);
-        expect(names).not.toContain('registeredLinkNode');
+        expect(getEmittableUnions(linkCategory).map(u => u.name)).not.toContain('registeredLinkNode');
+    });
+
+    it('skips inline / synthetic unions that lack a `registered<Name>` twin (e.g. constantPdaSeedValue)', () => {
+        // `constantPdaSeedValue` is the `constantPdaSeedNode.value` attribute's
+        // union; it has no `registered<Name>` twin (it's not a category
+        // dispatch enum) so the generator must not emit it as its own Rust
+        // enum. A later PR with inline-union support will handle it.
+        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).not.toContain('constantPdaSeedValue');
     });
 });
 

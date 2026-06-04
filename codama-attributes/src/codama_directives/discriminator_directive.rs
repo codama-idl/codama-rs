@@ -35,8 +35,8 @@ impl DiscriminatorDirective {
         let mut encoding =
             SetOnce::<BytesEncoding>::new("encoding").initial_value(BytesEncoding::Base16);
         let mut field = SetOnce::<CamelCaseString>::new("field");
-        let mut offset = SetOnce::<usize>::new("offset").initial_value(0);
-        let mut size = SetOnce::<usize>::new("size");
+        let mut offset = SetOnce::<u64>::new("offset").initial_value(0);
+        let mut size = SetOnce::<u64>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
             "bytes" => {
                 if kind != DiscriminatorKind::Constant {
