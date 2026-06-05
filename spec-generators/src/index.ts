@@ -13,6 +13,7 @@ import { getSpec, type Spec } from '@codama/spec';
 
 import { CATEGORY_ROUTING } from './defaults';
 import {
+    getEnumPageFragment,
     getModPagesRenderMap,
     getNodePageFragment,
     getPageFragment,
@@ -82,17 +83,36 @@ export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Frag
 
 /**
  * Walk every spec category covered by {@link CATEGORY_ROUTING} and
- * emit one page per node and one page per emittable union. Returns a
- * render map keyed by output path (relative to `generated/`) with the
- * resolved page fragment as the value.
+ * emit one page per node and one page per emittable union, plus one
+ * page per enumeration in every category that declares them (which is
+ * orthogonal to routing — enumerations live wherever the spec puts
+ * them, and today that's the `shared` category). Returns a render map
+ * keyed by output path (relative to `generated/`) with the resolved
+ * page fragment as the value.
  */
 function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
     const entries: Record<Path, Fragment> = {};
 
     for (const category of spec.categories) {
+        const folder = scope.categoryDirectories.get(category.name);
+
+        // Enumerations are emitted whenever a category declares them,
+        // independent of whether the category's nodes/unions are
+        // generated yet. The directory must still be configured.
+        if (category.enumerations.length > 0) {
+            if (folder === undefined) {
+                throw new Error(
+                    `categoryDirectories has no entry for category "${category.name}" (which declares enumerations).`,
+                );
+            }
+            for (const enumeration of category.enumerations) {
+                const path = joinPath(folder, `${snakeCase(enumeration.name)}.rs`);
+                entries[path] = getPageFragment(getEnumPageFragment(enumeration));
+            }
+        }
+
         const routing = CATEGORY_ROUTING.get(category.name);
         if (!routing) continue;
-        const folder = scope.categoryDirectories.get(category.name);
         if (folder === undefined) {
             throw new Error(`categoryDirectories has no entry for category "${category.name}".`);
         }

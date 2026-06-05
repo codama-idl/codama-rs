@@ -1,4 +1,5 @@
 export * from './attributeBodyLine';
+export * from './enumPage';
 export * from './fromImpl';
 export * from './hasNameImpl';
 export * from './helpers';

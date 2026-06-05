@@ -1,5 +1,5 @@
+use crate::InstructionLifecycle;
 use codama_nodes_derive::node;
-use serde::{Deserialize, Serialize};
 
 #[node]
 #[derive(Default)]
@@ -24,16 +24,6 @@ impl InstructionStatusNode {
             message: message.into(),
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum InstructionLifecycle {
-    #[default]
-    Live,
-    Deprecated,
-    Archived,
-    Draft,
 }
 
 #[cfg(test)]

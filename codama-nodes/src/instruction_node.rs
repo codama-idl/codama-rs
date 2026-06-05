@@ -1,10 +1,9 @@
 use crate::{
     CamelCaseString, DiscriminatorNode, Docs, HasName, InstructionAccountNode,
     InstructionArgumentNode, InstructionByteDeltaNode, InstructionRemainingAccountsNode,
-    InstructionStatusNode,
+    InstructionStatusNode, OptionalAccountStrategy,
 };
 use codama_nodes_derive::node;
-use serde::{Deserialize, Serialize};
 
 #[node]
 #[derive(Default)]
@@ -37,14 +36,6 @@ impl HasName for InstructionNode {
     fn name(&self) -> &CamelCaseString {
         &self.name
     }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum OptionalAccountStrategy {
-    Omitted,
-    #[default]
-    ProgramId,
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
+use crate::{Endianness, NumberFormat};
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::type_node;
-use serde::{Deserialize, Serialize};
 
 pub use NumberFormat::*;
 
@@ -24,30 +24,12 @@ impl NumberTypeNode {
     }
 
     pub fn le(format: NumberFormat) -> Self {
-        Self::new(format, Endianness::Little)
+        Self::new(format, Endianness::Le)
     }
 
     pub fn be(format: NumberFormat) -> Self {
-        Self::new(format, Endianness::Big)
+        Self::new(format, Endianness::Be)
     }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum NumberFormat {
-    U8,
-    U16,
-    U32,
-    U64,
-    U128,
-    I8,
-    I16,
-    I32,
-    I64,
-    I128,
-    F32,
-    F64,
-    ShortU16,
 }
 
 impl TryFrom<String> for NumberFormat {
@@ -81,14 +63,6 @@ impl TryFrom<&str> for NumberFormat {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-pub enum Endianness {
-    #[serde(rename = "be")]
-    Big,
-    #[serde(rename = "le")]
-    Little,
-}
-
 impl TryFrom<String> for Endianness {
     type Error = CodamaError;
 
@@ -102,8 +76,8 @@ impl TryFrom<&str> for Endianness {
 
     fn try_from(value: &str) -> CodamaResult<Self> {
         match value {
-            "be" | "big" => Ok(Endianness::Big),
-            "le" | "little" => Ok(Endianness::Little),
+            "be" | "big" => Ok(Endianness::Be),
+            "le" | "little" => Ok(Endianness::Le),
             _ => Err(CodamaError::InvalidEndian(value.to_string())),
         }
     }
@@ -115,23 +89,23 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = NumberTypeNode::new(U8, Endianness::Big);
+        let node = NumberTypeNode::new(U8, Endianness::Be);
         assert_eq!(node.format, NumberFormat::U8);
-        assert_eq!(node.endian, Endianness::Big);
+        assert_eq!(node.endian, Endianness::Be);
     }
 
     #[test]
     fn le() {
         let node = NumberTypeNode::le(U32);
         assert_eq!(node.format, NumberFormat::U32);
-        assert_eq!(node.endian, Endianness::Little);
+        assert_eq!(node.endian, Endianness::Le);
     }
 
     #[test]
     fn be() {
         let node = NumberTypeNode::be(U32);
         assert_eq!(node.format, NumberFormat::U32);
-        assert_eq!(node.endian, Endianness::Big);
+        assert_eq!(node.endian, Endianness::Be);
     }
 
     #[test]

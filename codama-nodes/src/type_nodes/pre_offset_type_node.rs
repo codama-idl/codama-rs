@@ -1,7 +1,9 @@
-use crate::{NestedTypeNode, NestedTypeNodeTrait, TypeNode, TypeNodeTrait, TypeNodeUnionTrait};
+use crate::{
+    NestedTypeNode, NestedTypeNodeTrait, PreOffsetStrategy, TypeNode, TypeNodeTrait,
+    TypeNodeUnionTrait,
+};
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes_derive::nestable_type_node;
-use serde::{Deserialize, Serialize};
 
 #[nestable_type_node]
 pub struct PreOffsetTypeNode<T: TypeNodeUnionTrait> {
@@ -94,14 +96,6 @@ impl<T: TypeNodeTrait> NestedTypeNodeTrait<T> for PreOffsetTypeNode<NestedTypeNo
             offset: self.offset,
         })
     }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum PreOffsetStrategy {
-    Absolute,
-    Padded,
-    Relative,
 }
 
 #[cfg(test)]

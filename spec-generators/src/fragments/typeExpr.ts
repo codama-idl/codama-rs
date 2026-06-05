@@ -64,12 +64,16 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             return fragment`${rust}`;
         }
         case 'literal':
-            // Not used directly in any v1 node attribute; render best-effort.
+            // Not used by any node attribute in the categories generated
+            // today. The `topLevel.rootNode.standard` field uses it, but
+            // `topLevel` isn't generated yet (PR #10). Render best-effort
+            // so we don't hard-fail prematurely.
             return fragment`${JSON.stringify(expr.value)}`;
         case 'literalUnion':
-            // Only `shared` enumerations use this directly, and we don't generate
-            // enumerations here. Fail loudly so a regression surfaces.
-            throw new Error('literalUnion TypeExpr is not supported at the node-attribute level in v1');
+            // The only literalUnion in v1 is `isSigner`'s `[true, false, "either"]`,
+            // referenced by `topLevel` nodes only — which aren't generated yet
+            // (PR #10). Until then, fail loudly so an accidental reference surfaces.
+            throw new Error('literalUnion TypeExpr is not supported at the node-attribute level yet');
         case 'codamaVersion':
             // No Rust analogue in v1; render as `String`.
             return fragment`String`;
