@@ -1,4 +1,4 @@
-use crate::{ArgumentValueNode, Docs, IsAccountSigner, ResolverValueNode};
+use crate::{ArgumentValueNode, Docs, IsSigner, ResolverValueNode};
 use codama_nodes_derive::{node, node_union};
 
 #[node]
@@ -7,7 +7,7 @@ pub struct InstructionRemainingAccountsNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_optional: bool,
     #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub is_signer: IsAccountSigner,
+    pub is_signer: IsSigner,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub is_writable: bool,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -31,13 +31,13 @@ mod tests {
     fn direct_instantiation() {
         let node = InstructionRemainingAccountsNode {
             is_optional: false,
-            is_signer: IsAccountSigner::Either,
+            is_signer: IsSigner::Either,
             is_writable: true,
             docs: vec!["This is a test".to_string()].into(),
             value: ArgumentValueNode::new("myArgument").into(),
         };
         assert!(!node.is_optional);
-        assert_eq!(node.is_signer, IsAccountSigner::Either);
+        assert_eq!(node.is_signer, IsSigner::Either);
         assert!(node.is_writable);
         assert_eq!(node.docs, vec!["This is a test".to_string()].into());
         assert_eq!(
@@ -50,7 +50,7 @@ mod tests {
     fn to_json() {
         let node = InstructionRemainingAccountsNode {
             is_optional: false,
-            is_signer: IsAccountSigner::Either,
+            is_signer: IsSigner::Either,
             is_writable: true,
             docs: vec![].into(),
             value: ArgumentValueNode::new("myArgument").into(),
@@ -70,7 +70,7 @@ mod tests {
             node,
             InstructionRemainingAccountsNode {
                 is_optional: false,
-                is_signer: IsAccountSigner::Either,
+                is_signer: IsSigner::Either,
                 is_writable: true,
                 docs: vec![].into(),
                 value: ArgumentValueNode::new("myArgument").into(),

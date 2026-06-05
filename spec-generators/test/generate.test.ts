@@ -84,6 +84,7 @@ describe('getRenderMap', () => {
             'shared/default_value_strategy.rs',
             'shared/endianness.rs',
             'shared/instruction_lifecycle.rs',
+            'shared/is_signer.rs',
             'shared/mod.rs',
             'shared/number_format.rs',
             'shared/optional_account_strategy.rs',
@@ -374,6 +375,26 @@ describe('getRenderMap', () => {
             const entry = getFromRenderMap(map, 'contextual_value_nodes/resolver_value_node.rs');
             expect(entry.content).toContain('pub depends_on: Vec<ResolverDependency>,');
             expect(entry.content).not.toContain('Option<Vec<ResolverDependency>>');
+        });
+    });
+
+    describe('shared/is_signer.rs (the sole v1 literalUnion shell)', () => {
+        it('emits a generated `pub enum IsSigner` shell with the non-serde derive set only', () => {
+            const entry = getFromRenderMap(map, 'shared/is_signer.rs');
+            expect(entry.content).toContain('#[derive(Debug, PartialEq, Eq, Clone, Copy)]');
+            expect(entry.content).toContain('pub enum IsSigner {');
+            // Variants from the spec's `[true, false, "either"]` value-set,
+            // in declaration order.
+            expect(entry.content).toContain('True,');
+            expect(entry.content).toContain('False,');
+            expect(entry.content).toContain('Either,');
+            // No serde / default machinery in the generated shell — bespoke
+            // bool-or-string serde + Default live in the hand-written
+            // companion file.
+            expect(entry.content).not.toContain('Serialize');
+            expect(entry.content).not.toContain('Deserialize');
+            expect(entry.content).not.toContain('Default');
+            expect(entry.content).not.toContain('rename_all');
         });
     });
 });

@@ -70,10 +70,13 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             // so we don't hard-fail prematurely.
             return fragment`${JSON.stringify(expr.value)}`;
         case 'literalUnion':
-            // The only literalUnion in v1 is `isSigner`'s `[true, false, "either"]`,
-            // referenced by `topLevel` nodes only — which aren't generated yet
-            // (PR #10). Until then, fail loudly so an accidental reference surfaces.
-            throw new Error('literalUnion TypeExpr is not supported at the node-attribute level yet');
+            // `literalUnion` at the top level of an attribute is resolved by
+            // `attributeBodyLine.ts` (the attribute name supplies the type name).
+            // Reaching this case means a literalUnion is nested inside another
+            // type expression (e.g. `array(literalUnion(...))`) — that doesn't
+            // occur in v1, and the nested position gives us no name source.
+            // Fail loudly so a future spec regression surfaces here.
+            throw new Error('literalUnion TypeExpr is only supported at the top level of a node attribute');
         case 'codamaVersion':
             // No Rust analogue in v1; render as `String`.
             return fragment`String`;

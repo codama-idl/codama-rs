@@ -3,6 +3,7 @@ export * from './enumPage';
 export * from './fromImpl';
 export * from './hasNameImpl';
 export * from './helpers';
+export * from './literalUnionPage';
 export * from './modPage';
 export * from './nodePage';
 export * from './nodeStructFragment';

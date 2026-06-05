@@ -14,12 +14,14 @@ import { getSpec, type Spec } from '@codama/spec';
 import { CATEGORY_ROUTING } from './defaults';
 import {
     getEnumPageFragment,
+    getLiteralUnionPageFragment,
     getModPagesRenderMap,
     getNodePageFragment,
     getPageFragment,
     getRegisteredUnionPageFragment,
     getUnionPageFragment,
 } from './fragments';
+import { getReferencedLiteralUnions } from './literalUnions';
 import {
     buildRenderScope,
     type GenerateOptions,
@@ -86,9 +88,12 @@ export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Frag
  * emit one page per node and one page per emittable union, plus one
  * page per enumeration in every category that declares them (which is
  * orthogonal to routing — enumerations live wherever the spec puts
- * them, and today that's the `shared` category). Returns a render map
- * keyed by output path (relative to `generated/`) with the resolved
- * page fragment as the value.
+ * them, and today that's the `shared` category). After the category
+ * loop, emit one page per distinct `literalUnion` value-set found
+ * anywhere in the spec; these target `shared/` because they're
+ * cross-category infrastructure with no native home in the spec's
+ * category model. Returns a render map keyed by output path (relative
+ * to `generated/`) with the resolved page fragment as the value.
  */
 function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
     const entries: Record<Path, Fragment> = {};
@@ -135,6 +140,26 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
                 ? getRegisteredUnionPageFragment(union, spec)
                 : getUnionPageFragment(union, spec);
             entries[path] = getPageFragment(fragment);
+        }
+    }
+
+    // `literalUnion` TypeExprs are anonymous and inline in v1 — they
+    // don't belong to any category's registry. Discover them by
+    // walking every node attribute spec-wide, dedup by value-set, and
+    // emit one Rust enum shell per distinct value-set into `shared/`.
+    // The bespoke `Serialize`/`Deserialize`/`From<bool>`/`Default` impls
+    // stay hand-written in the companion file alongside the shell.
+    const literalUnions = getReferencedLiteralUnions(spec);
+    if (literalUnions.length > 0) {
+        const sharedFolder = scope.categoryDirectories.get('shared');
+        if (sharedFolder === undefined) {
+            throw new Error(
+                'categoryDirectories has no entry for "shared", which is the destination for generated literalUnion shells.',
+            );
+        }
+        for (const ref of literalUnions) {
+            const path = joinPath(sharedFolder, `${snakeCase(ref.typeName)}.rs`);
+            entries[path] = getPageFragment(getLiteralUnionPageFragment(ref));
         }
     }
 

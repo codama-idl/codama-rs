@@ -1,4 +1,4 @@
-use codama_nodes::{BytesEncoding, Docs, IsAccountSigner, OptionalAccountStrategy};
+use codama_nodes::{BytesEncoding, Docs, IsSigner, OptionalAccountStrategy};
 use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
 
@@ -20,7 +20,7 @@ impl FromMeta for bool {
     }
 }
 
-impl FromMeta for IsAccountSigner {
+impl FromMeta for IsSigner {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         if let Ok(value) = bool::from_meta(meta) {
             return Ok(value.into());
