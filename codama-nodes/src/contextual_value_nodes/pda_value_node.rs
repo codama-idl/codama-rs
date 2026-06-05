@@ -1,26 +1,4 @@
-use crate::{AccountValueNode, ArgumentValueNode, PdaLinkNode, PdaNode, PdaSeedValueNode};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct PdaValueNode {
-    // Children.
-    pub pda: PdaValuePda,
-    pub seeds: Vec<PdaSeedValueNode>,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub program_id: Box<Option<PdaValueProgramId>>,
-}
-
-#[node_union]
-pub enum PdaValueProgramId {
-    Account(AccountValueNode),
-    Argument(ArgumentValueNode),
-}
-
-impl From<PdaValueNode> for crate::Node {
-    fn from(val: PdaValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
+use crate::{PdaSeedValueNode, PdaValueNode, PdaValuePda, PdaValueProgramId};
 
 impl PdaValueNode {
     pub fn new<T>(pda: T, seeds: Vec<PdaSeedValueNode>) -> Self
@@ -28,7 +6,7 @@ impl PdaValueNode {
         T: Into<PdaValuePda>,
     {
         Self {
-            pda: pda.into(),
+            pda: Box::new(pda.into()),
             seeds,
             program_id: Box::new(None),
         }
@@ -40,24 +18,20 @@ impl PdaValueNode {
         U: Into<PdaValueProgramId>,
     {
         Self {
-            pda: pda.into(),
+            pda: Box::new(pda.into()),
             seeds,
             program_id: Box::new(Some(program_id.into())),
         }
     }
 }
 
-#[node_union]
-pub enum PdaValuePda {
-    Linked(PdaLinkNode),
-    Nested(PdaNode),
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{NumberTypeNode, NumberValueNode, PublicKeyValueNode, VariablePdaSeedNode, U32};
-
     use super::*;
+    use crate::{
+        AccountValueNode, NumberTypeNode, NumberValueNode, PdaLinkNode, PdaNode,
+        PublicKeyValueNode, VariablePdaSeedNode, U32,
+    };
 
     #[test]
     fn new_linked() {
@@ -72,8 +46,8 @@ mod tests {
             ],
         );
         assert_eq!(
-            node.pda,
-            PdaValuePda::Linked(PdaLinkNode::new("masterEdition"))
+            *node.pda,
+            PdaValuePda::PdaLink(PdaLinkNode::new("masterEdition"))
         );
         assert_eq!(
             node.seeds,
@@ -97,8 +71,8 @@ mod tests {
             vec![PdaSeedValueNode::new("value", NumberValueNode::new(42))],
         );
         assert_eq!(
-            node.pda,
-            PdaValuePda::Nested(PdaNode::new(
+            *node.pda,
+            PdaValuePda::Pda(PdaNode::new(
                 "counter",
                 vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
             ))
@@ -130,7 +104,7 @@ mod tests {
     #[test]
     fn to_json_with_program_id() {
         let node = PdaValueNode::new_with_program_id(
-            PdaValuePda::Linked(PdaLinkNode::new("myPda")),
+            PdaValuePda::PdaLink(PdaLinkNode::new("myPda")),
             vec![],
             AccountValueNode::new("myProgramAccount"),
         );

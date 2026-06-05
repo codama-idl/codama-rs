@@ -1,23 +1,4 @@
-use crate::{AccountValueNode, ArgumentValueNode, CamelCaseString, Docs, HasName};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct ResolverValueNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub depends_on: Option<Vec<ResolverDependency>>,
-}
-
-impl From<ResolverValueNode> for crate::Node {
-    fn from(val: ResolverValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
+use crate::{CamelCaseString, Docs, ResolverValueNode};
 
 impl ResolverValueNode {
     pub fn new<T>(name: T) -> Self
@@ -27,33 +8,22 @@ impl ResolverValueNode {
         Self {
             name: name.into(),
             docs: Docs::default(),
-            depends_on: None,
+            depends_on: vec![],
         }
-    }
-}
-
-#[node_union]
-pub enum ResolverDependency {
-    Account(AccountValueNode),
-    Argument(ArgumentValueNode),
-}
-
-impl HasName for ResolverValueNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{AccountValueNode, ArgumentValueNode, ResolverDependency};
 
     #[test]
     fn new() {
         let node = ResolverValueNode::new("my_resolver");
         assert_eq!(node.name, CamelCaseString::new("myResolver"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.depends_on, None);
+        assert_eq!(node.depends_on, vec![]);
     }
 
     #[test]
@@ -61,10 +31,10 @@ mod tests {
         let node = ResolverValueNode {
             name: "myResolver".into(),
             docs: vec!["I am some resolver docs.".to_string()].into(),
-            depends_on: Some(vec![
+            depends_on: vec![
                 AccountValueNode::new("myDependentAccount").into(),
                 ArgumentValueNode::new("myDependentArgument").into(),
-            ]),
+            ],
         };
         assert_eq!(node.name, CamelCaseString::new("myResolver"));
         assert_eq!(
@@ -73,10 +43,10 @@ mod tests {
         );
         assert_eq!(
             node.depends_on,
-            Some(vec![
+            vec![
                 ResolverDependency::Account(AccountValueNode::new("myDependentAccount")),
                 ResolverDependency::Argument(ArgumentValueNode::new("myDependentArgument")),
-            ])
+            ]
         );
     }
 

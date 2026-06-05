@@ -23,6 +23,7 @@ export interface CategoryRouting {
  * that's every category except `link`).
  */
 export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
+    ['contextualValue', { nodeVariant: 'ContextualValue' }],
     ['count', { nodeVariant: 'Count' }],
     ['discriminator', { nodeVariant: 'Discriminator' }],
     ['link', { nodeVariant: 'Link' }],

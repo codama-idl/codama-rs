@@ -1,60 +1,31 @@
-use crate::{
-    AccountValueNode, ArgumentValueNode, InstructionInputValueNode, ResolverValueNode, ValueNode,
-};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct ConditionalValueNode {
-    // Children.
-    pub condition: ConditionalValueCondition,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub value: Option<ValueNode>,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub if_true: Box<Option<InstructionInputValueNode>>,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub if_false: Box<Option<InstructionInputValueNode>>,
-}
-
-impl From<ConditionalValueNode> for crate::Node {
-    fn from(val: ConditionalValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
-
-#[node_union]
-pub enum ConditionalValueCondition {
-    Account(AccountValueNode),
-    Argument(ArgumentValueNode),
-    Resolver(ResolverValueNode),
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::NumberValueNode;
-
-    use super::*;
+    use crate::{
+        AccountValueNode, ArgumentValueNode, ConditionalValueCondition, ConditionalValueNode,
+        InstructionInputValueNode, NumberValueNode, ValueNode,
+    };
 
     #[test]
     fn direct_instantiation() {
         let node = ConditionalValueNode {
-            condition: ArgumentValueNode::new("myArgument").into(),
-            value: Some(NumberValueNode::new(42).into()),
+            condition: Box::new(ArgumentValueNode::new("myArgument").into()),
+            value: Box::new(Some(NumberValueNode::new(42).into())),
             if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             if_false: Box::new(None),
         };
         assert_eq!(
-            node.condition,
+            *node.condition,
             ConditionalValueCondition::Argument(ArgumentValueNode::new("myArgument"))
         );
         assert_eq!(
-            node.value,
+            *node.value,
             Some(ValueNode::Number(NumberValueNode::new(42)))
         );
         assert_eq!(
             *node.if_true,
-            Some(InstructionInputValueNode::Account(AccountValueNode::new(
-                "myOtherAccount"
-            )))
+            Some(InstructionInputValueNode::AccountValue(
+                AccountValueNode::new("myOtherAccount")
+            ))
         );
         assert_eq!(*node.if_false, None);
     }
@@ -62,8 +33,8 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ConditionalValueNode {
-            condition: ArgumentValueNode::new("myArgument").into(),
-            value: Some(NumberValueNode::new(42).into()),
+            condition: Box::new(ArgumentValueNode::new("myArgument").into()),
+            value: Box::new(Some(NumberValueNode::new(42).into())),
             if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             if_false: Box::new(None),
         };
@@ -81,8 +52,8 @@ mod tests {
         assert_eq!(
             node,
             ConditionalValueNode {
-                condition: ArgumentValueNode::new("myArgument").into(),
-                value: Some(NumberValueNode::new(42u32).into()),
+                condition: Box::new(ArgumentValueNode::new("myArgument").into()),
+                value: Box::new(Some(NumberValueNode::new(42u32).into())),
                 if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
                 if_false: Box::new(None),
             }

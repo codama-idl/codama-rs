@@ -93,9 +93,9 @@ mod tests {
         assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
         assert_eq!(
             node.default_value,
-            Some(InstructionInputValueNode::Argument(ArgumentValueNode::new(
-                "myOtherArgument"
-            )))
+            Some(InstructionInputValueNode::ArgumentValue(
+                ArgumentValueNode::new("myOtherArgument")
+            ))
         );
     }
 
