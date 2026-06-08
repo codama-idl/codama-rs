@@ -2,6 +2,7 @@ use crate::StructFieldValueNode;
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct StructValueNode {
     // Children.
     pub fields: Vec<StructFieldValueNode>,

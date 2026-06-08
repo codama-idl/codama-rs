@@ -96,7 +96,7 @@ fn it_sets_default_values_to_instruction_argument_nodes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionArgumentNode {
-                default_value: Some(PayerValueNode::new().into()),
+                default_value: Box::new(Some(PayerValueNode::new().into())),
                 ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
             }
             .into()
@@ -119,7 +119,7 @@ fn it_sets_omitted_default_values_to_instruction_argument_nodes() -> CodamaResul
         korok.node,
         Some(
             InstructionArgumentNode {
-                default_value: Some(PayerValueNode::new().into()),
+                default_value: Box::new(Some(PayerValueNode::new().into())),
                 default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
                 ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
             }

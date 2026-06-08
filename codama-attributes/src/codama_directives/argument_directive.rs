@@ -47,13 +47,14 @@ impl ArgumentDirective {
     pub fn to_instruction_argument_node(&self) -> CodamaResult<InstructionArgumentNode> {
         Ok(InstructionArgumentNode {
             name: self.name.clone(),
-            r#type: self.r#type.try_resolved()?.clone(),
+            r#type: Box::new(self.r#type.try_resolved()?.clone()),
             docs: self.docs.clone(),
-            default_value: self
-                .default_value
-                .as_ref()
-                .map(|r| r.try_resolved().cloned())
-                .transpose()?,
+            default_value: Box::new(
+                self.default_value
+                    .as_ref()
+                    .map(|r| r.try_resolved().cloned())
+                    .transpose()?,
+            ),
             default_value_strategy: self.default_value_strategy,
         })
     }

@@ -1,17 +1,4 @@
-use crate::{CamelCaseString, Docs, HasName, TypeNode, ValueNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct ConstantNode {
-    // data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // children.
-    pub r#type: TypeNode,
-    pub value: ValueNode,
-}
+use crate::{CamelCaseString, ConstantNode, Docs, TypeNode, ValueNode};
 
 impl ConstantNode {
     pub fn new<T, U, V>(name: T, r#type: U, value: V) -> Self
@@ -23,15 +10,9 @@ impl ConstantNode {
         Self {
             name: name.into(),
             docs: Docs::default(),
-            r#type: r#type.into(),
-            value: value.into(),
+            r#type: Box::new(r#type.into()),
+            value: Box::new(value.into()),
         }
-    }
-}
-
-impl HasName for ConstantNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
@@ -50,8 +31,8 @@ mod tests {
         );
         assert_eq!(node.name, CamelCaseString::new("maxItems"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(100u64)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(100u64)));
     }
 
     #[test]
@@ -59,13 +40,16 @@ mod tests {
         let node = ConstantNode {
             name: "appName".into(),
             docs: Docs::default(),
-            r#type: StringTypeNode::utf8().into(),
-            value: StringValueNode::new("MyApp").into(),
+            r#type: Box::new(StringTypeNode::utf8().into()),
+            value: Box::new(StringValueNode::new("MyApp").into()),
         };
         assert_eq!(node.name, CamelCaseString::new("appName"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.r#type, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.value, ValueNode::String(StringValueNode::new("MyApp")));
+        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
+        assert_eq!(
+            *node.value,
+            ValueNode::String(StringValueNode::new("MyApp"))
+        );
     }
 
     #[test]

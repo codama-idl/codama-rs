@@ -1,43 +1,14 @@
 use crate::{
-    AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode,
-    HasName, InstructionNode, PdaNode,
+    AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, ErrorNode, EventNode,
+    InstructionNode, PdaNode, ProgramNode,
 };
-use codama_nodes_derive::node;
-
-#[node]
-#[derive(Default)]
-pub struct ProgramNode {
-    // Data.
-    pub name: CamelCaseString,
-    pub public_key: String,
-    pub version: String,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub origin: Option<String>, // 'anchor' | 'shank'. Soon to be deprecated.
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    #[serde(default)]
-    pub accounts: Vec<AccountNode>,
-    #[serde(default)]
-    pub instructions: Vec<InstructionNode>,
-    #[serde(default)]
-    pub defined_types: Vec<DefinedTypeNode>,
-    #[serde(default)]
-    pub pdas: Vec<PdaNode>,
-    #[serde(default)]
-    pub events: Vec<EventNode>,
-    #[serde(default)]
-    pub errors: Vec<ErrorNode>,
-    #[serde(default)]
-    pub constants: Vec<ConstantNode>,
-}
 
 impl ProgramNode {
     pub fn new<T: Into<CamelCaseString>, U: Into<String>>(name: T, public_key: U) -> Self {
         Self {
             name: name.into(),
             public_key: public_key.into(),
+            version: "0.0.0".into(),
             ..Default::default()
         }
     }
@@ -83,15 +54,10 @@ impl ProgramNode {
     }
 }
 
-impl HasName for ProgramNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Docs;
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -99,7 +65,7 @@ mod tests {
         let node = ProgramNode::new("my_program", "1234..5678");
         assert_eq!(node.name, CamelCaseString::new("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
-        assert_eq!(node.version, "".to_string());
+        assert_eq!(node.version, "0.0.0".to_string());
         assert_eq!(node.origin, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.accounts, vec![]);
@@ -167,7 +133,7 @@ mod tests {
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#;
+        let json = r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[],"constants":[]}"#;
         let node: ProgramNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

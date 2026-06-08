@@ -1,46 +1,8 @@
-use crate::{
-    CamelCaseString, DiscriminatorNode, Docs, HasName, InstructionAccountNode,
-    InstructionArgumentNode, InstructionByteDeltaNode, InstructionRemainingAccountsNode,
-    InstructionStatusNode, OptionalAccountStrategy,
-};
-use codama_nodes_derive::node;
-
-#[node]
-#[derive(Default)]
-pub struct InstructionNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub optional_account_strategy: OptionalAccountStrategy,
-
-    // Children.
-    pub accounts: Vec<InstructionAccountNode>,
-    pub arguments: Vec<InstructionArgumentNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub extra_arguments: Vec<InstructionArgumentNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub remaining_accounts: Vec<InstructionRemainingAccountsNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub byte_deltas: Vec<InstructionByteDeltaNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub discriminators: Vec<DiscriminatorNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub status: Option<InstructionStatusNode>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub sub_instructions: Vec<InstructionNode>,
-}
-
-impl HasName for InstructionNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
-    }
-}
+// `InstructionNode` is generated; this file holds only its tests.
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{CamelCaseString, Docs, InstructionNode};
 
     #[test]
     fn empty_instruction() {
@@ -50,10 +12,7 @@ mod tests {
         };
         assert_eq!(node.name, CamelCaseString::new("myInstruction"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(
-            node.optional_account_strategy,
-            OptionalAccountStrategy::ProgramId
-        );
+        assert_eq!(node.optional_account_strategy, None);
         assert_eq!(node.accounts, vec![]);
         assert_eq!(node.arguments, vec![]);
         assert_eq!(node.extra_arguments, vec![]);

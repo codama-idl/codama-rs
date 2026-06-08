@@ -37,6 +37,9 @@ describe('getRenderMap', () => {
     it('emits one .rs file per node, one per emittable union, a per-category mod.rs, and a root mod.rs', () => {
         const keys = [...map.keys()].toSorted();
         expect(keys).toEqual([
+            'account_node.rs',
+            'codama_version.rs',
+            'constant_node.rs',
             'contextual_value_nodes/account_bump_value_node.rs',
             'contextual_value_nodes/account_value_node.rs',
             'contextual_value_nodes/argument_value_node.rs',
@@ -60,11 +63,22 @@ describe('getRenderMap', () => {
             'count_nodes/mod.rs',
             'count_nodes/prefixed_count_node.rs',
             'count_nodes/remainder_count_node.rs',
+            'defined_type_node.rs',
             'discriminator_nodes/constant_discriminator_node.rs',
             'discriminator_nodes/discriminator_node.rs',
             'discriminator_nodes/field_discriminator_node.rs',
             'discriminator_nodes/mod.rs',
             'discriminator_nodes/size_discriminator_node.rs',
+            'error_node.rs',
+            'event_node.rs',
+            'instruction_account_node.rs',
+            'instruction_argument_node.rs',
+            'instruction_byte_delta_node.rs',
+            'instruction_byte_delta_value.rs',
+            'instruction_node.rs',
+            'instruction_remaining_accounts_node.rs',
+            'instruction_remaining_accounts_value.rs',
+            'instruction_status_node.rs',
             'link_nodes/account_link_node.rs',
             'link_nodes/defined_type_link_node.rs',
             'link_nodes/instruction_account_link_node.rs',
@@ -75,11 +89,14 @@ describe('getRenderMap', () => {
             'link_nodes/pda_link_node.rs',
             'link_nodes/program_link_node.rs',
             'mod.rs',
+            'pda_node.rs',
             'pda_seed_nodes/constant_pda_seed_node.rs',
             'pda_seed_nodes/constant_pda_seed_value.rs',
             'pda_seed_nodes/mod.rs',
             'pda_seed_nodes/pda_seed_node.rs',
             'pda_seed_nodes/variable_pda_seed_node.rs',
+            'program_node.rs',
+            'root_node.rs',
             'shared/bytes_encoding.rs',
             'shared/default_value_strategy.rs',
             'shared/endianness.rs',
@@ -180,10 +197,12 @@ describe('getRenderMap', () => {
     });
 
     describe('count category', () => {
-        it('routes FixedCountNode through Node::Count and emits the u64 field plus #[derive(Copy)]', () => {
+        it('routes FixedCountNode through Node::Count and emits the u64 field plus #[derive(Copy, Default)]', () => {
+            // `value: u64` is scalar (so Copy) and unconditionally
+            // Default-able (so Default).
             const entry = getFromRenderMap(map, 'count_nodes/fixed_count_node.rs');
             expect(entry.content).toContain('#[node]');
-            expect(entry.content).toContain('#[derive(Copy)]');
+            expect(entry.content).toContain('#[derive(Copy, Default)]');
             expect(entry.content).toContain('pub struct FixedCountNode {');
             expect(entry.content).toContain('pub value: u64,');
             expect(entry.content).toContain('impl From<FixedCountNode> for crate::Node {');
@@ -212,7 +231,7 @@ describe('getRenderMap', () => {
             expect(constant.content).toContain('pub offset: u64,');
             expect(constant.content).toContain('crate::Node::Discriminator(val.into())');
             const size = getFromRenderMap(map, 'discriminator_nodes/size_discriminator_node.rs');
-            expect(size.content).toContain('#[derive(Copy)]');
+            expect(size.content).toContain('#[derive(Copy, Default)]');
             expect(size.content).toContain('pub size: u64,');
         });
 
@@ -375,6 +394,105 @@ describe('getRenderMap', () => {
             const entry = getFromRenderMap(map, 'contextual_value_nodes/resolver_value_node.rs');
             expect(entry.content).toContain('pub depends_on: Vec<ResolverDependency>,');
             expect(entry.content).not.toContain('Option<Vec<ResolverDependency>>');
+        });
+    });
+
+    describe('topLevel category (direct routing)', () => {
+        it('emits no `impl From<…> for crate::Node` for any topLevel node', () => {
+            for (const file of [
+                'account_node.rs',
+                'constant_node.rs',
+                'defined_type_node.rs',
+                'error_node.rs',
+                'event_node.rs',
+                'instruction_account_node.rs',
+                'instruction_argument_node.rs',
+                'instruction_byte_delta_node.rs',
+                'instruction_node.rs',
+                'instruction_remaining_accounts_node.rs',
+                'instruction_status_node.rs',
+                'pda_node.rs',
+                'program_node.rs',
+                'root_node.rs',
+            ]) {
+                const entry = getFromRenderMap(map, file);
+                expect(entry.content).not.toContain('impl From<');
+                expect(entry.content).not.toContain('crate::Node::');
+            }
+        });
+
+        it('renders rootNode.standard as `pub standard: String`', () => {
+            const entry = getFromRenderMap(map, 'root_node.rs');
+            expect(entry.content).toContain('pub struct RootNode {');
+            expect(entry.content).toContain('pub standard: String,');
+            expect(entry.content).not.toContain('"codama"');
+        });
+
+        it('renders errorNode.code as `u32` and accountNode.size as `Option<u64>`', () => {
+            expect(getFromRenderMap(map, 'error_node.rs').content).toContain('pub code: u32,');
+            expect(getFromRenderMap(map, 'account_node.rs').content).toContain('pub size: Option<u64>,');
+        });
+
+        it('renders programNode.origin as `Option<ProgramOrigin>`', () => {
+            expect(getFromRenderMap(map, 'program_node.rs').content).toContain('pub origin: Option<ProgramOrigin>,');
+        });
+
+        it('renders optional scalars as `Option<T>` uniformly', () => {
+            expect(getFromRenderMap(map, 'instruction_account_node.rs').content).toContain(
+                'pub is_optional: Option<bool>,',
+            );
+            const remaining = getFromRenderMap(map, 'instruction_remaining_accounts_node.rs');
+            expect(remaining.content).toContain('pub is_optional: Option<bool>,');
+            expect(remaining.content).toContain('pub is_signer: Option<IsSigner>,');
+            expect(remaining.content).toContain('pub is_writable: Option<bool>,');
+            expect(getFromRenderMap(map, 'instruction_byte_delta_node.rs').content).toContain(
+                'pub subtract: Option<bool>,',
+            );
+            expect(getFromRenderMap(map, 'instruction_status_node.rs').content).toContain(
+                'pub message: Option<String>,',
+            );
+            expect(getFromRenderMap(map, 'instruction_node.rs').content).toContain(
+                'pub optional_account_strategy: Option<OptionalAccountStrategy>,',
+            );
+        });
+
+        it('boxes every direct (non-Vec) union field; leaves nestedUnion unboxed', () => {
+            expect(getFromRenderMap(map, 'constant_node.rs').content).toContain('pub r#type: Box<TypeNode>,');
+            expect(getFromRenderMap(map, 'constant_node.rs').content).toContain('pub value: Box<ValueNode>,');
+            expect(getFromRenderMap(map, 'event_node.rs').content).toContain('pub data: Box<TypeNode>,');
+            expect(getFromRenderMap(map, 'instruction_byte_delta_node.rs').content).toContain(
+                'pub value: Box<InstructionByteDeltaValue>,',
+            );
+            expect(getFromRenderMap(map, 'instruction_account_node.rs').content).toContain(
+                'pub default_value: Box<Option<InstructionInputValueNode>>,',
+            );
+            expect(getFromRenderMap(map, 'account_node.rs').content).toContain(
+                'pub data: NestedTypeNode<StructTypeNode>,',
+            );
+        });
+
+        it('derives InstructionByteDeltaValue variant names from the longest common suffix (`Node`)', () => {
+            const entry = getFromRenderMap(map, 'instruction_byte_delta_value.rs');
+            expect(entry.content).toContain('pub enum InstructionByteDeltaValue {');
+            expect(entry.content).toContain('AccountLink(AccountLinkNode),');
+            expect(entry.content).toContain('ArgumentValue(ArgumentValueNode),');
+            expect(entry.content).toContain('NumberValue(NumberValueNode),');
+            expect(entry.content).toContain('ResolverValue(ResolverValueNode),');
+        });
+
+        it('derives Default for all-Default-able nodes; suppresses it for nodes with opaque required fields', () => {
+            expect(getFromRenderMap(map, 'program_node.rs').content).toContain('#[derive(Default)]');
+            expect(getFromRenderMap(map, 'instruction_node.rs').content).toContain('#[derive(Default)]');
+            expect(getFromRenderMap(map, 'error_node.rs').content).toContain('#[derive(Default)]');
+            expect(getFromRenderMap(map, 'pda_node.rs').content).toContain('#[derive(Default)]');
+            expect(getFromRenderMap(map, 'instruction_status_node.rs').content).not.toContain('Default');
+            expect(getFromRenderMap(map, 'root_node.rs').content).not.toContain('Default');
+            expect(getFromRenderMap(map, 'account_node.rs').content).not.toContain('Default');
+        });
+
+        it('emits a `CODAMA_VERSION` constant pinned to the spec version', () => {
+            const entry = getFromRenderMap(map, 'codama_version.rs');
+            expect(entry.content).toContain('pub const CODAMA_VERSION: &str = "1.6.0";');
         });
     });
 

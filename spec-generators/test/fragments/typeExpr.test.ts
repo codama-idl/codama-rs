@@ -40,15 +40,11 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(u32()).content).toBe('u32');
     });
 
-    it('renders a string literal as a JSON-quoted source-form literal', () => {
-        expect(getTypeExprFragment(literal('codama')).content).toBe('"codama"');
+    it("renders the v1 `literal('codama')` TypeExpr as `String`", () => {
+        expect(getTypeExprFragment(literal('codama')).content).toBe('String');
     });
 
-    it('renders a boolean literal', () => {
-        expect(getTypeExprFragment(literal(true)).content).toBe('true');
-    });
-
-    it('throws on literalUnion (only used inside spec enumerations, not as a node attribute type)', () => {
+    it('throws on a literalUnion in a nested position', () => {
         expect(() => getTypeExprFragment(literalUnion(1, 2))).toThrow(/literalUnion/);
     });
 

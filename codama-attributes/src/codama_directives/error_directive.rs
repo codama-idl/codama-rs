@@ -4,7 +4,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct ErrorDirective {
-    pub code: Option<usize>,
+    pub code: Option<u32>,
     pub message: Option<String>,
 }
 
@@ -17,7 +17,7 @@ impl ErrorDirective {
 impl ErrorDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("error")?.as_path_list()?;
-        let mut code = SetOnce::<usize>::new("code");
+        let mut code = SetOnce::<u32>::new("code");
         let mut message = SetOnce::<String>::new("message");
         pl.each(|ref meta| match meta.path_str().as_str() {
             "code" => code.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta),

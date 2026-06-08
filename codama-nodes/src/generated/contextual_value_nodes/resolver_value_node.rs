@@ -2,6 +2,7 @@ use crate::{CamelCaseString, Docs, HasName, ResolverDependency};
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct ResolverValueNode {
     // Data.
     pub name: CamelCaseString,

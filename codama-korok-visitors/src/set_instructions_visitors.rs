@@ -146,7 +146,9 @@ impl KorokVisitor for SetInstructionsVisitor {
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let discriminator = InstructionArgumentNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
+            default_value: Box::new(Some(
+                NumberValueNode::new(current_discriminator as u64).into(),
+            )),
             ..InstructionArgumentNode::from(&self.enum_discriminator)
         };
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
@@ -176,11 +178,10 @@ impl KorokVisitor for SetInstructionsVisitor {
     }
 }
 
-fn parse_optional_account_strategy(attributes: &Attributes) -> OptionalAccountStrategy {
+fn parse_optional_account_strategy(attributes: &Attributes) -> Option<OptionalAccountStrategy> {
     attributes
         .get_last(OptionalAccountStrategyDirective::filter)
         .map(|directive| directive.strategy)
-        .unwrap_or_default()
 }
 
 fn parse_accounts(
@@ -243,7 +244,7 @@ fn parse_arguments(
             };
 
             Ok(InstructionArgumentNode {
-                default_value: Some(directive.node.try_resolved()?.clone()),
+                default_value: Box::new(Some(directive.node.try_resolved()?.clone())),
                 default_value_strategy: directive.default_value_strategy,
                 ..argument
             })
@@ -282,7 +283,7 @@ fn parse_struct(
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
-        if let TypeNode::Struct(data) = node.r#type.clone() {
+        if let TypeNode::Struct(data) = (*node.r#type).clone() {
             return Ok((node.name.clone(), data));
         };
     };

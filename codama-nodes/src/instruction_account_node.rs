@@ -1,21 +1,4 @@
-use crate::{CamelCaseString, Docs, HasName, InstructionInputValueNode, IsSigner};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct InstructionAccountNode {
-    // Data.
-    pub name: CamelCaseString,
-    pub is_writable: bool,
-    pub is_signer: IsSigner,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub is_optional: bool,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub default_value: Option<InstructionInputValueNode>,
-}
+use crate::{CamelCaseString, Docs, InstructionAccountNode, IsSigner};
 
 impl InstructionAccountNode {
     pub fn new<T, U>(name: T, is_writable: bool, is_signer: U) -> Self
@@ -27,23 +10,17 @@ impl InstructionAccountNode {
             name: name.into(),
             is_writable,
             is_signer: is_signer.into(),
-            is_optional: false,
+            is_optional: None,
             docs: Docs::default(),
-            default_value: None,
+            default_value: Box::new(None),
         }
-    }
-}
-
-impl HasName for InstructionAccountNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::AccountValueNode;
+    use crate::{AccountValueNode, InstructionInputValueNode};
 
     #[test]
     fn new() {
@@ -51,9 +28,9 @@ mod tests {
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::True);
-        assert!(!node.is_optional);
+        assert_eq!(node.is_optional, None);
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.default_value, None);
+        assert_eq!(*node.default_value, None);
     }
 
     #[test]
@@ -62,17 +39,17 @@ mod tests {
             name: "myAccount".into(),
             is_writable: false,
             is_signer: IsSigner::Either,
-            is_optional: true,
+            is_optional: Some(true),
             docs: vec!["Hello".to_string()].into(),
-            default_value: Some(AccountValueNode::new("myOtherAccount").into()),
+            default_value: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
         };
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::Either);
-        assert!(node.is_optional);
+        assert_eq!(node.is_optional, Some(true));
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(
-            node.default_value,
+            *node.default_value,
             Some(InstructionInputValueNode::AccountValue(
                 AccountValueNode::new("myOtherAccount")
             ))

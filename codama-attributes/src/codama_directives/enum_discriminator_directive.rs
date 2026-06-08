@@ -4,8 +4,8 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    CamelCaseString, DefinedTypeNode, InstructionArgumentNode, NestedTypeNode, Node,
-    NumberFormat::U8, NumberTypeNode, StructFieldTypeNode, TypeNode,
+    CamelCaseString, InstructionArgumentNode, NestedTypeNode, Node, NumberFormat::U8,
+    NumberTypeNode, StructFieldTypeNode, TypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -73,14 +73,15 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a EnumDiscriminatorDirective {
 
 impl From<&Option<Node>> for EnumDiscriminatorDirective {
     fn from(node: &Option<Node>) -> Self {
-        EnumDiscriminatorDirective {
-            size: match &node {
-                Some(Node::DefinedType(DefinedTypeNode {
-                    r#type: TypeNode::Enum(data),
-                    ..
-                })) => Some(data.size.clone()),
+        let size = match node {
+            Some(Node::DefinedType(defined_type)) => match defined_type.r#type.as_ref() {
+                TypeNode::Enum(data) => Some(data.size.clone()),
                 _ => None,
             },
+            _ => None,
+        };
+        EnumDiscriminatorDirective {
+            size,
             ..EnumDiscriminatorDirective::default()
         }
     }

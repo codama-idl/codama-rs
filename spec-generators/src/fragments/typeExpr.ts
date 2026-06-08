@@ -64,11 +64,8 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             return fragment`${rust}`;
         }
         case 'literal':
-            // Not used by any node attribute in the categories generated
-            // today. The `topLevel.rootNode.standard` field uses it, but
-            // `topLevel` isn't generated yet (PR #10). Render best-effort
-            // so we don't hard-fail prematurely.
-            return fragment`${JSON.stringify(expr.value)}`;
+            // The literal value lives in the hand-written `Default`.
+            return fragment`String`;
         case 'literalUnion':
             // `literalUnion` at the top level of an attribute is resolved by
             // `attributeBodyLine.ts` (the attribute name supplies the type name).

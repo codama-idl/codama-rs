@@ -1,7 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Copy)]
+#[derive(Copy, Default)]
 pub struct FixedCountNode {
     // Data.
     pub value: u64,

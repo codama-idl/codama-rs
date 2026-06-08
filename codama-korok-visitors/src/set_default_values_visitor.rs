@@ -111,7 +111,7 @@ fn get_node_with_default_value(
         // Handle instruction arguments.
         Some(Node::InstructionArgument(argument)) => Ok(Some(
             InstructionArgumentNode {
-                default_value: Some(resolved_node.clone()),
+                default_value: Box::new(Some(resolved_node.clone())),
                 default_value_strategy: directive.default_value_strategy,
                 ..argument.clone()
             }

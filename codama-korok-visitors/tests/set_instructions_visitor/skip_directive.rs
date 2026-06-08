@@ -38,8 +38,8 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(0u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -55,8 +55,8 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(2u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -101,8 +101,8 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(0u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -115,8 +115,8 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(1u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -160,8 +160,8 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(0u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -174,8 +174,8 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(2u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()

@@ -1,7 +1,7 @@
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Copy)]
+#[derive(Copy, Default)]
 pub struct SizeDiscriminatorNode {
     // Data.
     pub size: u64,

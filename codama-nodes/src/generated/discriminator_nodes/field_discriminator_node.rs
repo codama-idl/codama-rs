@@ -2,6 +2,7 @@ use crate::{CamelCaseString, HasName};
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct FieldDiscriminatorNode {
     // Data.
     pub name: CamelCaseString,

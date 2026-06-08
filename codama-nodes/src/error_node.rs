@@ -1,24 +1,7 @@
-use crate::{CamelCaseString, Docs, HasName};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct ErrorNode {
-    // Data.
-    pub name: CamelCaseString,
-    pub code: usize,
-    pub message: String,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-}
-
-impl HasName for ErrorNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
-    }
-}
+use crate::{CamelCaseString, Docs, ErrorNode};
 
 impl ErrorNode {
-    pub fn new<T, U>(name: T, code: usize, message: U) -> Self
+    pub fn new<T, U>(name: T, code: u32, message: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<String>,

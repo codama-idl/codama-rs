@@ -4,31 +4,29 @@
  */
 
 /**
- * Per-spec-category routing: tells the generator which
- * `crate::Node::<variant>` to wrap a node in for its
- * `From<Self> for crate::Node` impl. For categories reached through a
- * union enum (e.g. `link` → `LinkNode`), the impl does
- * `crate::Node::Link(val.into())` — `.into()` lands in the category
- * union first, then the variant wraps it in `Node`. `topLevel` skips
- * the union step; that distinction lands when `topLevel` does.
+ * How a category's nodes reach the top-level `crate::Node` enum.
+ *
+ *   - `wrapped`: generator emits
+ *     `impl From<XxxNode> for crate::Node` routing through the
+ *     category union (`crate::Node::<variant>(val.into())`).
+ *   - `direct`: the node is a direct `Node` variant and `Node`'s
+ *     `#[derive(From)]` auto-generates the impl, so the generator
+ *     emits no `From` of its own.
  */
-export interface CategoryRouting {
-    /** The `crate::Node::<variant>` constructor the node routes through. */
-    readonly nodeVariant: string;
-}
+export type CategoryRouting = { readonly mode: 'wrapped'; readonly nodeVariant: string } | { readonly mode: 'direct' };
 
 /**
  * Routing table for spec categories whose nodes the generator emits in
- * v1. Categories absent from this map are not generated yet (today
- * that's every category except `link`).
+ * v1. Categories absent from this map are not generated yet.
  */
 export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
-    ['contextualValue', { nodeVariant: 'ContextualValue' }],
-    ['count', { nodeVariant: 'Count' }],
-    ['discriminator', { nodeVariant: 'Discriminator' }],
-    ['link', { nodeVariant: 'Link' }],
-    ['pdaSeed', { nodeVariant: 'PdaSeed' }],
-    ['value', { nodeVariant: 'Value' }],
+    ['contextualValue', { mode: 'wrapped', nodeVariant: 'ContextualValue' }],
+    ['count', { mode: 'wrapped', nodeVariant: 'Count' }],
+    ['discriminator', { mode: 'wrapped', nodeVariant: 'Discriminator' }],
+    ['link', { mode: 'wrapped', nodeVariant: 'Link' }],
+    ['pdaSeed', { mode: 'wrapped', nodeVariant: 'PdaSeed' }],
+    ['topLevel', { mode: 'direct' }],
+    ['value', { mode: 'wrapped', nodeVariant: 'Value' }],
 ]);
 
 /**

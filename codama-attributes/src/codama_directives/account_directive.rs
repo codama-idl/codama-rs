@@ -68,13 +68,14 @@ impl AccountDirective {
             name: self.name.clone(),
             is_writable: self.is_writable,
             is_signer: self.is_signer,
-            is_optional: self.is_optional,
+            is_optional: if self.is_optional { Some(true) } else { None },
             docs: self.docs.clone(),
-            default_value: self
-                .default_value
-                .as_ref()
-                .map(|r| r.try_resolved().cloned())
-                .transpose()?,
+            default_value: Box::new(
+                self.default_value
+                    .as_ref()
+                    .map(|r| r.try_resolved().cloned())
+                    .transpose()?,
+            ),
         })
     }
 }

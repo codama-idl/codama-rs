@@ -2,6 +2,7 @@ use crate::CamelCaseString;
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct PublicKeyValueNode {
     // Data.
     pub public_key: String,

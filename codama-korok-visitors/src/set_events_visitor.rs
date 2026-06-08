@@ -168,7 +168,7 @@ fn parse_struct(
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
-        if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from(node.r#type.clone()) {
+        if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from((*node.r#type).clone()) {
             return Ok((node.name.clone(), data));
         };
     };
