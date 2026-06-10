@@ -33,10 +33,10 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = DateTimeTypeNode::new(NumberTypeNode::new(U64, Endianness::Big));
+        let node = DateTimeTypeNode::new(NumberTypeNode::new(U64, Endianness::Be));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Be))
         );
     }
 

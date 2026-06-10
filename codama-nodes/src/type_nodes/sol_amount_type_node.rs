@@ -33,10 +33,10 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = SolAmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Big));
+        let node = SolAmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Be));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Be))
         );
     }
 
@@ -44,25 +44,25 @@ mod tests {
     fn new_with_explicit_value() {
         let node = SolAmountTypeNode::new(NestedTypeNode::Value(NumberTypeNode::new(
             U64,
-            Endianness::Big,
+            Endianness::Be,
         )));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Be))
         );
     }
 
     #[test]
     fn new_with_nested_value() {
         let node = SolAmountTypeNode::new(PostOffsetTypeNode::pre_offset(
-            PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endianness::Big), 0),
+            PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endianness::Be), 0),
             0,
         ));
         assert_eq!(
             node.number,
             NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
                 NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
-                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big)),
+                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Be)),
                     0
                 )),
                 0,
@@ -70,7 +70,7 @@ mod tests {
         );
         assert_eq!(
             node.number.get_nested_type_node(),
-            &NumberTypeNode::new(U64, Endianness::Big)
+            &NumberTypeNode::new(U64, Endianness::Be)
         );
     }
 

@@ -6,7 +6,7 @@ impl FromMeta for NumberTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("number")?.as_path_list()?;
         let mut format = SetOnce::<NumberFormat>::new("format");
-        let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Little);
+        let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "format" => {
