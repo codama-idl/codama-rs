@@ -4,14 +4,14 @@ use codama_nodes_derive::{node, node_union};
 #[node]
 pub struct PdaValueNode {
     // Children.
-    pub pda: PdaValue,
+    pub pda: PdaValuePda,
     pub seeds: Vec<PdaSeedValueNode>,
     #[serde(skip_serializing_if = "crate::is_default")]
-    pub program_id: Box<Option<PdaProgramIdValueNode>>,
+    pub program_id: Box<Option<PdaValueProgramId>>,
 }
 
 #[node_union]
-pub enum PdaProgramIdValueNode {
+pub enum PdaValueProgramId {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),
 }
@@ -25,7 +25,7 @@ impl From<PdaValueNode> for crate::Node {
 impl PdaValueNode {
     pub fn new<T>(pda: T, seeds: Vec<PdaSeedValueNode>) -> Self
     where
-        T: Into<PdaValue>,
+        T: Into<PdaValuePda>,
     {
         Self {
             pda: pda.into(),
@@ -36,8 +36,8 @@ impl PdaValueNode {
 
     pub fn new_with_program_id<T, U>(pda: T, seeds: Vec<PdaSeedValueNode>, program_id: U) -> Self
     where
-        T: Into<PdaValue>,
-        U: Into<PdaProgramIdValueNode>,
+        T: Into<PdaValuePda>,
+        U: Into<PdaValueProgramId>,
     {
         Self {
             pda: pda.into(),
@@ -48,7 +48,7 @@ impl PdaValueNode {
 }
 
 #[node_union]
-pub enum PdaValue {
+pub enum PdaValuePda {
     Linked(PdaLinkNode),
     Nested(PdaNode),
 }
@@ -73,7 +73,7 @@ mod tests {
         );
         assert_eq!(
             node.pda,
-            PdaValue::Linked(PdaLinkNode::new("masterEdition"))
+            PdaValuePda::Linked(PdaLinkNode::new("masterEdition"))
         );
         assert_eq!(
             node.seeds,
@@ -98,7 +98,7 @@ mod tests {
         );
         assert_eq!(
             node.pda,
-            PdaValue::Nested(PdaNode::new(
+            PdaValuePda::Nested(PdaNode::new(
                 "counter",
                 vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
             ))
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn to_json_with_program_id() {
         let node = PdaValueNode::new_with_program_id(
-            PdaValue::Linked(PdaLinkNode::new("myPda")),
+            PdaValuePda::Linked(PdaLinkNode::new("myPda")),
             vec![],
             AccountValueNode::new("myProgramAccount"),
         );

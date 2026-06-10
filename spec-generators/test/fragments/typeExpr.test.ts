@@ -70,23 +70,16 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['crate::Docs']);
     });
 
-    it('routes enumeration references through the override table when present', () => {
+    it('routes enumeration references via PascalCase content + crate import', () => {
         const result = getTypeExprFragment(enumeration('endianness'));
-        // The Rust name `Endian` comes from ENUMERATION_NAME_OVERRIDES.
-        expect(result.content).toBe('Endian');
-        expect([...result.imports.keys()]).toEqual(['crate::Endian']);
+        expect(result.content).toBe('Endianness');
+        expect([...result.imports.keys()]).toEqual(['crate::Endianness']);
     });
 
     it('routes node references via PascalCase content + crate import', () => {
         const result = getTypeExprFragment(node('programLinkNode'));
         expect(result.content).toBe('ProgramLinkNode');
         expect([...result.imports.keys()]).toEqual(['crate::ProgramLinkNode']);
-    });
-
-    it('routes union references through UNION_NAME_OVERRIDES when present', () => {
-        const result = getTypeExprFragment(union('pdaValuePda'));
-        expect(result.content).toBe('PdaValue');
-        expect([...result.imports.keys()]).toEqual(['crate::PdaValue']);
     });
 
     it('routes union references via PascalCase content when no override', () => {

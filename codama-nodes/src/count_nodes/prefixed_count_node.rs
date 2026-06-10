@@ -14,18 +14,18 @@ impl PrefixedCountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Endian, NestedTypeNodeTrait, PreOffsetTypeNode, U32};
+    use crate::{Endianness, NestedTypeNodeTrait, PreOffsetTypeNode, U32};
 
     #[test]
     fn new() {
         let node = PrefixedCountNode::new(NumberTypeNode::le(U32));
         assert_eq!(
             node.prefix,
-            NestedTypeNode::Value(NumberTypeNode::new(U32, Endian::Little))
+            NestedTypeNode::Value(NumberTypeNode::new(U32, Endianness::Little))
         );
         assert_eq!(
             node.prefix.get_nested_type_node(),
-            &NumberTypeNode::new(U32, Endian::Little)
+            &NumberTypeNode::new(U32, Endianness::Little)
         );
     }
 
@@ -35,13 +35,13 @@ mod tests {
         assert_eq!(
             node.prefix,
             NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
-                NestedTypeNode::Value(NumberTypeNode::new(U32, Endian::Little)),
+                NestedTypeNode::Value(NumberTypeNode::new(U32, Endianness::Little)),
                 0
             ))
         );
         assert_eq!(
             node.prefix.get_nested_type_node(),
-            &NumberTypeNode::new(U32, Endian::Little)
+            &NumberTypeNode::new(U32, Endianness::Little)
         );
     }
 

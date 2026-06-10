@@ -2,7 +2,7 @@ use crate::{StructValueNode, TupleValueNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]
-pub enum EnumVariantData {
+pub enum EnumValuePayload {
     Struct(StructValueNode),
     Tuple(TupleValueNode),
 }

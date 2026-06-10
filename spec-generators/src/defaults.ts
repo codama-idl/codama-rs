@@ -52,38 +52,6 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /**
- * Per-spec-union Rust-side name overrides.
- *
- * Most spec union names map directly to their PascalCase Rust enum:
- * `linkNode` → `LinkNode`, `typeNode` → `TypeNode`. A handful of
- * unions are exposed under a different name in the Rust crate for
- * historic API-stability reasons; those overrides live here.
- *
- * Keys are spec union names (camelCase); values are Rust enum names
- * (PascalCase). Unions absent from this map use the default
- * `pascalCase(specName)` mapping.
- */
-export const UNION_NAME_OVERRIDES: ReadonlyMap<string, string> = new Map([
-    ['conditionalValueCondition', 'ConditionNode'],
-    ['enumValuePayload', 'EnumVariantData'],
-    ['instructionByteDeltaValue', 'InstructionByteDeltaNodeValue'],
-    ['instructionRemainingAccountsValue', 'InstructionRemainingAccountsNodeValue'],
-    ['pdaSeedValueValue', 'PdaSeedValueValueNode'],
-    ['pdaValuePda', 'PdaValue'],
-    ['pdaValueProgramId', 'PdaProgramIdValueNode'],
-]);
-
-/**
- * Per-spec-enumeration Rust-side name overrides. Same rule as
- * {@link UNION_NAME_OVERRIDES}: present only when the Rust enum name
- * differs from `pascalCase(specName)`.
- */
-export const ENUMERATION_NAME_OVERRIDES: ReadonlyMap<string, string> = new Map([
-    ['endianness', 'Endian'],
-    ['optionalAccountStrategy', 'InstructionOptionalAccountStrategy'],
-]);
-
-/**
  * Per-inline-union configuration.
  *
  * Most emittable unions are the category-main union (the standalone

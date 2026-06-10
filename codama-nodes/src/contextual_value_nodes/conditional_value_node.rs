@@ -6,7 +6,7 @@ use codama_nodes_derive::{node, node_union};
 #[node]
 pub struct ConditionalValueNode {
     // Children.
-    pub condition: ConditionNode,
+    pub condition: ConditionalValueCondition,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub value: Option<ValueNode>,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -22,7 +22,7 @@ impl From<ConditionalValueNode> for crate::Node {
 }
 
 #[node_union]
-pub enum ConditionNode {
+pub enum ConditionalValueCondition {
     Account(AccountValueNode),
     Argument(ArgumentValueNode),
     Resolver(ResolverValueNode),
@@ -44,7 +44,7 @@ mod tests {
         };
         assert_eq!(
             node.condition,
-            ConditionNode::Argument(ArgumentValueNode::new("myArgument"))
+            ConditionalValueCondition::Argument(ArgumentValueNode::new("myArgument"))
         );
         assert_eq!(
             node.value,

@@ -1,10 +1,10 @@
 use crate::{
-    CamelCaseString, DefinedTypeLinkNode, EnumValueNode, EnumVariantData, StructValueNode,
+    CamelCaseString, DefinedTypeLinkNode, EnumValueNode, EnumValuePayload, StructValueNode,
     TupleValueNode,
 };
 
 impl EnumValueNode {
-    pub fn new<T, U>(r#enum: T, variant: U, value: Option<EnumVariantData>) -> Self
+    pub fn new<T, U>(r#enum: T, variant: U, value: Option<EnumValuePayload>) -> Self
     where
         T: Into<DefinedTypeLinkNode>,
         U: Into<CamelCaseString>,
@@ -37,7 +37,7 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: Box::new(Some(EnumVariantData::Struct(value.into()))),
+            value: Box::new(Some(EnumValuePayload::Struct(value.into()))),
         }
     }
 
@@ -50,7 +50,7 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: Box::new(Some(EnumVariantData::Tuple(value.into()))),
+            value: Box::new(Some(EnumValuePayload::Tuple(value.into()))),
         }
     }
 }
@@ -90,7 +90,7 @@ mod tests {
         assert_eq!(node.variant, CamelCaseString::from("move"));
         assert_eq!(
             *node.value,
-            Some(EnumVariantData::Struct(StructValueNode::new(vec![
+            Some(EnumValuePayload::Struct(StructValueNode::new(vec![
                 StructFieldValueNode::new("x", NumberValueNode::new(10)),
                 StructFieldValueNode::new("y", NumberValueNode::new(20)),
             ])))
@@ -108,7 +108,7 @@ mod tests {
         assert_eq!(node.variant, CamelCaseString::from("write"));
         assert_eq!(
             *node.value,
-            Some(EnumVariantData::Tuple(TupleValueNode::new(vec![
+            Some(EnumValuePayload::Tuple(TupleValueNode::new(vec![
                 StringValueNode::new("Hello World").into()
             ])))
         );

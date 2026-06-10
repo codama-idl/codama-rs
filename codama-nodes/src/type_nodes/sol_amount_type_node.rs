@@ -28,39 +28,41 @@ impl SolAmountTypeNode {
 mod tests {
     use super::*;
     use crate::{
-        Endian, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
+        Endianness, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
     };
 
     #[test]
     fn new() {
-        let node = SolAmountTypeNode::new(NumberTypeNode::new(U64, Endian::Big));
+        let node = SolAmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Big));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
     }
 
     #[test]
     fn new_with_explicit_value() {
-        let node =
-            SolAmountTypeNode::new(NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big)));
+        let node = SolAmountTypeNode::new(NestedTypeNode::Value(NumberTypeNode::new(
+            U64,
+            Endianness::Big,
+        )));
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
     }
 
     #[test]
     fn new_with_nested_value() {
         let node = SolAmountTypeNode::new(PostOffsetTypeNode::pre_offset(
-            PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endian::Big), 0),
+            PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endianness::Big), 0),
             0,
         ));
         assert_eq!(
             node.number,
             NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
                 NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
-                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big)),
+                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big)),
                     0
                 )),
                 0,
@@ -68,7 +70,7 @@ mod tests {
         );
         assert_eq!(
             node.number.get_nested_type_node(),
-            &NumberTypeNode::new(U64, Endian::Big)
+            &NumberTypeNode::new(U64, Endianness::Big)
         );
     }
 

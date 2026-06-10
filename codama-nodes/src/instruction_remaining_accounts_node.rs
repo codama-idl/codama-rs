@@ -14,11 +14,11 @@ pub struct InstructionRemainingAccountsNode {
     pub docs: Docs,
 
     // Children.
-    pub value: InstructionRemainingAccountsNodeValue,
+    pub value: InstructionRemainingAccountsValue,
 }
 
 #[node_union]
-pub enum InstructionRemainingAccountsNodeValue {
+pub enum InstructionRemainingAccountsValue {
     Argument(ArgumentValueNode),
     Resolver(ResolverValueNode),
 }
@@ -42,7 +42,7 @@ mod tests {
         assert_eq!(node.docs, vec!["This is a test".to_string()].into());
         assert_eq!(
             node.value,
-            InstructionRemainingAccountsNodeValue::Argument(ArgumentValueNode::new("myArgument"))
+            InstructionRemainingAccountsValue::Argument(ArgumentValueNode::new("myArgument"))
         );
     }
 

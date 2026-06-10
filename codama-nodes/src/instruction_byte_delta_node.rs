@@ -9,13 +9,13 @@ pub struct InstructionByteDeltaNode {
     pub subtract: bool,
 
     // Children.
-    pub value: InstructionByteDeltaNodeValue,
+    pub value: InstructionByteDeltaValue,
 }
 
 impl InstructionByteDeltaNode {
     pub fn new<T>(value: T, with_header: bool) -> Self
     where
-        T: Into<InstructionByteDeltaNodeValue>,
+        T: Into<InstructionByteDeltaValue>,
     {
         Self {
             value: value.into(),
@@ -26,7 +26,7 @@ impl InstructionByteDeltaNode {
 
     pub fn minus<T>(value: T, with_header: bool) -> Self
     where
-        T: Into<InstructionByteDeltaNodeValue>,
+        T: Into<InstructionByteDeltaValue>,
     {
         Self {
             value: value.into(),
@@ -37,7 +37,7 @@ impl InstructionByteDeltaNode {
 }
 
 #[node_union]
-pub enum InstructionByteDeltaNodeValue {
+pub enum InstructionByteDeltaValue {
     Account(AccountLinkNode),
     Argument(ArgumentValueNode),
     Number(NumberValueNode),
@@ -53,7 +53,7 @@ mod tests {
         let node = InstructionByteDeltaNode::new(ArgumentValueNode::new("myArgument"), true);
         assert_eq!(
             node.value,
-            InstructionByteDeltaNodeValue::Argument(ArgumentValueNode::new("myArgument"))
+            InstructionByteDeltaValue::Argument(ArgumentValueNode::new("myArgument"))
         );
         assert!(node.with_header);
         assert!(!node.subtract);
@@ -64,7 +64,7 @@ mod tests {
         let node = InstructionByteDeltaNode::minus(NumberValueNode::new(42), true);
         assert_eq!(
             node.value,
-            InstructionByteDeltaNodeValue::Number(NumberValueNode::new(42))
+            InstructionByteDeltaValue::Number(NumberValueNode::new(42))
         );
         assert!(node.with_header);
         assert!(node.subtract);

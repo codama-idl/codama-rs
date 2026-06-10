@@ -14,7 +14,7 @@ pub struct InstructionNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub optional_account_strategy: InstructionOptionalAccountStrategy,
+    pub optional_account_strategy: OptionalAccountStrategy,
 
     // Children.
     pub accounts: Vec<InstructionAccountNode>,
@@ -41,7 +41,7 @@ impl HasName for InstructionNode {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum InstructionOptionalAccountStrategy {
+pub enum OptionalAccountStrategy {
     Omitted,
     #[default]
     ProgramId,
@@ -61,7 +61,7 @@ mod tests {
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             node.optional_account_strategy,
-            InstructionOptionalAccountStrategy::ProgramId
+            OptionalAccountStrategy::ProgramId
         );
         assert_eq!(node.accounts, vec![]);
         assert_eq!(node.arguments, vec![]);

@@ -1,11 +1,11 @@
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{
-    AccountValueNode, ArgumentValueNode, CamelCaseString, PdaSeedValueNode, PdaSeedValueValueNode,
+    AccountValueNode, ArgumentValueNode, CamelCaseString, PdaSeedValueNode, PdaSeedValueValue,
     StringValueNode, ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl FromMeta for PdaSeedValueValueNode {
+impl FromMeta for PdaSeedValueValue {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
             "account" => AccountValueNode::from_meta(meta).map(Self::from),
@@ -28,12 +28,11 @@ impl FromMeta for PdaSeedValueNode {
         // Regular seed parsing.
         let pl = meta.assert_directive("seed")?.as_path_list()?;
         let mut name = SetOnce::<CamelCaseString>::new("name");
-        let mut value: SetOnce<PdaSeedValueValueNode> =
-            SetOnce::<PdaSeedValueValueNode>::new("value");
+        let mut value: SetOnce<PdaSeedValueValue> = SetOnce::<PdaSeedValueValue>::new("value");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
-            "value" => value.set(PdaSeedValueValueNode::from_meta(meta.as_value()?)?, meta),
+            "value" => value.set(PdaSeedValueValue::from_meta(meta.as_value()?)?, meta),
             _ => {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     match name.is_set() {
@@ -41,7 +40,7 @@ impl FromMeta for PdaSeedValueNode {
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
                     }
                 }
-                if let Ok(seed_value) = PdaSeedValueValueNode::from_meta(meta) {
+                if let Ok(seed_value) = PdaSeedValueValue::from_meta(meta) {
                     return value.set(seed_value, meta);
                 }
                 Err(meta.error("unrecognized attribute"))

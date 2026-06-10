@@ -35,15 +35,15 @@ impl AmountTypeNode {
 mod tests {
     use super::*;
     use crate::{
-        Endian, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
+        Endianness, NestedTypeNodeTrait, NumberTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, U64,
     };
 
     #[test]
     fn new() {
-        let node = AmountTypeNode::new(NumberTypeNode::new(U64, Endian::Big), 0, None);
+        let node = AmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Big), 0, None);
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
         assert_eq!(node.decimals, 0);
         assert_eq!(node.unit, None);
@@ -52,13 +52,13 @@ mod tests {
     #[test]
     fn new_with_offset() {
         let node = AmountTypeNode::new(
-            NumberTypeNode::new(U64, Endian::Big),
+            NumberTypeNode::new(U64, Endianness::Big),
             9,
             Some("SOL".to_string()),
         );
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
         assert_eq!(node.decimals, 9);
         assert_eq!(node.unit, Some("SOL".to_string()));
@@ -67,13 +67,13 @@ mod tests {
     #[test]
     fn new_with_explicit_value() {
         let node = AmountTypeNode::new(
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big)),
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big)),
             0,
             None,
         );
         assert_eq!(
             node.number,
-            NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big))
+            NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big))
         );
     }
 
@@ -81,7 +81,7 @@ mod tests {
     fn new_with_nested_value() {
         let node = AmountTypeNode::new(
             PostOffsetTypeNode::pre_offset(
-                PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endian::Big), 0),
+                PreOffsetTypeNode::absolute(NumberTypeNode::new(U64, Endianness::Big), 0),
                 0,
             ),
             9,
@@ -91,7 +91,7 @@ mod tests {
             node.number,
             NestedTypeNode::PostOffset(PostOffsetTypeNode::pre_offset(
                 NestedTypeNode::PreOffset(PreOffsetTypeNode::absolute(
-                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endian::Big)),
+                    NestedTypeNode::Value(NumberTypeNode::new(U64, Endianness::Big)),
                     0
                 )),
                 0,
@@ -99,13 +99,13 @@ mod tests {
         );
         assert_eq!(
             node.number.get_nested_type_node(),
-            &NumberTypeNode::new(U64, Endian::Big)
+            &NumberTypeNode::new(U64, Endianness::Big)
         );
     }
 
     #[test]
     fn to_json() {
-        let node = AmountTypeNode::new(NumberTypeNode::new(U64, Endian::Little), 9, None);
+        let node = AmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Little), 9, None);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -119,7 +119,7 @@ mod tests {
         let node: AmountTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            AmountTypeNode::new(NumberTypeNode::new(U64, Endian::Little), 9, None)
+            AmountTypeNode::new(NumberTypeNode::new(U64, Endianness::Little), 9, None)
         );
     }
 }

@@ -2,7 +2,6 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { TypeExpr } from '@codama/spec';
 
-import { ENUMERATION_NAME_OVERRIDES, UNION_NAME_OVERRIDES } from '../defaults';
 import { use } from './helpers';
 
 const NUMBER_FORMAT_TO_RUST: ReadonlyMap<string, string> = new Map([
@@ -77,11 +76,11 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
         case 'docs':
             return use('crate::Docs');
         case 'enumeration':
-            return use(`crate::${ENUMERATION_NAME_OVERRIDES.get(expr.name) ?? pascalCase(expr.name)}`);
+            return use(`crate::${pascalCase(expr.name)}`);
         case 'node':
             return use(`crate::${pascalCase(expr.name)}`);
         case 'union':
-            return use(`crate::${UNION_NAME_OVERRIDES.get(expr.name) ?? pascalCase(expr.name)}`);
+            return use(`crate::${pascalCase(expr.name)}`);
         case 'nestedUnion': {
             // v1 only has one nested-union alias: `nestedTypeNode`. The
             // Rust type alias is `NestedTypeNode<Kind>`.
