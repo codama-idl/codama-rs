@@ -146,7 +146,9 @@ impl KorokVisitor for SetAccountsVisitor {
 
         let discriminator = StructFieldTypeNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            default_value: Some(NumberValueNode::new(current_discriminator as u64).into()),
+            default_value: Box::new(Some(
+                NumberValueNode::new(current_discriminator as u64).into(),
+            )),
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
         let discriminator_name = discriminator.name.clone();

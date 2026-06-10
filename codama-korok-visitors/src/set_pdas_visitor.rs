@@ -80,7 +80,7 @@ pub fn parse_pda_seed_nodes(
                     }
                     let (name, type_node) = match &field.node {
                         Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => {
-                            (struct_field.name.clone(), struct_field.r#type.clone())
+                            (struct_field.name.clone(), (*struct_field.r#type).clone())
                         }
                         _ => match TypeNode::try_from(field.node.clone()) {
                             Ok(type_node) => (name.clone().into(), type_node),

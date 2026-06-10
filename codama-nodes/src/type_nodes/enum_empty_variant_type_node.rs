@@ -1,19 +1,4 @@
-use crate::{CamelCaseString, HasName};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct EnumEmptyVariantTypeNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub discriminator: Option<usize>,
-}
-
-impl From<EnumEmptyVariantTypeNode> for crate::Node {
-    fn from(val: EnumEmptyVariantTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
+use crate::{CamelCaseString, EnumEmptyVariantTypeNode};
 
 impl EnumEmptyVariantTypeNode {
     pub fn new<T>(name: T) -> Self
@@ -24,12 +9,6 @@ impl EnumEmptyVariantTypeNode {
             name: name.into(),
             discriminator: None,
         }
-    }
-}
-
-impl HasName for EnumEmptyVariantTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 

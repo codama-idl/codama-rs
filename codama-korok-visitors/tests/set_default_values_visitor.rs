@@ -21,7 +21,7 @@ fn it_sets_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Some(NumberValueNode::new(42u8).into()),
+                default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
                 ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
             }
             .into()
@@ -45,7 +45,7 @@ fn it_sets_omitted_default_values_to_struct_field_type_nodes() -> CodamaResult<(
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Some(NumberValueNode::new(42u8).into()),
+                default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
                 default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
                 ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
             }
@@ -63,7 +63,7 @@ fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
     };
     let mut korok = FieldKorok::parse(&item)?;
     let original_field = StructFieldTypeNode {
-        default_value: Some(NumberValueNode::new(1u8).into()),
+        default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
         ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
     };
     korok.node = Some(original_field.clone().into());
@@ -73,7 +73,7 @@ fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Some(NumberValueNode::new(2u8).into()),
+                default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
                 ..original_field
             }
             .into()

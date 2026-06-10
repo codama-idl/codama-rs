@@ -108,6 +108,28 @@ describe('getRenderMap', () => {
             'shared/post_offset_strategy.rs',
             'shared/pre_offset_strategy.rs',
             'shared/program_origin.rs',
+            'type_nodes/amount_type_node.rs',
+            'type_nodes/array_type_node.rs',
+            'type_nodes/boolean_type_node.rs',
+            'type_nodes/bytes_type_node.rs',
+            'type_nodes/date_time_type_node.rs',
+            'type_nodes/enum_empty_variant_type_node.rs',
+            'type_nodes/enum_struct_variant_type_node.rs',
+            'type_nodes/enum_tuple_variant_type_node.rs',
+            'type_nodes/enum_type_node.rs',
+            'type_nodes/map_type_node.rs',
+            'type_nodes/mod.rs',
+            'type_nodes/number_type_node.rs',
+            'type_nodes/option_type_node.rs',
+            'type_nodes/public_key_type_node.rs',
+            'type_nodes/remainder_option_type_node.rs',
+            'type_nodes/set_type_node.rs',
+            'type_nodes/sol_amount_type_node.rs',
+            'type_nodes/string_type_node.rs',
+            'type_nodes/struct_field_type_node.rs',
+            'type_nodes/struct_type_node.rs',
+            'type_nodes/tuple_type_node.rs',
+            'type_nodes/zeroable_option_type_node.rs',
             'value_nodes/array_value_node.rs',
             'value_nodes/boolean_value_node.rs',
             'value_nodes/bytes_value_node.rs',
@@ -189,6 +211,7 @@ describe('getRenderMap', () => {
             'link_nodes',
             'pda_seed_nodes',
             'shared',
+            'type_nodes',
             'value_nodes',
         ]) {
             expect(entry.content).toContain(`mod ${dir};`);
@@ -513,6 +536,86 @@ describe('getRenderMap', () => {
             expect(entry.content).not.toContain('Deserialize');
             expect(entry.content).not.toContain('Default');
             expect(entry.content).not.toContain('rename_all');
+        });
+    });
+
+    describe('type category', () => {
+        it('emits the 17 plain type nodes with `#[type_node]` and routes through `Node::Type`', () => {
+            const entry = getFromRenderMap(map, 'type_nodes/amount_type_node.rs');
+            expect(entry.content).toContain('#[type_node]');
+            expect(entry.content).toContain('pub struct AmountTypeNode {');
+            expect(entry.content).toContain('crate::Node::Type(val.into())');
+        });
+
+        it('emits the 3 enum-variant nodes and `structFieldTypeNode` with `#[node]` (not `#[type_node]`)', () => {
+            const variant = getFromRenderMap(map, 'type_nodes/enum_empty_variant_type_node.rs');
+            expect(variant.content).toContain('#[node]');
+            expect(variant.content).not.toContain('#[type_node]');
+            const structField = getFromRenderMap(map, 'type_nodes/struct_field_type_node.rs');
+            expect(structField.content).toContain('#[node]');
+            expect(structField.content).not.toContain('#[type_node]');
+        });
+
+        it('skips the 7 nestable wrapper nodes (fixedSize, sizePrefix, pre/postOffset, sentinel, hiddenPrefix/Suffix)', () => {
+            for (const file of [
+                'type_nodes/fixed_size_type_node.rs',
+                'type_nodes/size_prefix_type_node.rs',
+                'type_nodes/pre_offset_type_node.rs',
+                'type_nodes/post_offset_type_node.rs',
+                'type_nodes/sentinel_type_node.rs',
+                'type_nodes/hidden_prefix_type_node.rs',
+                'type_nodes/hidden_suffix_type_node.rs',
+            ]) {
+                expect(map.get(file)).toBeUndefined();
+            }
+        });
+
+        it('skips ALL type-category unions (TypeNode, RegisteredTypeNode, EnumVariantTypeNode, StandaloneTypeNode)', () => {
+            for (const file of [
+                'type_nodes/type_node.rs',
+                'type_nodes/registered_type_node.rs',
+                'type_nodes/enum_variant_type_node.rs',
+                'type_nodes/standalone_type_node.rs',
+            ]) {
+                expect(map.get(file)).toBeUndefined();
+            }
+        });
+
+        it('aligns generated widths with the spec (decimals -> u32; enum-variant discriminator -> u32; option.fixed -> Option<bool>)', () => {
+            expect(getFromRenderMap(map, 'type_nodes/amount_type_node.rs').content).toContain('pub decimals: u32,');
+            expect(getFromRenderMap(map, 'type_nodes/enum_empty_variant_type_node.rs').content).toContain(
+                'pub discriminator: Option<u32>,',
+            );
+            expect(getFromRenderMap(map, 'type_nodes/option_type_node.rs').content).toContain(
+                'pub fixed: Option<bool>,',
+            );
+        });
+
+        it('boxes cross-category union fields (array/map/set.count -> Box<CountNode>)', () => {
+            expect(getFromRenderMap(map, 'type_nodes/array_type_node.rs').content).toContain(
+                'pub count: Box<CountNode>,',
+            );
+            expect(getFromRenderMap(map, 'type_nodes/map_type_node.rs').content).toContain(
+                'pub count: Box<CountNode>,',
+            );
+            expect(getFromRenderMap(map, 'type_nodes/set_type_node.rs').content).toContain(
+                'pub count: Box<CountNode>,',
+            );
+        });
+
+        it('renders nestedUnion(nestedTypeNode, X) fields as bare `NestedTypeNode<X>` (no box)', () => {
+            expect(getFromRenderMap(map, 'type_nodes/amount_type_node.rs').content).toContain(
+                'pub number: NestedTypeNode<NumberTypeNode>,',
+            );
+            expect(getFromRenderMap(map, 'type_nodes/enum_struct_variant_type_node.rs').content).toContain(
+                'pub r#struct: NestedTypeNode<StructTypeNode>,',
+            );
+        });
+
+        it('escapes the `struct` field name as `r#struct`', () => {
+            expect(getFromRenderMap(map, 'type_nodes/enum_struct_variant_type_node.rs').content).toContain(
+                'pub r#struct:',
+            );
         });
     });
 });

@@ -208,7 +208,7 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode {
-                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
                         ..StructFieldTypeNode::new("discriminator", NumberTypeNode::le(U8))
                     },

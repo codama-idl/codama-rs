@@ -29,8 +29,8 @@ impl FromMeta for StructFieldTypeNode {
 
         Ok(StructFieldTypeNode {
             name: consumer.name.take(meta)?,
-            r#type,
-            default_value,
+            r#type: Box::new(r#type),
+            default_value: Box::new(default_value),
             default_value_strategy,
             docs: Docs::default(),
         })
@@ -64,7 +64,7 @@ mod tests {
         assert_type!(
             { field("age", number(u32), default_value = 42) },
             StructFieldTypeNode {
-                default_value: Some(NumberValueNode::new(42u32).into()),
+                default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
                 ..StructFieldTypeNode::new("age", NumberTypeNode::le(U32))
             }
             .into()
@@ -76,7 +76,7 @@ mod tests {
         assert_type!(
             { field("age", number(u32), value = 42) },
             StructFieldTypeNode {
-                default_value: Some(NumberValueNode::new(42u32).into()),
+                default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                 ..StructFieldTypeNode::new("age", NumberTypeNode::le(U32))
             }

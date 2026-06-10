@@ -44,8 +44,8 @@ fn from_enum() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(0u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                             },
                             StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
@@ -63,8 +63,8 @@ fn from_enum() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(1u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
                             },
                             StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
@@ -108,8 +108,8 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(0u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -123,8 +123,8 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(1u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -166,8 +166,8 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U32).into(),
-                            default_value: Some(NumberValueNode::new(0u32).into()),
+                            r#type: Box::new(NumberTypeNode::le(U32).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u32).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -181,8 +181,8 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U32).into(),
-                            default_value: Some(NumberValueNode::new(1u32).into()),
+                            r#type: Box::new(NumberTypeNode::le(U32).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(1u32).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -225,8 +225,8 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(0u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -240,8 +240,8 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(42u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -255,8 +255,8 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(43u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(43u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -270,8 +270,8 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(100u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(100u8).into())),
                         }])
                         .into()),
                         discriminators: vec![
@@ -344,8 +344,8 @@ fn with_name_directives() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(0u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         }])
                         .into()
                     ),
@@ -393,8 +393,8 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(0u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                             },
                             StructFieldTypeNode::new(
                                 "arg0",
@@ -447,8 +447,8 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(0u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
@@ -465,8 +465,8 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: NumberTypeNode::le(U8).into(),
-                                default_value: Some(NumberValueNode::new(1u8).into()),
+                                r#type: Box::new(NumberTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
                             },
                             StructFieldTypeNode::new("arg0", BooleanTypeNode::default()),
                         ])
@@ -482,8 +482,8 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: NumberTypeNode::le(U8).into(),
-                            default_value: Some(NumberValueNode::new(2u8).into()),
+                            r#type: Box::new(NumberTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
                         }])
                         .into()),
                         discriminators: vec![

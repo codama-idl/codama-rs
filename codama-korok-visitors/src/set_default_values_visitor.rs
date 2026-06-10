@@ -101,7 +101,7 @@ fn get_node_with_default_value(
             let value = ValueNode::try_from(resolved_node.clone()).ok();
             Ok(value.map(|value| {
                 StructFieldTypeNode {
-                    default_value: Some(value),
+                    default_value: Box::new(Some(value)),
                     default_value_strategy: directive.default_value_strategy,
                     ..field.clone()
                 }

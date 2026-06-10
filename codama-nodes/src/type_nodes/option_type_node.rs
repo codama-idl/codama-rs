@@ -1,22 +1,4 @@
-use crate::{NestedTypeNode, NumberTypeNode, TypeNode, U8};
-use codama_nodes_derive::type_node;
-
-#[type_node]
-pub struct OptionTypeNode {
-    // Data.
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub fixed: bool,
-
-    // Children.
-    pub item: Box<TypeNode>,
-    pub prefix: NestedTypeNode<NumberTypeNode>,
-}
-
-impl From<OptionTypeNode> for crate::Node {
-    fn from(val: OptionTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
+use crate::{NumberTypeNode, OptionTypeNode, TypeNode, U8};
 
 impl OptionTypeNode {
     pub fn new<T>(item: T) -> Self
@@ -24,7 +6,7 @@ impl OptionTypeNode {
         T: Into<TypeNode>,
     {
         Self {
-            fixed: false,
+            fixed: None,
             item: Box::new(item.into()),
             prefix: NumberTypeNode::le(U8).into(),
         }
@@ -35,7 +17,7 @@ impl OptionTypeNode {
         T: Into<TypeNode>,
     {
         Self {
-            fixed: true,
+            fixed: Some(true),
             item: Box::new(item.into()),
             prefix: NumberTypeNode::le(U8).into(),
         }
@@ -45,14 +27,14 @@ impl OptionTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, StringTypeNode, U64};
+    use crate::{NestedTypeNode, NumberTypeNode, StringTypeNode, U64};
 
     #[test]
     fn new() {
         let node = OptionTypeNode::new(NumberTypeNode::le(U64));
         assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
-        assert!(!node.fixed);
+        assert_eq!(node.fixed, None);
     }
 
     #[test]
@@ -60,20 +42,20 @@ mod tests {
         let node = OptionTypeNode::fixed(NumberTypeNode::le(U64));
         assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U8)));
-        assert!(node.fixed);
+        assert_eq!(node.fixed, Some(true));
     }
 
     #[test]
     fn direct_instantiation() {
         let node = OptionTypeNode {
-            fixed: true,
+            fixed: Some(true),
             item: Box::new(StringTypeNode::utf8().into()),
             prefix: NumberTypeNode::le(U64).into(),
         };
 
         assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U64)));
-        assert!(node.fixed);
+        assert_eq!(node.fixed, Some(true));
     }
 
     #[test]

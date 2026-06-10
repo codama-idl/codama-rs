@@ -43,7 +43,7 @@ impl<'a> FieldKorok<'a> {
         match &self.node {
             Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(
                 StructFieldTypeNode {
-                    r#type: node,
+                    r#type: Box::new(node),
                     ..field.clone()
                 }
                 .into(),
