@@ -16,12 +16,6 @@ mod struct_value_node;
 mod tuple_value_node;
 mod value_node;
 
-// `value_node.rs` hosts the hand-written `RegisteredValueNode` (with
-// the `#[derive(RegisteredNodes)]` registered/standalone split) which
-// can't be reproduced mechanically — re-export it so the category
-// union stays reachable at the crate root.
-pub use value_node::*;
-
 // `number_value_node.rs` keeps the bespoke `Number` enum (with its
 // custom `serde(from/into = "JsonNumber")` + the 8 `From<uN/iN/fN>`
 // impls); the rest of the module is constructors + tests. Re-export

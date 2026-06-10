@@ -12,7 +12,13 @@ import { type Fragment } from '@codama/fragments/rust';
 import { getSpec, type Spec } from '@codama/spec';
 
 import { CATEGORY_ROUTING } from './defaults';
-import { getModPagesRenderMap, getNodePageFragment, getPageFragment, getUnionPageFragment } from './fragments';
+import {
+    getModPagesRenderMap,
+    getNodePageFragment,
+    getPageFragment,
+    getRegisteredUnionPageFragment,
+    getUnionPageFragment,
+} from './fragments';
 import {
     buildRenderScope,
     type GenerateOptions,
@@ -21,15 +27,9 @@ import {
     validateRenderOptions,
 } from './options';
 import { getRepoDirectory } from './repoDirectory';
-import { getEmittableUnions } from './unions';
+import { getEmittableUnions, isRegisteredCategoryUnion } from './unions';
 
-export {
-    CATEGORY_DIRECTORIES,
-    type CategoryRouting,
-    CATEGORY_ROUTING,
-    FIELD_TYPE_OVERRIDES,
-    HAND_WRITTEN_UNIONS,
-} from './defaults';
+export { CATEGORY_DIRECTORIES, type CategoryRouting, CATEGORY_ROUTING, FIELD_TYPE_OVERRIDES } from './defaults';
 export {
     buildRenderScope,
     type GenerateOptions,
@@ -105,7 +105,16 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             // The on-disk file name follows the spec union name in
             // snake_case (e.g. `linkNode` → `link_node.rs`).
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
-            entries[path] = getPageFragment(getUnionPageFragment(union, spec));
+            // Category unions whose `registered<X>` twin has extra
+            // `#[registered]`-only members (currently `value`, and in
+            // future `type` / `contextualValue`) are emitted via the
+            // `RegisteredNodes` derive; the standalone twin is then
+            // auto-derived. Other unions take the plain `#[node_union]`
+            // path.
+            const fragment = isRegisteredCategoryUnion(union, spec)
+                ? getRegisteredUnionPageFragment(union, spec)
+                : getUnionPageFragment(union, spec);
+            entries[path] = getPageFragment(fragment);
         }
     }
 

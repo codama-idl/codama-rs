@@ -80,15 +80,24 @@ describe('getRenderMap', () => {
             'value_nodes/struct_field_value_node.rs',
             'value_nodes/struct_value_node.rs',
             'value_nodes/tuple_value_node.rs',
+            'value_nodes/value_node.rs',
         ]);
     });
 
-    it('does NOT emit the `valueNode` category union (HAND_WRITTEN_UNIONS skip)', () => {
-        // `value`'s category union is hand-written
-        // (`RegisteredValueNode` with `#[derive(RegisteredNodes)]`),
-        // not mechanically generatable.
-        const keys = [...map.keys()];
-        expect(keys).not.toContain('value_nodes/value_node.rs');
+    it('emits the `value` category union via the RegisteredNodes derive (standalone + #[registered] split)', () => {
+        // Render-map content is pre-format (no indentation); `cargo fmt`
+        // restores it on disk.
+        const entry = getFromRenderMap(map, 'value_nodes/value_node.rs');
+        expect(entry.content).toContain('use codama_nodes_derive::{node_union, RegisteredNodes};');
+        expect(entry.content).toContain('#[derive(RegisteredNodes)]');
+        expect(entry.content).toContain('#[node_union]');
+        expect(entry.content).toContain('pub enum RegisteredValueNode {');
+        // Standalone variants (alphabetical).
+        expect(entry.content).toContain('Array(ArrayValueNode),');
+        expect(entry.content).toContain('Tuple(TupleValueNode),');
+        // `#[registered]`-only variants follow.
+        expect(entry.content).toContain('#[registered]\nMapEntry(MapEntryValueNode),');
+        expect(entry.content).toContain('#[registered]\nStructField(StructFieldValueNode),');
     });
 
     it('per-node pages resolve their crate imports to a grouped `use crate::{…}` block plus the macro line', () => {

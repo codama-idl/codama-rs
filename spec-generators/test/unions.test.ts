@@ -1,7 +1,13 @@
 import { getSpec } from '@codama/spec';
 import { describe, expect, it } from 'vitest';
 
-import { flattenNodeUnion, getEmittableUnions, getInlineUnionStripSuffix } from '../src/unions';
+import {
+    flattenNodeUnion,
+    getEmittableUnions,
+    getInlineUnionStripSuffix,
+    getRegisteredOnlyLeafKinds,
+    isRegisteredCategoryUnion,
+} from '../src/unions';
 
 const spec = getSpec();
 const linkCategory = spec.categories.find(c => c.name === 'link')!;
@@ -35,8 +41,36 @@ describe('getEmittableUnions', () => {
         }
     });
 
-    it('skips HAND_WRITTEN_UNIONS even when they have a registered twin (e.g. value/valueNode)', () => {
-        expect(getEmittableUnions(valueCategory, spec).map(u => u.name)).not.toContain('valueNode');
+    it('emits the `value` category union (handled by the RegisteredNodes renderer, dispatched in `index.ts`)', () => {
+        expect(getEmittableUnions(valueCategory, spec).map(u => u.name)).toContain('valueNode');
+    });
+});
+
+describe('isRegisteredCategoryUnion', () => {
+    it('is true when the registered<X> twin has extra members (e.g. value/valueNode)', () => {
+        const valueNode = valueCategory.unions.find(u => u.name === 'valueNode')!;
+        expect(isRegisteredCategoryUnion(valueNode, spec)).toBe(true);
+    });
+
+    it('is false when registered<X> mirrors the standalone (e.g. link/linkNode, pdaSeed/pdaSeedNode)', () => {
+        const linkNode = linkCategory.unions.find(u => u.name === 'linkNode')!;
+        const pdaSeedNode = pdaSeedCategory.unions.find(u => u.name === 'pdaSeedNode')!;
+        expect(isRegisteredCategoryUnion(linkNode, spec)).toBe(false);
+        expect(isRegisteredCategoryUnion(pdaSeedNode, spec)).toBe(false);
+    });
+});
+
+describe('getRegisteredOnlyLeafKinds', () => {
+    it('returns the kinds present in registered<X> but absent from standalone <X>, in spec order', () => {
+        const valueNode = valueCategory.unions.find(u => u.name === 'valueNode')!;
+        // spec `registeredValueNode` adds `mapEntryValueNode` then
+        // `structFieldValueNode` after the standalone members.
+        expect(getRegisteredOnlyLeafKinds(valueNode, spec)).toEqual(['mapEntryValueNode', 'structFieldValueNode']);
+    });
+
+    it('returns an empty list for unions whose registered twin matches the standalone', () => {
+        const linkNode = linkCategory.unions.find(u => u.name === 'linkNode')!;
+        expect(getRegisteredOnlyLeafKinds(linkNode, spec)).toEqual([]);
     });
 });
 
