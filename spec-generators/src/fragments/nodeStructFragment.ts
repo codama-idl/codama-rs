@@ -1,31 +1,28 @@
 import { pascalCase } from '@codama/fragments';
-import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
+import { type Fragment, fragment, mergeFragments, removeFromImportMap } from '@codama/fragments/rust';
 import { isChildAttribute, type AttributeSpec, type NodeSpec, type TypeExpr } from '@codama/spec';
 
+import { FIELD_TYPE_OVERRIDES } from '../defaults';
 import { getAttributeBodyLineFragment } from './attributeBodyLine';
 import { use } from './helpers';
 
 /**
- * Render the `#[node] pub struct XxxNode { … }` declaration for one
- * spec node, plus any auto-derived `#[derive(...)]` line.
+ * Render the `#[node] pub struct XxxNode { … }` declaration plus any
+ * auto-derived `#[derive(...)]` line. Attributes are partitioned into
+ * "Data." (primitives, enumerations) and "Children." (node / union /
+ * nestedUnion refs, recursively through array/tuple); empty sections
+ * are omitted.
  *
- * Attributes are partitioned into "Data." (primitives, enumerations)
- * and "Children." (node / union / nestedUnion refs, recursively
- * through `array` / `tuple`) sections; within each section, fields
- * appear in spec declaration order. Empty sections are omitted.
+ * Derive heuristic:
  *
- * Derive heuristic (verified against every `#[node]` struct in
- * `codama-nodes`):
- *
- *   - `Copy`    when every attribute's type kind is a scalar
- *               (`integer` / `float` / `boolean` / `enumeration`);
- *               an empty struct also qualifies.
- *   - `Default` when the struct has no attributes at all.
- *
- * The handful of non-empty hand-written `Default` structs
- * (`ProgramNode`, `InstructionNode`, `InstructionStatusNode`) are
- * top-level builder types that keep their hand-written `Default`
- * impl and aren't generated here.
+ *   - `Copy`    when every attribute is a scalar kind (integer / float /
+ *               boolean / enumeration), or the struct is empty.
+ *   - `Default` when every field is unconditionally Default-able (see
+ *               {@link isUnconditionallyDefaultable}). Opaque required
+ *               fields (union / enumeration / node / nestedUnion /
+ *               literalUnion, or overridden via FIELD_TYPE_OVERRIDES)
+ *               disqualify the struct; the few such cases keep a
+ *               hand-written `impl Default`.
  */
 export function getNodeStructFragment(node: NodeSpec): Fragment {
     const structName = pascalCase(node.kind);
@@ -34,11 +31,18 @@ export function getNodeStructFragment(node: NodeSpec): Fragment {
     const derives = buildDeriveFragment(node);
     const header = derives === undefined ? macros : mergeFragments([macros, derives], parts => parts.join('\n'));
 
-    if (data.length === 0 && children.length === 0) {
-        return fragment`${header}\npub struct ${structName} {}`;
-    }
-    const body = buildBody(node.kind, data, children);
-    return fragment`${header}\npub struct ${structName} {\n${body}\n}`;
+    const raw =
+        data.length === 0 && children.length === 0
+            ? fragment`${header}\npub struct ${structName} {}`
+            : fragment`${header}\npub struct ${structName} {\n${buildBody(node.kind, data, children)}\n}`;
+
+    // Drop the self-import a self-referential field (e.g.
+    // `subInstructions: Vec<InstructionNode>`) would otherwise add —
+    // the type is in scope via the local declaration.
+    return {
+        ...raw,
+        imports: removeFromImportMap(raw.imports, `crate::${structName}`),
+    };
 }
 
 const SCALAR_KINDS: ReadonlySet<TypeExpr['kind']> = new Set(['integer', 'float', 'boolean', 'enumeration']);
@@ -46,12 +50,41 @@ const SCALAR_KINDS: ReadonlySet<TypeExpr['kind']> = new Set(['integer', 'float',
 function buildDeriveFragment(node: NodeSpec): Fragment | undefined {
     const isEmpty = node.attributes.length === 0;
     const isCopy = isEmpty || node.attributes.every(a => SCALAR_KINDS.has(a.type.kind));
-    const isDefault = isEmpty;
+    const isDefault = isEmpty || node.attributes.every(a => isUnconditionallyDefaultable(node.kind, a));
     const derives: string[] = [];
     if (isCopy) derives.push('Copy');
     if (isDefault) derives.push('Default');
     if (derives.length === 0) return undefined;
     return fragment`#[derive(${derives.join(', ')})]`;
+}
+
+/**
+ * `true` when this attribute's Rust type is guaranteed to implement
+ * `Default` without introspecting any referenced type. Conservative:
+ * "I'm not sure" => not Default-able, so the worst case is a missing
+ * derive caught by `cargo build`, never uncompilable code.
+ *
+ * Sound shapes: any `optional` attribute, `array`, `docs`, scalar
+ * primitives, and the `String`-rendering kinds (`string`, `address`,
+ * `codamaVersion`, `literal`). Required `union`/`enumeration`/`node`/
+ * `nestedUnion`/`literalUnion` reference opaque types; required
+ * `FIELD_TYPE_OVERRIDES` targets are also opaque.
+ */
+function isUnconditionallyDefaultable(nodeKind: string, attr: AttributeSpec): boolean {
+    if (attr.optional === true) return true;
+    if (FIELD_TYPE_OVERRIDES.has(`${nodeKind}.${attr.name}`)) return false;
+    const k = attr.type.kind;
+    return (
+        k === 'array' ||
+        k === 'docs' ||
+        k === 'boolean' ||
+        k === 'integer' ||
+        k === 'float' ||
+        k === 'string' ||
+        k === 'address' ||
+        k === 'codamaVersion' ||
+        k === 'literal'
+    );
 }
 
 interface PartitionedAttributes {

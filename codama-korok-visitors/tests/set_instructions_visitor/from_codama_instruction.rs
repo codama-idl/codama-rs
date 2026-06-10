@@ -176,24 +176,24 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                 accounts: vec![
                     InstructionAccountNode {
                         name: "rentSysvar".into(),
-                        default_value: Some(
+                        default_value: Box::new(Some(
                             PublicKeyValueNode::new("SysvarRent111111111111111111111111111111111")
-                                .into()
-                        ),
+                                .into(),
+                        )),
                         is_writable: false,
                         is_signer: false.into(),
-                        is_optional: false,
+                        is_optional: None,
                         docs: Docs::default(),
                     },
                     InstructionAccountNode {
                         name: "tokenProgram".into(),
-                        default_value: Some(
+                        default_value: Box::new(Some(
                             PublicKeyValueNode::new("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-                                .into()
-                        ),
+                                .into(),
+                        )),
                         is_writable: false,
                         is_signer: false.into(),
-                        is_optional: false,
+                        is_optional: None,
                         docs: Docs::default(),
                     },
                     InstructionAccountNode::new("authority", false, false),
@@ -201,8 +201,8 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         name: "payer".into(),
                         is_signer: true.into(),
                         is_writable: true,
-                        default_value: Some(PayerValueNode::new().into()),
-                        is_optional: false,
+                        default_value: Box::new(Some(PayerValueNode::new().into())),
+                        is_optional: None,
                         docs: Docs::default(),
                     },
                 ],
@@ -240,16 +240,16 @@ fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
                 name: "initialize".into(),
                 arguments: vec![
                     InstructionArgumentNode {
-                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
                     },
                     InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
                     InstructionArgumentNode {
-                        default_value: Some(ArgumentValueNode::new("capacity").into()),
+                        default_value: Box::new(Some(ArgumentValueNode::new("capacity").into())),
                         ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
                     },
                     InstructionArgumentNode {
-                        default_value: Some(BooleanValueNode::new(false).into()),
+                        default_value: Box::new(Some(BooleanValueNode::new(false).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
                         ..InstructionArgumentNode::new("with_metadata", BooleanTypeNode::default())
                     }
@@ -282,7 +282,7 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
                 accounts: vec![
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode {
-                        default_value: Some(AccountValueNode::new("authority").into()),
+                        default_value: Box::new(Some(AccountValueNode::new("authority").into())),
                         ..InstructionAccountNode::new("payer", false, false)
                     },
                 ],
@@ -317,7 +317,7 @@ fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<
                 arguments: vec![
                     InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
                     InstructionArgumentNode {
-                        default_value: Some(ArgumentValueNode::new("capacity").into()),
+                        default_value: Box::new(Some(ArgumentValueNode::new("capacity").into())),
                         ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
                     },
                 ],
@@ -491,7 +491,7 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
                 name: "myInstruction".into(),
                 arguments: vec![
                     InstructionArgumentNode {
-                        default_value: Some(NumberValueNode::new(0u8).into()),
+                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
                         ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
                     },

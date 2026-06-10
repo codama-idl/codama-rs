@@ -78,7 +78,7 @@ describe('getNodeStructFragment', () => {
 
     it('derives Copy when every attribute is a scalar kind (integer / float / boolean / enumeration)', () => {
         const spec = defineNode('fixedCountNode', { attributes: [attribute('value', u64())] });
-        expect(getNodeStructFragment(spec).content).toContain('#[derive(Copy)]');
+        expect(getNodeStructFragment(spec).content).toMatch(/#\[derive\(Copy(?:, Default)?\)\]/);
         const mixed = defineNode('numberTypeNode', {
             attributes: [
                 attribute('format', enumeration('numberFormat')),
@@ -86,17 +86,43 @@ describe('getNodeStructFragment', () => {
                 attribute('signed', boolean()),
             ],
         });
+        // Required enumeration fields disqualify Default.
         expect(getNodeStructFragment(mixed).content).toContain('#[derive(Copy)]');
+        expect(getNodeStructFragment(mixed).content).not.toContain('Default');
     });
 
     it('does NOT derive Copy when any attribute is a non-scalar (string / node / union / docs / …)', () => {
         const withString = defineNode('fieldDiscriminatorNode', {
             attributes: [attribute('name', stringIdentifier()), attribute('offset', u64())],
         });
-        expect(getNodeStructFragment(withString).content).not.toContain('#[derive(');
+        const a = getNodeStructFragment(withString).content;
+        expect(a).not.toContain('#[derive(Copy');
+        expect(a).toContain('#[derive(Default)]');
         const withNode = defineNode('constantDiscriminatorNode', {
             attributes: [attribute('offset', u64()), attribute('constant', node('constantValueNode'))],
         });
         expect(getNodeStructFragment(withNode).content).not.toContain('#[derive(');
+    });
+
+    it('derives `Default` when every required field is unconditionally Default-able', () => {
+        const spec = defineNode('exampleNode', {
+            attributes: [
+                attribute('name', stringIdentifier()),
+                attribute('flag', boolean()),
+                optionalAttribute('docs', { kind: 'docs' }),
+            ],
+        });
+        expect(getNodeStructFragment(spec).content).toContain('#[derive(Default)]');
+    });
+
+    it('does NOT derive `Default` when a required field references an opaque type', () => {
+        const enumSpec = defineNode('instructionStatusNode', {
+            attributes: [attribute('lifecycle', enumeration('instructionLifecycle'))],
+        });
+        expect(getNodeStructFragment(enumSpec).content).not.toContain('Default');
+        const nodeSpec = defineNode('rootNode', {
+            attributes: [attribute('program', node('programNode'))],
+        });
+        expect(getNodeStructFragment(nodeSpec).content).not.toContain('Default');
     });
 });

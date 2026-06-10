@@ -34,7 +34,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                     EventNode {
                         name: "transfer".into(),
                         docs: Docs::default(),
-                        data: StructTypeNode::new(vec![
+                        data: Box::new(StructTypeNode::new(vec![
                             StructFieldTypeNode {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -44,7 +44,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
-                        .into(),
+                        .into()),
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
@@ -52,7 +52,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                     EventNode {
                         name: "burn".into(),
                         docs: Docs::default(),
-                        data: StructTypeNode::new(vec![
+                        data: Box::new(StructTypeNode::new(vec![
                             StructFieldTypeNode {
                                 name: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -62,7 +62,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
-                        .into(),
+                        .into()),
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
@@ -101,14 +101,14 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                     EventNode {
                         name: "first".into(),
                         docs: Docs::default(),
-                        data: StructTypeNode::new(vec![StructFieldTypeNode {
+                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: NumberTypeNode::le(U8).into(),
                             default_value: Some(NumberValueNode::new(0u8).into()),
                         }])
-                        .into(),
+                        .into()),
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
@@ -116,14 +116,14 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                     EventNode {
                         name: "third".into(),
                         docs: Docs::default(),
-                        data: StructTypeNode::new(vec![StructFieldTypeNode {
+                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: NumberTypeNode::le(U8).into(),
                             default_value: Some(NumberValueNode::new(2u8).into()),
                         }])
-                        .into(),
+                        .into()),
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],

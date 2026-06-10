@@ -1,22 +1,10 @@
-use crate::ProgramNode;
-use codama_nodes_derive::node;
-
-#[node]
-pub struct RootNode {
-    // Data.
-    standard: String,
-    pub version: String,
-
-    // Children.
-    pub program: ProgramNode,
-    pub additional_programs: Vec<ProgramNode>,
-}
+use crate::{ProgramNode, RootNode, CODAMA_VERSION};
 
 impl Default for RootNode {
     fn default() -> Self {
         Self {
             standard: "codama".into(),
-            version: "1.0.0".into(), // TODO: Get this from Cargo.toml.
+            version: CODAMA_VERSION.into(),
             program: Default::default(),
             additional_programs: Default::default(),
         }
@@ -85,7 +73,7 @@ mod tests {
     fn direct_instantiation() {
         let node = RootNode {
             standard: "codama".into(),
-            version: "1.0.0".into(),
+            version: "1.6.0".into(),
             program: ProgramNode::new("myProgram", "1111"),
             additional_programs: vec![
                 ProgramNode::new("myProgramDependencyA", "2222"),
@@ -113,13 +101,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[],"constants":[]},"additionalPrograms":[]}"#
+            r#"{"kind":"rootNode","standard":"codama","version":"1.6.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[],"constants":[]},"additionalPrograms":[]}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"rootNode","standard":"codama","version":"1.0.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[]},"additionalPrograms":[]}"#;
+        let json = r#"{"kind":"rootNode","standard":"codama","version":"1.6.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3","accounts":[],"instructions":[],"definedTypes":[],"pdas":[],"events":[],"errors":[],"constants":[]},"additionalPrograms":[]}"#;
         let node: RootNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

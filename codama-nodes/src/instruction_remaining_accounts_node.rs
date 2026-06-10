@@ -1,47 +1,29 @@
-use crate::{ArgumentValueNode, Docs, IsSigner, ResolverValueNode};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct InstructionRemainingAccountsNode {
-    // Data.
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub is_optional: bool,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub is_signer: IsSigner,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub is_writable: bool,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub value: InstructionRemainingAccountsValue,
-}
-
-#[node_union]
-pub enum InstructionRemainingAccountsValue {
-    Argument(ArgumentValueNode),
-    Resolver(ResolverValueNode),
-}
+// `InstructionRemainingAccountsNode` and its inline-union value type
+// `InstructionRemainingAccountsValue` are generated; this file holds
+// only the constructor-less node's tests.
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{
+        ArgumentValueNode, InstructionRemainingAccountsNode, InstructionRemainingAccountsValue,
+        IsSigner,
+    };
 
     #[test]
     fn direct_instantiation() {
         let node = InstructionRemainingAccountsNode {
-            is_optional: false,
-            is_signer: IsSigner::Either,
-            is_writable: true,
+            is_optional: None,
+            is_signer: Some(IsSigner::Either),
+            is_writable: Some(true),
             docs: vec!["This is a test".to_string()].into(),
-            value: ArgumentValueNode::new("myArgument").into(),
+            value: Box::new(ArgumentValueNode::new("myArgument").into()),
         };
-        assert!(!node.is_optional);
-        assert_eq!(node.is_signer, IsSigner::Either);
-        assert!(node.is_writable);
+        assert_eq!(node.is_optional, None);
+        assert_eq!(node.is_signer, Some(IsSigner::Either));
+        assert_eq!(node.is_writable, Some(true));
         assert_eq!(node.docs, vec!["This is a test".to_string()].into());
         assert_eq!(
-            node.value,
+            *node.value,
             InstructionRemainingAccountsValue::Argument(ArgumentValueNode::new("myArgument"))
         );
     }
@@ -49,11 +31,11 @@ mod tests {
     #[test]
     fn to_json() {
         let node = InstructionRemainingAccountsNode {
-            is_optional: false,
-            is_signer: IsSigner::Either,
-            is_writable: true,
+            is_optional: None,
+            is_signer: Some(IsSigner::Either),
+            is_writable: Some(true),
             docs: vec![].into(),
-            value: ArgumentValueNode::new("myArgument").into(),
+            value: Box::new(ArgumentValueNode::new("myArgument").into()),
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -69,11 +51,11 @@ mod tests {
         assert_eq!(
             node,
             InstructionRemainingAccountsNode {
-                is_optional: false,
-                is_signer: IsSigner::Either,
-                is_writable: true,
+                is_optional: None,
+                is_signer: Some(IsSigner::Either),
+                is_writable: Some(true),
                 docs: vec![].into(),
-                value: ArgumentValueNode::new("myArgument").into(),
+                value: Box::new(ArgumentValueNode::new("myArgument").into()),
             }
         );
     }

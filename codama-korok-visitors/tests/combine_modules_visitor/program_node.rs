@@ -1,7 +1,8 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
     AccountNode, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode, InstructionNode, Node,
-    NumberTypeNode, NumberValueNode, PdaNode, ProgramNode, RootNode, StructTypeNode, U8,
+    NumberTypeNode, NumberValueNode, PdaNode, ProgramNode, ProgramOrigin, RootNode, StructTypeNode,
+    U8,
 };
 
 #[test]
@@ -84,11 +85,16 @@ fn it_does_not_override_the_program_data_when_set() {
 /// Returns a ProgramNode with the given public key
 /// whilst using an identifier to tag all fields with unique values.
 fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
+    let origin = if identifier == "a" {
+        ProgramOrigin::Anchor
+    } else {
+        ProgramOrigin::Shank
+    };
     ProgramNode {
         name: format!("program_{}", identifier).into(),
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
-        origin: Some(format!("origin_{}", identifier)),
+        origin: Some(origin),
         docs: Docs::new().add_doc(format!("docs_{}", identifier)),
         accounts: vec![AccountNode::new(
             format!("account_{}", identifier),

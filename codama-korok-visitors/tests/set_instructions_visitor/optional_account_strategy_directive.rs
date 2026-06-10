@@ -21,7 +21,7 @@ fn from_struct_with_optional_account_strategy_directive() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 name: "initialize".into(),
-                optional_account_strategy: OptionalAccountStrategy::Omitted,
+                optional_account_strategy: Some(OptionalAccountStrategy::Omitted),
                 arguments: vec![codama_nodes::InstructionArgumentNode::new(
                     "amount",
                     NumberTypeNode::le(U64)
@@ -54,7 +54,7 @@ fn from_enum_variant_with_optional_account_strategy_directive() -> CodamaResult<
     };
     assert_eq!(
         program.instructions[0].optional_account_strategy,
-        OptionalAccountStrategy::Omitted
+        Some(OptionalAccountStrategy::Omitted)
     );
     Ok(())
 }

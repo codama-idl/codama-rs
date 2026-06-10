@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getNodePageFragment } from '../../src/fragments/nodePage';
 
-const linkRouting = { nodeVariant: 'Link' };
+const linkRouting = { mode: 'wrapped' as const, nodeVariant: 'Link' };
 
 describe('getNodePageFragment', () => {
     it('composes the struct, From impl, and HasName impl in order, separated by blank lines', () => {

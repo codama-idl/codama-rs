@@ -1,16 +1,4 @@
-use crate::{CamelCaseString, Docs, HasName, TypeNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct DefinedTypeNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub r#type: TypeNode,
-}
+use crate::{CamelCaseString, DefinedTypeNode, Docs, TypeNode};
 
 impl DefinedTypeNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
@@ -21,14 +9,8 @@ impl DefinedTypeNode {
         Self {
             name: name.into(),
             docs: Docs::default(),
-            r#type: r#type.into(),
+            r#type: Box::new(r#type.into()),
         }
-    }
-}
-
-impl HasName for DefinedTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
@@ -42,7 +24,7 @@ mod tests {
         let node = DefinedTypeNode::new("myType", NumberTypeNode::le(U8));
         assert_eq!(node.name, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
     }
 
     #[test]
@@ -50,11 +32,11 @@ mod tests {
         let node = DefinedTypeNode {
             name: "myType".into(),
             docs: Docs::default(),
-            r#type: NumberTypeNode::le(U8).into(),
+            r#type: Box::new(NumberTypeNode::le(U8).into()),
         };
         assert_eq!(node.name, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
     }
 
     #[test]

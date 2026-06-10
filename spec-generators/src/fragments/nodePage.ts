@@ -7,17 +7,15 @@ import { getStructHasNameImplFragment } from './hasNameImpl';
 import { getNodeStructFragment } from './nodeStructFragment';
 
 /**
- * The body for one node's generated source file:
- *
- *   1. `#[node] pub struct XxxNode { … }` ({@link getNodeStructFragment}).
- *   2. `impl From<XxxNode> for crate::Node { … }` ({@link getFromImplFragment}).
- *   3. `impl HasName for XxxNode { … }` ({@link getStructHasNameImplFragment}),
- *      when applicable.
+ * The body for one node's generated source file: the struct, the
+ * `From<…> for crate::Node` impl (wrapped routing only), and a
+ * `HasName` impl when the node has a `name: stringIdentifier`.
  */
 export function getNodePageFragment(node: NodeSpec, routing: CategoryRouting): Fragment {
+    const fromImpl = routing.mode === 'wrapped' ? getFromImplFragment(node, routing) : undefined;
     const blocks: (Fragment | undefined)[] = [
         getNodeStructFragment(node),
-        getFromImplFragment(node, routing),
+        fromImpl,
         getStructHasNameImplFragment(node),
     ];
     return mergeFragments(blocks, parts => parts.join('\n\n'));

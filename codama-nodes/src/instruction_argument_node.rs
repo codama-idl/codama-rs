@@ -1,23 +1,7 @@
 use crate::{
-    CamelCaseString, DefaultValueStrategy, Docs, HasName, InstructionInputValueNode,
-    StructFieldTypeNode, StructTypeNode, TypeNode,
+    CamelCaseString, Docs, InstructionArgumentNode, InstructionInputValueNode, StructFieldTypeNode,
+    StructTypeNode, TypeNode,
 };
-use codama_nodes_derive::node;
-
-#[node]
-pub struct InstructionArgumentNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub default_value_strategy: Option<DefaultValueStrategy>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub r#type: TypeNode,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub default_value: Option<InstructionInputValueNode>,
-}
 
 impl InstructionArgumentNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
@@ -29,15 +13,9 @@ impl InstructionArgumentNode {
             name: name.into(),
             default_value_strategy: None,
             docs: Docs::default(),
-            r#type: r#type.into(),
-            default_value: None,
+            r#type: Box::new(r#type.into()),
+            default_value: Box::new(None),
         }
-    }
-}
-
-impl HasName for InstructionArgumentNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
@@ -47,8 +25,8 @@ impl From<StructFieldTypeNode> for InstructionArgumentNode {
             name: value.name,
             default_value_strategy: value.default_value_strategy,
             docs: value.docs,
-            r#type: value.r#type,
-            default_value: value.default_value.map(InstructionInputValueNode::from),
+            r#type: Box::new(value.r#type),
+            default_value: Box::new(value.default_value.map(InstructionInputValueNode::from)),
         }
     }
 }
@@ -65,13 +43,13 @@ impl From<StructTypeNode> for Vec<InstructionArgumentNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ArgumentValueNode, NumberTypeNode, U32};
+    use crate::{ArgumentValueNode, DefaultValueStrategy, NumberTypeNode, U32};
 
     #[test]
     fn new() {
         let node = InstructionArgumentNode::new("my_argument", NumberTypeNode::le(U32));
         assert_eq!(node.name, CamelCaseString::new("myArgument"));
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
@@ -80,8 +58,8 @@ mod tests {
             name: "myArgument".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
-            r#type: NumberTypeNode::le(U32).into(),
-            default_value: Some(ArgumentValueNode::new("myOtherArgument").into()),
+            r#type: Box::new(NumberTypeNode::le(U32).into()),
+            default_value: Box::new(Some(ArgumentValueNode::new("myOtherArgument").into())),
         };
 
         assert_eq!(node.name, CamelCaseString::new("myArgument"));
@@ -90,9 +68,9 @@ mod tests {
             Some(DefaultValueStrategy::Optional)
         );
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
         assert_eq!(
-            node.default_value,
+            *node.default_value,
             Some(InstructionInputValueNode::ArgumentValue(
                 ArgumentValueNode::new("myOtherArgument")
             ))

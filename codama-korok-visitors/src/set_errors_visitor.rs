@@ -8,7 +8,7 @@ use codama_syn_helpers::extensions::*;
 
 pub struct SetErrorsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_current_discriminator: usize,
+    enum_current_discriminator: u32,
 }
 
 impl Default for SetErrorsVisitor {

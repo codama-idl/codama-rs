@@ -13,6 +13,7 @@ import { getSpec, type Spec } from '@codama/spec';
 
 import { CATEGORY_ROUTING } from './defaults';
 import {
+    getCodamaVersionPageFragment,
     getEnumPageFragment,
     getLiteralUnionPageFragment,
     getModPagesRenderMap,
@@ -84,16 +85,9 @@ export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Frag
 }
 
 /**
- * Walk every spec category covered by {@link CATEGORY_ROUTING} and
- * emit one page per node and one page per emittable union, plus one
- * page per enumeration in every category that declares them (which is
- * orthogonal to routing — enumerations live wherever the spec puts
- * them, and today that's the `shared` category). After the category
- * loop, emit one page per distinct `literalUnion` value-set found
- * anywhere in the spec; these target `shared/` because they're
- * cross-category infrastructure with no native home in the spec's
- * category model. Returns a render map keyed by output path (relative
- * to `generated/`) with the resolved page fragment as the value.
+ * Build the render map: one page per node, per emittable union, per
+ * enumeration, and per literalUnion value-set, plus a
+ * `codama_version.rs` constant pinned to the spec version.
  */
 function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
     const entries: Record<Path, Fragment> = {};
@@ -101,9 +95,6 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
     for (const category of spec.categories) {
         const folder = scope.categoryDirectories.get(category.name);
 
-        // Enumerations are emitted whenever a category declares them,
-        // independent of whether the category's nodes/unions are
-        // generated yet. The directory must still be configured.
         if (category.enumerations.length > 0) {
             if (folder === undefined) {
                 throw new Error(
@@ -127,15 +118,7 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             entries[path] = getPageFragment(getNodePageFragment(node, routing));
         }
         for (const union of getEmittableUnions(category, spec)) {
-            // The on-disk file name follows the spec union name in
-            // snake_case (e.g. `linkNode` → `link_node.rs`).
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
-            // Category unions whose `registered<X>` twin has extra
-            // `#[registered]`-only members (currently `value`, and in
-            // future `type` / `contextualValue`) are emitted via the
-            // `RegisteredNodes` derive; the standalone twin is then
-            // auto-derived. Other unions take the plain `#[node_union]`
-            // path.
             const fragment = isRegisteredCategoryUnion(union, spec)
                 ? getRegisteredUnionPageFragment(union, spec)
                 : getUnionPageFragment(union, spec);
@@ -143,12 +126,10 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
         }
     }
 
-    // `literalUnion` TypeExprs are anonymous and inline in v1 — they
-    // don't belong to any category's registry. Discover them by
-    // walking every node attribute spec-wide, dedup by value-set, and
-    // emit one Rust enum shell per distinct value-set into `shared/`.
-    // The bespoke `Serialize`/`Deserialize`/`From<bool>`/`Default` impls
-    // stay hand-written in the companion file alongside the shell.
+    // `literalUnion` TypeExprs are anonymous and inline; discover
+    // them by walking every node attribute, dedup by value-set, and
+    // emit one shell per distinct value-set into `shared/`. The
+    // bespoke serde/From/Default impls stay hand-written alongside.
     const literalUnions = getReferencedLiteralUnions(spec);
     if (literalUnions.length > 0) {
         const sharedFolder = scope.categoryDirectories.get('shared');
@@ -162,6 +143,11 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             entries[path] = getPageFragment(getLiteralUnionPageFragment(ref));
         }
     }
+
+    // `CODAMA_VERSION` constant pinned to the spec version at
+    // generation time, mirroring the JS `CODAMA_VERSION`. Used by the
+    // hand-written `RootNode::default()` to tag the document.
+    entries['codama_version.rs'] = getPageFragment(getCodamaVersionPageFragment(spec.version));
 
     return createRenderMap(entries);
 }

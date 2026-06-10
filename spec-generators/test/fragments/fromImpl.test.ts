@@ -6,7 +6,7 @@ import { getFromImplFragment } from '../../src/fragments/fromImpl';
 describe('getFromImplFragment', () => {
     it('emits the From<XxxNode> for crate::Node impl routing through the routing variant', () => {
         const spec = defineNode('accountLinkNode', { attributes: [] });
-        const result = getFromImplFragment(spec, { nodeVariant: 'Link' });
+        const result = getFromImplFragment(spec, { mode: 'wrapped' as const, nodeVariant: 'Link' });
         // No inner indentation — rustfmt restores it.
         expect(result.content).toBe(
             [
@@ -21,13 +21,13 @@ describe('getFromImplFragment', () => {
 
     it('carries no imports — crate::Node is referenced absolutely and the struct name is in scope', () => {
         const spec = defineNode('accountLinkNode', { attributes: [] });
-        const result = getFromImplFragment(spec, { nodeVariant: 'Link' });
+        const result = getFromImplFragment(spec, { mode: 'wrapped' as const, nodeVariant: 'Link' });
         expect(result.imports.size).toBe(0);
     });
 
     it('uses the supplied routing variant verbatim (no normalisation)', () => {
         const spec = defineNode('someNode', { attributes: [] });
-        const result = getFromImplFragment(spec, { nodeVariant: 'Account' });
+        const result = getFromImplFragment(spec, { mode: 'wrapped' as const, nodeVariant: 'Account' });
         expect(result.content).toContain('crate::Node::Account(val.into())');
     });
 });

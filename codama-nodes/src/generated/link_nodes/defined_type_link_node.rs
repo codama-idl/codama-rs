@@ -2,6 +2,7 @@ use crate::{CamelCaseString, HasName, ProgramLinkNode};
 use codama_nodes_derive::node;
 
 #[node]
+#[derive(Default)]
 pub struct DefinedTypeLinkNode {
     // Data.
     pub name: CamelCaseString,

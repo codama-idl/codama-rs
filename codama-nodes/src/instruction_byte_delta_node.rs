@@ -1,16 +1,4 @@
-use crate::{AccountLinkNode, ArgumentValueNode, NumberValueNode, ResolverValueNode};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct InstructionByteDeltaNode {
-    // Data.
-    pub with_header: bool,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub subtract: bool,
-
-    // Children.
-    pub value: InstructionByteDeltaValue,
-}
+use crate::{InstructionByteDeltaNode, InstructionByteDeltaValue};
 
 impl InstructionByteDeltaNode {
     pub fn new<T>(value: T, with_header: bool) -> Self
@@ -18,9 +6,9 @@ impl InstructionByteDeltaNode {
         T: Into<InstructionByteDeltaValue>,
     {
         Self {
-            value: value.into(),
+            value: Box::new(value.into()),
             with_header,
-            subtract: false,
+            subtract: None,
         }
     }
 
@@ -29,45 +17,39 @@ impl InstructionByteDeltaNode {
         T: Into<InstructionByteDeltaValue>,
     {
         Self {
-            value: value.into(),
+            value: Box::new(value.into()),
             with_header,
-            subtract: true,
+            subtract: Some(true),
         }
     }
 }
 
-#[node_union]
-pub enum InstructionByteDeltaValue {
-    Account(AccountLinkNode),
-    Argument(ArgumentValueNode),
-    Number(NumberValueNode),
-    Resolver(ResolverValueNode),
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{
+        ArgumentValueNode, InstructionByteDeltaNode, InstructionByteDeltaValue, NumberValueNode,
+    };
 
     #[test]
     fn new() {
         let node = InstructionByteDeltaNode::new(ArgumentValueNode::new("myArgument"), true);
         assert_eq!(
-            node.value,
-            InstructionByteDeltaValue::Argument(ArgumentValueNode::new("myArgument"))
+            *node.value,
+            InstructionByteDeltaValue::ArgumentValue(ArgumentValueNode::new("myArgument"))
         );
         assert!(node.with_header);
-        assert!(!node.subtract);
+        assert_eq!(node.subtract, None);
     }
 
     #[test]
     fn minus() {
         let node = InstructionByteDeltaNode::minus(NumberValueNode::new(42), true);
         assert_eq!(
-            node.value,
-            InstructionByteDeltaValue::Number(NumberValueNode::new(42))
+            *node.value,
+            InstructionByteDeltaValue::NumberValue(NumberValueNode::new(42))
         );
         assert!(node.with_header);
-        assert!(node.subtract);
+        assert_eq!(node.subtract, Some(true));
     }
 
     #[test]

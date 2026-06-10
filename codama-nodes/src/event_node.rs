@@ -1,18 +1,4 @@
-use crate::{CamelCaseString, DiscriminatorNode, Docs, HasName, TypeNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct EventNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub data: TypeNode,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub discriminators: Vec<DiscriminatorNode>,
-}
+use crate::{CamelCaseString, Docs, EventNode, TypeNode};
 
 impl EventNode {
     pub fn new<T, U>(name: T, data: U) -> Self
@@ -23,15 +9,9 @@ impl EventNode {
         Self {
             name: name.into(),
             docs: Docs::default(),
-            data: data.into(),
+            data: Box::new(data.into()),
             discriminators: vec![],
         }
-    }
-}
-
-impl HasName for EventNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
@@ -53,7 +33,7 @@ mod tests {
         assert_eq!(node.name, CamelCaseString::new("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
-            node.data,
+            *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
@@ -67,18 +47,20 @@ mod tests {
         let node = EventNode {
             name: "myEvent".into(),
             docs: Docs::default(),
-            data: StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
-            ])
-            .into(),
+            data: Box::new(
+                StructTypeNode::new(vec![
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                ])
+                .into(),
+            ),
             discriminators: vec![],
         };
 
         assert_eq!(node.name, CamelCaseString::new("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
-            node.data,
+            *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),

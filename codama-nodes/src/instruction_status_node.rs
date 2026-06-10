@@ -1,27 +1,27 @@
-use crate::InstructionLifecycle;
-use codama_nodes_derive::node;
+use crate::{InstructionLifecycle, InstructionStatusNode};
 
-#[node]
-#[derive(Default)]
-pub struct InstructionStatusNode {
-    // Data.
-    pub lifecycle: InstructionLifecycle,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub message: String,
+#[allow(clippy::derivable_impls)]
+impl Default for InstructionStatusNode {
+    fn default() -> Self {
+        Self {
+            lifecycle: InstructionLifecycle::default(),
+            message: None,
+        }
+    }
 }
 
 impl InstructionStatusNode {
     pub fn new(lifecycle: InstructionLifecycle) -> Self {
         Self {
             lifecycle,
-            message: String::default(),
+            message: None,
         }
     }
 
     pub fn with_message<S: Into<String>>(lifecycle: InstructionLifecycle, message: S) -> Self {
         Self {
             lifecycle,
-            message: message.into(),
+            message: Some(message.into()),
         }
     }
 }
@@ -34,7 +34,7 @@ mod tests {
     fn new() {
         let node = InstructionStatusNode::new(InstructionLifecycle::Live);
         assert_eq!(node.lifecycle, InstructionLifecycle::Live);
-        assert_eq!(node.message, String::default());
+        assert_eq!(node.message, None);
     }
 
     #[test]
@@ -44,7 +44,7 @@ mod tests {
             "Use newInstruction",
         );
         assert_eq!(node.lifecycle, InstructionLifecycle::Deprecated);
-        assert_eq!(node.message, "Use newInstruction");
+        assert_eq!(node.message.as_deref(), Some("Use newInstruction"));
     }
 
     #[test]
@@ -82,6 +82,6 @@ mod tests {
         let json = r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
         assert_eq!(node.lifecycle, InstructionLifecycle::Deprecated);
-        assert_eq!(node.message, "Use newInstruction instead");
+        assert_eq!(node.message.as_deref(), Some("Use newInstruction instead"));
     }
 }
