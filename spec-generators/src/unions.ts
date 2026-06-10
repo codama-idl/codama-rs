@@ -110,21 +110,40 @@ export function getReferencedUnionNames(spec: Spec): ReadonlySet<string> {
 
 /**
  * The PascalCase suffix to strip from each leaf node's kind when
- * deriving variant names for an inline union. Computed as the
- * longest common PascalCase suffix shared by every leaf's
- * `pascalCase(kind)`, trimmed back to start at an uppercase letter
- * so we never strip mid-word.
+ * deriving variant names for an inline union. See
+ * {@link longestCommonPascalCaseSuffix}.
  *
  *   - `constantPdaSeedValue` (15 leaves)  → `'ValueNode'`
  *   - `enumValuePayload`     (2 leaves)   → `'ValueNode'`
  *   - `pdaValuePda`          (2 leaves)   → `'Node'`
- *
- * For category-main unions (those with a `registered<X>` twin) the
- * stripped suffix is the union's own pascalCase name — handled in
- * {@link variantStripSuffix} of `unionPage.ts`.
  */
 export function getInlineUnionStripSuffix(union: UnionSpec, spec: Spec): string {
-    const leaves = [...flattenNodeUnion(union, spec)].map(n => pascalCase(n.kind));
+    return longestCommonPascalCaseSuffix([...flattenNodeUnion(union, spec)].map(n => pascalCase(n.kind)));
+}
+
+/**
+ * The PascalCase suffix to strip from each variant of a
+ * `RegisteredNodes`-mode category union (e.g. `RegisteredValueNode`).
+ * Computed across BOTH the standalone leaves AND the registered-only
+ * leaves so the strip stays uniform across the whole enum.
+ *
+ *   - `valueNode` (standalone + registered)  → `'ValueNode'`
+ *   - `contextualValueNode` (the leaves end in `ValueNode`, not
+ *     `ContextualValueNode`)                 → `'ValueNode'`
+ */
+export function getRegisteredUnionStripSuffix(union: UnionSpec, spec: Spec): string {
+    const standalone = [...flattenNodeUnion(union, spec)].map(n => pascalCase(n.kind));
+    const registeredOnly = getRegisteredOnlyLeafKinds(union, spec).map(k => pascalCase(k));
+    return longestCommonPascalCaseSuffix([...standalone, ...registeredOnly]);
+}
+
+/**
+ * Longest common PascalCase suffix shared by every input string,
+ * trimmed back to start at an uppercase letter so we never strip
+ * mid-word. Returns `''` when the inputs share no `Word`-aligned
+ * suffix or the list is empty.
+ */
+export function longestCommonPascalCaseSuffix(leaves: readonly string[]): string {
     if (leaves.length === 0) return '';
     let suffix = '';
     const minLen = Math.min(...leaves.map(s => s.length));
@@ -133,7 +152,6 @@ export function getInlineUnionStripSuffix(union: UnionSpec, spec: Spec): string 
         if (!leaves.every(s => s[s.length - i] === ch)) break;
         suffix = ch + suffix;
     }
-    // Trim back so we always start at an uppercase letter (word boundary).
     for (let i = 0; i < suffix.length; i++) {
         const ch = suffix[i];
         if (ch >= 'A' && ch <= 'Z') return suffix.slice(i);

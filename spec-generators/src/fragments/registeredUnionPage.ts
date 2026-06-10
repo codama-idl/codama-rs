@@ -2,7 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { addFragmentImports, type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { Spec, UnionSpec } from '@codama/spec';
 
-import { flattenNodeUnion, getRegisteredOnlyLeafKinds } from '../unions';
+import { flattenNodeUnion, getRegisteredOnlyLeafKinds, getRegisteredUnionStripSuffix } from '../unions';
 import { use } from './helpers';
 
 /**
@@ -30,7 +30,12 @@ import { use } from './helpers';
  */
 export function getRegisteredUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const enumName = `Registered${pascalCase(union.name)}`;
-    const suffix = pascalCase(union.name);
+    // Strip the longest common PascalCase suffix across BOTH standalone
+    // and registered-only leaves. `valueNode` → `'ValueNode'` (leaves
+    // end in `ValueNode`); `contextualValueNode` → also `'ValueNode'`
+    // (leaves like `accountValueNode` end in `ValueNode`, NOT
+    // `ContextualValueNode`).
+    const suffix = getRegisteredUnionStripSuffix(union, spec);
 
     const registeredOnlyKinds = new Set(getRegisteredOnlyLeafKinds(union, spec));
     const standaloneLeaves = [...flattenNodeUnion(union, spec)];

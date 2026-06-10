@@ -1,25 +1,4 @@
-use crate::{
-    AccountValueNode, ArgumentValueNode, ArrayValueNode, BooleanValueNode, BytesValueNode,
-    CamelCaseString, ConstantValueNode, EnumValueNode, HasName, MapValueNode, NoneValueNode,
-    NumberValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode,
-    StructValueNode, TupleValueNode, ValueNode,
-};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct PdaSeedValueNode {
-    // Data.
-    pub name: CamelCaseString,
-
-    // Children.
-    pub value: PdaSeedValueValue,
-}
-
-impl From<PdaSeedValueNode> for crate::Node {
-    fn from(val: PdaSeedValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
+use crate::{CamelCaseString, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
 
 impl PdaSeedValueNode {
     pub fn new<T, U>(name: T, value: U) -> Self
@@ -29,39 +8,15 @@ impl PdaSeedValueNode {
     {
         Self {
             name: name.into(),
-            value: value.into(),
+            value: Box::new(value.into()),
         }
     }
 }
 
-impl HasName for PdaSeedValueNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
-    }
-}
-
-#[node_union]
-pub enum PdaSeedValueValue {
-    Account(AccountValueNode),
-    Argument(ArgumentValueNode),
-
-    // ValueNodes.
-    Array(ArrayValueNode),
-    Boolean(BooleanValueNode),
-    Bytes(BytesValueNode),
-    Constant(ConstantValueNode),
-    Enum(EnumValueNode),
-    Map(MapValueNode),
-    None(NoneValueNode),
-    Number(NumberValueNode),
-    PublicKey(PublicKeyValueNode),
-    Set(SetValueNode),
-    Some(SomeValueNode),
-    String(StringValueNode),
-    Struct(StructValueNode),
-    Tuple(TupleValueNode),
-}
-
+/// Bridge from the broader `ValueNode` union into `PdaSeedValueValue`.
+/// `PdaSeedValueValue` is `accountValueNode | argumentValueNode | valueNode`
+/// (16 variants total) — every value-node leaf maps to its same-named
+/// `PdaSeedValueValue` variant.
 impl From<ValueNode> for PdaSeedValueValue {
     fn from(value: ValueNode) -> Self {
         match value {
@@ -85,16 +40,15 @@ impl From<ValueNode> for PdaSeedValueValue {
 
 #[cfg(test)]
 mod tests {
-    use crate::NumberValueNode;
-
     use super::*;
+    use crate::NumberValueNode;
 
     #[test]
     fn new() {
         let node = PdaSeedValueNode::new("answer", NumberValueNode::new(42));
         assert_eq!(node.name, CamelCaseString::from("answer"));
         assert_eq!(
-            node.value,
+            *node.value,
             PdaSeedValueValue::Number(NumberValueNode::new(42))
         );
     }

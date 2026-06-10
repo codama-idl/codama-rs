@@ -1,17 +1,4 @@
-use crate::{CamelCaseString, HasName};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct AccountValueNode {
-    // Data.
-    pub name: CamelCaseString,
-}
-
-impl From<AccountValueNode> for crate::Node {
-    fn from(val: AccountValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
+use crate::{AccountValueNode, CamelCaseString};
 
 impl AccountValueNode {
     pub fn new<T>(name: T) -> Self
@@ -19,12 +6,6 @@ impl AccountValueNode {
         T: Into<CamelCaseString>,
     {
         Self { name: name.into() }
-    }
-}
-
-impl HasName for AccountValueNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 

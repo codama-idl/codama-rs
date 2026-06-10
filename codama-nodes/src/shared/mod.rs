@@ -9,5 +9,4 @@ pub use bytes_encoding::*;
 pub use camel_case_string::*;
 pub use default_value_strategy::*;
 pub use docs::*;
-pub use instruction_input_value_node::*;
 pub use is_account_signer::*;

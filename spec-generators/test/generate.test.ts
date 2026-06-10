@@ -37,6 +37,24 @@ describe('getRenderMap', () => {
     it('emits one .rs file per node, one per emittable union, a per-category mod.rs, and a root mod.rs', () => {
         const keys = [...map.keys()].toSorted();
         expect(keys).toEqual([
+            'contextual_value_nodes/account_bump_value_node.rs',
+            'contextual_value_nodes/account_value_node.rs',
+            'contextual_value_nodes/argument_value_node.rs',
+            'contextual_value_nodes/conditional_value_condition.rs',
+            'contextual_value_nodes/conditional_value_node.rs',
+            'contextual_value_nodes/contextual_value_node.rs',
+            'contextual_value_nodes/identity_value_node.rs',
+            'contextual_value_nodes/instruction_input_value_node.rs',
+            'contextual_value_nodes/mod.rs',
+            'contextual_value_nodes/payer_value_node.rs',
+            'contextual_value_nodes/pda_seed_value_node.rs',
+            'contextual_value_nodes/pda_seed_value_value.rs',
+            'contextual_value_nodes/pda_value_node.rs',
+            'contextual_value_nodes/pda_value_pda.rs',
+            'contextual_value_nodes/pda_value_program_id.rs',
+            'contextual_value_nodes/program_id_value_node.rs',
+            'contextual_value_nodes/resolver_dependency.rs',
+            'contextual_value_nodes/resolver_value_node.rs',
             'count_nodes/count_node.rs',
             'count_nodes/fixed_count_node.rs',
             'count_nodes/mod.rs',
@@ -136,7 +154,14 @@ describe('getRenderMap', () => {
 
     it('emits a root mod.rs that re-exports every per-category subdirectory', () => {
         const entry = getFromRenderMap(map, 'mod.rs');
-        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes', 'pda_seed_nodes', 'value_nodes']) {
+        for (const dir of [
+            'contextual_value_nodes',
+            'count_nodes',
+            'discriminator_nodes',
+            'link_nodes',
+            'pda_seed_nodes',
+            'value_nodes',
+        ]) {
             expect(entry.content).toContain(`mod ${dir};`);
             expect(entry.content).toContain(`pub use ${dir}::*;`);
         }
@@ -283,6 +308,61 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('pub enum EnumValuePayload {');
             expect(entry.content).toContain('Struct(StructValueNode),');
             expect(entry.content).toContain('Tuple(TupleValueNode),');
+        });
+    });
+
+    describe('contextualValue category', () => {
+        it('routes every contextualValue node through Node::ContextualValue', () => {
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/account_value_node.rs');
+            expect(entry.content).toContain('crate::Node::ContextualValue(val.into())');
+        });
+
+        it('emits the RegisteredContextualValueNode union via the RegisteredNodes derive', () => {
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/contextual_value_node.rs');
+            expect(entry.content).toContain('#[derive(RegisteredNodes)]');
+            expect(entry.content).toContain('pub enum RegisteredContextualValueNode {');
+            // Standalone variants (alphabetical, stripped ValueNode).
+            expect(entry.content).toContain('Account(AccountValueNode),');
+            expect(entry.content).toContain('AccountBump(AccountBumpValueNode),');
+            expect(entry.content).toContain('Resolver(ResolverValueNode),');
+            // `#[registered]`-only: `pdaSeedValueNode`.
+            expect(entry.content).toContain('#[registered]\nPdaSeed(PdaSeedValueNode),');
+        });
+
+        it('emits the PdaValuePda inline-union with derived variant names (PdaLink, Pda)', () => {
+            // Common suffix across [PdaLinkNode, PdaNode] is just `Node`,
+            // so variants are `PdaLink` and `Pda` — not the old hand-written
+            // `Linked` / `Nested`.
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/pda_value_pda.rs');
+            expect(entry.content).toContain('pub enum PdaValuePda {');
+            expect(entry.content).toContain('Pda(PdaNode),');
+            expect(entry.content).toContain('PdaLink(PdaLinkNode),');
+        });
+
+        it('emits InstructionInputValueNode variants with the Value suffix (common suffix = Node)', () => {
+            // 23 ValueNode members keep their `Value` prefix when only
+            // `Node` is stripped; `ProgramLink` is the lone non-value
+            // member that drops to just `ProgramLink`.
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/instruction_input_value_node.rs');
+            expect(entry.content).toContain('pub enum InstructionInputValueNode {');
+            expect(entry.content).toContain('AccountValue(AccountValueNode),');
+            expect(entry.content).toContain('ArgumentValue(ArgumentValueNode),');
+            expect(entry.content).toContain('NumberValue(NumberValueNode),');
+            expect(entry.content).toContain('ProgramLink(ProgramLinkNode),');
+        });
+
+        it('applies the box-all-union rule + Box<Option<T>> shapes on ConditionalValueNode', () => {
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/conditional_value_node.rs');
+            expect(entry.content).toContain('pub condition: Box<ConditionalValueCondition>,');
+            expect(entry.content).toContain('pub value: Box<Option<ValueNode>>,');
+            expect(entry.content).toContain('pub if_true: Box<Option<InstructionInputValueNode>>,');
+            expect(entry.content).toContain('pub if_false: Box<Option<InstructionInputValueNode>>,');
+        });
+
+        it('emits resolverValueNode.dependsOn as a bare `Vec` (matches the optional-array convention)', () => {
+            const entry = getFromRenderMap(map, 'contextual_value_nodes/resolver_value_node.rs');
+            expect(entry.content).toContain('pub depends_on: Vec<ResolverDependency>,');
+            expect(entry.content).not.toContain('Option<Vec<ResolverDependency>>');
         });
     });
 });

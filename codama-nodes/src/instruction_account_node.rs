@@ -73,9 +73,9 @@ mod tests {
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(
             node.default_value,
-            Some(InstructionInputValueNode::Account(AccountValueNode::new(
-                "myOtherAccount"
-            )))
+            Some(InstructionInputValueNode::AccountValue(
+                AccountValueNode::new("myOtherAccount")
+            ))
         );
     }
 
