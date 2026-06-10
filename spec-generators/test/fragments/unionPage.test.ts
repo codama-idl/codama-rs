@@ -50,10 +50,11 @@ describe('getUnionPageFragment', () => {
         expect(imports).toContain('crate::CamelCaseString');
     });
 
-    it('honours the INLINE_UNIONS stripSuffix when naming variants of an inline union', () => {
-        // `constantPdaSeedValue` is in INLINE_UNIONS with stripSuffix: 'ValueNode'.
-        // Its flattened members include `programIdValueNode` + 14 value-node
-        // leaves; the suffix strip should yield `ProgramId`, `Number`, etc.
+    it('strips the longest common PascalCase suffix when naming variants of an inline union', () => {
+        // `constantPdaSeedValue`'s flattened members include
+        // `programIdValueNode` + 14 value-node leaves; the derived
+        // common suffix is `ValueNode`, so variants are stripped to
+        // `ProgramId`, `Number`, …
         const result = getUnionPageFragment(constantPdaSeedValueUnion, spec);
         expect(result.content).toContain('pub enum ConstantPdaSeedValue {');
         expect(result.content).toContain('ProgramId(ProgramIdValueNode),');

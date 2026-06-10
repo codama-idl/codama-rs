@@ -2,8 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { INLINE_UNIONS } from '../defaults';
-import { flattenNodeUnion } from '../unions';
+import { flattenNodeUnion, getInlineUnionStripSuffix, getReferencedUnionNames, isInlineUnion } from '../unions';
 import { getUnionHasNameImplFragment } from './hasNameImpl';
 import { use } from './helpers';
 
@@ -37,7 +36,7 @@ interface UnionVariant {
 }
 
 function buildVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
-    const suffix = variantStripSuffix(union);
+    const suffix = variantStripSuffix(union, spec);
     return [...flattenNodeUnion(union, spec)]
         .map(node => ({ name: variantNameForNode(node.kind, suffix), node }))
         .toSorted((a, b) => a.name.localeCompare(b.name));
@@ -45,15 +44,17 @@ function buildVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
 
 /**
  * The PascalCase suffix to strip from each leaf node's kind when
- * deriving variant names. For category-main unions it defaults to
- * `pascalCase(union.name)` (e.g. `LinkNode`, `CountNode`). For inline
- * unions, the suffix is taken from {@link INLINE_UNIONS}; inline
- * unions whose members don't share a common suffix can omit
- * `stripSuffix` (no stripping happens then).
+ * deriving variant names. For category-main unions (those with a
+ * `registered<X>` twin), strip the union's own `pascalCase` name
+ * (e.g. `LinkNode`, `CountNode`). For inline unions, compute the
+ * longest common PascalCase suffix of the members
+ * ({@link getInlineUnionStripSuffix}).
  */
-function variantStripSuffix(union: UnionSpec): string {
-    const inline = INLINE_UNIONS.get(union.name);
-    if (inline !== undefined) return inline.stripSuffix ?? '';
+function variantStripSuffix(union: UnionSpec, spec: Spec): string {
+    const allUnionNames = new Set(spec.categories.flatMap(c => c.unions).map(u => u.name));
+    if (isInlineUnion(union, allUnionNames, getReferencedUnionNames(spec))) {
+        return getInlineUnionStripSuffix(union, spec);
+    }
     return pascalCase(union.name);
 }
 

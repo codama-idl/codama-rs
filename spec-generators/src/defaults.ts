@@ -52,35 +52,6 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /**
- * Per-inline-union configuration.
- *
- * Most emittable unions are the category-main union (the standalone
- * twin of a `registered…`); those have an obvious variant-naming
- * rule (strip the category suffix). Inline / synthetic unions —
- * unions used in a single attribute, with no registered twin — need
- * an explicit allowlist so the generator knows to emit them, plus
- * their own variant-naming convention.
- *
- * Each entry's key is the spec union name; the value carries:
- *
- *   - `stripSuffix`: the PascalCase suffix to strip from each leaf
- *     node's kind when deriving its Rust variant name. For example,
- *     `constantPdaSeedValue`'s flattened members include
- *     `numberValueNode`, `programIdValueNode`, …; stripping the
- *     `ValueNode` suffix yields variant names `Number`, `ProgramId`,
- *     etc. — matching the convention used by today's hand-written
- *     inline unions in the same category family.
- */
-export interface InlineUnionConfig {
-    readonly stripSuffix?: string;
-}
-
-export const INLINE_UNIONS: ReadonlyMap<string, InlineUnionConfig> = new Map([
-    ['constantPdaSeedValue', { stripSuffix: 'ValueNode' }],
-    ['enumValuePayload', { stripSuffix: 'ValueNode' }],
-]);
-
-/**
  * Spec union names the generator must NOT emit because their Rust
  * counterpart is bespoke hand-written code that can't be reproduced
  * mechanically.
