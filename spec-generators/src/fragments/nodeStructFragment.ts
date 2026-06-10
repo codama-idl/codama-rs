@@ -2,7 +2,6 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments, removeFromImportMap } from '@codama/fragments/rust';
 import { isChildAttribute, type AttributeSpec, type NodeSpec, type Spec, type TypeExpr } from '@codama/spec';
 
-import { FIELD_TYPE_OVERRIDES } from '../defaults';
 import { getNodeMacroFlavor } from '../nodeFlavor';
 import { getAttributeBodyLineFragment } from './attributeBodyLine';
 import { use } from './helpers';
@@ -34,7 +33,7 @@ export function getNodeStructFragment(node: NodeSpec, spec: Spec): Fragment {
     const raw =
         data.length === 0 && children.length === 0
             ? fragment`${header}\npub struct ${structName} {}`
-            : fragment`${header}\npub struct ${structName} {\n${buildBody(node.kind, data, children)}\n}`;
+            : fragment`${header}\npub struct ${structName} {\n${buildBody(data, children)}\n}`;
 
     // Drop the self-import a self-referential field (e.g.
     // `subInstructions: Vec<InstructionNode>`) would otherwise add —
@@ -50,7 +49,7 @@ const SCALAR_KINDS: ReadonlySet<TypeExpr['kind']> = new Set(['integer', 'float',
 function buildDeriveFragment(node: NodeSpec): Fragment | undefined {
     const isEmpty = node.attributes.length === 0;
     const isCopy = isEmpty || node.attributes.every(a => SCALAR_KINDS.has(a.type.kind));
-    const isDefault = isEmpty || node.attributes.every(a => isUnconditionallyDefaultable(node.kind, a));
+    const isDefault = isEmpty || node.attributes.every(isUnconditionallyDefaultable);
     const derives: string[] = [];
     if (isCopy) derives.push('Copy');
     if (isDefault) derives.push('Default');
@@ -67,19 +66,18 @@ function buildDeriveFragment(node: NodeSpec): Fragment | undefined {
  * Sound shapes: any `optional` attribute, `array`, `docs`, scalar
  * primitives, and the `String`-rendering kinds (`string`, `address`,
  * `codamaVersion`, `literal`). Required `union`/`enumeration`/`node`/
- * `nestedUnion`/`literalUnion` reference opaque types; required
- * `FIELD_TYPE_OVERRIDES` targets are also opaque.
+ * `nestedUnion`/`literalUnion` reference opaque types and disqualify
+ * the struct. `float` renders to `crate::Number`, which is `Copy` but
+ * NOT `Default`, so it's deliberately absent here.
  */
-function isUnconditionallyDefaultable(nodeKind: string, attr: AttributeSpec): boolean {
+function isUnconditionallyDefaultable(attr: AttributeSpec): boolean {
     if (attr.optional === true) return true;
-    if (FIELD_TYPE_OVERRIDES.has(`${nodeKind}.${attr.name}`)) return false;
     const k = attr.type.kind;
     return (
         k === 'array' ||
         k === 'docs' ||
         k === 'boolean' ||
         k === 'integer' ||
-        k === 'float' ||
         k === 'string' ||
         k === 'address' ||
         k === 'codamaVersion' ||
@@ -102,15 +100,15 @@ function partitionAttributes(node: NodeSpec): PartitionedAttributes {
     return { data, children };
 }
 
-function buildBody(nodeKind: string, data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
+function buildBody(data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
     const sections: Fragment[] = [];
-    if (data.length > 0) sections.push(buildSection(nodeKind, '// Data.', data));
-    if (children.length > 0) sections.push(buildSection(nodeKind, '// Children.', children));
+    if (data.length > 0) sections.push(buildSection('// Data.', data));
+    if (children.length > 0) sections.push(buildSection('// Children.', children));
     return mergeFragments(sections, parts => parts.join('\n\n'));
 }
 
-function buildSection(nodeKind: string, header: string, attrs: readonly AttributeSpec[]): Fragment {
-    const lines = attrs.map(attr => getAttributeBodyLineFragment(nodeKind, attr));
+function buildSection(header: string, attrs: readonly AttributeSpec[]): Fragment {
+    const lines = attrs.map(getAttributeBodyLineFragment);
     const body = mergeFragments(lines, parts => parts.join('\n'));
     return fragment`${header}\n${body}`;
 }

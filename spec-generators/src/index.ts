@@ -34,7 +34,7 @@ import {
 import { getRepoDirectory } from './repoDirectory';
 import { getEmittableUnions, isRegisteredCategoryUnion } from './unions';
 
-export { CATEGORY_DIRECTORIES, type CategoryRouting, CATEGORY_ROUTING, FIELD_TYPE_OVERRIDES } from './defaults';
+export { CATEGORY_DIRECTORIES, type CategoryRouting, CATEGORY_ROUTING } from './defaults';
 export {
     buildRenderScope,
     type GenerateOptions,

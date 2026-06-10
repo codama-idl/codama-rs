@@ -4,6 +4,7 @@ import {
     boolean,
     docs,
     enumeration,
+    f64,
     literal,
     literalUnion,
     nestedUnion,
@@ -38,6 +39,15 @@ describe('getTypeExprFragment', () => {
 
     it('renders integer widths to the matching Rust primitive', () => {
         expect(getTypeExprFragment(u32()).content).toBe('u32');
+    });
+
+    it('renders float as the bespoke `crate::Number` enum (mirrors JS `float → number`)', () => {
+        // v1's only float (`numberValueNode.number`) is `f64`; Rust's
+        // `Number` enum (`u64|i64|f64` with custom serde) is the
+        // analogue of TS's polymorphic `number`.
+        const result = getTypeExprFragment(f64());
+        expect(result.content).toBe('Number');
+        expect([...result.imports.keys()]).toEqual(['crate::Number']);
     });
 
     it("renders the v1 `literal('codama')` TypeExpr as `String`", () => {
