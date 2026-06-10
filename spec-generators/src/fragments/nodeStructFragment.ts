@@ -37,7 +37,7 @@ export function getNodeStructFragment(node: NodeSpec): Fragment {
     if (data.length === 0 && children.length === 0) {
         return fragment`${header}\npub struct ${structName} {}`;
     }
-    const body = buildBody(data, children);
+    const body = buildBody(node.kind, data, children);
     return fragment`${header}\npub struct ${structName} {\n${body}\n}`;
 }
 
@@ -69,15 +69,15 @@ function partitionAttributes(node: NodeSpec): PartitionedAttributes {
     return { data, children };
 }
 
-function buildBody(data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
+function buildBody(nodeKind: string, data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
     const sections: Fragment[] = [];
-    if (data.length > 0) sections.push(buildSection('// Data.', data));
-    if (children.length > 0) sections.push(buildSection('// Children.', children));
+    if (data.length > 0) sections.push(buildSection(nodeKind, '// Data.', data));
+    if (children.length > 0) sections.push(buildSection(nodeKind, '// Children.', children));
     return mergeFragments(sections, parts => parts.join('\n\n'));
 }
 
-function buildSection(header: string, attrs: readonly AttributeSpec[]): Fragment {
-    const lines = attrs.map(getAttributeBodyLineFragment);
+function buildSection(nodeKind: string, header: string, attrs: readonly AttributeSpec[]): Fragment {
+    const lines = attrs.map(attr => getAttributeBodyLineFragment(nodeKind, attr));
     const body = mergeFragments(lines, parts => parts.join('\n'));
     return fragment`${header}\n${body}`;
 }

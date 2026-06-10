@@ -1,22 +1,7 @@
-use crate::{CamelCaseString, DefinedTypeLinkNode, StructValueNode, TupleValueNode};
-use codama_nodes_derive::{node, node_union};
-
-#[node]
-pub struct EnumValueNode {
-    // Data.
-    pub variant: CamelCaseString,
-
-    // Children.
-    pub r#enum: DefinedTypeLinkNode,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub value: Option<EnumVariantData>,
-}
-
-impl From<EnumValueNode> for crate::Node {
-    fn from(val: EnumValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
+use crate::{
+    CamelCaseString, DefinedTypeLinkNode, EnumValueNode, EnumVariantData, StructValueNode,
+    TupleValueNode,
+};
 
 impl EnumValueNode {
     pub fn new<T, U>(r#enum: T, variant: U, value: Option<EnumVariantData>) -> Self
@@ -27,7 +12,7 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value,
+            value: Box::new(value),
         }
     }
 
@@ -39,7 +24,7 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: None,
+            value: Box::new(None),
         }
     }
 
@@ -52,7 +37,7 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: Some(EnumVariantData::Struct(value.into())),
+            value: Box::new(Some(EnumVariantData::Struct(value.into()))),
         }
     }
 
@@ -65,29 +50,22 @@ impl EnumValueNode {
         Self {
             variant: variant.into(),
             r#enum: r#enum.into(),
-            value: Some(EnumVariantData::Tuple(value.into())),
+            value: Box::new(Some(EnumVariantData::Tuple(value.into()))),
         }
     }
 }
 
-#[node_union]
-pub enum EnumVariantData {
-    Struct(StructValueNode),
-    Tuple(TupleValueNode),
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{NumberValueNode, StringValueNode, StructFieldValueNode};
-
     use super::*;
+    use crate::{NumberValueNode, StringValueNode, StructFieldValueNode};
 
     #[test]
     fn new() {
         let node = EnumValueNode::new("direction", "north", None);
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("direction"));
         assert_eq!(node.variant, CamelCaseString::from("north"));
-        assert_eq!(node.value, None);
+        assert_eq!(*node.value, None);
     }
 
     #[test]
@@ -95,7 +73,7 @@ mod tests {
         let node = EnumValueNode::empty("command", "exit");
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, CamelCaseString::from("exit"));
-        assert_eq!(node.value, None);
+        assert_eq!(*node.value, None);
     }
 
     #[test]
@@ -111,7 +89,7 @@ mod tests {
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, CamelCaseString::from("move"));
         assert_eq!(
-            node.value,
+            *node.value,
             Some(EnumVariantData::Struct(StructValueNode::new(vec![
                 StructFieldValueNode::new("x", NumberValueNode::new(10)),
                 StructFieldValueNode::new("y", NumberValueNode::new(20)),
@@ -129,7 +107,7 @@ mod tests {
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, CamelCaseString::from("write"));
         assert_eq!(
-            node.value,
+            *node.value,
             Some(EnumVariantData::Tuple(TupleValueNode::new(vec![
                 StringValueNode::new("Hello World").into()
             ])))

@@ -1,17 +1,4 @@
-use crate::ValueNode;
-use codama_nodes_derive::node;
-
-#[node]
-pub struct TupleValueNode {
-    // Children.
-    pub items: Vec<ValueNode>,
-}
-
-impl From<TupleValueNode> for crate::Node {
-    fn from(val: TupleValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
+use crate::{TupleValueNode, ValueNode};
 
 impl TupleValueNode {
     pub fn new(items: Vec<ValueNode>) -> Self {
@@ -27,9 +14,8 @@ impl From<Vec<ValueNode>> for TupleValueNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::{BooleanValueNode, NumberValueNode, StringValueNode};
-
     use super::*;
+    use crate::{BooleanValueNode, NumberValueNode, StringValueNode};
 
     #[test]
     fn new() {

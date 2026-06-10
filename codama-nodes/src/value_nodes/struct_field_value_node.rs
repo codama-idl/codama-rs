@@ -1,20 +1,4 @@
-use crate::{CamelCaseString, ValueNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct StructFieldValueNode {
-    // Data.
-    pub name: CamelCaseString,
-
-    // Children.
-    pub value: ValueNode,
-}
-
-impl From<StructFieldValueNode> for crate::Node {
-    fn from(val: StructFieldValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
+use crate::{CamelCaseString, StructFieldValueNode, ValueNode};
 
 impl StructFieldValueNode {
     pub fn new<T, U>(name: T, value: U) -> Self
@@ -24,22 +8,21 @@ impl StructFieldValueNode {
     {
         Self {
             name: name.into(),
-            value: value.into(),
+            value: Box::new(value.into()),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::NumberValueNode;
-
     use super::*;
+    use crate::NumberValueNode;
 
     #[test]
     fn new() {
         let node = StructFieldValueNode::new("answer", NumberValueNode::new(42));
         assert_eq!(node.name, CamelCaseString::from("answer"));
-        assert_eq!(node.value, ValueNode::Number(NumberValueNode::new(42)));
+        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(42)));
     }
 
     #[test]

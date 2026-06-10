@@ -62,7 +62,36 @@ describe('getRenderMap', () => {
             'pda_seed_nodes/mod.rs',
             'pda_seed_nodes/pda_seed_node.rs',
             'pda_seed_nodes/variable_pda_seed_node.rs',
+            'value_nodes/array_value_node.rs',
+            'value_nodes/boolean_value_node.rs',
+            'value_nodes/bytes_value_node.rs',
+            'value_nodes/constant_value_node.rs',
+            'value_nodes/enum_value_node.rs',
+            // `enumValuePayload` renames to `EnumVariantData` in
+            // `UNION_NAME_OVERRIDES`; the generated file follows the
+            // override name, not the spec name.
+            'value_nodes/enum_variant_data.rs',
+            'value_nodes/map_entry_value_node.rs',
+            'value_nodes/map_value_node.rs',
+            'value_nodes/mod.rs',
+            'value_nodes/none_value_node.rs',
+            'value_nodes/number_value_node.rs',
+            'value_nodes/public_key_value_node.rs',
+            'value_nodes/set_value_node.rs',
+            'value_nodes/some_value_node.rs',
+            'value_nodes/string_value_node.rs',
+            'value_nodes/struct_field_value_node.rs',
+            'value_nodes/struct_value_node.rs',
+            'value_nodes/tuple_value_node.rs',
         ]);
+    });
+
+    it('does NOT emit the `valueNode` category union (HAND_WRITTEN_UNIONS skip)', () => {
+        // `value`'s category union is hand-written
+        // (`RegisteredValueNode` with `#[derive(RegisteredNodes)]`),
+        // not mechanically generatable.
+        const keys = [...map.keys()];
+        expect(keys).not.toContain('value_nodes/value_node.rs');
     });
 
     it('per-node pages resolve their crate imports to a grouped `use crate::{…}` block plus the macro line', () => {
@@ -101,7 +130,7 @@ describe('getRenderMap', () => {
 
     it('emits a root mod.rs that re-exports every per-category subdirectory', () => {
         const entry = getFromRenderMap(map, 'mod.rs');
-        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes', 'pda_seed_nodes']) {
+        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes', 'pda_seed_nodes', 'value_nodes']) {
             expect(entry.content).toContain(`mod ${dir};`);
             expect(entry.content).toContain(`pub use ${dir}::*;`);
         }
@@ -197,6 +226,57 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('Variable(VariablePdaSeedNode),');
             // ConstantPdaSeedNode has no name -> no union HasName impl.
             expect(entry.content).not.toContain('impl HasName for PdaSeedNode');
+        });
+    });
+
+    describe('value category', () => {
+        it('routes every value node through Node::Value', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/boolean_value_node.rs');
+            expect(entry.content).toContain('crate::Node::Value(val.into())');
+        });
+
+        it('applies the box-all-union rule on direct union fields (required → Box<T>)', () => {
+            const constant = getFromRenderMap(map, 'value_nodes/constant_value_node.rs');
+            expect(constant.content).toContain('pub r#type: Box<TypeNode>,');
+            expect(constant.content).toContain('pub value: Box<ValueNode>,');
+            const some = getFromRenderMap(map, 'value_nodes/some_value_node.rs');
+            expect(some.content).toContain('pub value: Box<ValueNode>,');
+            const entry = getFromRenderMap(map, 'value_nodes/map_entry_value_node.rs');
+            expect(entry.content).toContain('pub key: Box<ValueNode>,');
+            expect(entry.content).toContain('pub value: Box<ValueNode>,');
+        });
+
+        it('applies the box-all-union rule on optional union fields (Box<Option<T>>)', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/enum_value_node.rs');
+            expect(entry.content).toContain('pub value: Box<Option<EnumVariantData>>,');
+        });
+
+        it('does NOT box Vec<union> fields (arrayValueNode / setValueNode / tupleValueNode)', () => {
+            for (const file of ['array_value_node.rs', 'set_value_node.rs', 'tuple_value_node.rs']) {
+                const entry = getFromRenderMap(map, `value_nodes/${file}`);
+                expect(entry.content).toContain('pub items: Vec<ValueNode>,');
+            }
+        });
+
+        it('honours FIELD_TYPE_OVERRIDES on numberValueNode.number → Number + #[derive(Copy)]', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/number_value_node.rs');
+            expect(entry.content).toContain('pub struct NumberValueNode {');
+            expect(entry.content).toContain('pub number: Number,');
+            // Number is a single scalar -> heuristic derives Copy.
+            expect(entry.content).toContain('#[derive(Copy)]');
+        });
+
+        it('emits Copy/Default for noneValueNode (empty struct heuristic)', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/none_value_node.rs');
+            expect(entry.content).toContain('#[derive(Copy, Default)]');
+            expect(entry.content).toContain('pub struct NoneValueNode {}');
+        });
+
+        it('emits the EnumVariantData inline-union enum (renamed from enumValuePayload) with Struct/Tuple variants', () => {
+            const entry = getFromRenderMap(map, 'value_nodes/enum_variant_data.rs');
+            expect(entry.content).toContain('pub enum EnumVariantData {');
+            expect(entry.content).toContain('Struct(StructValueNode),');
+            expect(entry.content).toContain('Tuple(TupleValueNode),');
         });
     });
 });

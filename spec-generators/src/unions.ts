@@ -1,7 +1,7 @@
 import { pascalCase } from '@codama/fragments';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { INLINE_UNIONS } from './defaults';
+import { HAND_WRITTEN_UNIONS, INLINE_UNIONS } from './defaults';
 
 /**
  * Spec unions starting with `registered` are category-registry unions
@@ -22,12 +22,17 @@ const REGISTERED_UNION_PREFIX = 'registered';
  *     opt-in registry of inline / synthetic unions the generator
  *     should emit despite not having a registered twin.
  *
+ * Unions in {@link HAND_WRITTEN_UNIONS} are skipped — their Rust
+ * counterpart is bespoke (e.g. `valueNode` → `RegisteredValueNode`
+ * with `#[derive(RegisteredNodes)]`).
+ *
  * Sorted alphabetically by name for stable output.
  */
 export function getEmittableUnions(category: Spec['categories'][number]): readonly UnionSpec[] {
     const unionNames = new Set(category.unions.map(u => u.name));
     return category.unions
         .filter(u => !u.name.startsWith(REGISTERED_UNION_PREFIX))
+        .filter(u => !HAND_WRITTEN_UNIONS.has(u.name))
         .filter(u => unionNames.has(`${REGISTERED_UNION_PREFIX}${pascalCase(u.name)}`) || INLINE_UNIONS.has(u.name))
         .toSorted((a, b) => a.name.localeCompare(b.name));
 }

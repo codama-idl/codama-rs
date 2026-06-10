@@ -1,17 +1,4 @@
-use crate::ValueNode;
-use codama_nodes_derive::node;
-
-#[node]
-pub struct ArrayValueNode {
-    // Children.
-    pub items: Vec<ValueNode>,
-}
-
-impl From<ArrayValueNode> for crate::Node {
-    fn from(val: ArrayValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
+use crate::{ArrayValueNode, ValueNode};
 
 impl ArrayValueNode {
     pub fn new(items: Vec<ValueNode>) -> Self {
@@ -21,9 +8,8 @@ impl ArrayValueNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::NumberValueNode;
-
     use super::*;
+    use crate::NumberValueNode;
 
     #[test]
     fn new() {
