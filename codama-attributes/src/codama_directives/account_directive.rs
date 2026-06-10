@@ -4,7 +4,7 @@ use crate::{
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    CamelCaseString, Docs, InstructionAccountNode, InstructionInputValueNode, IsAccountSigner,
+    CamelCaseString, Docs, InstructionAccountNode, InstructionInputValueNode, IsSigner,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -12,7 +12,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 pub struct AccountDirective {
     pub name: CamelCaseString,
     pub is_writable: bool,
-    pub is_signer: IsAccountSigner,
+    pub is_signer: IsSigner,
     pub is_optional: bool,
     pub docs: Docs,
     pub default_value: Option<Resolvable<InstructionInputValueNode>>,
@@ -29,7 +29,7 @@ impl AccountDirective {
             name = name.initial_value(ident.to_string().into())
         }
         let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
-        let mut is_signer = SetOnce::<IsAccountSigner>::new("signer").initial_value(false.into());
+        let mut is_signer = SetOnce::<IsSigner>::new("signer").initial_value(false.into());
         let mut is_optional = SetOnce::<bool>::new("optional").initial_value(false);
         let mut default_value =
             SetOnce::<Resolvable<InstructionInputValueNode>>::new("default_value");
@@ -41,7 +41,7 @@ impl AccountDirective {
                 .each(|ref meta| match meta.path_str().as_str() {
                     "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
-                    "signer" => is_signer.set(IsAccountSigner::from_meta(meta)?, meta),
+                    "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),
                     "optional" => is_optional.set(bool::from_meta(meta)?, meta),
                     "default_value" => default_value.set(
                         Resolvable::<InstructionInputValueNode>::from_meta(meta.as_value()?)?,
@@ -117,7 +117,7 @@ mod tests {
             AccountDirective {
                 name: "payer".into(),
                 is_writable: true,
-                is_signer: IsAccountSigner::True,
+                is_signer: IsSigner::True,
                 is_optional: true,
                 default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
                 docs: Docs::default(),
@@ -142,7 +142,7 @@ mod tests {
             AccountDirective {
                 name: "payer".into(),
                 is_writable: true,
-                is_signer: IsAccountSigner::Either,
+                is_signer: IsSigner::Either,
                 is_optional: false,
                 default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
                 docs: Docs::default(),
@@ -161,7 +161,7 @@ mod tests {
             AccountDirective {
                 name: "authority".into(),
                 is_writable: false,
-                is_signer: IsAccountSigner::False,
+                is_signer: IsSigner::False,
                 is_optional: false,
                 default_value: None,
                 docs: Docs::default(),
@@ -189,7 +189,7 @@ mod tests {
             AccountDirective {
                 name: "stake".into(),
                 is_writable: true,
-                is_signer: IsAccountSigner::False,
+                is_signer: IsSigner::False,
                 is_optional: false,
                 default_value: None,
                 docs: vec!["what this account is for".to_string()].into(),
@@ -208,7 +208,7 @@ mod tests {
             AccountDirective {
                 name: "authority".into(),
                 is_writable: false,
-                is_signer: IsAccountSigner::True,
+                is_signer: IsSigner::True,
                 is_optional: false,
                 default_value: None,
                 docs: vec![
