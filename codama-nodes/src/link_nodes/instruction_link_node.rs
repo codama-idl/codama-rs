@@ -1,21 +1,4 @@
-use crate::{CamelCaseString, HasName, ProgramLinkNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct InstructionLinkNode {
-    // Data.
-    pub name: CamelCaseString,
-
-    // Children.
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub program: Option<ProgramLinkNode>,
-}
-
-impl From<InstructionLinkNode> for crate::Node {
-    fn from(val: InstructionLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
+use crate::{CamelCaseString, InstructionLinkNode, ProgramLinkNode};
 
 impl InstructionLinkNode {
     pub fn new<T>(name: T) -> Self
@@ -48,12 +31,6 @@ impl From<String> for InstructionLinkNode {
 impl From<&str> for InstructionLinkNode {
     fn from(name: &str) -> Self {
         Self::new(name)
-    }
-}
-
-impl HasName for InstructionLinkNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 

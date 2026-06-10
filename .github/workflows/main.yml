@@ -44,3 +44,51 @@ jobs:
 
       - name: Run Cargo test
         run: cargo +${{ env.RUST_TOOLCHAIN }} test --all-features
+
+  spec-generators:
+    name: Verify Generated Code Is Up To Date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: spec-generators/pnpm-lock.yaml
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt
+
+      - name: Install JS dependencies
+        working-directory: spec-generators
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint JS generator
+        working-directory: spec-generators
+        run: pnpm lint
+
+      - name: Type-check + unit-test JS generator
+        working-directory: spec-generators
+        run: pnpm test
+
+      - name: Regenerate Rust sources from spec
+        working-directory: spec-generators
+        run: pnpm generate
+
+      - name: Fail if generated sources are out of date
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Generated sources are out of date. Run \`pnpm generate\` inside spec-generators/ and commit the diff."
+            exit 1
+          fi
