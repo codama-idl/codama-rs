@@ -9,20 +9,29 @@ const pdaSeedCategory = spec.categories.find(c => c.name === 'pdaSeed')!;
 
 describe('getEmittableUnions', () => {
     it('returns the category-main union (the standalone twin of a `registered…`), sorted alphabetically', () => {
+        // `pdaSeed` also has `constantPdaSeedValue` in INLINE_UNIONS,
+        // so both are emittable; the sort puts `constantPdaSeedValue`
+        // before `pdaSeedNode`.
         expect(getEmittableUnions(linkCategory).map(u => u.name)).toEqual(['linkNode']);
-        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).toEqual(['pdaSeedNode']);
+        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).toEqual(['constantPdaSeedValue', 'pdaSeedNode']);
     });
 
     it('skips category-registry unions (`registered*`)', () => {
         expect(getEmittableUnions(linkCategory).map(u => u.name)).not.toContain('registeredLinkNode');
     });
 
-    it('skips inline / synthetic unions that lack a `registered<Name>` twin (e.g. constantPdaSeedValue)', () => {
-        // `constantPdaSeedValue` is the `constantPdaSeedNode.value` attribute's
-        // union; it has no `registered<Name>` twin (it's not a category
-        // dispatch enum) so the generator must not emit it as its own Rust
-        // enum. A later PR with inline-union support will handle it.
-        expect(getEmittableUnions(pdaSeedCategory).map(u => u.name)).not.toContain('constantPdaSeedValue');
+    it('skips inline / synthetic unions that are NOT in the INLINE_UNIONS allowlist', () => {
+        // `linkNode`'s category has no inline-union members, so we can
+        // just confirm no spurious emission. A category with inline
+        // unions out of the allowlist would also be filtered out (no
+        // such case in pdaSeed today — constantPdaSeedValue IS in the
+        // allowlist, so it appears).
+        const names = getEmittableUnions(linkCategory).map(u => u.name);
+        for (const u of linkCategory.unions) {
+            if (u.name.startsWith('registered')) continue;
+            if (u.name === 'linkNode') continue;
+            expect(names).not.toContain(u.name);
+        }
     });
 });
 

@@ -1,4 +1,4 @@
-import { attribute, boolean, docs, node, optionalAttribute, stringIdentifier } from '@codama/spec/api';
+import { array, attribute, boolean, docs, node, optionalAttribute, stringIdentifier, union } from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import { getAttributeBodyLineFragment } from '../../src/fragments/attributeBodyLine';
@@ -36,5 +36,27 @@ describe('getAttributeBodyLineFragment', () => {
     it('escapes the Rust keyword `type` as `r#type` in field position', () => {
         const result = getAttributeBodyLineFragment(attribute('type', stringIdentifier()));
         expect(result.content).toBe('pub r#type: CamelCaseString,');
+    });
+
+    it('boxes a required union field as `Box<T>` (box-all-union rule)', () => {
+        const result = getAttributeBodyLineFragment(attribute('value', union('valueNode')));
+        expect(result.content).toBe('pub value: Box<ValueNode>,');
+    });
+
+    it('boxes an optional union field as `Box<Option<T>>` (box outside Option)', () => {
+        const result = getAttributeBodyLineFragment(optionalAttribute('value', union('valueNode')));
+        expect(result.content).toBe(
+            ['#[serde(skip_serializing_if = "crate::is_default")]', 'pub value: Box<Option<ValueNode>>,'].join('\n'),
+        );
+    });
+
+    it('does NOT box a `Vec<union>` field — the Vec already heap-allocates', () => {
+        const result = getAttributeBodyLineFragment(attribute('items', array(union('valueNode'))));
+        expect(result.content).toBe('pub items: Vec<ValueNode>,');
+    });
+
+    it('does NOT box a `node`-typed field (only `union` triggers the box rule)', () => {
+        const result = getAttributeBodyLineFragment(attribute('program', node('programLinkNode')));
+        expect(result.content).toBe('pub program: ProgramLinkNode,');
     });
 });

@@ -2,7 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { UNION_NAME_OVERRIDES } from '../defaults';
+import { INLINE_UNIONS, UNION_NAME_OVERRIDES } from '../defaults';
 import { flattenNodeUnion } from '../unions';
 import { getUnionHasNameImplFragment } from './hasNameImpl';
 import { use } from './helpers';
@@ -37,21 +37,39 @@ interface UnionVariant {
 }
 
 function buildVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
-    const suffix = pascalCase(union.name);
+    const suffix = variantStripSuffix(union);
     return [...flattenNodeUnion(union, spec)]
         .map(node => ({ name: variantNameForNode(node.kind, suffix), node }))
         .toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
- * Variant name = pascalCase(kind) minus the union's implied suffix.
+ * The PascalCase suffix to strip from each leaf node's kind when
+ * deriving variant names. For category-main unions it defaults to
+ * `pascalCase(union.name)` (e.g. `LinkNode`, `CountNode`). For inline
+ * unions, the suffix is taken from {@link INLINE_UNIONS}; inline
+ * unions whose members don't share a common suffix can omit
+ * `stripSuffix` (no stripping happens then).
+ */
+function variantStripSuffix(union: UnionSpec): string {
+    const inline = INLINE_UNIONS.get(union.name);
+    if (inline !== undefined) return inline.stripSuffix ?? '';
+    return pascalCase(union.name);
+}
+
+/**
+ * Variant name = pascalCase(kind) minus the implied suffix.
  *
- *   - `accountLinkNode`     in union `linkNode`    → `Account`
- *   - `fixedCountNode`      in union `countNode`   → `Fixed`
- *   - `variablePdaSeedNode` in union `pdaSeedNode` → `Variable`
+ *   - `accountLinkNode`      in union `linkNode`             → `Account`
+ *   - `fixedCountNode`       in union `countNode`            → `Fixed`
+ *   - `numberValueNode`      in inline `constantPdaSeedValue`
+ *     (stripSuffix = `ValueNode`)                            → `Number`
+ *   - `programIdValueNode`   in inline `constantPdaSeedValue`
+ *     (stripSuffix = `ValueNode`)                            → `ProgramId`
  */
 function variantNameForNode(nodeKind: string, suffix: string): string {
     const pascal = pascalCase(nodeKind);
+    if (suffix === '') return pascal;
     return pascal.endsWith(suffix) ? pascal.slice(0, pascal.length - suffix.length) : pascal;
 }
 

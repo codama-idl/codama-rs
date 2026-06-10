@@ -28,6 +28,8 @@ export {
     type CategoryRouting,
     CATEGORY_ROUTING,
     ENUMERATION_NAME_OVERRIDES,
+    type InlineUnionConfig,
+    INLINE_UNIONS,
     UNION_NAME_OVERRIDES,
 } from './defaults';
 export {

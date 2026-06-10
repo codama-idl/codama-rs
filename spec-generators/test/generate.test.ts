@@ -57,6 +57,11 @@ describe('getRenderMap', () => {
             'link_nodes/pda_link_node.rs',
             'link_nodes/program_link_node.rs',
             'mod.rs',
+            'pda_seed_nodes/constant_pda_seed_node.rs',
+            'pda_seed_nodes/constant_pda_seed_value.rs',
+            'pda_seed_nodes/mod.rs',
+            'pda_seed_nodes/pda_seed_node.rs',
+            'pda_seed_nodes/variable_pda_seed_node.rs',
         ]);
     });
 
@@ -96,7 +101,7 @@ describe('getRenderMap', () => {
 
     it('emits a root mod.rs that re-exports every per-category subdirectory', () => {
         const entry = getFromRenderMap(map, 'mod.rs');
-        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes']) {
+        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes', 'pda_seed_nodes']) {
             expect(entry.content).toContain(`mod ${dir};`);
             expect(entry.content).toContain(`pub use ${dir}::*;`);
         }
@@ -147,6 +152,51 @@ describe('getRenderMap', () => {
             const union = getFromRenderMap(map, 'discriminator_nodes/discriminator_node.rs');
             // Not every variant has a name -> no union HasName impl.
             expect(union.content).not.toContain('impl HasName for DiscriminatorNode');
+        });
+    });
+
+    describe('pdaSeed category', () => {
+        it('routes through Node::PdaSeed and references the inline ConstantPdaSeedValue enum', () => {
+            const entry = getFromRenderMap(map, 'pda_seed_nodes/constant_pda_seed_node.rs');
+            expect(entry.content).toContain('pub struct ConstantPdaSeedNode {');
+            // Box rule: direct union fields are boxed.
+            expect(entry.content).toContain('pub r#type: Box<TypeNode>,');
+            // The value field type is the generated inline union, NOT the
+            // pre-existing ValueNode.
+            expect(entry.content).toContain('pub value: Box<ConstantPdaSeedValue>,');
+            expect(entry.content).toContain('crate::Node::PdaSeed(val.into())');
+        });
+
+        it('emits the ConstantPdaSeedValue inline-union enum with stripped variant names', () => {
+            const entry = getFromRenderMap(map, 'pda_seed_nodes/constant_pda_seed_value.rs');
+            expect(entry.content).toContain('#[node_union]');
+            expect(entry.content).toContain('pub enum ConstantPdaSeedValue {');
+            expect(entry.content).toContain('ProgramId(ProgramIdValueNode),');
+            // Sample of value-node variants (suffix `ValueNode` stripped).
+            expect(entry.content).toContain('Number(NumberValueNode),');
+            expect(entry.content).toContain('String(StringValueNode),');
+            expect(entry.content).toContain('Boolean(BooleanValueNode),');
+            // No HasName: variants like NumberValueNode have no name attribute.
+            expect(entry.content).not.toContain('impl HasName for ConstantPdaSeedValue');
+        });
+
+        it('routes VariablePdaSeedNode through Node::PdaSeed with HasName + a bare Docs field', () => {
+            const entry = getFromRenderMap(map, 'pda_seed_nodes/variable_pda_seed_node.rs');
+            expect(entry.content).toContain('pub struct VariablePdaSeedNode {');
+            expect(entry.content).toContain('pub name: CamelCaseString,');
+            expect(entry.content).toContain('pub docs: Docs,');
+            // Box rule: direct union fields are boxed.
+            expect(entry.content).toContain('pub r#type: Box<TypeNode>,');
+            expect(entry.content).toContain('impl HasName for VariablePdaSeedNode {');
+        });
+
+        it('emits the PdaSeedNode category union with Constant/Variable variants and no HasName', () => {
+            const entry = getFromRenderMap(map, 'pda_seed_nodes/pda_seed_node.rs');
+            expect(entry.content).toContain('pub enum PdaSeedNode {');
+            expect(entry.content).toContain('Constant(ConstantPdaSeedNode),');
+            expect(entry.content).toContain('Variable(VariablePdaSeedNode),');
+            // ConstantPdaSeedNode has no name -> no union HasName impl.
+            expect(entry.content).not.toContain('impl HasName for PdaSeedNode');
         });
     });
 });

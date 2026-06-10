@@ -6,6 +6,8 @@ import { getUnionPageFragment } from '../../src/fragments/unionPage';
 const spec = getSpec();
 const linkCategory = spec.categories.find(c => c.name === 'link')!;
 const linkUnion = linkCategory.unions.find(u => u.name === 'linkNode')!;
+const pdaSeedCategory = spec.categories.find(c => c.name === 'pdaSeed')!;
+const constantPdaSeedValueUnion = pdaSeedCategory.unions.find(u => u.name === 'constantPdaSeedValue')!;
 
 describe('getUnionPageFragment', () => {
     it('emits #[node_union] and a PascalCase enum name', () => {
@@ -46,5 +48,18 @@ describe('getUnionPageFragment', () => {
         expect(imports).toContain('crate::ProgramLinkNode');
         expect(imports).toContain('crate::HasName');
         expect(imports).toContain('crate::CamelCaseString');
+    });
+
+    it('honours the INLINE_UNIONS stripSuffix when naming variants of an inline union', () => {
+        // `constantPdaSeedValue` is in INLINE_UNIONS with stripSuffix: 'ValueNode'.
+        // Its flattened members include `programIdValueNode` + 14 value-node
+        // leaves; the suffix strip should yield `ProgramId`, `Number`, etc.
+        const result = getUnionPageFragment(constantPdaSeedValueUnion, spec);
+        expect(result.content).toContain('pub enum ConstantPdaSeedValue {');
+        expect(result.content).toContain('ProgramId(ProgramIdValueNode),');
+        expect(result.content).toContain('Number(NumberValueNode),');
+        expect(result.content).toContain('String(StringValueNode),');
+        // Not every variant has a stringIdentifier name -> no HasName impl.
+        expect(result.content).not.toContain('impl HasName for ConstantPdaSeedValue');
     });
 });
