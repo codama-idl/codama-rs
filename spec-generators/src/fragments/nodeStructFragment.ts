@@ -1,33 +1,33 @@
 import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments, removeFromImportMap } from '@codama/fragments/rust';
-import { isChildAttribute, type AttributeSpec, type NodeSpec, type TypeExpr } from '@codama/spec';
+import { isChildAttribute, type AttributeSpec, type NodeSpec, type Spec, type TypeExpr } from '@codama/spec';
 
 import { FIELD_TYPE_OVERRIDES } from '../defaults';
+import { getNodeMacroFlavor } from '../nodeFlavor';
 import { getAttributeBodyLineFragment } from './attributeBodyLine';
 import { use } from './helpers';
 
 /**
- * Render the `#[node] pub struct XxxNode { … }` declaration plus any
- * auto-derived `#[derive(...)]` line. Attributes are partitioned into
- * "Data." (primitives, enumerations) and "Children." (node / union /
- * nestedUnion refs, recursively through array/tuple); empty sections
- * are omitted.
+ * Render the `#[<macro>] pub struct XxxNode { … }` declaration plus
+ * any auto-derived `#[derive(...)]` line. The macro is one of
+ * `#[node]` (default) or `#[type_node]` (for non-nestable type-category
+ * nodes). Attributes are partitioned into "Data." and "Children."
+ * sections; empty sections are omitted.
  *
  * Derive heuristic:
  *
- *   - `Copy`    when every attribute is a scalar kind (integer / float /
- *               boolean / enumeration), or the struct is empty.
+ *   - `Copy`    when every attribute is a scalar kind, or the struct
+ *               is empty.
  *   - `Default` when every field is unconditionally Default-able (see
  *               {@link isUnconditionallyDefaultable}). Opaque required
- *               fields (union / enumeration / node / nestedUnion /
- *               literalUnion, or overridden via FIELD_TYPE_OVERRIDES)
- *               disqualify the struct; the few such cases keep a
- *               hand-written `impl Default`.
+ *               fields disqualify the struct.
  */
-export function getNodeStructFragment(node: NodeSpec): Fragment {
+export function getNodeStructFragment(node: NodeSpec, spec: Spec): Fragment {
     const structName = pascalCase(node.kind);
     const { data, children } = partitionAttributes(node);
-    const macros = fragment`#[${use('codama_nodes_derive::node')}]`;
+    const flavor = getNodeMacroFlavor(node, spec);
+    const macroName = flavor === 'type_node' ? 'codama_nodes_derive::type_node' : 'codama_nodes_derive::node';
+    const macros = fragment`#[${use(macroName)}]`;
     const derives = buildDeriveFragment(node);
     const header = derives === undefined ? macros : mergeFragments([macros, derives], parts => parts.join('\n'));
 

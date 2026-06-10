@@ -1,17 +1,4 @@
-use crate::{NestedTypeNode, NumberTypeNode, U8};
-use codama_nodes_derive::type_node;
-
-#[type_node]
-pub struct BooleanTypeNode {
-    // Children.
-    pub size: NestedTypeNode<NumberTypeNode>,
-}
-
-impl From<BooleanTypeNode> for crate::Node {
-    fn from(val: BooleanTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
+use crate::{BooleanTypeNode, NestedTypeNode, NumberTypeNode, U8};
 
 impl BooleanTypeNode {
     pub fn new<T>(size: T) -> Self

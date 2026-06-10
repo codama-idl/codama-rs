@@ -7,7 +7,7 @@ import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
 
 /** Spec attribute names that collide with Rust keywords and need `r#` escaping. */
-const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'type']);
+const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
 
 /**
  * Render one spec attribute as a Rust struct field plus any preceding

@@ -40,6 +40,7 @@ mod discriminator_nodes;
 mod link_nodes;
 mod pda_seed_nodes;
 mod shared;
+mod type_nodes;
 mod value_nodes;
 
 pub use contextual_value_nodes::*;
@@ -48,4 +49,5 @@ pub use discriminator_nodes::*;
 pub use link_nodes::*;
 pub use pda_seed_nodes::*;
 pub use shared::*;
+pub use type_nodes::*;
 pub use value_nodes::*;

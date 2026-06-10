@@ -1,25 +1,7 @@
-use crate::{NestedTypeNode, NumberTypeNode};
-use codama_nodes_derive::type_node;
-
-#[type_node]
-pub struct AmountTypeNode {
-    // Data.
-    pub decimals: u8,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub unit: Option<String>,
-
-    // Children.
-    pub number: NestedTypeNode<NumberTypeNode>,
-}
-
-impl From<AmountTypeNode> for crate::Node {
-    fn from(val: AmountTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
+use crate::{AmountTypeNode, NestedTypeNode, NumberTypeNode};
 
 impl AmountTypeNode {
-    pub fn new<T>(number: T, decimals: u8, unit: Option<String>) -> Self
+    pub fn new<T>(number: T, decimals: u32, unit: Option<String>) -> Self
     where
         T: Into<NestedTypeNode<NumberTypeNode>>,
     {

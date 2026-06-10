@@ -1,22 +1,7 @@
-use crate::{Endianness, NumberFormat};
+use crate::{Endianness, NumberFormat, NumberTypeNode};
 use codama_errors::{CodamaError, CodamaResult};
-use codama_nodes_derive::type_node;
 
 pub use NumberFormat::*;
-
-#[type_node]
-#[derive(Copy)]
-pub struct NumberTypeNode {
-    // Data.
-    pub format: NumberFormat,
-    pub endian: Endianness,
-}
-
-impl From<NumberTypeNode> for crate::Node {
-    fn from(val: NumberTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
 
 impl NumberTypeNode {
     pub fn new(format: NumberFormat, endian: Endianness) -> Self {

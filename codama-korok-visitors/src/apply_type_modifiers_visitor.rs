@@ -194,7 +194,7 @@ fn update_type_node(
     };
 
     if let Node::Type(RegisteredTypeNode::StructField(mut field)) = node {
-        field.r#type = update(field.r#type)?;
+        field.r#type = Box::new(update(*field.r#type)?);
         return Ok(Some(field.into()));
     };
 

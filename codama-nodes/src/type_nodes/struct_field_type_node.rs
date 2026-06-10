@@ -1,26 +1,4 @@
-use crate::{CamelCaseString, DefaultValueStrategy, Docs, HasName, TypeNode, ValueNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct StructFieldTypeNode {
-    // Data.
-    pub name: CamelCaseString,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub default_value_strategy: Option<DefaultValueStrategy>,
-    #[serde(default, skip_serializing_if = "crate::is_default")]
-    pub docs: Docs,
-
-    // Children.
-    pub r#type: TypeNode,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub default_value: Option<ValueNode>,
-}
-
-impl From<StructFieldTypeNode> for crate::Node {
-    fn from(val: StructFieldTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
+use crate::{CamelCaseString, Docs, StructFieldTypeNode, TypeNode};
 
 impl StructFieldTypeNode {
     pub fn new<T, U>(name: T, r#type: U) -> Self
@@ -32,28 +10,22 @@ impl StructFieldTypeNode {
             name: name.into(),
             default_value_strategy: None,
             docs: Docs::default(),
-            r#type: r#type.into(),
-            default_value: None,
+            r#type: Box::new(r#type.into()),
+            default_value: Box::new(None),
         }
-    }
-}
-
-impl HasName for StructFieldTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, NumberValueNode, U32};
+    use crate::{DefaultValueStrategy, NumberTypeNode, NumberValueNode, U32};
 
     #[test]
     fn new() {
         let node = StructFieldTypeNode::new("my_field", NumberTypeNode::le(U32));
         assert_eq!(node.name, CamelCaseString::new("myField"));
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
@@ -62,8 +34,8 @@ mod tests {
             name: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
-            r#type: NumberTypeNode::le(U32).into(),
-            default_value: Some(NumberValueNode::new(42u32).into()),
+            r#type: Box::new(NumberTypeNode::le(U32).into()),
+            default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
         };
 
         assert_eq!(node.name, CamelCaseString::new("myField"));
@@ -72,8 +44,11 @@ mod tests {
             Some(DefaultValueStrategy::Optional)
         );
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
-        assert_eq!(node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
-        assert_eq!(node.default_value, Some(NumberValueNode::new(42u32).into()));
+        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
+        assert_eq!(
+            *node.default_value,
+            Some(NumberValueNode::new(42u32).into())
+        );
     }
 
     #[test]
@@ -102,8 +77,8 @@ mod tests {
             name: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
-            r#type: NumberTypeNode::le(U32).into(),
-            default_value: Some(NumberValueNode::new(42u32).into()),
+            r#type: Box::new(NumberTypeNode::le(U32).into()),
+            default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -122,8 +97,8 @@ mod tests {
                 name: "myField".into(),
                 default_value_strategy: Some(DefaultValueStrategy::Optional),
                 docs: vec!["Hello".to_string()].into(),
-                r#type: NumberTypeNode::le(U32).into(),
-                default_value: Some(NumberValueNode::new(42u32).into()),
+                r#type: Box::new(NumberTypeNode::le(U32).into()),
+                default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
             }
         );
     }

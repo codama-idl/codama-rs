@@ -4,16 +4,21 @@
  */
 
 /**
- * How a category's nodes reach the top-level `crate::Node` enum.
+ * How a category's nodes reach the top-level `crate::Node` enum and
+ * whether its unions are emitted by the generator.
  *
- *   - `wrapped`: generator emits
- *     `impl From<XxxNode> for crate::Node` routing through the
- *     category union (`crate::Node::<variant>(val.into())`).
+ *   - `wrapped`: generator emits `impl From<XxxNode> for crate::Node`
+ *     routing through the category union (`crate::Node::<variant>(val.into())`).
  *   - `direct`: the node is a direct `Node` variant and `Node`'s
- *     `#[derive(From)]` auto-generates the impl, so the generator
- *     emits no `From` of its own.
+ *     `#[derive(From)]` auto-generates the impl.
+ *
+ * `emitUnions` defaults to `true`; set to `false` for categories whose
+ * unions are too bespoke for the standard renderers (currently `type`).
  */
-export type CategoryRouting = { readonly mode: 'wrapped'; readonly nodeVariant: string } | { readonly mode: 'direct' };
+export type CategoryRouting = (
+    | { readonly mode: 'wrapped'; readonly nodeVariant: string }
+    | { readonly mode: 'direct' }
+) & { readonly emitUnions?: boolean };
 
 /**
  * Routing table for spec categories whose nodes the generator emits in
@@ -26,6 +31,7 @@ export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
     ['link', { mode: 'wrapped', nodeVariant: 'Link' }],
     ['pdaSeed', { mode: 'wrapped', nodeVariant: 'PdaSeed' }],
     ['topLevel', { mode: 'direct' }],
+    ['type', { mode: 'wrapped', nodeVariant: 'Type', emitUnions: false }],
     ['value', { mode: 'wrapped', nodeVariant: 'Value' }],
 ]);
 

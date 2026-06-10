@@ -25,8 +25,11 @@ impl From<StructFieldTypeNode> for InstructionArgumentNode {
             name: value.name,
             default_value_strategy: value.default_value_strategy,
             docs: value.docs,
-            r#type: Box::new(value.r#type),
-            default_value: Box::new(value.default_value.map(InstructionInputValueNode::from)),
+            // `StructFieldTypeNode.r#type` is `Box<TypeNode>`;
+            // `InstructionArgumentNode.r#type` is also `Box<TypeNode>`,
+            // so forward the existing box.
+            r#type: value.r#type,
+            default_value: Box::new((*value.default_value).map(InstructionInputValueNode::from)),
         }
     }
 }

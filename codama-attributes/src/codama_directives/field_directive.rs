@@ -46,13 +46,14 @@ impl FieldDirective {
     pub fn to_struct_field_type_node(&self) -> CodamaResult<StructFieldTypeNode> {
         Ok(StructFieldTypeNode {
             name: self.name.clone(),
-            r#type: self.r#type.try_resolved()?.clone(),
+            r#type: Box::new(self.r#type.try_resolved()?.clone()),
             docs: self.docs.clone(),
-            default_value: self
-                .default_value
-                .as_ref()
-                .map(|r| r.try_resolved().cloned())
-                .transpose()?,
+            default_value: Box::new(
+                self.default_value
+                    .as_ref()
+                    .map(|r| r.try_resolved().cloned())
+                    .transpose()?,
+            ),
             default_value_strategy: self.default_value_strategy,
         })
     }

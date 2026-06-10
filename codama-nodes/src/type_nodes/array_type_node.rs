@@ -1,21 +1,7 @@
 use crate::{
-    CountNode, FixedCountNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
+    ArrayTypeNode, CountNode, FixedCountNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
     RemainderCountNode, TypeNode,
 };
-use codama_nodes_derive::type_node;
-
-#[type_node]
-pub struct ArrayTypeNode {
-    // Children.
-    pub item: Box<TypeNode>,
-    pub count: CountNode,
-}
-
-impl From<ArrayTypeNode> for crate::Node {
-    fn from(val: ArrayTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
 
 impl ArrayTypeNode {
     pub fn new<T, U>(item: T, count: U) -> Self
@@ -25,7 +11,7 @@ impl ArrayTypeNode {
     {
         Self {
             item: Box::new(item.into()),
-            count: count.into(),
+            count: Box::new(count.into()),
         }
     }
 
@@ -61,7 +47,7 @@ mod tests {
     fn new() {
         let node = ArrayTypeNode::new(NumberTypeNode::le(U64), FixedCountNode::new(42));
         assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
+        assert_eq!(*node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
@@ -69,7 +55,7 @@ mod tests {
         let node = ArrayTypeNode::prefixed(StringTypeNode::utf8(), NumberTypeNode::le(U32));
         assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(
-            node.count,
+            *node.count,
             CountNode::Prefixed(PrefixedCountNode::new(NumberTypeNode::le(U32)))
         );
     }
@@ -78,14 +64,14 @@ mod tests {
     fn fixed() {
         let node = ArrayTypeNode::fixed(StringTypeNode::utf8(), 42);
         assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(node.count, CountNode::Fixed(FixedCountNode::new(42)));
+        assert_eq!(*node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn remainder() {
         let node = ArrayTypeNode::remainder(NumberTypeNode::le(U64));
         assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(node.count, CountNode::Remainder(RemainderCountNode::new()));
+        assert_eq!(*node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
 
     #[test]

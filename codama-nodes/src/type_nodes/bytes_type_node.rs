@@ -1,18 +1,8 @@
-use codama_nodes_derive::type_node;
-
-#[type_node]
-#[derive(Copy, Default)]
-pub struct BytesTypeNode {}
+use crate::BytesTypeNode;
 
 impl BytesTypeNode {
     pub fn new() -> Self {
         Self::default()
-    }
-}
-
-impl From<BytesTypeNode> for crate::Node {
-    fn from(val: BytesTypeNode) -> Self {
-        crate::Node::Type(val.into())
     }
 }
 

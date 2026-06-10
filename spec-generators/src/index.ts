@@ -23,6 +23,7 @@ import {
     getUnionPageFragment,
 } from './fragments';
 import { getReferencedLiteralUnions } from './literalUnions';
+import { isNestableNode } from './nodeFlavor';
 import {
     buildRenderScope,
     type GenerateOptions,
@@ -114,9 +115,18 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
         }
 
         for (const node of category.nodes) {
+            // Nestable type nodes (members of `nestedTypeNode.wrappers`)
+            // are generic over `<T: TypeNodeUnionTrait>` with bespoke
+            // nest/un-nest conversions and `NestedTypeNodeTrait`
+            // impls. They stay hand-written in v1.
+            if (isNestableNode(node.kind, spec)) continue;
             const path = joinPath(folder, `${snakeCase(node.kind)}.rs`);
-            entries[path] = getPageFragment(getNodePageFragment(node, routing));
+            entries[path] = getPageFragment(getNodePageFragment(node, routing, spec));
         }
+        // `emitUnions: false` keeps a category's unions entirely
+        // hand-written (currently `type`, whose four unions are
+        // generic / cross-category / have bespoke `TryFrom` bridges).
+        if (routing.emitUnions === false) continue;
         for (const union of getEmittableUnions(category, spec)) {
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
             const fragment = isRegisteredCategoryUnion(union, spec)
