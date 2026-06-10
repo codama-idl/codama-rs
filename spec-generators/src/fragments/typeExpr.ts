@@ -17,11 +17,6 @@ const NUMBER_FORMAT_TO_RUST: ReadonlyMap<string, string> = new Map([
     ['i128', 'i128'],
 ]);
 
-const FLOAT_WIDTH_TO_RUST: ReadonlyMap<string, string> = new Map([
-    ['f32', 'f32'],
-    ['f64', 'f64'],
-]);
-
 /**
  * Translate a spec {@link TypeExpr} to a Rust type expression. The
  * fragment's content is the rendered type text (e.g.
@@ -35,11 +30,12 @@ const FLOAT_WIDTH_TO_RUST: ReadonlyMap<string, string> = new Map([
  *   - `string` (`identifier`)     → `CamelCaseString`
  *   - `string` (`version`)        → `String`
  *   - `boolean`                   → `bool`
- *   - `integer`/`float`           → `uN` / `iN` / `fN` by width
+ *   - `integer`                   → `uN` / `iN` by width
+ *   - `float`                     → `crate::Number` (bespoke u64|i64|f64 enum)
  *   - `docs`                      → `Docs`
- *   - `enumeration('foo')`        → `Foo` (subject to overrides)
+ *   - `enumeration('foo')`        → `Foo`
  *   - `node('fooBar')`            → `FooBar`
- *   - `union('fooBar')`           → `FooBar` (subject to overrides)
+ *   - `union('fooBar')`           → `FooBar`
  *   - `nestedUnion('alias','k')`  → `Alias<Kind>` (only `nestedTypeNode` in v1)
  *   - `array(of)`                 → `Vec<Of>`
  *   - `tuple(items)`              → `(A, B, …)`
@@ -58,11 +54,12 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             if (!rust) throw new Error(`unknown integer width "${expr.width}"`);
             return fragment`${rust}`;
         }
-        case 'float': {
-            const rust = FLOAT_WIDTH_TO_RUST.get(expr.width);
-            if (!rust) throw new Error(`unknown float width "${expr.width}"`);
-            return fragment`${rust}`;
-        }
+        case 'float':
+            // v1's only float (`numberValueNode.number`) is `f64`; Rust uses
+            // the bespoke `Number` enum (`u64|i64|f64` with custom serde +
+            // `From<uN/iN/fN>` impls). Mirrors the JS generator, which maps
+            // `float → number` (TS's polymorphic number type).
+            return use('crate::Number');
         case 'literal':
             // The literal value lives in the hand-written `Default`.
             return fragment`String`;

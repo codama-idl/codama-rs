@@ -55,19 +55,3 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
     ['type', 'type_nodes'],
     ['value', 'value_nodes'],
 ]);
-
-/**
- * Per-field Rust-type overrides for cases where the spec's TypeExpr
- * maps to a bespoke Rust type that can't be expressed mechanically.
- * Keyed by `"<nodeKind>.<attrName>"`.
- *
- *   - `numberValueNode.number`: spec says `float(f64)` but the Rust
- *     crate uses a bespoke `Number` enum
- *     (`UnsignedInteger(u64) | SignedInteger(i64) | Float(f64)`) with
- *     a custom `serde(from/into = "JsonNumber")` and 8 `From<uN/iN/fN>`
- *     impls. The struct + derives are still generated; the field type
- *     resolves to `crate::Number` via this override and the `Number`
- *     enum + its impls stay hand-written in
- *     `value_nodes/number_value_node.rs`.
- */
-export const FIELD_TYPE_OVERRIDES: ReadonlyMap<string, string> = new Map([['numberValueNode.number', 'crate::Number']]);

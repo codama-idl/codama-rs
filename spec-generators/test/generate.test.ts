@@ -343,11 +343,13 @@ describe('getRenderMap', () => {
             }
         });
 
-        it('honours FIELD_TYPE_OVERRIDES on numberValueNode.number → Number + #[derive(Copy)]', () => {
+        it('renders numberValueNode.number as `Number` (float → Number) + #[derive(Copy)]', () => {
             const entry = getFromRenderMap(map, 'value_nodes/number_value_node.rs');
             expect(entry.content).toContain('pub struct NumberValueNode {');
             expect(entry.content).toContain('pub number: Number,');
-            // Number is a single scalar -> heuristic derives Copy.
+            // `Number` is `Copy` but NOT `Default`, so the heuristic
+            // derives `Copy` only — `numberValueNode` has a hand-written
+            // `impl Default`.
             expect(entry.content).toContain('#[derive(Copy)]');
         });
 

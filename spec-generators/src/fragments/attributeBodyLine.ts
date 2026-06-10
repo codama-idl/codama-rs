@@ -2,7 +2,6 @@ import { pascalCase, snakeCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { AttributeSpec, TypeExpr } from '@codama/spec';
 
-import { FIELD_TYPE_OVERRIDES } from '../defaults';
 import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
 
@@ -29,23 +28,17 @@ const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
  * what `clippy::large_enum_variant` actually cares about. `array(…)`,
  * `nestedUnion`, `node`, and scalar fields are never boxed.
  */
-export function getAttributeBodyLineFragment(nodeKind: string, attr: AttributeSpec): Fragment {
-    const override = FIELD_TYPE_OVERRIDES.get(`${nodeKind}.${attr.name}`);
+export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
     // `literalUnion` is anonymous in the spec; the generator emits a
     // Rust enum shell named `pascalCase(attr.name)` (see
     // `literalUnions.ts`). The type-expression renderer can't produce
     // that name on its own — it doesn't have the attribute name — so
     // we resolve the field type here instead.
-    const isLiteralUnion = override === undefined && attr.type.kind === 'literalUnion';
-    const inner =
-        override !== undefined
-            ? use(override)
-            : isLiteralUnion
-              ? use(`crate::${pascalCase(attr.name)}`)
-              : getTypeExprFragment(attr.type);
+    const isLiteralUnion = attr.type.kind === 'literalUnion';
+    const inner = isLiteralUnion ? use(`crate::${pascalCase(attr.name)}`) : getTypeExprFragment(attr.type);
     const isOptional = attr.optional === true;
-    const isVecLike = override !== undefined ? false : isVecLikeType(attr.type);
-    const isUnion = override !== undefined ? false : isUnionType(attr.type);
+    const isVecLike = isVecLikeType(attr.type);
+    const isUnion = isUnionType(attr.type);
 
     let typeFragment: Fragment;
     let serdeAttr: string;
