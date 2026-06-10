@@ -27,7 +27,15 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
 
     let typeFragment: Fragment;
     let serdeAttr: string;
-    if (isOptional) {
+    if (isDocsType(attr.type)) {
+        // `docs` attributes are kept as a bare `Docs` regardless of
+        // `optional`. `Docs` already wraps a `Vec<String>` with a
+        // sensible `Default`/`is_default`, so wrapping it in
+        // `Option<…>` would be redundant and divergent from the
+        // hand-written convention.
+        typeFragment = inner;
+        serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
+    } else if (isOptional) {
         if (isVecLike) {
             typeFragment = inner;
             serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
@@ -35,12 +43,6 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
             typeFragment = fragment`Option<${inner}>`;
             serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';
         }
-    } else if (isDocsType(attr.type)) {
-        // `docs` attributes are technically required by the spec but
-        // their absence-in-JSON case needs explicit defaulting. Match
-        // the hand-written convention.
-        typeFragment = inner;
-        serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
     } else {
         typeFragment = inner;
         serdeAttr = '';

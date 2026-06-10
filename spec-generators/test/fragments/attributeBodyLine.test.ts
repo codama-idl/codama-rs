@@ -23,11 +23,14 @@ describe('getAttributeBodyLineFragment', () => {
         );
     });
 
-    it('renders a docs attribute with default + skip_serializing_if and no Option wrap', () => {
-        const result = getAttributeBodyLineFragment(attribute('docs', docs()));
-        expect(result.content).toBe(
-            ['#[serde(default, skip_serializing_if = "crate::is_default")]', 'pub docs: Docs,'].join('\n'),
-        );
+    it('renders a docs attribute as a bare `Docs` regardless of `optional`, never wrapping it in Option', () => {
+        // `Docs` already has a sensible `Default` (empty Vec) + `is_default`,
+        // so the spec's `optional: true` collapses to the same serde shape.
+        const required = getAttributeBodyLineFragment(attribute('docs', docs()));
+        const optional = getAttributeBodyLineFragment(optionalAttribute('docs', docs()));
+        const expected = ['#[serde(default, skip_serializing_if = "crate::is_default")]', 'pub docs: Docs,'].join('\n');
+        expect(required.content).toBe(expected);
+        expect(optional.content).toBe(expected);
     });
 
     it('escapes the Rust keyword `type` as `r#type` in field position', () => {

@@ -32,7 +32,7 @@ impl MapTypeNode {
         }
     }
 
-    pub fn fixed<K, V>(key: K, value: V, size: usize) -> Self
+    pub fn fixed<K, V>(key: K, value: V, size: u64) -> Self
     where
         K: Into<TypeNode>,
         V: Into<TypeNode>,

@@ -1,17 +1,4 @@
-use crate::{NestedTypeNode, NumberTypeNode};
-use codama_nodes_derive::node;
-
-#[node]
-pub struct PrefixedCountNode {
-    // Data.
-    pub prefix: NestedTypeNode<NumberTypeNode>,
-}
-
-impl From<PrefixedCountNode> for crate::Node {
-    fn from(val: PrefixedCountNode) -> Self {
-        crate::Node::Count(val.into())
-    }
-}
+use crate::{NestedTypeNode, NumberTypeNode, PrefixedCountNode};
 
 impl PrefixedCountNode {
     pub fn new<T>(prefix: T) -> Self

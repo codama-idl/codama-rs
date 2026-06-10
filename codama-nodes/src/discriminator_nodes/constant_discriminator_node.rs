@@ -1,23 +1,7 @@
-use crate::ConstantValueNode;
-use codama_nodes_derive::node;
-
-#[node]
-pub struct ConstantDiscriminatorNode {
-    // Data.
-    pub offset: usize,
-
-    // Children.
-    pub constant: ConstantValueNode,
-}
-
-impl From<ConstantDiscriminatorNode> for crate::Node {
-    fn from(val: ConstantDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}
+use crate::{ConstantDiscriminatorNode, ConstantValueNode};
 
 impl ConstantDiscriminatorNode {
-    pub fn new<T>(constant: T, offset: usize) -> Self
+    pub fn new<T>(constant: T, offset: u64) -> Self
     where
         T: Into<ConstantValueNode>,
     {
@@ -30,9 +14,9 @@ impl ConstantDiscriminatorNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Base16, NumberTypeNode, NumberValueNode, U32};
-
-    use super::*;
+    use crate::{
+        Base16, ConstantDiscriminatorNode, ConstantValueNode, NumberTypeNode, NumberValueNode, U32,
+    };
 
     #[test]
     fn new() {

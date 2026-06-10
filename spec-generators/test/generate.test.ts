@@ -34,9 +34,19 @@ describe('validateRenderOptions', () => {
 describe('getRenderMap', () => {
     const map = getRenderMap(getSpec(), options());
 
-    it('emits one .rs file per link node, the link_node.rs union, link_nodes/mod.rs, and a root mod.rs', () => {
+    it('emits one .rs file per node, one per emittable union, a per-category mod.rs, and a root mod.rs', () => {
         const keys = [...map.keys()].toSorted();
         expect(keys).toEqual([
+            'count_nodes/count_node.rs',
+            'count_nodes/fixed_count_node.rs',
+            'count_nodes/mod.rs',
+            'count_nodes/prefixed_count_node.rs',
+            'count_nodes/remainder_count_node.rs',
+            'discriminator_nodes/constant_discriminator_node.rs',
+            'discriminator_nodes/discriminator_node.rs',
+            'discriminator_nodes/field_discriminator_node.rs',
+            'discriminator_nodes/mod.rs',
+            'discriminator_nodes/size_discriminator_node.rs',
             'link_nodes/account_link_node.rs',
             'link_nodes/defined_type_link_node.rs',
             'link_nodes/instruction_account_link_node.rs',
@@ -84,9 +94,59 @@ describe('getRenderMap', () => {
         expect(entry.content).toContain('pub use link_node::*;');
     });
 
-    it('emits a root mod.rs that re-exports the link_nodes subdirectory', () => {
+    it('emits a root mod.rs that re-exports every per-category subdirectory', () => {
         const entry = getFromRenderMap(map, 'mod.rs');
-        expect(entry.content).toContain('mod link_nodes;');
-        expect(entry.content).toContain('pub use link_nodes::*;');
+        for (const dir of ['count_nodes', 'discriminator_nodes', 'link_nodes']) {
+            expect(entry.content).toContain(`mod ${dir};`);
+            expect(entry.content).toContain(`pub use ${dir}::*;`);
+        }
+    });
+
+    describe('count category', () => {
+        it('routes FixedCountNode through Node::Count and emits the u64 field plus #[derive(Copy)]', () => {
+            const entry = getFromRenderMap(map, 'count_nodes/fixed_count_node.rs');
+            expect(entry.content).toContain('#[node]');
+            expect(entry.content).toContain('#[derive(Copy)]');
+            expect(entry.content).toContain('pub struct FixedCountNode {');
+            expect(entry.content).toContain('pub value: u64,');
+            expect(entry.content).toContain('impl From<FixedCountNode> for crate::Node {');
+            expect(entry.content).toContain('crate::Node::Count(val.into())');
+        });
+
+        it('emits RemainderCountNode as an empty struct with #[derive(Copy, Default)]', () => {
+            const entry = getFromRenderMap(map, 'count_nodes/remainder_count_node.rs');
+            expect(entry.content).toContain('#[derive(Copy, Default)]');
+            expect(entry.content).toContain('pub struct RemainderCountNode {}');
+        });
+
+        it('emits the CountNode union with Fixed/Prefixed/Remainder variants and no HasName impl', () => {
+            const entry = getFromRenderMap(map, 'count_nodes/count_node.rs');
+            expect(entry.content).toContain('pub enum CountNode {');
+            expect(entry.content).toContain('Fixed(FixedCountNode),');
+            expect(entry.content).toContain('Prefixed(PrefixedCountNode),');
+            expect(entry.content).toContain('Remainder(RemainderCountNode),');
+            expect(entry.content).not.toContain('impl HasName for CountNode');
+        });
+    });
+
+    describe('discriminator category', () => {
+        it('routes through Node::Discriminator and emits u64 offset/size fields', () => {
+            const constant = getFromRenderMap(map, 'discriminator_nodes/constant_discriminator_node.rs');
+            expect(constant.content).toContain('pub offset: u64,');
+            expect(constant.content).toContain('crate::Node::Discriminator(val.into())');
+            const size = getFromRenderMap(map, 'discriminator_nodes/size_discriminator_node.rs');
+            expect(size.content).toContain('#[derive(Copy)]');
+            expect(size.content).toContain('pub size: u64,');
+        });
+
+        it('emits HasName only on FieldDiscriminatorNode (only member with a stringIdentifier name)', () => {
+            const field = getFromRenderMap(map, 'discriminator_nodes/field_discriminator_node.rs');
+            expect(field.content).toContain('impl HasName for FieldDiscriminatorNode {');
+            const constant = getFromRenderMap(map, 'discriminator_nodes/constant_discriminator_node.rs');
+            expect(constant.content).not.toContain('impl HasName');
+            const union = getFromRenderMap(map, 'discriminator_nodes/discriminator_node.rs');
+            // Not every variant has a name -> no union HasName impl.
+            expect(union.content).not.toContain('impl HasName for DiscriminatorNode');
+        });
     });
 });
