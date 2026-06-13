@@ -9,6 +9,8 @@ members = [
   "codama-korok-visitors",
   "codama-macros",
   "codama-nodes",
+  "codama-visitors-core",
+  "codama-visitors",
   "codama-nodes/derive",
   "codama-nodes/tests-derive",
   "codama-stores",

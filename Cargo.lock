@@ -322,6 +322,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-visitors"
+version = "0.9.2"
+dependencies = [
+ "codama-nodes",
+ "codama-visitors-core",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "codama-visitors-core"
+version = "0.9.2"
+dependencies = [
+ "codama-nodes",
+ "pretty_assertions",
+ "serde_json",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

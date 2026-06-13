@@ -1,0 +1,14 @@
+[package]
+name = "codama-visitors"
+description = "A library of utility visitors for transforming Codama IDLs"
+version = "0.9.2"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+
+[dependencies]
+codama-nodes = { version = "0.9.2", path = "../codama-nodes" }
+codama-visitors-core = { version = "0.9.2", path = "../codama-visitors-core" }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
