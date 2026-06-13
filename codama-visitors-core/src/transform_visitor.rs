@@ -29,6 +29,31 @@ fn map_vec<T>(items: Vec<T>, f: impl FnMut(T) -> T) -> Vec<T> {
     items.into_iter().map(f).collect()
 }
 
+/// Like `map_vec`, but drops any item whose visit signalled deletion via
+/// [`TransformVisitor::take_deleted`]. Used for the `Vec` slots that may hold
+/// deletable nodes.
+fn prune_vec<V: TransformVisitor + ?Sized, T>(
+    v: &mut V,
+    items: Vec<T>,
+    mut f: impl FnMut(&mut V, T) -> T,
+) -> Vec<T> {
+    let mut out = Vec::with_capacity(items.len());
+    for item in items {
+        let next = f(v, item);
+        if !v.take_deleted() {
+            out.push(next);
+        }
+    }
+    out
+}
+
+/// Consumes a pending deletion that cannot be honoured here (the node lives in a
+/// required slot), leaving the node in place. Prevents the flag from leaking to
+/// a sibling.
+fn clear_deleted<V: TransformVisitor + ?Sized>(v: &mut V) {
+    let _ = v.take_deleted();
+}
+
 /// A visitor that consumes a Codama IDL node tree and returns a (possibly
 /// rewritten) tree of the same shape.
 ///
@@ -43,10 +68,21 @@ fn map_vec<T>(items: Vec<T>, f: impl FnMut(T) -> T) -> Vec<T> {
 /// recursed via [`NestedTypeNodeTrait::map_nested_type_node`], which preserves
 /// the wrapper chain while visiting the inner type.
 ///
-/// One deliberate simplification in this first iteration: nodes are
-/// transformed, never deleted (there is no `null` return as in the TS
-/// `identityVisitor`); a deleting variant can be layered on later.
+/// A visitor may also delete nodes: after visiting a child, the container folds
+/// consult [`TransformVisitor::take_deleted`] and drop the child from its
+/// `Vec`/`Option` slot if it returns `true` (see [`crate::delete_nodes`]). The
+/// default never deletes, so ordinary transform visitors are unaffected.
 pub trait TransformVisitor {
+    /// Called by the container folds right after visiting a child: if it returns
+    /// `true`, the child is removed from its parent (for `Vec`/`Option` slots).
+    ///
+    /// The default never deletes. A deleting visitor (see `BottomUpTransformer`)
+    /// overrides this to report — and clear — a pending deletion. It must clear
+    /// on read so the signal applies to exactly one node.
+    fn take_deleted(&mut self) -> bool {
+        false
+    }
+
     // ------------------------------------------------------------------
     // Union / dispatch entry points.
     // ------------------------------------------------------------------
@@ -1144,6 +1180,7 @@ pub fn fold_pda_value<V: TransformVisitor + ?Sized>(
     mut node: PdaValueNode,
 ) -> PdaValueNode {
     node.pda = map_box(node.pda, |p| v.visit_pda_value_pda(p));
+    clear_deleted(v); // a PdaValueNode's `pda` is required and cannot be deleted
     node.seeds = map_vec(node.seeds, |seed| v.visit_pda_seed_value(seed));
     node.program_id = map_box_opt(node.program_id, |p| v.visit_pda_value_program_id(p));
     node
@@ -1201,16 +1238,18 @@ pub fn fold_instruction<V: TransformVisitor + ?Sized>(
     v: &mut V,
     mut node: InstructionNode,
 ) -> InstructionNode {
-    node.accounts = map_vec(node.accounts, |a| v.visit_instruction_account(a));
-    node.arguments = map_vec(node.arguments, |a| v.visit_instruction_argument(a));
-    node.extra_arguments = map_vec(node.extra_arguments, |a| v.visit_instruction_argument(a));
+    node.accounts = prune_vec(v, node.accounts, |v, a| v.visit_instruction_account(a));
+    node.arguments = prune_vec(v, node.arguments, |v, a| v.visit_instruction_argument(a));
+    node.extra_arguments = prune_vec(v, node.extra_arguments, |v, a| {
+        v.visit_instruction_argument(a)
+    });
     node.remaining_accounts = map_vec(node.remaining_accounts, |a| {
         v.visit_instruction_remaining_accounts(a)
     });
     node.byte_deltas = map_vec(node.byte_deltas, |b| v.visit_instruction_byte_delta(b));
     node.discriminators = map_vec(node.discriminators, |d| v.visit_discriminator_node(d));
     node.status = map_opt(node.status, |s| v.visit_instruction_status(s));
-    node.sub_instructions = map_vec(node.sub_instructions, |i| v.visit_instruction(i));
+    node.sub_instructions = prune_vec(v, node.sub_instructions, |v, i| v.visit_instruction(i));
     node
 }
 
@@ -1259,18 +1298,19 @@ pub fn fold_pda<V: TransformVisitor + ?Sized>(v: &mut V, mut node: PdaNode) -> P
 }
 
 pub fn fold_program<V: TransformVisitor + ?Sized>(v: &mut V, mut node: ProgramNode) -> ProgramNode {
-    node.pdas = map_vec(node.pdas, |p| v.visit_pda(p));
-    node.accounts = map_vec(node.accounts, |a| v.visit_account(a));
-    node.events = map_vec(node.events, |e| v.visit_event(e));
-    node.instructions = map_vec(node.instructions, |i| v.visit_instruction(i));
-    node.defined_types = map_vec(node.defined_types, |d| v.visit_defined_type(d));
-    node.errors = map_vec(node.errors, |e| v.visit_error(e));
-    node.constants = map_vec(node.constants, |c| v.visit_constant(c));
+    node.pdas = prune_vec(v, node.pdas, |v, p| v.visit_pda(p));
+    node.accounts = prune_vec(v, node.accounts, |v, a| v.visit_account(a));
+    node.events = prune_vec(v, node.events, |v, e| v.visit_event(e));
+    node.instructions = prune_vec(v, node.instructions, |v, i| v.visit_instruction(i));
+    node.defined_types = prune_vec(v, node.defined_types, |v, d| v.visit_defined_type(d));
+    node.errors = prune_vec(v, node.errors, |v, e| v.visit_error(e));
+    node.constants = prune_vec(v, node.constants, |v, c| v.visit_constant(c));
     node
 }
 
 pub fn fold_root<V: TransformVisitor + ?Sized>(v: &mut V, mut node: RootNode) -> RootNode {
     node.program = v.visit_program(node.program);
-    node.additional_programs = map_vec(node.additional_programs, |p| v.visit_program(p));
+    clear_deleted(v); // the root program is required and cannot be deleted
+    node.additional_programs = prune_vec(v, node.additional_programs, |v, p| v.visit_program(p));
     node
 }

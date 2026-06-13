@@ -32,6 +32,14 @@
 //!
 //! [`syn::fold`]: https://docs.rs/syn/latest/syn/fold/index.html
 
+mod bottom_up_transformer;
+mod node_path;
+mod node_selector;
+mod remove_docs;
 mod transform_visitor;
 
+pub use bottom_up_transformer::*;
+pub use node_path::*;
+pub use node_selector::*;
+pub use remove_docs::*;
 pub use transform_visitor::*;

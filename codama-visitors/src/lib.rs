@@ -14,6 +14,16 @@
 
 pub use codama_visitors_core::*;
 
+mod set_account_discriminator_from_field;
+mod set_instruction_account_default_values;
+mod set_instruction_discriminators;
+mod set_number_wrappers;
 mod transform_u8_arrays_to_bytes;
+mod update_errors;
 
+pub use set_account_discriminator_from_field::*;
+pub use set_instruction_account_default_values::*;
+pub use set_instruction_discriminators::*;
+pub use set_number_wrappers::*;
 pub use transform_u8_arrays_to_bytes::*;
+pub use update_errors::*;
