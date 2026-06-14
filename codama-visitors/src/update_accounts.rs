@@ -1,4 +1,4 @@
-use crate::rename_helpers::{rename_map, rename_struct_node};
+use crate::rename_helpers::{rename_map, rename_struct_node, scoped_selector};
 use codama_nodes::{
     AccountLinkNode, AccountNode, Docs, LinkNode, NestedTypeNodeTrait, Node, PdaLinkNode, PdaNode,
     PdaSeedNode, StructTypeNode,
@@ -97,7 +97,7 @@ pub fn update_accounts<S: Into<String>>(
         let name = name.into();
 
         if update.delete {
-            deletes.push(format!("[accountNode]{name}"));
+            deletes.push(scoped_selector("accountNode", &name));
             continue;
         }
 
@@ -107,7 +107,7 @@ pub fn update_accounts<S: Into<String>>(
         // (which upserts it); the account is visited before its program.
         let pdas_to_upsert: Rc<RefCell<Vec<(PdaNode, String)>>> = Rc::new(RefCell::new(Vec::new()));
 
-        rules.push(TransformRule::new(format!("[accountNode]{name}"), {
+        rules.push(TransformRule::new(scoped_selector("accountNode", &name), {
             let update = update.clone();
             let renames = renames.clone();
             let pdas_to_upsert = Rc::clone(&pdas_to_upsert);
@@ -165,7 +165,7 @@ pub fn update_accounts<S: Into<String>>(
         if let Some(new_name) = new_name {
             let account_link_name = new_name.clone();
             rules.push(TransformRule::new(
-                format!("[accountLinkNode]{name}"),
+                scoped_selector("accountLinkNode", &name),
                 move |node, _path| match node {
                     Node::Link(LinkNode::Account(link)) => {
                         Node::Link(LinkNode::Account(AccountLinkNode {
@@ -179,7 +179,7 @@ pub fn update_accounts<S: Into<String>>(
 
             let pda_name = new_name.clone();
             rules.push(TransformRule::new(
-                format!("[pdaNode]{name}"),
+                scoped_selector("pdaNode", &name),
                 move |node, _path| match node {
                     Node::Pda(mut pda) => {
                         pda.name = pda_name.clone().into();
@@ -191,7 +191,7 @@ pub fn update_accounts<S: Into<String>>(
 
             let pda_link_name = new_name;
             rules.push(TransformRule::new(
-                format!("[pdaLinkNode]{name}"),
+                scoped_selector("pdaLinkNode", &name),
                 move |node, _path| match node {
                     Node::Link(LinkNode::Pda(link)) => Node::Link(LinkNode::Pda(PdaLinkNode {
                         name: pda_link_name.clone().into(),

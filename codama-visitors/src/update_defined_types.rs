@@ -1,4 +1,4 @@
-use crate::rename_helpers::{rename_enum_node, rename_map, rename_struct_node};
+use crate::rename_helpers::{rename_enum_node, rename_map, rename_struct_node, scoped_selector};
 use codama_nodes::{DefinedTypeLinkNode, Docs, LinkNode, Node, TypeNode};
 use codama_visitors_core::{bottom_up_transformer, BottomUpTransformer, TransformRule};
 
@@ -68,7 +68,7 @@ pub fn update_defined_types<S: Into<String>>(
         let name = name.into();
 
         if update.delete {
-            deletes.push(format!("[definedTypeNode]{name}"));
+            deletes.push(scoped_selector("definedTypeNode", &name));
             continue;
         }
 
@@ -76,7 +76,7 @@ pub fn update_defined_types<S: Into<String>>(
         let renames = rename_map(update.data.clone());
 
         rules.push(TransformRule::new(
-            format!("[definedTypeNode]{name}"),
+            scoped_selector("definedTypeNode", &name),
             move |node, _path| {
                 let Node::DefinedType(mut defined_type) = node else {
                     return node;
@@ -101,7 +101,7 @@ pub fn update_defined_types<S: Into<String>>(
 
         if let Some(new_name) = new_name {
             rules.push(TransformRule::new(
-                format!("[definedTypeLinkNode]{name}"),
+                scoped_selector("definedTypeLinkNode", &name),
                 move |node, _path| match node {
                     Node::Link(LinkNode::DefinedType(link)) => {
                         Node::Link(LinkNode::DefinedType(DefinedTypeLinkNode {

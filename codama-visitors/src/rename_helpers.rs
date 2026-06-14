@@ -57,6 +57,20 @@ fn variant_name(variant: &EnumVariantTypeNode) -> &CamelCaseString {
     }
 }
 
+/// Builds a node selector that constrains the last path segment to `kind`.
+///
+/// A bare key (`"myAccount"`) becomes `"[accountNode]myAccount"`, while a
+/// program-scoped key (`"myProgram.myAccount"`) becomes
+/// `"myProgram.[accountNode]myAccount"` -- mirroring the upstream
+/// `['[accountNode]', selector]` conjunction so dotted, program-scoped selectors
+/// match the right node.
+pub(crate) fn scoped_selector(kind: &str, key: &str) -> String {
+    match key.rsplit_once('.') {
+        Some((prefix, last)) => format!("{prefix}.[{kind}]{last}"),
+        None => format!("[{kind}]{key}"),
+    }
+}
+
 /// Builds a camelCase-keyed rename map from raw `(old, new)` pairs.
 pub(crate) fn rename_map(
     pairs: impl IntoIterator<Item = (String, String)>,

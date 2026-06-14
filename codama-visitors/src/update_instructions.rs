@@ -1,4 +1,5 @@
 use crate::fill_default_pda_seed_values;
+use crate::rename_helpers::scoped_selector;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, Docs, InstructionAccountNode, InstructionArgumentNode,
     InstructionInputValueNode, InstructionNode, IsSigner, Node, RootNode, TypeNode,
@@ -164,12 +165,12 @@ pub fn update_instructions<S: Into<String>>(
     for (name, update) in map {
         let name = name.into();
         if update.delete {
-            deletes.push(format!("[instructionNode]{name}"));
+            deletes.push(scoped_selector("instructionNode", &name));
             continue;
         }
         let linkables = Rc::clone(&linkables);
         rules.push(TransformRule::new(
-            format!("[instructionNode]{name}"),
+            scoped_selector("instructionNode", &name),
             move |node, path| {
                 let Node::Instruction(mut instruction) = node else {
                     return node;

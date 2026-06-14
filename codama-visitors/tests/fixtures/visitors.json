@@ -1,502 +1,1580 @@
-[
-  {
-    "visitor": "updateAccounts",
-    "label": "rename",
-    "args": {
-      "myAccount": {
-        "name": "myNewAccount"
-      }
-    },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": []
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myNewAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": []
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateAccounts",
-    "label": "resize",
-    "args": {
-      "myAccount": {
-        "size": 42
-      }
-    },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": []
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "size": 42,
-            "data": {
-              "kind": "structTypeNode",
-              "fields": []
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateAccounts",
-    "label": "delete",
-    "args": {
-      "myAccount": {
-        "delete": true
-      }
-    },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": []
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateAccounts",
-    "label": "renameDataField",
-    "args": {
-      "myAccount": {
-        "data": {
-          "myData": "renamed"
+{
+  "visitors": [
+    {
+      "visitor": "updateAccounts",
+      "label": "rename",
+      "args": {
+        "myAccount": {
+          "name": "myNewAccount"
         }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myNewAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
       }
     },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "myData",
-                  "type": {
-                    "kind": "numberTypeNode",
-                    "format": "u32",
-                    "endian": "le"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [
-          {
-            "kind": "accountNode",
-            "name": "myAccount",
-            "data": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "renamed",
-                  "type": {
-                    "kind": "numberTypeNode",
-                    "format": "u32",
-                    "endian": "le"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "instructions": [],
-        "definedTypes": [],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateDefinedTypes",
-    "label": "renameAndRewriteLinks",
-    "args": {
-      "old": {
-        "name": "renamed"
-      }
-    },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "old",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "ref",
-                  "type": {
-                    "kind": "definedTypeLinkNode",
-                    "name": "old"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "renamed",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "ref",
-                  "type": {
-                    "kind": "definedTypeLinkNode",
-                    "name": "renamed"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateDefinedTypes",
-    "label": "delete",
-    "args": {
-      "old": {
-        "delete": true
-      }
-    },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "old",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "ref",
-                  "type": {
-                    "kind": "definedTypeLinkNode",
-                    "name": "old"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
-                {
-                  "kind": "structFieldTypeNode",
-                  "name": "ref",
-                  "type": {
-                    "kind": "definedTypeLinkNode",
-                    "name": "old"
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
-      },
-      "additionalPrograms": []
-    }
-  },
-  {
-    "visitor": "updateDefinedTypes",
-    "label": "renameInnerField",
-    "args": {
-      "user": {
-        "data": {
-          "a": "b"
+    {
+      "visitor": "updateAccounts",
+      "label": "resize",
+      "args": {
+        "myAccount": {
+          "size": 42
         }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "size": 42,
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
       }
     },
-    "input": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
+    {
+      "visitor": "updateAccounts",
+      "label": "delete",
+      "args": {
+        "myAccount": {
+          "delete": true
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "updatePdaWhenNameMatches",
+      "args": {
+        "myAccount": {
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myAccount",
+              "seeds": []
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myAccount"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myAccount",
+              "seeds": [
                 {
-                  "kind": "structFieldTypeNode",
-                  "name": "a",
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "updateLinkedPdaWithSeeds",
+      "args": {
+        "myAccount": {
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myPda"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myPda",
+              "seeds": []
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myPda"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myPda",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "createPdaWhenSeedsProvidedNoLink",
+      "args": {
+        "myAccount": {
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myAccount"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myAccount",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "updateExistingPdaWhenProvidingSeedsAndNewLink",
+      "args": {
+        "myAccount": {
+          "pda": {
+            "kind": "pdaLinkNode",
+            "name": "myPda"
+          },
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myPda",
+              "seeds": []
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myPda"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myPda",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "createNewPdaWhenProvidingSeedsAndNewLink",
+      "args": {
+        "myAccount": {
+          "pda": {
+            "kind": "pdaLinkNode",
+            "name": "myPda"
+          },
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myPda"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myPda",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "renameAndCreatePda",
+      "args": {
+        "myAccount": {
+          "name": "myNewAccount",
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "myAccount"
+              }
+            }
+          ]
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myNewAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              },
+              "pda": {
+                "kind": "pdaLinkNode",
+                "name": "myNewAccount"
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "myNewAccount",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "myAccount"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "renameMapsToProgram",
+      "args": {
+        "myProgramA.candyMachine": {
+          "name": "newCandyMachine"
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgramA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "candyMachine",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "myProgramB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [
+              {
+                "kind": "accountNode",
+                "name": "candyMachine",
+                "data": {
+                  "kind": "structTypeNode",
+                  "fields": []
+                }
+              }
+            ],
+            "instructions": [],
+            "definedTypes": [],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgramA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "newCandyMachine",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "myProgramB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [
+              {
+                "kind": "accountNode",
+                "name": "candyMachine",
+                "data": {
+                  "kind": "structTypeNode",
+                  "fields": []
+                }
+              }
+            ],
+            "instructions": [],
+            "definedTypes": [],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      }
+    },
+    {
+      "visitor": "updateAccounts",
+      "label": "renameDataFields",
+      "args": {
+        "myAccount": {
+          "data": {
+            "myData": "myNewData"
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "myData",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "myNewData",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateDefinedTypes",
+      "label": "renameAndRewriteLinks",
+      "args": {
+        "old": {
+          "name": "renamed"
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "old",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "ref",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "old"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "renamed",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "ref",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "renamed"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateDefinedTypes",
+      "label": "delete",
+      "args": {
+        "old": {
+          "delete": true
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "old",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "ref",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "old"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "ref",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "old"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateDefinedTypes",
+      "label": "renameInnerField",
+      "args": {
+        "user": {
+          "data": {
+            "a": "b"
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "a",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "b",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "renameInstruction",
+      "args": {
+        "myInstruction": {
+          "name": "myNewInstruction"
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myNewInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "renameInMultiProgram",
+      "args": {
+        "myProgramA.transfer": {
+          "name": "newTransfer"
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgramA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transfer",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "myProgramB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [
+              {
+                "kind": "instructionNode",
+                "name": "transfer",
+                "optionalAccountStrategy": "programId",
+                "accounts": [],
+                "arguments": []
+              }
+            ],
+            "definedTypes": [],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgramA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "newTransfer",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "myProgramB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [
+              {
+                "kind": "instructionNode",
+                "name": "transfer",
+                "optionalAccountStrategy": "programId",
+                "accounts": [],
+                "arguments": []
+              }
+            ],
+            "definedTypes": [],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "renameAccount",
+      "args": {
+        "myInstruction": {
+          "accounts": {
+            "myAccount": {
+              "name": "myNewAccount"
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [
+                {
+                  "kind": "instructionAccountNode",
+                  "name": "myAccount",
+                  "isWritable": true,
+                  "isSigner": false,
+                  "isOptional": false
+                }
+              ],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [
+                {
+                  "kind": "instructionAccountNode",
+                  "name": "myNewAccount",
+                  "isWritable": true,
+                  "isSigner": false,
+                  "isOptional": false
+                }
+              ],
+              "arguments": []
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "renameArgument",
+      "args": {
+        "myInstruction": {
+          "arguments": {
+            "myArgument": {
+              "name": "myNewArgument"
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArgument",
                   "type": {
                     "kind": "numberTypeNode",
                     "format": "u8",
@@ -505,36 +1583,35 @@
                 }
               ]
             }
-          }
-        ],
-        "pdas": [],
-        "events": [],
-        "errors": [],
-        "constants": []
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
       },
-      "additionalPrograms": []
-    },
-    "expected": {
-      "kind": "rootNode",
-      "standard": "codama",
-      "version": "1.6.0",
-      "program": {
-        "kind": "programNode",
-        "name": "myProgram",
-        "publicKey": "1111",
-        "version": "0.0.0",
-        "accounts": [],
-        "instructions": [],
-        "definedTypes": [
-          {
-            "kind": "definedTypeNode",
-            "name": "user",
-            "type": {
-              "kind": "structTypeNode",
-              "fields": [
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
                 {
-                  "kind": "structFieldTypeNode",
-                  "name": "b",
+                  "kind": "instructionArgumentNode",
+                  "name": "myNewArgument",
                   "type": {
                     "kind": "numberTypeNode",
                     "format": "u8",
@@ -543,14 +1620,2686 @@
                 }
               ]
             }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "setDefaultValue",
+      "args": {
+        "transferTokens": {
+          "arguments": {
+            "amount": {
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 1
+              }
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "defaultValue": {
+                    "kind": "numberValueNode",
+                    "number": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "updateInstructions",
+      "label": "setDefaultValueStrategy",
+      "args": {
+        "transferTokens": {
+          "arguments": {
+            "amount": {
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 1
+              },
+              "defaultValueStrategy": "optional"
+            },
+            "discriminator": {
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 42
+              },
+              "defaultValueStrategy": "omitted"
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "discriminator",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                },
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "discriminator",
+                  "defaultValueStrategy": "omitted",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  },
+                  "defaultValue": {
+                    "kind": "numberValueNode",
+                    "number": 42
+                  }
+                },
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "defaultValueStrategy": "optional",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "defaultValue": {
+                    "kind": "numberValueNode",
+                    "number": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "setStructDefaultValues",
+      "label": "addsDefaultValuesToStructFields",
+      "args": {
+        "person": {
+          "age": {
+            "kind": "numberValueNode",
+            "number": 42
+          },
+          "dateOfBirth": {
+            "kind": "noneValueNode"
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "person",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "age",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "dateOfBirth",
+                    "type": {
+                      "kind": "optionTypeNode",
+                      "fixed": false,
+                      "item": {
+                        "kind": "numberTypeNode",
+                        "format": "i64",
+                        "endian": "le"
+                      },
+                      "prefix": {
+                        "kind": "numberTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "person",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "age",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    },
+                    "defaultValue": {
+                      "kind": "numberValueNode",
+                      "number": 42
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "dateOfBirth",
+                    "type": {
+                      "kind": "optionTypeNode",
+                      "fixed": false,
+                      "item": {
+                        "kind": "numberTypeNode",
+                        "format": "i64",
+                        "endian": "le"
+                      },
+                      "prefix": {
+                        "kind": "numberTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                      }
+                    },
+                    "defaultValue": {
+                      "kind": "noneValueNode"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "setStructDefaultValues",
+      "label": "addsDefaultValuesWithStrategies",
+      "args": {
+        "token": {
+          "delegateAuthority": {
+            "strategy": "optional",
+            "value": {
+              "kind": "noneValueNode"
+            }
+          },
+          "discriminator": {
+            "strategy": "omitted",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "token",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "discriminator",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "delegateAuthority",
+                    "type": {
+                      "kind": "optionTypeNode",
+                      "fixed": false,
+                      "item": {
+                        "kind": "publicKeyTypeNode"
+                      },
+                      "prefix": {
+                        "kind": "numberTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "token",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "discriminator",
+                    "defaultValueStrategy": "omitted",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    },
+                    "defaultValue": {
+                      "kind": "numberValueNode",
+                      "number": 42
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "delegateAuthority",
+                    "defaultValueStrategy": "optional",
+                    "type": {
+                      "kind": "optionTypeNode",
+                      "fixed": false,
+                      "item": {
+                        "kind": "publicKeyTypeNode"
+                      },
+                      "prefix": {
+                        "kind": "numberTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                      }
+                    },
+                    "defaultValue": {
+                      "kind": "noneValueNode"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "setStructDefaultValues",
+      "label": "addsDefaultValuesToInstructionArguments",
+      "args": {
+        "transferTokens": {
+          "amount": {
+            "kind": "numberValueNode",
+            "number": 1
+          },
+          "discriminator": {
+            "strategy": "omitted",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          }
+        }
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "discriminator",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                },
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "transferTokens",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "discriminator",
+                  "defaultValueStrategy": "omitted",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  },
+                  "defaultValue": {
+                    "kind": "numberValueNode",
+                    "number": 42
+                  }
+                },
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "amount",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "defaultValue": {
+                    "kind": "numberValueNode",
+                    "number": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "unwrapDefinedTypes",
+      "label": "unwrapsByFollowingLinks",
+      "args": [
+        "myType"
+      ],
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "value",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "myType"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "value",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u64",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "unwrapDefinedTypes",
+      "label": "followsLinkedNodesUsingCorrectPaths",
+      "args": [
+        "typeB1",
+        "typeB2"
+      ],
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "typeA",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "typeB1",
+                "program": {
+                  "kind": "programLinkNode",
+                  "name": "programB"
+                }
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "typeB1",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "typeB2"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "typeB2",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "typeA",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      }
+    },
+    {
+      "visitor": "unwrapDefinedTypes",
+      "label": "doesNotUnwrapTypesFromWrongPrograms",
+      "args": [
+        "programA.myType"
+      ],
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "myCopyType",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "myType"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "myType",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "myCopyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "myType"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myCopyType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "myType",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "myCopyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "myType"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      }
+    },
+    {
+      "visitor": "unwrapInstructionArgsDefinedTypes",
+      "label": "singleUse",
+      "args": {},
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "argA",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "typeA"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "typeA",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "foo",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "typeB",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "bar",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "argA",
+                  "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "foo",
+                        "type": {
+                          "kind": "numberTypeNode",
+                          "format": "u8",
+                          "endian": "le"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "typeB",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "bar",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "unwrapInstructionArgsDefinedTypes",
+      "label": "multipleUses",
+      "args": {},
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "myType"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "foo",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "myCopyType",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "myType"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "myType"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "foo",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "myCopyType",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "myType"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "unwrapInstructionArgsDefinedTypes",
+      "label": "nestedUsage",
+      "args": {},
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "arrayTypeNode",
+                    "item": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "myType"
+                    },
+                    "count": {
+                      "kind": "fixedCountNode",
+                      "value": 3
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "foo",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "arrayTypeNode",
+                    "item": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "myType"
+                    },
+                    "count": {
+                      "kind": "fixedCountNode",
+                      "value": 3
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "foo",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "unwrapInstructionArgsDefinedTypes",
+      "label": "programBoundaries",
+      "args": {},
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "myType"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "myType",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "myCopyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "myType"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "myArg",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "myType",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "myCopyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "myType"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      }
+    },
+    {
+      "visitor": "addPdas",
+      "label": "addsTwoPdas",
+      "args": {
+        "myProgram": [
+          {
+            "kind": "pdaNode",
+            "name": "metadata",
+            "seeds": [
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "metadata"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "value": {
+                  "kind": "programIdValueNode"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "mint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "pdaNode",
+            "name": "masterEdition",
+            "seeds": [
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "metadata"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "value": {
+                  "kind": "programIdValueNode"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "mint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "edition"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "Epo9rxh99jpeeWabRZi4tpgUVxZQeVn9vbbDjUztJtu4",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "associatedToken",
+              "seeds": [
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "owner",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "Epo9rxh99jpeeWabRZi4tpgUVxZQeVn9vbbDjUztJtu4",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "associatedToken",
+              "seeds": [
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "owner",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "pdaNode",
+              "name": "metadata",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "metadata"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "pdaNode",
+              "name": "masterEdition",
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "metadata"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "edition"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    },
+    {
+      "visitor": "addPdas",
+      "label": "addsPdasWithDocs",
+      "args": {
+        "myProgram": [
+          {
+            "kind": "pdaNode",
+            "name": "metadata",
+            "docs": [
+              "Metadata for a token."
+            ],
+            "seeds": [
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "metadata"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "value": {
+                  "kind": "programIdValueNode"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "mint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "pdaNode",
+            "name": "masterEdition",
+            "docs": [
+              "The master edition."
+            ],
+            "seeds": [
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "metadata"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "value": {
+                  "kind": "programIdValueNode"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "mint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "constantPdaSeedNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "value": {
+                  "kind": "stringValueNode",
+                  "string": "edition"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "Epo9rxh99jpeeWabRZi4tpgUVxZQeVn9vbbDjUztJtu4",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "associatedToken",
+              "seeds": [
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "owner",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "myProgram",
+          "publicKey": "Epo9rxh99jpeeWabRZi4tpgUVxZQeVn9vbbDjUztJtu4",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [],
+          "pdas": [
+            {
+              "kind": "pdaNode",
+              "name": "associatedToken",
+              "seeds": [
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "owner",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "pdaNode",
+              "name": "metadata",
+              "docs": [
+                "Metadata for a token."
+              ],
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "metadata"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "pdaNode",
+              "name": "masterEdition",
+              "docs": [
+                "The master edition."
+              ],
+              "seeds": [
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "metadata"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  },
+                  "value": {
+                    "kind": "programIdValueNode"
+                  }
+                },
+                {
+                  "kind": "variablePdaSeedNode",
+                  "name": "mint",
+                  "type": {
+                    "kind": "publicKeyTypeNode"
+                  }
+                },
+                {
+                  "kind": "constantPdaSeedNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "value": {
+                    "kind": "stringValueNode",
+                    "string": "edition"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      }
+    }
+  ],
+  "histogram": [
+    {
+      "label": "usageCounts",
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "customProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [
+            {
+              "kind": "accountNode",
+              "name": "myAccount",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "field1",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "myStruct"
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "field2",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "myEnum"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "instructions": [
+            {
+              "kind": "instructionNode",
+              "name": "myInstruction",
+              "optionalAccountStrategy": "programId",
+              "accounts": [],
+              "arguments": [
+                {
+                  "kind": "instructionArgumentNode",
+                  "name": "arg1",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "myStruct"
+                  }
+                }
+              ]
+            }
+          ],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myStruct",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "myEnum",
+              "type": {
+                "kind": "enumTypeNode",
+                "variants": [],
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "customProgram.myStruct": {
+          "directlyAsInstructionArgs": 1,
+          "inAccounts": 1,
+          "inDefinedTypes": 0,
+          "inEvents": 0,
+          "inInstructionArgs": 1,
+          "total": 2
+        },
+        "customProgram.myEnum": {
+          "directlyAsInstructionArgs": 0,
+          "inAccounts": 1,
+          "inDefinedTypes": 0,
+          "inEvents": 0,
+          "inInstructionArgs": 0,
+          "total": 1
+        }
+      }
+    },
+    {
+      "label": "eventPayloads",
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "customProgram",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "eventPayload",
+              "type": {
+                "kind": "structTypeNode",
+                "fields": []
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [
+            {
+              "kind": "eventNode",
+              "name": "payloadCreated",
+              "data": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "payload",
+                    "type": {
+                      "kind": "definedTypeLinkNode",
+                      "name": "eventPayload"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": []
+      },
+      "expected": {
+        "customProgram.eventPayload": {
+          "directlyAsInstructionArgs": 0,
+          "inAccounts": 0,
+          "inDefinedTypes": 0,
+          "inEvents": 1,
+          "inInstructionArgs": 0,
+          "total": 1
+        }
+      }
+    },
+    {
+      "label": "separatePrograms",
+      "input": {
+        "kind": "rootNode",
+        "standard": "codama",
+        "version": "1.6.0",
+        "program": {
+          "kind": "programNode",
+          "name": "programA",
+          "publicKey": "1111",
+          "version": "0.0.0",
+          "accounts": [],
+          "instructions": [],
+          "definedTypes": [
+            {
+              "kind": "definedTypeNode",
+              "name": "myType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "definedTypeNode",
+              "name": "myCopyType",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "myType"
+              }
+            }
+          ],
+          "pdas": [],
+          "events": [],
+          "errors": [],
+          "constants": []
+        },
+        "additionalPrograms": [
+          {
+            "kind": "programNode",
+            "name": "programB",
+            "publicKey": "2222",
+            "version": "0.0.0",
+            "accounts": [],
+            "instructions": [],
+            "definedTypes": [
+              {
+                "kind": "definedTypeNode",
+                "name": "myType",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "definedTypeNode",
+                "name": "myCopyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "myType"
+                }
+              }
+            ],
+            "pdas": [],
+            "events": [],
+            "errors": [],
+            "constants": []
+          }
+        ]
+      },
+      "expected": {
+        "programA.myType": {
+          "directlyAsInstructionArgs": 0,
+          "inAccounts": 0,
+          "inDefinedTypes": 1,
+          "inEvents": 0,
+          "inInstructionArgs": 0,
+          "total": 1
+        },
+        "programB.myType": {
+          "directlyAsInstructionArgs": 0,
+          "inAccounts": 0,
+          "inDefinedTypes": 1,
+          "inEvents": 0,
+          "inInstructionArgs": 0,
+          "total": 1
+        }
+      }
+    }
+  ],
+  "fillPda": [
+    {
+      "label": "fillsMissingSeeds",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [
+          {
+            "kind": "pdaNode",
+            "name": "myPda",
+            "seeds": [
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed1",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed2",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed3",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
           }
         ],
-        "pdas": [],
         "events": [],
         "errors": [],
         "constants": []
       },
-      "additionalPrograms": []
+      "instruction": {
+        "kind": "instructionNode",
+        "name": "myInstruction",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "seed3",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "seed2",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            }
+          }
+        ]
+      },
+      "value": {
+        "kind": "pdaValueNode",
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "myPda"
+        },
+        "seeds": [
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed1",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          }
+        ]
+      },
+      "strict": false,
+      "expected": {
+        "kind": "pdaValueNode",
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "myPda"
+        },
+        "seeds": [
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed1",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          },
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed2",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "seed2"
+            }
+          },
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed3",
+            "value": {
+              "kind": "accountValueNode",
+              "name": "seed3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "fillsNestedPdaValueNodes",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [
+          {
+            "kind": "pdaNode",
+            "name": "myPda",
+            "seeds": [
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed1",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed2",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed3",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          }
+        ],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "instruction": {
+        "kind": "instructionNode",
+        "name": "myInstruction",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "seed3",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "seed2",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            }
+          }
+        ]
+      },
+      "value": {
+        "kind": "conditionalValueNode",
+        "condition": {
+          "kind": "accountValueNode",
+          "name": "myAccount"
+        },
+        "ifTrue": {
+          "kind": "pdaValueNode",
+          "pda": {
+            "kind": "pdaLinkNode",
+            "name": "myPda"
+          },
+          "seeds": [
+            {
+              "kind": "pdaSeedValueNode",
+              "name": "seed1",
+              "value": {
+                "kind": "numberValueNode",
+                "number": 42
+              }
+            }
+          ]
+        }
+      },
+      "strict": false,
+      "expected": {
+        "kind": "conditionalValueNode",
+        "condition": {
+          "kind": "accountValueNode",
+          "name": "myAccount"
+        },
+        "ifTrue": {
+          "kind": "pdaValueNode",
+          "pda": {
+            "kind": "pdaLinkNode",
+            "name": "myPda"
+          },
+          "seeds": [
+            {
+              "kind": "pdaSeedValueNode",
+              "name": "seed1",
+              "value": {
+                "kind": "numberValueNode",
+                "number": 42
+              }
+            },
+            {
+              "kind": "pdaSeedValueNode",
+              "name": "seed2",
+              "value": {
+                "kind": "argumentValueNode",
+                "name": "seed2"
+              }
+            },
+            {
+              "kind": "pdaSeedValueNode",
+              "name": "seed3",
+              "value": {
+                "kind": "accountValueNode",
+                "name": "seed3"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "label": "ignoresMissingSeeds",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [
+          {
+            "kind": "pdaNode",
+            "name": "myPda",
+            "seeds": [
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed1",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed2",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "variablePdaSeedNode",
+                "name": "seed3",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          }
+        ],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "instruction": {
+        "kind": "instructionNode",
+        "name": "myInstruction",
+        "optionalAccountStrategy": "programId",
+        "accounts": [],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "seed2",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            }
+          }
+        ]
+      },
+      "value": {
+        "kind": "pdaValueNode",
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "myPda"
+        },
+        "seeds": [
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed1",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          }
+        ]
+      },
+      "strict": false,
+      "expected": {
+        "kind": "pdaValueNode",
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "myPda"
+        },
+        "seeds": [
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed1",
+            "value": {
+              "kind": "numberValueNode",
+              "number": 42
+            }
+          },
+          {
+            "kind": "pdaSeedValueNode",
+            "name": "seed2",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "seed2"
+            }
+          }
+        ]
+      }
     }
-  }
-]
+  ]
+}

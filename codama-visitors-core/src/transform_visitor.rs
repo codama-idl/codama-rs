@@ -1205,7 +1205,17 @@ pub fn fold_pda_seed_value<V: TransformVisitor + ?Sized>(
 // ---- Top-level nodes ------------------------------------------------------
 
 pub fn fold_account<V: TransformVisitor + ?Sized>(v: &mut V, mut node: AccountNode) -> AccountNode {
-    node.data = node.data.map_nested_type_node(|s| v.visit_struct_type(s));
+    // Route the data struct through `visit_type_node` (as `fold_event` does for
+    // its data) so visitors that intercept type nodes -- e.g. selector-driven
+    // transforms -- reach an account's data struct. Account data is always a
+    // struct, so a transform that changed its kind is ignored.
+    node.data = node.data.map_nested_type_node(|s| {
+        let original = s.clone();
+        match v.visit_type_node(s.into()) {
+            TypeNode::Struct(s) => s,
+            _ => original,
+        }
+    });
     node.pda = map_opt(node.pda, |p| v.visit_pda_link(p));
     node.discriminators = map_vec(node.discriminators, |d| v.visit_discriminator_node(d));
     node
