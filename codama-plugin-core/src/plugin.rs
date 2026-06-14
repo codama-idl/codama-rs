@@ -89,6 +89,7 @@ impl<'a> DirectiveResolver for CompositeDirectiveResolver<'a> {
 pub type ResolvePluginsResult<'a> = Box<dyn Fn(&mut dyn KorokVisitable) -> CodamaResult<()> + 'a>;
 
 /// Combine all plugins into a single function that runs them in sequence.
+#[must_use = "the returned function must be called on a visitable to run the plugins"]
 pub fn resolve_plugins<'a>(plugins: &'a [Box<dyn KorokPlugin + 'a>]) -> ResolvePluginsResult<'a> {
     Box::new(move |visitable: &mut dyn KorokVisitable| {
         // Phase 0: Resolve all resolvable directives.

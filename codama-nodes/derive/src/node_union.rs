@@ -113,7 +113,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 let value = serde_json::Value::deserialize(deserializer)?;
                 let kind = value["kind"].as_str().ok_or_else(|| serde::de::Error::custom("missing kind"))?;
                 let to_serde_error = |e: serde_json::Error| -> D::Error {
-                    serde::de::Error::custom(format!("failed to deserialize AmountTypeNode: {}", e))
+                    serde::de::Error::custom(format!("failed to deserialize {}: {}", stringify!(#item_name), e))
                 };
                 match kind {
                     #(#deserialize_patterns)*

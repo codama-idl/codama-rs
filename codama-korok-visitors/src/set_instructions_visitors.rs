@@ -25,7 +25,7 @@ impl Default for SetInstructionsVisitor {
         Self {
             combine_types: CombineTypesVisitor {
                 // Skip fields with the `account` codama directive.
-                get_nammed_field: |korok, parent| {
+                get_named_field: |korok, parent| {
                     if korok.attributes.has_codama_attribute("account") {
                         return None;
                     }

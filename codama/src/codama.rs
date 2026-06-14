@@ -63,7 +63,7 @@ impl Codama {
 
     pub fn get_node(&self) -> CodamaResult<Node> {
         let korok = self.get_visited_korok()?;
-        korok.node.clone().ok_or(CodamaError::NodeNotFound)
+        korok.node.ok_or(CodamaError::NodeNotFound)
     }
 
     pub fn get_idl(&self) -> CodamaResult<RootNode> {

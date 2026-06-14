@@ -261,19 +261,18 @@ impl ByteSize<'_> {
     fn link_size(&mut self, link: &DefinedTypeLinkNode, program: Option<&str>) -> Option<usize> {
         // Copy the dictionary reference so the lookup borrows it, not `self`.
         let linkables = self.linkables;
-        let (name, body, link_program) = {
-            let defined_type = linkables.get_defined_type(link, program)?;
-            (
-                defined_type.name.to_string(),
-                (*defined_type.r#type).clone(),
-                link.program.as_ref().map(|p| p.name.to_string()),
-            )
-        };
-        if self.in_progress.iter().any(|n| n == &name) {
+        let defined_type = linkables.get_defined_type(link, program)?;
+        let name = defined_type.name.as_ref();
+        if self.in_progress.iter().any(|n| n == name) {
             return None; // cyclic defined type
         }
-        let new_program = link_program.or_else(|| program.map(String::from));
-        self.in_progress.push(name);
+        let body = (*defined_type.r#type).clone();
+        let new_program = link
+            .program
+            .as_ref()
+            .map(|p| p.name.to_string())
+            .or_else(|| program.map(String::from));
+        self.in_progress.push(name.to_string());
         let size = self.type_size(&body, new_program.as_deref());
         self.in_progress.pop();
         size

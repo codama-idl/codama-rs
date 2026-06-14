@@ -17,9 +17,18 @@ pub fn expand_derive_nestable_type_node(input: &syn::DeriveInput) -> CodamaResul
     input.as_struct()?;
     let item_name = &input.ident;
 
-    // The item name ident without the last 8 characters (for "TypeNode" or "LinkNode").
-    let variant_name = item_name.to_string();
-    let variant_name = syn::Ident::new(&variant_name[..variant_name.len() - 8], item_name.span());
+    // The item name without its `TypeNode`/`LinkNode` suffix names the `TypeNode` variant.
+    let item_name_string = item_name.to_string();
+    let variant_name = item_name_string
+        .strip_suffix("TypeNode")
+        .or_else(|| item_name_string.strip_suffix("LinkNode"))
+        .ok_or_else(|| {
+            syn::Error::new(
+                item_name.span(),
+                "expected a name ending in `TypeNode` or `LinkNode`",
+            )
+        })?;
+    let variant_name = syn::Ident::new(variant_name, item_name.span());
 
     Ok(quote! {
         impl crate::TypeNodeTrait for #item_name<TypeNode> {

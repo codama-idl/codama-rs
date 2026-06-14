@@ -15,7 +15,7 @@ pub struct CombineTypesVisitor {
     pub r#override: bool,
     pub get_enum_variant:
         fn(korok: &EnumVariantKorok, parent: &str) -> Option<CodamaResult<EnumVariantTypeNode>>,
-    pub get_nammed_field:
+    pub get_named_field:
         fn(korok: &FieldKorok, parent: &str) -> Option<CodamaResult<StructFieldTypeNode>>,
     pub get_unnammed_field:
         fn(korok: &FieldKorok, parent: &str, index: usize) -> Option<CodamaResult<TypeNode>>,
@@ -27,7 +27,7 @@ impl Default for CombineTypesVisitor {
         Self {
             r#override: false,
             get_enum_variant: |x, _| Self::get_default_enum_variant(x),
-            get_nammed_field: |x, _| Self::get_default_named_field(x),
+            get_named_field: |x, _| Self::get_default_named_field(x),
             get_unnammed_field: |x, _, _| Self::get_default_unnamed_field(x),
             parent_enum: String::new(),
         }
@@ -41,7 +41,7 @@ impl CombineTypesVisitor {
     pub fn strict() -> Self {
         Self {
             get_enum_variant: Self::get_strict_enum_variant,
-            get_nammed_field: Self::get_strict_named_field,
+            get_named_field: Self::get_strict_named_field,
             get_unnammed_field: Self::get_strict_unnamed_field,
             ..Self::default()
         }
@@ -124,7 +124,7 @@ impl CombineTypesVisitor {
     ) -> CodamaResult<Vec<StructFieldTypeNode>> {
         let fields = fields
             .iter()
-            .filter_map(|field| (self.get_nammed_field)(field, parent))
+            .filter_map(|field| (self.get_named_field)(field, parent))
             .collect_and_combine_errors()?;
 
         let (before, after): (Vec<_>, Vec<_>) = attributes
@@ -173,9 +173,9 @@ impl KorokVisitor for CombineTypesVisitor {
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
-                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
+                let mut items = self.parse_unnamed_fields(&korok.fields, &parent)?;
                 if items.len() == 1 {
-                    items.first().unwrap().clone()
+                    items.remove(0)
                 } else {
                     TupleTypeNode::new(items).into()
                 }

@@ -33,26 +33,26 @@ pub fn flatten_instruction_data_arguments() -> BottomUpTransformer {
 pub fn flatten_instruction_arguments(
     arguments: Vec<InstructionArgumentNode>,
 ) -> Vec<InstructionArgumentNode> {
-    let original = arguments.clone();
-    let mut inlined: Vec<InstructionArgumentNode> = Vec::with_capacity(arguments.len());
+    // First, check (by borrowing) whether inlining would collide -- so we can
+    // bail out and return the arguments untouched without cloning them.
+    let would_collide = {
+        let mut seen = HashSet::new();
+        !arguments.iter().all(|argument| match &*argument.r#type {
+            TypeNode::Struct(inner) => inner.fields.iter().all(|field| seen.insert(&field.name)),
+            _ => seen.insert(&argument.name),
+        })
+    };
+    if would_collide {
+        return arguments;
+    }
+
+    let mut inlined = Vec::with_capacity(arguments.len());
     for argument in arguments {
-        if matches!(&*argument.r#type, TypeNode::Struct(_)) {
-            if let TypeNode::Struct(inner) = *argument.r#type {
-                inlined.extend(inner.fields.into_iter().map(InstructionArgumentNode::from));
-            }
+        if let TypeNode::Struct(inner) = *argument.r#type {
+            inlined.extend(inner.fields.into_iter().map(InstructionArgumentNode::from));
         } else {
             inlined.push(argument);
         }
     }
-
-    if has_duplicate_names(&inlined) {
-        original
-    } else {
-        inlined
-    }
-}
-
-fn has_duplicate_names(arguments: &[InstructionArgumentNode]) -> bool {
-    let mut seen = HashSet::with_capacity(arguments.len());
-    !arguments.iter().all(|a| seen.insert(&a.name))
+    inlined
 }

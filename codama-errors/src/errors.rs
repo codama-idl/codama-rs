@@ -46,14 +46,10 @@ pub enum CodamaError {
 pub type CodamaResult<T> = Result<T, CodamaError>;
 
 impl CodamaError {
-    pub fn to_compile_error(&self) -> TokenStream {
+    pub fn into_compile_error(self) -> TokenStream {
         match self {
             CodamaError::Compilation(error) => error.to_compile_error(),
             _ => TokenStream::new(),
         }
-    }
-
-    pub fn into_compile_error(self) -> TokenStream {
-        self.to_compile_error()
     }
 }

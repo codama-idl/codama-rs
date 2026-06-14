@@ -20,9 +20,9 @@ use codama_nodes::{
 use codama_visitors::{
     add_pdas, fill_default_pda_seed_values, get_defined_type_histogram, set_struct_default_values,
     unwrap_defined_types_named, unwrap_instruction_args_defined_types, update_accounts,
-    update_defined_types, update_instructions, AccountUpdate, DefinedTypeUpdate, LinkableDictionary,
-    InstructionAccountUpdate, InstructionArgumentUpdate, InstructionUpdate, StructDefaultValue,
-    TransformVisitor,
+    update_defined_types, update_instructions, AccountUpdate, DefinedTypeUpdate,
+    InstructionAccountUpdate, InstructionArgumentUpdate, InstructionUpdate, LinkableDictionary,
+    StructDefaultValue, TransformVisitor,
 };
 use pretty_assertions::assert_eq;
 use serde::Deserialize;
@@ -142,9 +142,14 @@ fn fill_default_pda_seed_values_matches_upstream() {
         let expected: InstructionInputValueNode =
             serde_json::from_value(case.expected.clone()).expect("parse expected");
 
-        let actual =
-            fill_default_pda_seed_values(value, &instruction, &linkables, Some(&program_name), case.strict)
-                .expect("fill should succeed");
+        let actual = fill_default_pda_seed_values(
+            value,
+            &instruction,
+            &linkables,
+            Some(&program_name),
+            case.strict,
+        )
+        .expect("fill should succeed");
         assert_eq!(actual, expected, "fillPda mismatch in `{}`", case.label);
     }
 }
@@ -284,7 +289,8 @@ fn instruction_updates(args: &Value) -> Vec<(String, InstructionUpdate)> {
                         a = a.optional(optional);
                     }
                     if let Some(dv) = account.get("defaultValue") {
-                        if let Ok(dv) = serde_json::from_value::<InstructionInputValueNode>(dv.clone())
+                        if let Ok(dv) =
+                            serde_json::from_value::<InstructionInputValueNode>(dv.clone())
                         {
                             a = a.default_value(dv);
                         }
@@ -299,12 +305,14 @@ fn instruction_updates(args: &Value) -> Vec<(String, InstructionUpdate)> {
                         a = a.name(new_name);
                     }
                     if let Some(dv) = argument.get("defaultValue") {
-                        if let Ok(dv) = serde_json::from_value::<InstructionInputValueNode>(dv.clone())
+                        if let Ok(dv) =
+                            serde_json::from_value::<InstructionInputValueNode>(dv.clone())
                         {
                             a = a.default_value(dv);
                         }
                     }
-                    if let Some(s) = str_field(argument, "defaultValueStrategy").and_then(strategy) {
+                    if let Some(s) = str_field(argument, "defaultValueStrategy").and_then(strategy)
+                    {
                         a = a.default_value_strategy(s);
                     }
                     u = u.argument(name.clone(), a);
@@ -325,7 +333,10 @@ fn struct_default_values(args: &Value) -> Vec<(String, Vec<(String, StructDefaul
                     let value = if let Some(s) = default.get("strategy") {
                         let strategy = s.as_str().and_then(strategy);
                         let value: ValueNode = serde_json::from_value(
-                            default.get("value").expect("WithStrategy needs a value").clone(),
+                            default
+                                .get("value")
+                                .expect("WithStrategy needs a value")
+                                .clone(),
                         )
                         .expect("parse value node");
                         StructDefaultValue::WithStrategy(value, strategy)

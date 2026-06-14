@@ -66,7 +66,7 @@ macro_rules! combine_errors {
             (Ok(value1), Ok(value2)) => Ok((value1, value2)),
             (Err(err1), Err(err2)) => {
                 let mut combined = err1;
-                codama_errors::CombineErrors::combine(&mut combined, err2);
+                $crate::CombineErrors::combine(&mut combined, err2);
                 Err(combined)
             }
             (Err(err), _) => Err(err),
@@ -76,11 +76,11 @@ macro_rules! combine_errors {
 
     // 3 results.
     ($first:expr, $second:expr, $third:expr $(,)?) => {{
-        match ($first, combine_errors!($second, $third)) {
+        match ($first, $crate::combine_errors!($second, $third)) {
             (Ok(value1), Ok((value2, value3))) => Ok((value1, value2, value3)),
             (Err(err1), Err(err2)) => {
                 let mut combined = err1;
-                codama_errors::CombineErrors::combine(&mut combined, err2);
+                $crate::CombineErrors::combine(&mut combined, err2);
                 Err(combined)
             }
             (Err(err), _) => Err(err),

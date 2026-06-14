@@ -113,12 +113,12 @@ impl BottomUpTransformer {
 
     /// Applies every rule whose selector matches the current path, in order.
     fn run_rules(&mut self, mut node: Node) -> Node {
-        // Clone the path so the rule closures (which borrow `&mut self.rules`)
-        // can also read it without a borrow conflict.
-        let path = self.path.clone();
-        for rule in self.rules.iter_mut() {
-            if rule.selector.matches(&path) {
-                node = (rule.transform)(node, &path);
+        // Disjoint field borrows let the rule closures read the path while
+        // `rules` is borrowed mutably -- no need to clone the path per node.
+        let Self { rules, path, .. } = self;
+        for rule in rules.iter_mut() {
+            if rule.selector.matches(path) {
+                node = (rule.transform)(node, path);
             }
         }
         node

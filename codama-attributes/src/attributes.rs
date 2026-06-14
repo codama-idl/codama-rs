@@ -18,8 +18,9 @@ impl<'a> Attributes<'a> {
                     let inners = ast.unfeatured_all();
                     if inners.len() <= 1 {
                         // Not a multi-attr cfg_attr - use standard parsing
-                        let unfeatured = ast.unfeatured();
-                        let effective = unfeatured.unwrap_or_else(|| (*ast).clone());
+                        // Fall back to the attribute itself when it is not a
+                        // `cfg_attr` (the only case that needs an owned clone).
+                        let effective = ast.unfeatured().unwrap_or_else(|| ast.clone());
                         vec![(ast, effective)]
                     } else {
                         // Multi-attr cfg_attr - expand each inner attribute
