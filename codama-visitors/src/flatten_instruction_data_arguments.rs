@@ -16,13 +16,23 @@ pub fn flatten_instruction_data_arguments() -> BottomUpTransformer {
             let Node::Instruction(mut instruction) = node else {
                 return node;
             };
-            instruction.arguments = flatten_arguments(instruction.arguments);
+            instruction.arguments = flatten_instruction_arguments(instruction.arguments);
             Node::Instruction(instruction)
         },
     )])
 }
 
-fn flatten_arguments(arguments: Vec<InstructionArgumentNode>) -> Vec<InstructionArgumentNode> {
+/// Flattens a list of instruction arguments by inlining every struct-typed
+/// argument into its fields. If that would create duplicate names, the original
+/// list is returned unchanged (upstream throws).
+///
+/// The Rust counterpart of `@codama/visitors`' `flattenInstructionArguments`
+/// helper, exposed so other visitors (e.g.
+/// [`create_sub_instructions_from_enum_args`](crate::create_sub_instructions_from_enum_args))
+/// can reuse it.
+pub fn flatten_instruction_arguments(
+    arguments: Vec<InstructionArgumentNode>,
+) -> Vec<InstructionArgumentNode> {
     let original = arguments.clone();
     let mut inlined: Vec<InstructionArgumentNode> = Vec::with_capacity(arguments.len());
     for argument in arguments {

@@ -1,12 +1,13 @@
 use crate::{
-    fold_account, fold_constant, fold_defined_type, fold_defined_type_link, fold_event,
-    fold_instruction, fold_instruction_account, fold_instruction_argument, fold_pda, fold_program,
-    fold_root, fold_type_node, NodeDescriptor, NodePath, NodeSelector, TransformVisitor,
+    fold_account, fold_account_link, fold_constant, fold_defined_type, fold_defined_type_link,
+    fold_event, fold_instruction, fold_instruction_account, fold_instruction_argument, fold_pda,
+    fold_pda_link, fold_program, fold_root, fold_type_node, NodeDescriptor, NodePath, NodeSelector,
+    TransformVisitor,
 };
 use codama_nodes::{
-    AccountNode, ConstantNode, DefinedTypeLinkNode, DefinedTypeNode, ErrorNode, EventNode, HasKind,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode, LinkNode, Node, PdaNode,
-    ProgramLinkNode, ProgramNode, RootNode, TypeNode,
+    AccountLinkNode, AccountNode, ConstantNode, DefinedTypeLinkNode, DefinedTypeNode, ErrorNode,
+    EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode, InstructionNode, LinkNode,
+    Node, PdaLinkNode, PdaNode, ProgramLinkNode, ProgramNode, RootNode, TypeNode,
 };
 
 /// A transform callback: given the node currently being visited (as a [`Node`])
@@ -145,6 +146,30 @@ impl TransformVisitor for BottomUpTransformer {
         let node = fold_defined_type_link(self, node);
         let result = match self.run_rules(Node::Link(LinkNode::DefinedType(node.clone()))) {
             Node::Link(LinkNode::DefinedType(n)) => n,
+            _ => node,
+        };
+        self.path.pop();
+        result
+    }
+
+    fn visit_account_link(&mut self, node: AccountLinkNode) -> AccountLinkNode {
+        self.path
+            .push(NodeDescriptor::named("accountLinkNode", node.name.clone()));
+        let node = fold_account_link(self, node);
+        let result = match self.run_rules(Node::Link(LinkNode::Account(node.clone()))) {
+            Node::Link(LinkNode::Account(n)) => n,
+            _ => node,
+        };
+        self.path.pop();
+        result
+    }
+
+    fn visit_pda_link(&mut self, node: PdaLinkNode) -> PdaLinkNode {
+        self.path
+            .push(NodeDescriptor::named("pdaLinkNode", node.name.clone()));
+        let node = fold_pda_link(self, node);
+        let result = match self.run_rules(Node::Link(LinkNode::Pda(node.clone()))) {
+            Node::Link(LinkNode::Pda(n)) => n,
             _ => node,
         };
         self.path.pop();
