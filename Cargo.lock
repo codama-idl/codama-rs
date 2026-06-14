@@ -328,6 +328,8 @@ dependencies = [
  "codama-nodes",
  "codama-visitors-core",
  "pretty_assertions",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

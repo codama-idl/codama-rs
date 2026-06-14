@@ -1,0 +1,556 @@
+[
+  {
+    "visitor": "updateAccounts",
+    "label": "rename",
+    "args": {
+      "myAccount": {
+        "name": "myNewAccount"
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": []
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myNewAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": []
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateAccounts",
+    "label": "resize",
+    "args": {
+      "myAccount": {
+        "size": 42
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": []
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "size": 42,
+            "data": {
+              "kind": "structTypeNode",
+              "fields": []
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateAccounts",
+    "label": "delete",
+    "args": {
+      "myAccount": {
+        "delete": true
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": []
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateAccounts",
+    "label": "renameDataField",
+    "args": {
+      "myAccount": {
+        "data": {
+          "myData": "renamed"
+        }
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "myData",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [
+          {
+            "kind": "accountNode",
+            "name": "myAccount",
+            "data": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "renamed",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "instructions": [],
+        "definedTypes": [],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateDefinedTypes",
+    "label": "renameAndRewriteLinks",
+    "args": {
+      "old": {
+        "name": "renamed"
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "old",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            }
+          },
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "ref",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "old"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "renamed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            }
+          },
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "ref",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "renamed"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateDefinedTypes",
+    "label": "delete",
+    "args": {
+      "old": {
+        "delete": true
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "old",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            }
+          },
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "ref",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "old"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "ref",
+                  "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "old"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  },
+  {
+    "visitor": "updateDefinedTypes",
+    "label": "renameInnerField",
+    "args": {
+      "user": {
+        "data": {
+          "a": "b"
+        }
+      }
+    },
+    "input": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "a",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    },
+    "expected": {
+      "kind": "rootNode",
+      "standard": "codama",
+      "version": "1.6.0",
+      "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "publicKey": "1111",
+        "version": "0.0.0",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [
+          {
+            "kind": "definedTypeNode",
+            "name": "user",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "b",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "pdas": [],
+        "events": [],
+        "errors": [],
+        "constants": []
+      },
+      "additionalPrograms": []
+    }
+  }
+]
