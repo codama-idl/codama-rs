@@ -21,6 +21,7 @@ mod fill_default_pda_seed_values;
 mod flatten_instruction_data_arguments;
 mod flatten_struct;
 mod get_defined_type_histogram;
+mod rename_helpers;
 mod set_account_discriminator_from_field;
 mod set_fixed_account_sizes;
 mod set_instruction_account_default_values;

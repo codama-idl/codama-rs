@@ -1,12 +1,16 @@
-use codama_nodes::{DefinedTypeLinkNode, Docs, LinkNode, Node};
+use crate::rename_helpers::{rename_enum_node, rename_map, rename_struct_node};
+use codama_nodes::{DefinedTypeLinkNode, Docs, LinkNode, Node, TypeNode};
 use codama_visitors_core::{bottom_up_transformer, BottomUpTransformer, TransformRule};
 
 /// A partial update applied to a matched `definedTypeNode`; only the `Some`
-/// fields are changed.
+/// fields are changed. `rename` entries rename inner struct fields / enum
+/// variants; `delete` removes the defined type entirely.
 #[derive(Debug, Clone, Default)]
 pub struct DefinedTypeUpdate {
     name: Option<String>,
     docs: Option<Docs>,
+    data: Vec<(String, String)>,
+    delete: bool,
 }
 
 impl DefinedTypeUpdate {
@@ -23,9 +27,22 @@ impl DefinedTypeUpdate {
         self.docs = Some(docs.into());
         self
     }
+
+    /// Rename an inner struct field or enum variant (`from` -> `to`).
+    pub fn rename(mut self, from: impl Into<String>, to: impl Into<String>) -> Self {
+        self.data.push((from.into(), to.into()));
+        self
+    }
+
+    /// Mark the defined type for deletion.
+    pub fn delete(mut self) -> Self {
+        self.delete = true;
+        self
+    }
 }
 
-/// Updates defined types selected by name. On rename, every `definedTypeLinkNode`
+/// Updates defined types selected by name: metadata, inner field/variant renames
+/// (via the `data` map), and deletion. On rename, every `definedTypeLinkNode`
 /// pointing at the old name is rewritten to the new one.
 ///
 /// The Rust counterpart of `@codama/visitors`' `updateDefinedTypesVisitor`, built
@@ -42,16 +59,21 @@ impl DefinedTypeUpdate {
 /// let root = update_defined_types([("oldType", DefinedTypeUpdate::new().name("newType"))]).visit_root(root);
 /// assert_eq!(root.program.defined_types[0].name.as_ref(), "newType");
 /// ```
-///
-/// Note: renaming the type's *inner* fields (the upstream `data` map applied via
-/// `renameStructNode`/`renameEnumNode`) is a follow-up.
 pub fn update_defined_types<S: Into<String>>(
     map: impl IntoIterator<Item = (S, DefinedTypeUpdate)>,
 ) -> BottomUpTransformer {
     let mut rules = Vec::new();
+    let mut deletes: Vec<String> = Vec::new();
     for (name, update) in map {
         let name = name.into();
+
+        if update.delete {
+            deletes.push(format!("[definedTypeNode]{name}"));
+            continue;
+        }
+
         let new_name = update.name.clone();
+        let renames = rename_map(update.data.clone());
 
         rules.push(TransformRule::new(
             format!("[definedTypeNode]{name}"),
@@ -64,6 +86,14 @@ pub fn update_defined_types<S: Into<String>>(
                 }
                 if let Some(docs) = &update.docs {
                     defined_type.docs = docs.clone();
+                }
+                if !renames.is_empty() {
+                    let new_type = match (*defined_type.r#type).clone() {
+                        TypeNode::Struct(node) => rename_struct_node(node, &renames).into(),
+                        TypeNode::Enum(node) => rename_enum_node(node, &renames).into(),
+                        other => other,
+                    };
+                    defined_type.r#type = Box::new(new_type);
                 }
                 Node::DefinedType(defined_type)
             },
@@ -84,5 +114,5 @@ pub fn update_defined_types<S: Into<String>>(
             ));
         }
     }
-    bottom_up_transformer(rules)
+    bottom_up_transformer(rules).also_delete(deletes)
 }

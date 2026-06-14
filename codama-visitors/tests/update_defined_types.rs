@@ -55,3 +55,29 @@ fn non_rename_update_leaves_links_alone() {
     assert_eq!(root.program.defined_types[0].name.as_ref(), "oldType");
     assert_eq!(ref_link_name(&root), "oldType");
 }
+
+#[test]
+fn renames_inner_struct_fields() {
+    let root =
+        update_defined_types([("user", DefinedTypeUpdate::new().rename("ref", "reference"))])
+            .visit_root(sample_root());
+
+    let TypeNode::Struct(s) = &*root.program.defined_types[1].r#type else {
+        panic!("expected struct")
+    };
+    assert_eq!(s.fields[0].name.as_ref(), "reference");
+}
+
+#[test]
+fn deletes_a_defined_type() {
+    let root = update_defined_types([("oldType", DefinedTypeUpdate::new().delete())])
+        .visit_root(sample_root());
+
+    let names: Vec<_> = root
+        .program
+        .defined_types
+        .iter()
+        .map(|d| d.name.to_string())
+        .collect();
+    assert_eq!(names, vec!["user".to_string()]);
+}

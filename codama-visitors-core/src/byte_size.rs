@@ -32,6 +32,42 @@ pub fn get_byte_size(
     ByteSize {
         linkables,
         in_progress: Vec::new(),
+        max: false,
+    }
+    .type_size(node, current_program)
+}
+
+/// Computes the *maximum* serialized byte size of a type, or `None` if it can't
+/// be determined. Like [`get_byte_size`] but, instead of requiring a single
+/// fixed size, it takes the largest possibility: an `enumTypeNode` is its prefix
+/// plus its largest variant, an `optionTypeNode` always counts its item (the
+/// present case), and a `zeroableOptionTypeNode` takes the larger of its item
+/// and zero value.
+///
+/// The Rust counterpart of `@codama/visitors-core`'s `getMaxByteSizeVisitor`,
+/// scoped to a [`TypeNode`] (apply it to e.g. `accountNode.data` for an account's
+/// maximum size).
+///
+/// ```
+/// use codama_nodes::{EnumTypeNode, EnumEmptyVariantTypeNode, EnumTupleVariantTypeNode, NumberTypeNode, TupleTypeNode, TypeNode, U8, U32};
+/// use codama_visitors_core::{get_max_byte_size, LinkableDictionary};
+///
+/// // enum { A, B(u32) } over a u8 prefix -> 1 + max(0, 4) = 5.
+/// let e = EnumTypeNode::new(vec![
+///     EnumEmptyVariantTypeNode::new("a").into(),
+///     EnumTupleVariantTypeNode::new("b", TupleTypeNode::new(vec![NumberTypeNode::le(U32).into()])).into(),
+/// ]);
+/// assert_eq!(get_max_byte_size(&TypeNode::Enum(e), &LinkableDictionary::default(), None), Some(5));
+/// ```
+pub fn get_max_byte_size(
+    node: &TypeNode,
+    linkables: &LinkableDictionary,
+    current_program: Option<&str>,
+) -> Option<usize> {
+    ByteSize {
+        linkables,
+        in_progress: Vec::new(),
+        max: true,
     }
     .type_size(node, current_program)
 }
@@ -39,6 +75,9 @@ pub fn get_byte_size(
 struct ByteSize<'a> {
     linkables: &'a LinkableDictionary,
     in_progress: Vec<String>,
+    /// When `true`, compute the maximum size (largest enum variant / present
+    /// option) instead of a single fixed size.
+    max: bool,
 }
 
 impl ByteSize<'_> {
@@ -68,7 +107,9 @@ impl ByteSize<'_> {
                 self.array_like(&n.count, inner, program)
             }
             TypeNode::Option(n) => {
-                if n.fixed == Some(true) {
+                // In max mode the item is always present; otherwise only a
+                // fixed-size option has a determinable size.
+                if self.max || n.fixed == Some(true) {
                     sum([
                         self.nested(&n.prefix, program),
                         self.type_size(&n.item, program),
@@ -85,7 +126,12 @@ impl ByteSize<'_> {
                 match &n.zero_value {
                     None => Some(item),
                     Some(zero) => {
-                        (self.type_size(&zero.r#type, program) == Some(item)).then_some(item)
+                        let zero_size = self.type_size(&zero.r#type, program)?;
+                        if self.max {
+                            Some(item.max(zero_size))
+                        } else {
+                            (zero_size == item).then_some(item)
+                        }
                     }
                 }
             }
@@ -160,14 +206,26 @@ impl ByteSize<'_> {
         if node.variants.is_empty() {
             return None;
         }
-        let first = self.variant_size(&node.variants[0], program);
-        let all_same = node
+        let sizes: Vec<Option<usize>> = node
             .variants
             .iter()
-            .all(|v| self.variant_size(v, program) == first);
-        match first {
-            Some(size) if all_same => prefix.checked_add(size),
-            _ => None,
+            .map(|v| self.variant_size(v, program))
+            .collect();
+        if self.max {
+            // Prefix plus the largest variant (unknown if any variant is unknown).
+            let mut largest = 0usize;
+            for size in sizes {
+                largest = largest.max(size?);
+            }
+            prefix.checked_add(largest)
+        } else {
+            // A single fixed size requires every variant to be the same size.
+            let first = sizes[0];
+            let all_same = sizes.iter().all(|s| *s == first);
+            match first {
+                Some(size) if all_same => prefix.checked_add(size),
+                _ => None,
+            }
         }
     }
 
@@ -254,6 +312,10 @@ mod tests {
         get_byte_size(&node.into(), &LinkableDictionary::default(), None)
     }
 
+    fn max_size(node: impl Into<TypeNode>) -> Option<usize> {
+        get_max_byte_size(&node.into(), &LinkableDictionary::default(), None)
+    }
+
     #[test]
     fn scalars() {
         assert_eq!(size(NumberTypeNode::le(U32)), Some(4));
@@ -280,6 +342,34 @@ mod tests {
         // An array with a non-u8 variable item and no fixed count → unknown.
         let bytes_array = ArrayTypeNode::fixed(BytesTypeNode::new(), 4);
         assert_eq!(size(bytes_array), None);
+    }
+
+    #[test]
+    fn max_size_takes_largest_enum_variant() {
+        use codama_nodes::{
+            EnumEmptyVariantTypeNode, EnumTupleVariantTypeNode, EnumTypeNode, TupleTypeNode,
+        };
+        // enum { A, B(u32) } over a u8 prefix.
+        let e = EnumTypeNode::new(vec![
+            EnumEmptyVariantTypeNode::new("a").into(),
+            EnumTupleVariantTypeNode::new(
+                "b",
+                TupleTypeNode::new(vec![NumberTypeNode::le(U32).into()]),
+            )
+            .into(),
+        ]);
+        // Variants differ, so a fixed size is unknown but the max is 1 + 4.
+        assert_eq!(size(e.clone()), None);
+        assert_eq!(max_size(e), Some(5));
+    }
+
+    #[test]
+    fn max_size_counts_option_items() {
+        use codama_nodes::OptionTypeNode;
+        // A (non-fixed) option has no fixed size, but its max is prefix + item.
+        let option = OptionTypeNode::new(NumberTypeNode::le(U32));
+        assert_eq!(size(option.clone()), None);
+        assert_eq!(max_size(option), Some(5)); // u8 prefix + u32
     }
 
     #[test]

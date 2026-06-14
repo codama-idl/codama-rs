@@ -38,6 +38,7 @@ mod linkable_dictionary;
 mod node_path;
 mod node_selector;
 mod remove_docs;
+mod resolved_instruction_inputs;
 mod transform_visitor;
 
 pub use bottom_up_transformer::*;
@@ -46,4 +47,5 @@ pub use linkable_dictionary::*;
 pub use node_path::*;
 pub use node_selector::*;
 pub use remove_docs::*;
+pub use resolved_instruction_inputs::*;
 pub use transform_visitor::*;
