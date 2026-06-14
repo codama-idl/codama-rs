@@ -3,7 +3,7 @@ use codama_nodes::{
     InstructionInputValueNode, InstructionNode, IsSigner, PdaSeedValueValue, PdaValueProgramId,
     ResolverDependency,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// A dependency of an instruction input: another account or argument referenced
 /// by a default value. Mirrors the upstream `accountValueNode | argumentValueNode`.
@@ -98,7 +98,7 @@ pub fn get_resolved_instruction_inputs(
         stack: Vec::new(),
         resolved: Vec::new(),
         visited_accounts: HashMap::new(),
-        visited_args: Vec::new(),
+        visited_args: HashSet::new(),
     };
 
     // accounts, then defaulted data arguments (filtered), then defaulted extras.
@@ -151,7 +151,7 @@ struct Resolver<'a> {
     stack: Vec<(bool, String)>, // (is_account, name) for cycle detection
     resolved: Vec<ResolvedInstructionInput>,
     visited_accounts: HashMap<String, ResolvedInstructionAccount>,
-    visited_args: Vec<String>,
+    visited_args: HashSet<String>,
 }
 
 impl Resolver<'_> {
@@ -195,7 +195,9 @@ impl Resolver<'_> {
             ResolvedInstructionInput::Account(account) => {
                 self.visited_accounts.insert(name, account.clone());
             }
-            ResolvedInstructionInput::Argument(_) => self.visited_args.push(name),
+            ResolvedInstructionInput::Argument(_) => {
+                self.visited_args.insert(name);
+            }
         }
         self.resolved.push(resolved);
         Ok(())

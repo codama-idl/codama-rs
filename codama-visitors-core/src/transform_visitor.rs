@@ -1208,7 +1208,9 @@ pub fn fold_account<V: TransformVisitor + ?Sized>(v: &mut V, mut node: AccountNo
     // Route the data struct through `visit_type_node` (as `fold_event` does for
     // its data) so visitors that intercept type nodes -- e.g. selector-driven
     // transforms -- reach an account's data struct. Account data is always a
-    // struct, so a transform that changed its kind is ignored.
+    // struct, so a transform that changed its kind is ignored. Note that only
+    // the inner struct is offered; any `NestedTypeNode` wrappers around it
+    // (e.g. `fixedSizeTypeNode`) are not themselves visited as type nodes.
     node.data = node.data.map_nested_type_node(|s| {
         let original = s.clone();
         match v.visit_type_node(s.into()) {
