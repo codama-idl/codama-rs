@@ -1,12 +1,12 @@
 use crate::{
-    fold_account, fold_constant, fold_defined_type, fold_event, fold_instruction,
-    fold_instruction_account, fold_instruction_argument, fold_pda, fold_program, fold_root,
-    fold_type_node, NodeDescriptor, NodePath, NodeSelector, TransformVisitor,
+    fold_account, fold_constant, fold_defined_type, fold_defined_type_link, fold_event,
+    fold_instruction, fold_instruction_account, fold_instruction_argument, fold_pda, fold_program,
+    fold_root, fold_type_node, NodeDescriptor, NodePath, NodeSelector, TransformVisitor,
 };
 use codama_nodes::{
-    AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, HasKind,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode, Node, PdaNode, ProgramNode,
-    RootNode, TypeNode,
+    AccountNode, ConstantNode, DefinedTypeLinkNode, DefinedTypeNode, ErrorNode, EventNode, HasKind,
+    InstructionAccountNode, InstructionArgumentNode, InstructionNode, LinkNode, Node, PdaNode,
+    ProgramLinkNode, ProgramNode, RootNode, TypeNode,
 };
 
 /// A transform callback: given the node currently being visited (as a [`Node`])
@@ -122,6 +122,33 @@ impl BottomUpTransformer {
 impl TransformVisitor for BottomUpTransformer {
     fn take_deleted(&mut self) -> bool {
         std::mem::take(&mut self.pending_delete)
+    }
+
+    fn visit_program_link(&mut self, node: ProgramLinkNode) -> ProgramLinkNode {
+        // A leaf link node; an apply target so transforms can rewrite program
+        // references (e.g. on rename). Link nodes are not deletable.
+        self.path
+            .push(NodeDescriptor::named("programLinkNode", node.name.clone()));
+        let result = match self.run_rules(Node::Link(LinkNode::Program(node.clone()))) {
+            Node::Link(LinkNode::Program(n)) => n,
+            _ => node,
+        };
+        self.path.pop();
+        result
+    }
+
+    fn visit_defined_type_link(&mut self, node: DefinedTypeLinkNode) -> DefinedTypeLinkNode {
+        self.path.push(NodeDescriptor::named(
+            "definedTypeLinkNode",
+            node.name.clone(),
+        ));
+        let node = fold_defined_type_link(self, node);
+        let result = match self.run_rules(Node::Link(LinkNode::DefinedType(node.clone()))) {
+            Node::Link(LinkNode::DefinedType(n)) => n,
+            _ => node,
+        };
+        self.path.pop();
+        result
     }
 
     fn visit_type_node(&mut self, node: TypeNode) -> TypeNode {

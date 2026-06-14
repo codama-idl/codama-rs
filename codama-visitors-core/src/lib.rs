@@ -33,12 +33,16 @@
 //! [`syn::fold`]: https://docs.rs/syn/latest/syn/fold/index.html
 
 mod bottom_up_transformer;
+mod byte_size;
+mod linkable_dictionary;
 mod node_path;
 mod node_selector;
 mod remove_docs;
 mod transform_visitor;
 
 pub use bottom_up_transformer::*;
+pub use byte_size::*;
+pub use linkable_dictionary::*;
 pub use node_path::*;
 pub use node_selector::*;
 pub use remove_docs::*;
