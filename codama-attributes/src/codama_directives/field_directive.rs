@@ -55,6 +55,7 @@ impl FieldDirective {
                     .transpose()?,
             ),
             default_value_strategy: self.default_value_strategy,
+            display: None,
         })
     }
 }

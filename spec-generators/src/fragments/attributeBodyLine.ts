@@ -22,11 +22,14 @@ const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
  *   - `docs` field                 → `Docs` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
  *
  * Box rule (box-all-union): every direct (non-`Vec`) field whose type
- * is a `union` is wrapped in `Box<…>`. Required → `Box<T>`; optional
- * → `Box<Option<T>>` (box outside Option). This keeps every
- * category-union variant pointer-sized for its union fields, which is
- * what `clippy::large_enum_variant` actually cares about. `array(…)`,
- * `nestedUnion`, `node`, and scalar fields are never boxed.
+ * is a `union` or `anyNode` is wrapped in `Box<…>`. Required →
+ * `Box<T>`; optional → `Box<Option<T>>` (box outside Option). This
+ * keeps every category-union variant pointer-sized for its union
+ * fields, which is what `clippy::large_enum_variant` actually cares
+ * about. `anyNode` renders to `crate::Node`, the registry over every
+ * node — boxing it also breaks the size recursion a direct `Node`
+ * variant would otherwise introduce. `array(…)`, `nestedUnion`,
+ * `node`, and scalar fields are never boxed.
  */
 export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
     // `literalUnion` is anonymous in the spec; the generator emits a
@@ -81,7 +84,9 @@ function isVecLikeType(type: TypeExpr): boolean {
 }
 
 function isUnionType(type: TypeExpr): boolean {
-    return type.kind === 'union';
+    // `anyNode` renders to `crate::Node`, itself a node-union enum, so it
+    // follows the same boxing as a named `union`.
+    return type.kind === 'union' || type.kind === 'anyNode';
 }
 
 function isDocsType(type: TypeExpr): boolean {

@@ -1,10 +1,10 @@
 use crate::{
     AccountNode, ConstantNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode,
-    ErrorNode, EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode,
+    DisplayNode, ErrorNode, EventNode, HasKind, InstructionAccountNode, InstructionArgumentNode,
     InstructionByteDeltaNode, InstructionNode, InstructionRemainingAccountsNode,
     InstructionStatusNode, LinkNode, NodeUnionTrait, PdaNode, PdaSeedNode, ProgramNode,
-    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TypeNode,
-    ValueNode,
+    ProvidedNode, RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
+    TypeNode, ValueNode,
 };
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,7 @@ pub enum Node {
     ContextualValue(RegisteredContextualValueNode),
     Count(CountNode),
     Discriminator(DiscriminatorNode),
+    Display(DisplayNode),
     Link(LinkNode),
     PdaSeed(PdaSeedNode),
     Type(RegisteredTypeNode),
@@ -35,6 +36,7 @@ pub enum Node {
     InstructionStatus(InstructionStatusNode),
     Pda(PdaNode),
     Program(ProgramNode),
+    Provided(ProvidedNode),
     Root(RootNode),
 }
 
@@ -66,6 +68,7 @@ impl HasKind for Node {
             Node::ContextualValue(node) => node.kind(),
             Node::Count(node) => node.kind(),
             Node::Discriminator(node) => node.kind(),
+            Node::Display(node) => node.kind(),
             Node::Link(node) => node.kind(),
             Node::PdaSeed(node) => node.kind(),
             Node::Type(node) => node.kind(),
@@ -83,6 +86,7 @@ impl HasKind for Node {
             Node::InstructionStatus(node) => node.kind(),
             Node::Pda(node) => node.kind(),
             Node::Program(node) => node.kind(),
+            Node::Provided(node) => node.kind(),
             Node::Root(node) => node.kind(),
         }
     }

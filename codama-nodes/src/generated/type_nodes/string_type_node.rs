@@ -1,4 +1,4 @@
-use crate::BytesEncoding;
+use crate::{BytesEncoding, StringDisplayNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -6,6 +6,10 @@ use codama_nodes_derive::type_node;
 pub struct StringTypeNode {
     // Data.
     pub encoding: BytesEncoding,
+
+    // Children.
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub display: Option<StringDisplayNode>,
 }
 
 impl From<StringTypeNode> for crate::Node {

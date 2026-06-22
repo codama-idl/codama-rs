@@ -13,6 +13,8 @@ impl InstructionAccountNode {
             is_optional: None,
             docs: Docs::default(),
             default_value: Box::new(None),
+            account_link: None,
+            display: None,
         }
     }
 }
@@ -42,6 +44,8 @@ mod tests {
             is_optional: Some(true),
             docs: vec!["Hello".to_string()].into(),
             default_value: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+            account_link: None,
+            display: None,
         };
         assert_eq!(node.name, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);

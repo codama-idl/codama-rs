@@ -95,17 +95,55 @@ describe('getNodeStructFragment', () => {
         expect(getNodeStructFragment(mixed, EMPTY_SPEC).content).not.toContain('Default');
     });
 
-    it('does NOT derive Copy when any attribute is a non-scalar (string / node / union / docs / …)', () => {
+    it('does NOT derive Copy when any attribute is a non-scalar (string / union / docs / …) or an unresolved node', () => {
         const withString = defineNode('fieldDiscriminatorNode', {
             attributes: [attribute('name', stringIdentifier()), attribute('offset', u64())],
         });
         const a = getNodeStructFragment(withString, EMPTY_SPEC).content;
         expect(a).not.toContain('#[derive(Copy');
         expect(a).toContain('#[derive(Default)]');
+        // A `node` whose referent can't be resolved (empty spec) stays
+        // conservatively non-Copy.
         const withNode = defineNode('constantDiscriminatorNode', {
             attributes: [attribute('offset', u64()), attribute('constant', node('constantValueNode'))],
         });
         expect(getNodeStructFragment(withNode, EMPTY_SPEC).content).not.toContain('#[derive(');
+    });
+
+    it('derives Copy when an optional `node` child references a node that is itself Copy', () => {
+        // `stringDisplayNode` is scalar-only (two `Option<u64>`), so it's
+        // Copy; a `stringTypeNode` that holds it as an optional child stays
+        // Copy because `Option<T>` is Copy when `T` is.
+        const displayNode = defineNode('stringDisplayNode', {
+            attributes: [optionalAttribute('sliceStart', u64()), optionalAttribute('sliceEnd', u64())],
+        });
+        const hostNode = defineNode('stringTypeNode', {
+            attributes: [
+                attribute('encoding', enumeration('bytesEncoding')),
+                optionalAttribute('display', node('stringDisplayNode')),
+            ],
+        });
+        const spec: Spec = {
+            version: '1.0.0',
+            categories: [{ name: 'type', nodes: [displayNode], unions: [], enumerations: [], nestedUnions: [] }],
+        };
+        expect(getNodeStructFragment(hostNode, spec).content).toContain('#[derive(Copy)]');
+    });
+
+    it('does NOT derive Copy when a `node` child references a non-Copy node', () => {
+        // `programLinkNode` carries a `CamelCaseString` (→ `String`), which is
+        // not Copy, so a host holding it as a child is not Copy either.
+        const childNode = defineNode('programLinkNode', {
+            attributes: [attribute('name', stringIdentifier())],
+        });
+        const hostNode = defineNode('exampleNode', {
+            attributes: [attribute('flag', boolean()), optionalAttribute('link', node('programLinkNode'))],
+        });
+        const spec: Spec = {
+            version: '1.0.0',
+            categories: [{ name: 'link', nodes: [childNode], unions: [], enumerations: [], nestedUnions: [] }],
+        };
+        expect(getNodeStructFragment(hostNode, spec).content).not.toContain('#[derive(Copy');
     });
 
     it('derives `Default` when every required field is unconditionally Default-able', () => {

@@ -25,6 +25,7 @@ impl From<ValueNode> for ConstantPdaSeedValue {
             ValueNode::Bytes(n) => Self::Bytes(n),
             ValueNode::Constant(n) => Self::Constant(n),
             ValueNode::Enum(n) => Self::Enum(n),
+            ValueNode::Injected(n) => Self::Injected(n),
             ValueNode::Map(n) => Self::Map(n),
             ValueNode::None(n) => Self::None(n),
             ValueNode::Number(n) => Self::Number(n),

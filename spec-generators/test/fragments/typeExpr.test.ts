@@ -1,5 +1,6 @@
 import {
     address,
+    anyNode,
     array,
     boolean,
     docs,
@@ -86,6 +87,12 @@ describe('getTypeExprFragment', () => {
         const result = getTypeExprFragment(node('programLinkNode'));
         expect(result.content).toBe('ProgramLinkNode');
         expect([...result.imports.keys()]).toEqual(['crate::ProgramLinkNode']);
+    });
+
+    it('routes anyNode to the top-level crate::Node registry', () => {
+        const result = getTypeExprFragment(anyNode());
+        expect(result.content).toBe('Node');
+        expect([...result.imports.keys()]).toEqual(['crate::Node']);
     });
 
     it('routes union references via PascalCase content when no override', () => {

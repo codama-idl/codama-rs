@@ -1,4 +1,7 @@
-use crate::{CamelCaseString, DefaultValueStrategy, Docs, HasName, TypeNode, ValueNode};
+use crate::{
+    CamelCaseString, DefaultValueStrategy, Docs, HasName, StructFieldDisplayNode, TypeNode,
+    ValueNode,
+};
 use codama_nodes_derive::node;
 
 #[node]
@@ -14,6 +17,8 @@ pub struct StructFieldTypeNode {
     pub r#type: Box<TypeNode>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub default_value: Box<Option<ValueNode>>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub display: Option<StructFieldDisplayNode>,
 }
 
 impl From<StructFieldTypeNode> for crate::Node {

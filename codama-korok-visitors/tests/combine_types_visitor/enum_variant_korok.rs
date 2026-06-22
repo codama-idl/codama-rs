@@ -83,7 +83,8 @@ fn it_keeps_track_of_the_variant_discriminant() -> CodamaResult<()> {
         Some(
             EnumEmptyVariantTypeNode {
                 name: "foo".into(),
-                discriminator: Some(42)
+                discriminator: Some(42),
+                display: None,
             }
             .into()
         )

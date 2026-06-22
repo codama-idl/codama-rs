@@ -1,4 +1,5 @@
 mod account_bump_value_node;
+mod account_field_value_node;
 mod account_value_node;
 mod argument_value_node;
 mod conditional_value_condition;
@@ -17,6 +18,7 @@ mod resolver_dependency;
 mod resolver_value_node;
 
 pub use account_bump_value_node::*;
+pub use account_field_value_node::*;
 pub use account_value_node::*;
 pub use argument_value_node::*;
 pub use conditional_value_condition::*;

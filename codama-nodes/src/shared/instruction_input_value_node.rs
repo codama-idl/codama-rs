@@ -5,7 +5,7 @@ use codama_errors::CodamaError;
 /// `InstructionInputValueNode`. The generated `InstructionInputValueNode`
 /// enum (in `generated/contextual_value_nodes/`) auto-derives
 /// `From<Variant>` for each leaf, but `ValueNode` itself (a union of
-/// 14 value leaves) needs this explicit bridge.
+/// 15 value leaves) needs this explicit bridge.
 impl From<ValueNode> for InstructionInputValueNode {
     fn from(value: ValueNode) -> Self {
         match value {
@@ -14,6 +14,7 @@ impl From<ValueNode> for InstructionInputValueNode {
             ValueNode::Bytes(value) => Self::BytesValue(value),
             ValueNode::Constant(value) => Self::ConstantValue(value),
             ValueNode::Enum(value) => Self::EnumValue(value),
+            ValueNode::Injected(value) => Self::InjectedValue(value),
             ValueNode::Map(value) => Self::MapValue(value),
             ValueNode::None(value) => Self::NoneValue(value),
             ValueNode::Number(value) => Self::NumberValue(value),
@@ -40,6 +41,7 @@ impl TryFrom<InstructionInputValueNode> for ValueNode {
             InstructionInputValueNode::BytesValue(value) => Ok(Self::Bytes(value)),
             InstructionInputValueNode::ConstantValue(value) => Ok(Self::Constant(value)),
             InstructionInputValueNode::EnumValue(value) => Ok(Self::Enum(value)),
+            InstructionInputValueNode::InjectedValue(value) => Ok(Self::Injected(value)),
             InstructionInputValueNode::MapValue(value) => Ok(Self::Map(value)),
             InstructionInputValueNode::NoneValue(value) => Ok(Self::None(value)),
             InstructionInputValueNode::NumberValue(value) => Ok(Self::Number(value)),

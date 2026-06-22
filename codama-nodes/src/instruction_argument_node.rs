@@ -15,6 +15,7 @@ impl InstructionArgumentNode {
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
             default_value: Box::new(None),
+            display: None,
         }
     }
 }
@@ -30,6 +31,9 @@ impl From<StructFieldTypeNode> for InstructionArgumentNode {
             // so forward the existing box.
             r#type: value.r#type,
             default_value: Box::new((*value.default_value).map(InstructionInputValueNode::from)),
+            // Both nodes carry display metadata as `structFieldDisplayNode`,
+            // so the member's presentation survives the conversion.
+            display: value.display,
         }
     }
 }
@@ -63,6 +67,7 @@ mod tests {
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
             default_value: Box::new(Some(ArgumentValueNode::new("myOtherArgument").into())),
+            display: None,
         };
 
         assert_eq!(node.name, CamelCaseString::new("myArgument"));

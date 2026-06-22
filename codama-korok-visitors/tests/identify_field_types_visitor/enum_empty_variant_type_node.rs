@@ -18,6 +18,7 @@ fn it_identifies_literal_discriminators() {
             EnumEmptyVariantTypeNode {
                 name: "banana".into(),
                 discriminator: Some(42),
+                display: None,
             }
             .into()
         ))

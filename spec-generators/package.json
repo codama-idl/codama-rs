@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "@codama/fragments": "^0.1.0",
-        "@codama/spec": "^1.6.0"
+        "@codama/spec": "1.7.0"
     },
     "devDependencies": {
         "@solana-config/oxc": "^0.1.1",

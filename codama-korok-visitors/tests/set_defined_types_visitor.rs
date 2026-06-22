@@ -175,13 +175,15 @@ fn it_sets_defined_types_on_enums_with_explicit_discriminators() -> CodamaResult
                     EnumEmptyVariantTypeNode::new("write").into(),
                     EnumEmptyVariantTypeNode {
                         name: "move".into(),
-                        discriminator: Some(42)
+                        discriminator: Some(42),
+                        display: None,
                     }
                     .into(),
                     EnumEmptyVariantTypeNode::new("run").into(),
                     EnumEmptyVariantTypeNode {
                         name: "quit".into(),
-                        discriminator: Some(100)
+                        discriminator: Some(100),
+                        display: None,
                     }
                     .into(),
                 ])

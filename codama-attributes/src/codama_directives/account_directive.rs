@@ -76,6 +76,8 @@ impl AccountDirective {
                     .map(|r| r.try_resolved().cloned())
                     .transpose()?,
             ),
+            account_link: None,
+            display: None,
         })
     }
 }

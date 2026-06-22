@@ -17,6 +17,7 @@ mod tests {
             is_writable: Some(true),
             docs: vec!["This is a test".to_string()].into(),
             value: Box::new(ArgumentValueNode::new("myArgument").into()),
+            display: None,
         };
         assert_eq!(node.is_optional, None);
         assert_eq!(node.is_signer, Some(IsSigner::Either));
@@ -36,6 +37,7 @@ mod tests {
             is_writable: Some(true),
             docs: vec![].into(),
             value: Box::new(ArgumentValueNode::new("myArgument").into()),
+            display: None,
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -56,6 +58,7 @@ mod tests {
                 is_writable: Some(true),
                 docs: vec![].into(),
                 value: Box::new(ArgumentValueNode::new("myArgument").into()),
+                display: None,
             }
         );
     }

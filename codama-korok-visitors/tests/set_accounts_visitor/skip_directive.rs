@@ -42,6 +42,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             },
                             StructFieldTypeNode::new("supply", NumberTypeNode::le(U64)),
                         ])
@@ -62,6 +63,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
+                                display: None,
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
@@ -110,6 +112,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                            display: None,
                         }])
                         .into(),
                         pda: None,
@@ -127,6 +130,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                            display: None,
                         }])
                         .into(),
                         pda: None,
@@ -175,6 +179,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                            display: None,
                         }])
                         .into(),
                         pda: None,
@@ -192,6 +197,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
+                            display: None,
                         }])
                         .into(),
                         pda: None,

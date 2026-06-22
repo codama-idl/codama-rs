@@ -15,8 +15,8 @@ import { use } from './helpers';
  *
  * Derive heuristic:
  *
- *   - `Copy`    when every attribute is a scalar kind, or the struct
- *               is empty.
+ *   - `Copy`    when every attribute is Copy-able, or the struct is
+ *               empty (see {@link isCopyAttribute}).
  *   - `Default` when every field is unconditionally Default-able (see
  *               {@link isUnconditionallyDefaultable}). Opaque required
  *               fields disqualify the struct.
@@ -27,7 +27,7 @@ export function getNodeStructFragment(node: NodeSpec, spec: Spec): Fragment {
     const flavor = getNodeMacroFlavor(node, spec);
     const macroName = flavor === 'type_node' ? 'codama_nodes_derive::type_node' : 'codama_nodes_derive::node';
     const macros = fragment`#[${use(macroName)}]`;
-    const derives = buildDeriveFragment(node);
+    const derives = buildDeriveFragment(node, spec);
     const header = derives === undefined ? macros : mergeFragments([macros, derives], parts => parts.join('\n'));
 
     const raw =
@@ -46,15 +46,46 @@ export function getNodeStructFragment(node: NodeSpec, spec: Spec): Fragment {
 
 const SCALAR_KINDS: ReadonlySet<TypeExpr['kind']> = new Set(['integer', 'float', 'boolean', 'enumeration']);
 
-function buildDeriveFragment(node: NodeSpec): Fragment | undefined {
+function buildDeriveFragment(node: NodeSpec, spec: Spec): Fragment | undefined {
     const isEmpty = node.attributes.length === 0;
-    const isCopy = isEmpty || node.attributes.every(a => SCALAR_KINDS.has(a.type.kind));
+    const isCopy = isEmpty || node.attributes.every(a => isCopyAttribute(a, spec, new Set()));
     const isDefault = isEmpty || node.attributes.every(isUnconditionallyDefaultable);
     const derives: string[] = [];
     if (isCopy) derives.push('Copy');
     if (isDefault) derives.push('Default');
     if (derives.length === 0) return undefined;
     return fragment`#[derive(${derives.join(', ')})]`;
+}
+
+/**
+ * `true` when this attribute's Rust type implements `Copy`. Scalar
+ * kinds (`integer`/`float`/`boolean`/`enumeration`) always do —
+ * `float` renders to the `Copy` `crate::Number`. A bare `node(...)`
+ * reference is `Copy` exactly when the referenced node is itself a
+ * `Copy` struct, resolved recursively against the spec; an `optional`
+ * `node` stays `Copy` because `Option<T>` is `Copy` when `T` is.
+ *
+ * Every other kind is owned or heap-backed and disqualifies `Copy`:
+ * `string`/`address`/`literal`/`codamaVersion` render to `String`,
+ * `array` to `Vec`, `docs` to `Docs`, `tuple` to a tuple of those,
+ * `nestedUnion` to a generic that isn't `Copy`, and `union`/`anyNode`
+ * are boxed (`Box` is never `Copy`).
+ *
+ * `visited` guards the recursion against the self- and mutual
+ * references the node graph contains (e.g. `instructionNode`).
+ */
+function isCopyAttribute(attr: AttributeSpec, spec: Spec, visited: Set<string>): boolean {
+    if (SCALAR_KINDS.has(attr.type.kind)) return true;
+    if (attr.type.kind !== 'node') return false;
+    return isCopyNode(attr.type.name, spec, visited);
+}
+
+function isCopyNode(nodeKind: string, spec: Spec, visited: Set<string>): boolean {
+    if (visited.has(nodeKind)) return false;
+    const next = new Set(visited).add(nodeKind);
+    const referenced = spec.categories.flatMap(c => c.nodes).find(n => n.kind === nodeKind);
+    if (!referenced) return false;
+    return referenced.attributes.every(a => isCopyAttribute(a, spec, next));
 }
 
 /**

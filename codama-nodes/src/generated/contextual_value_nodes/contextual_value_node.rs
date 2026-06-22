@@ -1,7 +1,7 @@
 use crate::{
-    AccountBumpValueNode, AccountValueNode, ArgumentValueNode, ConditionalValueNode, HasKind,
-    IdentityValueNode, PayerValueNode, PdaSeedValueNode, PdaValueNode, ProgramIdValueNode,
-    ResolverValueNode,
+    AccountBumpValueNode, AccountFieldValueNode, AccountValueNode, ArgumentValueNode,
+    ConditionalValueNode, HasKind, IdentityValueNode, PayerValueNode, PdaSeedValueNode,
+    PdaValueNode, ProgramIdValueNode, ResolverValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 
@@ -10,6 +10,7 @@ use codama_nodes_derive::{node_union, RegisteredNodes};
 pub enum RegisteredContextualValueNode {
     Account(AccountValueNode),
     AccountBump(AccountBumpValueNode),
+    AccountField(AccountFieldValueNode),
     Argument(ArgumentValueNode),
     Conditional(ConditionalValueNode),
     Identity(IdentityValueNode),

@@ -53,6 +53,7 @@ fn from_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -69,6 +70,7 @@ fn from_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -116,6 +118,7 @@ fn from_enum_with_arguments_only() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -131,6 +134,7 @@ fn from_enum_with_arguments_only() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -186,6 +190,7 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -201,6 +206,7 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -242,6 +248,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -256,6 +263,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -309,6 +317,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -325,6 +334,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -368,6 +378,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U32).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u32).into())),
+                                display: None,
                             },
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -382,6 +393,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U32).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u32).into())),
+                                display: None,
                             },
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -425,6 +437,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -439,6 +452,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -453,6 +467,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(43u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -467,6 +482,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(100u8).into())),
+                                display: None,
                             }
                         ],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
@@ -542,6 +558,7 @@ fn with_name_directives() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U8).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                        display: None,
                     }],
                     discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
@@ -580,6 +597,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U8).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                        display: None,
                     }],
                     discriminators: vec![
                         FieldDiscriminatorNode::new("discriminator", 0).into(),
@@ -625,6 +643,7 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U64).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
+                        display: None,
                     }],
                     discriminators: vec![FieldDiscriminatorNode::new("banana", 0).into()],
                     ..InstructionNode::default()
@@ -794,6 +813,7 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                            display: None,
                         },
                         InstructionArgumentNode::new(
                             "arg0",
@@ -856,6 +876,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("factor", NumberTypeNode::le(U64)),
                         ],
@@ -871,6 +892,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                display: None,
                             },
                             InstructionArgumentNode::new("arg0", DefinedTypeLinkNode::new("direction")),
                         ],
@@ -885,6 +907,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
+                            display: None,
                         }],
                         discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
@@ -940,6 +963,7 @@ fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                            display: None,
                         },
                         InstructionArgumentNode::new(
                             "percentage",

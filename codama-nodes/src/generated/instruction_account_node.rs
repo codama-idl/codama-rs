@@ -1,4 +1,7 @@
-use crate::{CamelCaseString, Docs, HasName, InstructionInputValueNode, IsSigner};
+use crate::{
+    AccountLinkNode, CamelCaseString, Docs, HasName, InstructionAccountDisplayNode,
+    InstructionInputValueNode, IsSigner,
+};
 use codama_nodes_derive::node;
 
 #[node]
@@ -15,6 +18,10 @@ pub struct InstructionAccountNode {
     // Children.
     #[serde(skip_serializing_if = "crate::is_default")]
     pub default_value: Box<Option<InstructionInputValueNode>>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub account_link: Option<AccountLinkNode>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub display: Option<InstructionAccountDisplayNode>,
 }
 
 impl HasName for InstructionAccountNode {
