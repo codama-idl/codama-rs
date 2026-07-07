@@ -1,7 +1,8 @@
 use crate::utils::FromMeta;
 use codama_nodes::{
-    BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, NumberTypeNode, PublicKeyTypeNode,
-    RegisteredTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TypeNode,
+    BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, NumberTypeNode, OptionTypeNode,
+    PublicKeyTypeNode, RegisteredTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    TypeNode, ZeroableOptionTypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -13,9 +14,11 @@ impl FromMeta for RegisteredTypeNode {
             "field" => StructFieldTypeNode::from_meta(meta).map(Self::from),
             "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
             "number" => NumberTypeNode::from_meta(meta).map(Self::from),
+            "option" => OptionTypeNode::from_meta(meta).map(Self::from),
             "public_key" => PublicKeyTypeNode::from_meta(meta).map(Self::from),
             "string" => StringTypeNode::from_meta(meta).map(Self::from),
             "struct" => StructTypeNode::from_meta(meta).map(Self::from),
+            "zeroable_option" => ZeroableOptionTypeNode::from_meta(meta).map(Self::from),
             _ => Err(meta.error("unrecognized type")),
         }
     }
