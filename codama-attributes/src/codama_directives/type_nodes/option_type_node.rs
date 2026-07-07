@@ -79,7 +79,10 @@ mod tests {
     fn custom_prefix() {
         let mut expected = OptionTypeNode::new(NumberTypeNode::le(U8));
         expected.prefix = NumberTypeNode::le(U16).into();
-        assert_type!({ option(number(u8), prefix = number(u16, le)) }, expected.into());
+        assert_type!(
+            { option(number(u8), prefix = number(u16, le)) },
+            expected.into()
+        );
     }
 
     #[test]
