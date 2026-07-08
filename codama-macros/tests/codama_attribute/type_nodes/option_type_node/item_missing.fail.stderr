@@ -1,0 +1,11 @@
+error: item is missing
+ --> tests/codama_attribute/type_nodes/option_type_node/item_missing.fail.rs:3:17
+  |
+3 | #[codama(type = option(fixed))]
+  |                 ^^^^^^^^^^^^^
+
+error: item is missing
+ --> tests/codama_attribute/type_nodes/option_type_node/item_missing.fail.rs:6:17
+  |
+6 | #[codama(type = option(prefix = number(u16)))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

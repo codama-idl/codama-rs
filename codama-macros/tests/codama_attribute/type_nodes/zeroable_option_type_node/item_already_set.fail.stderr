@@ -1,0 +1,11 @@
+error: item is already set
+ --> tests/codama_attribute/type_nodes/zeroable_option_type_node/item_already_set.fail.rs:3:45
+  |
+3 | #[codama(type = zeroable_option(number(u8), number(u16)))]
+  |                                             ^^^^^^^^^^^
+
+error: item is already set
+ --> tests/codama_attribute/type_nodes/zeroable_option_type_node/item_already_set.fail.rs:6:52
+  |
+6 | #[codama(type = zeroable_option(item = number(u8), item = number(u16)))]
+  |                                                    ^^^^^^^^^^^^^^^^^^
