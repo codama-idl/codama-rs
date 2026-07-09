@@ -1,7 +1,8 @@
 use crate::{
     ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
-    MapValueNode, NoneValueNode, NumberValueNode, ProgramIdValueNode, PublicKeyValueNode,
-    SetValueNode, SomeValueNode, StringValueNode, StructValueNode, TupleValueNode,
+    InjectedValueNode, MapValueNode, NoneValueNode, NumberValueNode, ProgramIdValueNode,
+    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructValueNode,
+    TupleValueNode,
 };
 use codama_nodes_derive::node_union;
 
@@ -12,6 +13,7 @@ pub enum ConstantPdaSeedValue {
     Bytes(BytesValueNode),
     Constant(ConstantValueNode),
     Enum(EnumValueNode),
+    Injected(InjectedValueNode),
     Map(MapValueNode),
     None(NoneValueNode),
     Number(NumberValueNode),

@@ -10,6 +10,7 @@ impl EnumStructVariantTypeNode {
             name: name.into(),
             discriminator: None,
             r#struct: r#struct.into(),
+            display: None,
         }
     }
 }
@@ -51,6 +52,7 @@ mod tests {
             name: "my_variant".into(),
             discriminator: Some(42),
             r#struct: NestedTypeNode::Value(r#struct),
+            display: None,
         };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));

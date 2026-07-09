@@ -10,6 +10,7 @@ impl EnumTupleVariantTypeNode {
             name: name.into(),
             discriminator: None,
             tuple: tuple.into(),
+            display: None,
         }
     }
 }
@@ -51,6 +52,7 @@ mod tests {
             name: "my_variant".into(),
             discriminator: Some(42),
             tuple: tuple.into(),
+            display: None,
         };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));

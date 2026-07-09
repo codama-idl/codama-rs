@@ -15,7 +15,7 @@ impl PdaSeedValueNode {
 
 /// Bridge from the broader `ValueNode` union into `PdaSeedValueValue`.
 /// `PdaSeedValueValue` is `accountValueNode | argumentValueNode | valueNode`
-/// (16 variants total) — every value-node leaf maps to its same-named
+/// (17 variants total) — every value-node leaf maps to its same-named
 /// `PdaSeedValueValue` variant.
 impl From<ValueNode> for PdaSeedValueValue {
     fn from(value: ValueNode) -> Self {
@@ -25,6 +25,7 @@ impl From<ValueNode> for PdaSeedValueValue {
             ValueNode::Bytes(value) => Self::Bytes(value),
             ValueNode::Constant(value) => Self::Constant(value),
             ValueNode::Enum(value) => Self::Enum(value),
+            ValueNode::Injected(value) => Self::Injected(value),
             ValueNode::Map(value) => Self::Map(value),
             ValueNode::None(value) => Self::None(value),
             ValueNode::Number(value) => Self::Number(value),

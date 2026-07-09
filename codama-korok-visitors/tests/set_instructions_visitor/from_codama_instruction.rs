@@ -184,6 +184,8 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         is_signer: false.into(),
                         is_optional: None,
                         docs: Docs::default(),
+                        account_link: None,
+                        display: None,
                     },
                     InstructionAccountNode {
                         name: "tokenProgram".into(),
@@ -195,6 +197,8 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         is_signer: false.into(),
                         is_optional: None,
                         docs: Docs::default(),
+                        account_link: None,
+                        display: None,
                     },
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode {
@@ -204,6 +208,8 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         default_value: Box::new(Some(PayerValueNode::new().into())),
                         is_optional: None,
                         docs: Docs::default(),
+                        account_link: None,
+                        display: None,
                     },
                 ],
                 ..InstructionNode::default()

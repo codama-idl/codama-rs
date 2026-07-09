@@ -1,5 +1,6 @@
 mod bytes_encoding;
 mod default_value_strategy;
+mod display_skip;
 mod endianness;
 mod instruction_lifecycle;
 mod is_signer;
@@ -11,6 +12,7 @@ mod program_origin;
 
 pub use bytes_encoding::*;
 pub use default_value_strategy::*;
+pub use display_skip::*;
 pub use endianness::*;
 pub use instruction_lifecycle::*;
 pub use is_signer::*;

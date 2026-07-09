@@ -1,4 +1,14 @@
-import { array, attribute, boolean, docs, node, optionalAttribute, stringIdentifier, union } from '@codama/spec/api';
+import {
+    anyNode,
+    array,
+    attribute,
+    boolean,
+    docs,
+    node,
+    optionalAttribute,
+    stringIdentifier,
+    union,
+} from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import { getAttributeBodyLineFragment } from '../../src/fragments/attributeBodyLine';
@@ -55,8 +65,20 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('pub items: Vec<ValueNode>,');
     });
 
-    it('does NOT box a `node`-typed field (only `union` triggers the box rule)', () => {
+    it('does NOT box a `node`-typed field (only `union`/`anyNode` triggers the box rule)', () => {
         const result = getAttributeBodyLineFragment(attribute('program', node('programLinkNode')));
         expect(result.content).toBe('pub program: ProgramLinkNode,');
+    });
+
+    it('boxes a required anyNode field as `Box<Node>` (anyNode follows the box-all-union rule)', () => {
+        const result = getAttributeBodyLineFragment(attribute('node', anyNode()));
+        expect(result.content).toBe('pub node: Box<Node>,');
+    });
+
+    it('boxes an optional anyNode field as `Box<Option<Node>>` (box outside Option)', () => {
+        const result = getAttributeBodyLineFragment(optionalAttribute('node', anyNode()));
+        expect(result.content).toBe(
+            ['#[serde(skip_serializing_if = "crate::is_default")]', 'pub node: Box<Option<Node>>,'].join('\n'),
+        );
     });
 });

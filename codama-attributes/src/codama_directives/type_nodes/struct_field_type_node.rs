@@ -33,6 +33,7 @@ impl FromMeta for StructFieldTypeNode {
             default_value: Box::new(default_value),
             default_value_strategy,
             docs: Docs::default(),
+            display: None,
         })
     }
 }

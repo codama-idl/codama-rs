@@ -12,6 +12,7 @@ impl StructFieldTypeNode {
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
             default_value: Box::new(None),
+            display: None,
         }
     }
 }
@@ -36,6 +37,7 @@ mod tests {
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
             default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
+            display: None,
         };
 
         assert_eq!(node.name, CamelCaseString::new("myField"));
@@ -79,6 +81,7 @@ mod tests {
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
             default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
+            display: None,
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -99,6 +102,7 @@ mod tests {
                 docs: vec!["Hello".to_string()].into(),
                 r#type: Box::new(NumberTypeNode::le(U32).into()),
                 default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
+                display: None,
             }
         );
     }

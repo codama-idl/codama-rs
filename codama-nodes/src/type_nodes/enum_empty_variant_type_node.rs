@@ -8,6 +8,7 @@ impl EnumEmptyVariantTypeNode {
         Self {
             name: name.into(),
             discriminator: None,
+            display: None,
         }
     }
 }
@@ -28,6 +29,7 @@ mod tests {
         let node = EnumEmptyVariantTypeNode {
             name: "my_variant".into(),
             discriminator: Some(42),
+            display: None,
         };
         assert_eq!(node.name, CamelCaseString::new("myVariant"));
         assert_eq!(node.discriminator, Some(42));

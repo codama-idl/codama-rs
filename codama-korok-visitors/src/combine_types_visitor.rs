@@ -250,6 +250,7 @@ impl KorokVisitor for CombineTypesVisitor {
                         name: korok.name(),
                         r#struct: StructTypeNode::new(fields).into(),
                         discriminator,
+                        display: None,
                     }
                     .into(),
                 )
@@ -261,6 +262,7 @@ impl KorokVisitor for CombineTypesVisitor {
                         name: korok.name(),
                         tuple: TupleTypeNode::new(items).into(),
                         discriminator,
+                        display: None,
                     }
                     .into(),
                 )
@@ -273,6 +275,7 @@ impl KorokVisitor for CombineTypesVisitor {
                             name: korok.name(),
                             r#struct: StructTypeNode::new(fields).into(),
                             discriminator,
+                            display: None,
                         }
                         .into(),
                     )
@@ -281,6 +284,7 @@ impl KorokVisitor for CombineTypesVisitor {
                         EnumEmptyVariantTypeNode {
                             name: korok.name(),
                             discriminator,
+                            display: None,
                         }
                         .into(),
                     )

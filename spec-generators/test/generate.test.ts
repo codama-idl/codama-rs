@@ -41,6 +41,7 @@ describe('getRenderMap', () => {
             'codama_version.rs',
             'constant_node.rs',
             'contextual_value_nodes/account_bump_value_node.rs',
+            'contextual_value_nodes/account_field_value_node.rs',
             'contextual_value_nodes/account_value_node.rs',
             'contextual_value_nodes/argument_value_node.rs',
             'contextual_value_nodes/conditional_value_condition.rs',
@@ -69,6 +70,17 @@ describe('getRenderMap', () => {
             'discriminator_nodes/field_discriminator_node.rs',
             'discriminator_nodes/mod.rs',
             'discriminator_nodes/size_discriminator_node.rs',
+            'display_nodes/amount_number_display_node.rs',
+            'display_nodes/date_time_number_display_node.rs',
+            'display_nodes/display_node.rs',
+            'display_nodes/duration_number_display_node.rs',
+            'display_nodes/enum_variant_display_node.rs',
+            'display_nodes/instruction_account_display_node.rs',
+            'display_nodes/instruction_display_node.rs',
+            'display_nodes/mod.rs',
+            'display_nodes/number_display_node.rs',
+            'display_nodes/string_display_node.rs',
+            'display_nodes/struct_field_display_node.rs',
             'error_node.rs',
             'event_node.rs',
             'instruction_account_node.rs',
@@ -96,9 +108,11 @@ describe('getRenderMap', () => {
             'pda_seed_nodes/pda_seed_node.rs',
             'pda_seed_nodes/variable_pda_seed_node.rs',
             'program_node.rs',
+            'provided_node.rs',
             'root_node.rs',
             'shared/bytes_encoding.rs',
             'shared/default_value_strategy.rs',
+            'shared/display_skip.rs',
             'shared/endianness.rs',
             'shared/instruction_lifecycle.rs',
             'shared/is_signer.rs',
@@ -136,6 +150,9 @@ describe('getRenderMap', () => {
             'value_nodes/constant_value_node.rs',
             'value_nodes/enum_value_node.rs',
             'value_nodes/enum_value_payload.rs',
+            'value_nodes/injectable_number_value_node.rs',
+            'value_nodes/injectable_string_value_node.rs',
+            'value_nodes/injected_value_node.rs',
             'value_nodes/map_entry_value_node.rs',
             'value_nodes/map_value_node.rs',
             'value_nodes/mod.rs',
@@ -208,6 +225,7 @@ describe('getRenderMap', () => {
             'contextual_value_nodes',
             'count_nodes',
             'discriminator_nodes',
+            'display_nodes',
             'link_nodes',
             'pda_seed_nodes',
             'shared',
@@ -266,6 +284,35 @@ describe('getRenderMap', () => {
             const union = getFromRenderMap(map, 'discriminator_nodes/discriminator_node.rs');
             // Not every variant has a name -> no union HasName impl.
             expect(union.content).not.toContain('impl HasName for DiscriminatorNode');
+        });
+    });
+
+    describe('display category', () => {
+        it('routes display nodes through Node::Display', () => {
+            const entry = getFromRenderMap(map, 'display_nodes/string_display_node.rs');
+            expect(entry.content).toContain('pub struct StringDisplayNode {');
+            expect(entry.content).toContain('crate::Node::Display(val.into())');
+        });
+
+        it('emits the flattened DisplayNode union over every display node (no registered twin)', () => {
+            const entry = getFromRenderMap(map, 'display_nodes/display_node.rs');
+            expect(entry.content).toContain('#[node_union]');
+            expect(entry.content).toContain('pub enum DisplayNode {');
+            expect(entry.content).toContain('AmountNumber(AmountNumberDisplayNode),');
+            expect(entry.content).toContain('StructField(StructFieldDisplayNode),');
+            // No `Registered…` enum: the twin has no registered-only members.
+            expect(entry.content).not.toContain('RegisteredDisplayNode');
+        });
+
+        it('derives Copy for scalar-only display nodes', () => {
+            const entry = getFromRenderMap(map, 'display_nodes/string_display_node.rs');
+            expect(entry.content).toContain('#[derive(Copy, Default)]');
+        });
+
+        it('boxes the optional injectable-union fields of AmountNumberDisplayNode', () => {
+            const entry = getFromRenderMap(map, 'display_nodes/amount_number_display_node.rs');
+            expect(entry.content).toContain('pub decimals: Box<Option<InjectableNumberValueNode>>,');
+            expect(entry.content).toContain('pub unit: Box<Option<InjectableStringValueNode>>,');
         });
     });
 
@@ -438,12 +485,32 @@ describe('getRenderMap', () => {
                 'instruction_status_node.rs',
                 'pda_node.rs',
                 'program_node.rs',
+                'provided_node.rs',
                 'root_node.rs',
             ]) {
                 const entry = getFromRenderMap(map, file);
                 expect(entry.content).not.toContain('impl From<');
                 expect(entry.content).not.toContain('crate::Node::');
             }
+        });
+
+        it('renders providedNode.node (an anyNode child) as a boxed `Box<Node>`', () => {
+            const entry = getFromRenderMap(map, 'provided_node.rs');
+            expect(entry.content).toContain('pub struct ProvidedNode {');
+            expect(entry.content).toContain('pub node: Box<Node>,');
+            // `name` is a stringIdentifier, so the node still gets a HasName impl.
+            expect(entry.content).toContain('impl HasName for ProvidedNode {');
+        });
+
+        it('renders instructionNode.provides as a bare `Vec<ProvidedNode>` and its optional display child', () => {
+            const entry = getFromRenderMap(map, 'instruction_node.rs');
+            expect(entry.content).toContain('pub provides: Vec<ProvidedNode>,');
+            expect(entry.content).toContain('pub display: Option<InstructionDisplayNode>,');
+        });
+
+        it('renders instructionAccountNode.accountLink as an optional `Option<AccountLinkNode>`', () => {
+            const entry = getFromRenderMap(map, 'instruction_account_node.rs');
+            expect(entry.content).toContain('pub account_link: Option<AccountLinkNode>,');
         });
 
         it('renders rootNode.standard as `pub standard: String`', () => {
@@ -517,7 +584,7 @@ describe('getRenderMap', () => {
 
         it('emits a `CODAMA_VERSION` constant pinned to the spec version', () => {
             const entry = getFromRenderMap(map, 'codama_version.rs');
-            expect(entry.content).toContain('pub const CODAMA_VERSION: &str = "1.6.0";');
+            expect(entry.content).toContain('pub const CODAMA_VERSION: &str = "1.7.0";');
         });
     });
 

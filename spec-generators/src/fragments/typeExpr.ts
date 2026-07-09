@@ -35,6 +35,7 @@ const NUMBER_FORMAT_TO_RUST: ReadonlyMap<string, string> = new Map([
  *   - `docs`                      → `Docs`
  *   - `enumeration('foo')`        → `Foo`
  *   - `node('fooBar')`            → `FooBar`
+ *   - `anyNode`                   → `crate::Node` (the top-level registry)
  *   - `union('fooBar')`           → `FooBar`
  *   - `nestedUnion('alias','k')`  → `Alias<Kind>` (only `nestedTypeNode` in v1)
  *   - `array(of)`                 → `Vec<Of>`
@@ -80,6 +81,10 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             return use(`crate::${pascalCase(expr.name)}`);
         case 'node':
             return use(`crate::${pascalCase(expr.name)}`);
+        case 'anyNode':
+            // A field that holds any node at all maps to the top-level
+            // `crate::Node` registry, the enum over every node kind.
+            return use('crate::Node');
         case 'union':
             return use(`crate::${pascalCase(expr.name)}`);
         case 'nestedUnion': {

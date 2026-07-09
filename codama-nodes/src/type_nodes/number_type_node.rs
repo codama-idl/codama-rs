@@ -5,7 +5,11 @@ pub use NumberFormat::*;
 
 impl NumberTypeNode {
     pub fn new(format: NumberFormat, endian: Endianness) -> Self {
-        Self { format, endian }
+        Self {
+            format,
+            endian,
+            display: Box::new(None),
+        }
     }
 
     pub fn le(format: NumberFormat) -> Self {

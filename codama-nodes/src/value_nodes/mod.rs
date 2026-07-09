@@ -3,6 +3,7 @@ mod boolean_value_node;
 mod bytes_value_node;
 mod constant_value_node;
 mod enum_value_node;
+mod injected_value_node;
 mod map_entry_value_node;
 mod map_value_node;
 mod none_value_node;

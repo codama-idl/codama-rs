@@ -2,7 +2,10 @@ use crate::{BytesEncoding, StringTypeNode};
 
 impl StringTypeNode {
     pub fn new(encoding: BytesEncoding) -> Self {
-        Self { encoding }
+        Self {
+            encoding,
+            display: None,
+        }
     }
 
     pub fn base16() -> Self {

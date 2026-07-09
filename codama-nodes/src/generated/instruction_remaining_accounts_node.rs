@@ -1,4 +1,4 @@
-use crate::{Docs, InstructionRemainingAccountsValue, IsSigner};
+use crate::{Docs, InstructionAccountDisplayNode, InstructionRemainingAccountsValue, IsSigner};
 use codama_nodes_derive::node;
 
 #[node]
@@ -15,4 +15,6 @@ pub struct InstructionRemainingAccountsNode {
 
     // Children.
     pub value: Box<InstructionRemainingAccountsValue>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub display: Option<InstructionAccountDisplayNode>,
 }
