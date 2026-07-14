@@ -11,7 +11,7 @@ fn get_idl() {
         r#"{
   "kind": "rootNode",
   "standard": "codama",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "program": {
     "kind": "programNode",
     "name": "membership",
