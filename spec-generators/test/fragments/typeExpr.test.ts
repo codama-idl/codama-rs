@@ -6,6 +6,7 @@ import {
     docs,
     enumeration,
     f64,
+    json,
     literal,
     literalUnion,
     nestedUnion,
@@ -49,6 +50,12 @@ describe('getTypeExprFragment', () => {
         const result = getTypeExprFragment(f64());
         expect(result.content).toBe('Number');
         expect([...result.imports.keys()]).toEqual(['crate::Number']);
+    });
+
+    it('renders json as the opaque `serde_json::Value` with a matching import', () => {
+        const result = getTypeExprFragment(json());
+        expect(result.content).toBe('Value');
+        expect([...result.imports.keys()]).toEqual(['serde_json::Value']);
     });
 
     it("renders the v1 `literal('codama')` TypeExpr as `String`", () => {

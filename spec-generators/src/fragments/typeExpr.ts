@@ -32,6 +32,7 @@ const NUMBER_FORMAT_TO_RUST: ReadonlyMap<string, string> = new Map([
  *   - `boolean`                   → `bool`
  *   - `integer`                   → `uN` / `iN` by width
  *   - `float`                     → `crate::Number` (bespoke u64|i64|f64 enum)
+ *   - `json`                      → `serde_json::Value` (opaque, arbitrary JSON)
  *   - `docs`                      → `Docs`
  *   - `enumeration('foo')`        → `Foo`
  *   - `node('fooBar')`            → `FooBar`
@@ -61,6 +62,10 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             // `From<uN/iN/fN>` impls). Mirrors the JS generator, which maps
             // `float → number` (TS's polymorphic number type).
             return use('crate::Number');
+        case 'json':
+            // An opaque, arbitrary JSON value. The spec deliberately leaves
+            // its shape undescribed, so it maps to `serde_json::Value`.
+            return use('serde_json::Value');
         case 'literal':
             // The literal value lives in the hand-written `Default`.
             return fragment`String`;

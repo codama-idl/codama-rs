@@ -20,6 +20,7 @@ mod link_nodes;
 mod node;
 mod pda_node;
 mod pda_seed_nodes;
+mod plugin_node;
 mod program_node;
 mod provided_node;
 mod root_node;

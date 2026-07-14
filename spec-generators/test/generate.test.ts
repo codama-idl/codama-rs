@@ -107,6 +107,7 @@ describe('getRenderMap', () => {
             'pda_seed_nodes/mod.rs',
             'pda_seed_nodes/pda_seed_node.rs',
             'pda_seed_nodes/variable_pda_seed_node.rs',
+            'plugin_node.rs',
             'program_node.rs',
             'provided_node.rs',
             'root_node.rs',
@@ -584,7 +585,7 @@ describe('getRenderMap', () => {
 
         it('emits a `CODAMA_VERSION` constant pinned to the spec version', () => {
             const entry = getFromRenderMap(map, 'codama_version.rs');
-            expect(entry.content).toContain('pub const CODAMA_VERSION: &str = "1.7.0";');
+            expect(entry.content).toContain('pub const CODAMA_VERSION: &str = "1.8.0";');
         });
     });
 
