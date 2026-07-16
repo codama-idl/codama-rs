@@ -1,5 +1,7 @@
 use crate::DirectiveResolver;
-use codama_attributes::{Attribute, CodamaDirective, Resolvable, SeedDirectiveType};
+use codama_attributes::{
+    Attribute, CodamaDirective, Resolvable, SeedDirectiveType, TypeDirectiveNode,
+};
 use codama_errors::CodamaResult;
 use codama_korok_visitors::KorokVisitor;
 use codama_koroks::*;
@@ -73,13 +75,10 @@ impl<'a> ResolveDirectivesVisitor<'a> {
         Ok(())
     }
 
-    fn resolve_type(
-        &self,
-        resolvable: &mut Resolvable<codama_nodes::RegisteredTypeNode>,
-    ) -> CodamaResult<()> {
+    fn resolve_type(&self, resolvable: &mut Resolvable<TypeDirectiveNode>) -> CodamaResult<()> {
         if let Resolvable::Unresolved(directive) = resolvable {
             let resolved = self.resolver.resolve_type_directive(directive)?;
-            *resolvable = Resolvable::Resolved(resolved);
+            *resolvable = Resolvable::Resolved(resolved.into());
         }
         Ok(())
     }

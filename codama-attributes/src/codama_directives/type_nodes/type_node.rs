@@ -1,4 +1,4 @@
-use crate::utils::FromMeta;
+use crate::{utils::FromMeta, TypeDirectiveNode};
 use codama_nodes::{
     BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, NumberTypeNode, OptionTypeNode,
     PublicKeyTypeNode, RegisteredTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
@@ -26,7 +26,7 @@ impl FromMeta for RegisteredTypeNode {
 
 impl FromMeta for TypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        Self::try_from(RegisteredTypeNode::from_meta(meta)?)
+        Self::try_from(TypeDirectiveNode::from_meta(meta)?)
             .map_err(|_| meta.error("unrecognized type"))
     }
 }

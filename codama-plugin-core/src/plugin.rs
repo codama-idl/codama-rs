@@ -368,7 +368,7 @@ mod tests {
         assert!(directive_after.node.is_resolved());
         assert_eq!(
             directive_after.node,
-            Resolvable::Resolved(PublicKeyTypeNode::new().into())
+            Resolvable::Resolved(RegisteredTypeNode::from(PublicKeyTypeNode::new()).into())
         );
         Ok(())
     }
@@ -406,7 +406,7 @@ mod tests {
         assert!(directive_after.node.is_resolved());
         assert_eq!(
             directive_after.node,
-            Resolvable::Resolved(PublicKeyTypeNode::new().into())
+            Resolvable::Resolved(RegisteredTypeNode::from(PublicKeyTypeNode::new()).into())
         );
         Ok(())
     }
