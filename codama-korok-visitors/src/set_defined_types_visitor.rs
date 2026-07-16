@@ -1,5 +1,6 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
+use codama_nodes::{DefinedTypeNode, TypeNode};
 
 pub struct SetDefinedTypesVisitor {
     combine_types: CombineTypesVisitor,
@@ -41,6 +42,15 @@ impl KorokVisitor for SetDefinedTypesVisitor {
         // Create a `DefinedTypeNode` from the enum, if it doesn't already exist.
         self.combine_types.visit_enum(korok)?;
 
+        Ok(())
+    }
+
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        let Ok(type_node) = TypeNode::try_from(korok.node.clone()) else {
+            return Ok(());
+        };
+
+        korok.node = Some(DefinedTypeNode::new(korok.name(), type_node).into());
         Ok(())
     }
 }

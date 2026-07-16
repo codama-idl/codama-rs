@@ -40,6 +40,7 @@ pub trait KorokVisitor {
             codama_koroks::ItemKorok::Enum(korok) => self.visit_enum(korok),
             codama_koroks::ItemKorok::Impl(korok) => self.visit_impl(korok),
             codama_koroks::ItemKorok::Const(korok) => self.visit_const(korok),
+            codama_koroks::ItemKorok::TypeAlias(korok) => self.visit_type_alias(korok),
             codama_koroks::ItemKorok::Unsupported(korok) => self.visit_unsupported_item(korok),
         }
     }
@@ -125,6 +126,10 @@ pub trait KorokVisitor {
     }
 
     fn visit_const(&mut self, _korok: &mut codama_koroks::ConstKorok) -> CodamaResult<()> {
+        Ok(())
+    }
+
+    fn visit_type_alias(&mut self, _korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
         Ok(())
     }
 

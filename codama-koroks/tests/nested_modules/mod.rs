@@ -18,11 +18,11 @@ fn load_nested_modules() {
         crate_korok.store.path,
         get_path("nested_modules/crate/src/lib.rs")
     );
-    let [ItemKorok::Unsupported(_), ItemKorok::Module(nested_1)] = &crate_korok.items.as_slice()
+    let [ItemKorok::TypeAlias(_), ItemKorok::Module(nested_1)] = &crate_korok.items.as_slice()
     else {
         panic!("Unexpected items in lib.rs");
     };
-    let [ItemKorok::Module(nested_2), ItemKorok::Unsupported(_), ItemKorok::FileModule(membership)] =
+    let [ItemKorok::Module(nested_2), ItemKorok::TypeAlias(_), ItemKorok::FileModule(membership)] =
         &nested_1.items.as_slice()
     else {
         panic!("Unexpected items in nested_1 module of lib.rs");

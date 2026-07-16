@@ -63,6 +63,14 @@ fn get_idl() {
               "type": {
                 "kind": "publicKeyTypeNode"
               }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bio",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "boundedString25"
+              }
             }
           ]
         },
@@ -98,6 +106,36 @@ fn get_idl() {
             "format": "u8",
             "endian": "le"
           }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "boundedString25",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "len",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "value",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 25,
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                }
+              }
+            }
+          ]
         }
       }
     ],

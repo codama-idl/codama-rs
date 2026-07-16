@@ -169,6 +169,10 @@ impl KorokVisitor for ResolveDirectivesVisitor<'_> {
         self.resolve_attributes(&mut korok.attributes)
     }
 
+    fn visit_type_alias(&mut self, korok: &mut TypeAliasKorok) -> CodamaResult<()> {
+        self.resolve_attributes(&mut korok.attributes)
+    }
+
     fn visit_unsupported_impl_item(
         &mut self,
         korok: &mut UnsupportedImplItemKorok,

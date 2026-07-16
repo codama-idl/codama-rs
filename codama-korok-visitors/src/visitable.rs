@@ -19,6 +19,7 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Root(k) => k.accept(visitor),
             Self::Struct(k) => k.accept(visitor),
             Self::Const(k) => k.accept(visitor),
+            Self::TypeAlias(k) => k.accept(visitor),
             Self::UnsupportedItem(k) => k.accept(visitor),
             Self::ImplItem(k) => k.accept(visitor),
             Self::UnsupportedImplItem(k) => k.accept(visitor),
@@ -37,6 +38,7 @@ impl KorokVisitable for codama_koroks::KorokMut<'_, '_> {
             Self::Root(k) => k.get_children(),
             Self::Struct(k) => k.get_children(),
             Self::Const(k) => k.get_children(),
+            Self::TypeAlias(k) => k.get_children(),
             Self::UnsupportedItem(k) => k.get_children(),
             Self::ImplItem(k) => k.get_children(),
             Self::UnsupportedImplItem(k) => k.get_children(),
@@ -80,6 +82,7 @@ impl KorokVisitable for codama_koroks::ItemKorok<'_> {
             codama_koroks::ItemKorok::Enum(k) => vec![k as &mut dyn KorokVisitable],
             codama_koroks::ItemKorok::Impl(k) => vec![k as &mut dyn KorokVisitable],
             codama_koroks::ItemKorok::Const(k) => vec![k as &mut dyn KorokVisitable],
+            codama_koroks::ItemKorok::TypeAlias(k) => vec![k as &mut dyn KorokVisitable],
             codama_koroks::ItemKorok::Unsupported(k) => vec![k as &mut dyn KorokVisitable],
         }
     }
@@ -190,6 +193,15 @@ impl KorokVisitable for codama_koroks::UnsupportedImplItemKorok<'_> {
 impl KorokVisitable for codama_koroks::ConstKorok<'_> {
     fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
         visitor.visit_const(self)
+    }
+    fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
+        Vec::new()
+    }
+}
+
+impl KorokVisitable for codama_koroks::TypeAliasKorok<'_> {
+    fn accept(&mut self, visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
+        visitor.visit_type_alias(self)
     }
     fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
         Vec::new()

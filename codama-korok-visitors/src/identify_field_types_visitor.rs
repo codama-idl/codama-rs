@@ -26,6 +26,16 @@ impl KorokVisitor for IdentifyFieldTypesVisitor {
         }
         Ok(())
     }
+
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        if korok.node.is_some() {
+            return Ok(());
+        }
+        if let Some(node) = get_type_node(&korok.ast.ty) {
+            korok.node = Some(node.into());
+        }
+        Ok(())
+    }
 }
 
 pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
