@@ -1,19 +1,54 @@
-use crate::{Attribute, CodamaAttribute, CodamaDirective, Resolvable};
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective, Resolvable};
 use codama_errors::CodamaError;
-use codama_nodes::RegisteredTypeNode;
+use codama_nodes::{DefinedTypeLinkNode, Node, RegisteredTypeNode, TypeNode};
 use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct TypeDirective {
-    pub node: Resolvable<RegisteredTypeNode>,
+    pub node: Resolvable<TypeDirectiveNode>,
 }
 
 impl TypeDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let value = meta.assert_directive("type")?.as_value()?;
         Ok(Self {
-            node: Resolvable::<RegisteredTypeNode>::from_meta(value)?,
+            node: Resolvable::<TypeDirectiveNode>::from_meta(value)?,
         })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, derive_more::From)]
+pub enum TypeDirectiveNode {
+    Registered(RegisteredTypeNode),
+    Link(DefinedTypeLinkNode),
+}
+
+impl FromMeta for TypeDirectiveNode {
+    fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        match meta.path_str().as_str() {
+            "link" => DefinedTypeLinkNode::from_meta(meta).map(Self::from),
+            _ => RegisteredTypeNode::from_meta(meta).map(Self::from),
+        }
+    }
+}
+
+impl From<TypeDirectiveNode> for Node {
+    fn from(node: TypeDirectiveNode) -> Self {
+        match node {
+            TypeDirectiveNode::Registered(node) => Self::Type(node),
+            TypeDirectiveNode::Link(node) => node.into(),
+        }
+    }
+}
+
+impl TryFrom<TypeDirectiveNode> for TypeNode {
+    type Error = CodamaError;
+
+    fn try_from(node: TypeDirectiveNode) -> Result<Self, Self::Error> {
+        match node {
+            TypeDirectiveNode::Registered(node) => Self::try_from(node),
+            TypeDirectiveNode::Link(node) => Ok(Self::Link(node)),
+        }
     }
 }
 
@@ -51,7 +86,17 @@ mod tests {
         let directive = TypeDirective::parse(&meta).unwrap();
         assert_eq!(
             directive.node,
-            Resolvable::Resolved(NumberTypeNode::le(U16).into())
+            Resolvable::Resolved(RegisteredTypeNode::from(NumberTypeNode::le(U16)).into())
+        );
+    }
+
+    #[test]
+    fn ok_with_link() {
+        let meta: Meta = parse_quote! { type = link("customString") };
+        let directive = TypeDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive.node,
+            Resolvable::Resolved(DefinedTypeLinkNode::new("customString").into())
         );
     }
 

@@ -1,0 +1,11 @@
+error: name is already set
+ --> tests/codama_attribute/link_nodes/defined_type_link_node/name_already_set.fail.rs:3:38
+  |
+3 | #[codama(type = link("customString", "anotherString"))]
+  |                                      ^^^^^^^^^^^^^^^
+
+error: name is already set
+ --> tests/codama_attribute/link_nodes/defined_type_link_node/name_already_set.fail.rs:6:45
+  |
+6 | #[codama(type = link(name = "customString", name = "anotherString"))]
+  |                                             ^^^^^^^^^^^^^^^^^^^^^^

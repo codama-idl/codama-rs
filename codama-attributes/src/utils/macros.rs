@@ -3,7 +3,10 @@ macro_rules! assert_type {
     ({$($attr:tt)*}, $expected:expr) => {
         {
             let meta: codama_syn_helpers::Meta = syn::parse_quote! { type = $($attr)* };
-            let node = $crate::TypeDirective::parse(&meta).unwrap().node;
+            let node = $crate::TypeDirective::parse(&meta)
+                .unwrap()
+                .node
+                .map(codama_nodes::Node::from);
             assert_eq!(node, $crate::Resolvable::Resolved($expected));
         }
     };

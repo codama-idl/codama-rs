@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/link_nodes/defined_type_link_node/unrecognized_attribute.fail.rs:3:22
+  |
+3 | #[codama(type = link(foo = 42))]
+  |                      ^^^^^^^^

@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{ApplyTypeOverridesVisitor, KorokVisitable};
 use codama_koroks::{FieldKorok, StructKorok};
-use codama_nodes::{BooleanTypeNode, StructFieldTypeNode};
+use codama_nodes::{BooleanTypeNode, DefinedTypeLinkNode, StructFieldTypeNode};
 
 #[test]
 fn it_set_the_node_on_the_korok() -> CodamaResult<()> {
@@ -47,6 +47,23 @@ fn it_keeps_field_type_nodes_as_given_for_named_field_koroks() -> CodamaResult<(
     assert_eq!(
         korok.node,
         Some(StructFieldTypeNode::new("valid", BooleanTypeNode::default()).into())
+    );
+    Ok(())
+}
+
+#[test]
+fn it_links_defined_types_for_named_field_koroks() -> CodamaResult<()> {
+    let item: syn::Field = syn::parse_quote! {
+        #[codama(type = link("customString"))]
+        pub name: String
+    };
+    let mut korok = FieldKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(StructFieldTypeNode::new("name", DefinedTypeLinkNode::new("customString")).into())
     );
     Ok(())
 }
