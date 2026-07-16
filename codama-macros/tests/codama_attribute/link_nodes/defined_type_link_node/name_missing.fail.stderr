@@ -1,0 +1,5 @@
+error: name is missing
+ --> tests/codama_attribute/link_nodes/defined_type_link_node/name_missing.fail.rs:3:17
+  |
+3 | #[codama(type = link())]
+  |                 ^^^^^^
