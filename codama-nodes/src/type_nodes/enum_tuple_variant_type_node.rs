@@ -91,15 +91,17 @@ mod tests {
     fn to_json() {
         let node = EnumTupleVariantTypeNode::new("my_variant", TupleTypeNode::new(vec![]));
         let json = serde_json::to_string(&node).unwrap();
+        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode","items":[]}}"#
+            r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode","items":[]}}"#;
+        // Absent arrays default to empty on read (skip-when-empty convention).
+        let json = r#"{"kind":"enumTupleVariantTypeNode","name":"myVariant","tuple":{"kind":"tupleTypeNode"}}"#;
         let node: EnumTupleVariantTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

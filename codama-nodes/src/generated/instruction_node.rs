@@ -17,7 +17,9 @@ pub struct InstructionNode {
     pub optional_account_strategy: Option<OptionalAccountStrategy>,
 
     // Children.
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub accounts: Vec<InstructionAccountNode>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub arguments: Vec<InstructionArgumentNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub extra_arguments: Vec<InstructionArgumentNode>,

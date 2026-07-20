@@ -87,16 +87,17 @@ mod tests {
     fn to_json() {
         let node = PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]);
         let json = serde_json::to_string(&node).unwrap();
+        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[]}"#
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json: &str =
-            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[]}"#;
+        // Absent arrays default to empty on read (skip-when-empty convention).
+        let json: &str = r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"}}"#;
         let node: PdaValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]));
     }
@@ -109,9 +110,10 @@ mod tests {
             AccountValueNode::new("myProgramAccount"),
         );
         let json = serde_json::to_string(&node).unwrap();
+        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"seeds":[],"programId":{"kind":"accountValueNode","name":"myProgramAccount"}}"#
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"programId":{"kind":"accountValueNode","name":"myProgramAccount"}}"#
         );
     }
 }

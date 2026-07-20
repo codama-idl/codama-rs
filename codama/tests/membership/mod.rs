@@ -72,7 +72,6 @@ fn get_idl() {
         }
       }
     ],
-    "instructions": [],
     "definedTypes": [
       {
         "kind": "definedTypeNode",
@@ -134,12 +133,8 @@ fn get_idl() {
           }
         ]
       }
-    ],
-    "events": [],
-    "errors": [],
-    "constants": []
-  },
-  "additionalPrograms": []
+    ]
+  }
 }"#
     );
 }

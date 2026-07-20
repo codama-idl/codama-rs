@@ -10,6 +10,7 @@ pub struct HiddenPrefixTypeNode<T: TypeNodeUnionTrait> {
     // Children.
     #[serde(bound = "T: TypeNodeUnionTrait")]
     pub r#type: Box<T>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub prefix: Vec<ConstantValueNode>,
 }
 
