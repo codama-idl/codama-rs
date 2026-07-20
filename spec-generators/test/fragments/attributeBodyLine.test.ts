@@ -62,7 +62,24 @@ describe('getAttributeBodyLineFragment', () => {
 
     it('does NOT box a `Vec<union>` field — the Vec already heap-allocates', () => {
         const result = getAttributeBodyLineFragment(attribute('items', array(union('valueNode'))));
-        expect(result.content).toBe('pub items: Vec<ValueNode>,');
+        expect(result.content).toBe(
+            ['#[serde(default, skip_serializing_if = "crate::is_default")]', 'pub items: Vec<ValueNode>,'].join('\n'),
+        );
+    });
+
+    it('gives a required array field the same skip-when-empty serde attrs as an optional one', () => {
+        // Arrays are omitted when empty on write and default to `[]` when
+        // absent on read, independent of `optional`. See the "Array
+        // attributes are omitted when empty" convention in the `@codama/spec`
+        // README.
+        const required = getAttributeBodyLineFragment(attribute('accounts', array(node('accountNode'))));
+        const optional = getAttributeBodyLineFragment(optionalAttribute('accounts', array(node('accountNode'))));
+        const expected = [
+            '#[serde(default, skip_serializing_if = "crate::is_default")]',
+            'pub accounts: Vec<AccountNode>,',
+        ].join('\n');
+        expect(required.content).toBe(expected);
+        expect(optional.content).toBe(expected);
     });
 
     it('does NOT box a `node`-typed field (only `union`/`anyNode` triggers the box rule)', () => {

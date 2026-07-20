@@ -12,6 +12,7 @@ pub struct PdaNode {
     pub program_id: Option<String>,
 
     // Children.
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub seeds: Vec<PdaSeedNode>,
 }
 

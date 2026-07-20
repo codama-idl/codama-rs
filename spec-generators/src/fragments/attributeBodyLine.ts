@@ -16,9 +16,13 @@ const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
  *
  * Serde rules:
  *
- *   - Required, non-Vec field      → no `#[serde]` attr.
+ *   - Any Vec field                → bare `Vec<T>` + `#[serde(default, skip_serializing_if = "crate::is_default")]`,
+ *                                    regardless of `optional`. Arrays are omitted when empty on write and default
+ *                                    to `[]` when absent on read (an absent array and an empty array are
+ *                                    semantically identical). See the "Array attributes are omitted when empty"
+ *                                    convention in the `@codama/spec` README.
+ *   - Required non-Vec, non-union  → no `#[serde]` attr (required unions are boxed below).
  *   - Optional single              → `Option<T>` + `#[serde(skip_serializing_if = "crate::is_default")]`.
- *   - Optional Vec                 → bare `Vec<T>` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
  *   - `docs` field                 → `Docs` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
  *
  * Box rule (box-all-union): every direct (non-`Vec`) field whose type
@@ -53,11 +57,17 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
         // hand-written convention.
         typeFragment = inner;
         serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
+    } else if (isVecLike) {
+        // Every array is a bare `Vec<T>` that skips-when-empty and
+        // defaults-when-absent, independent of `optional`. See the
+        // "Array attributes are omitted when empty" convention in the
+        // `@codama/spec` README. `array(union(...))` fields are Vecs, not
+        // bare unions, so this branch must precede the union branch below;
+        // the element type's own boxing is handled by `getTypeExprFragment`.
+        typeFragment = inner;
+        serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
     } else if (isOptional) {
-        if (isVecLike) {
-            typeFragment = inner;
-            serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
-        } else if (isUnion) {
+        if (isUnion) {
             // Optional union → `Box<Option<T>>` (box outside Option).
             typeFragment = fragment`Box<Option<${inner}>>`;
             serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';

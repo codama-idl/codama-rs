@@ -91,15 +91,17 @@ mod tests {
     fn to_json() {
         let node = EnumStructVariantTypeNode::new("my_variant", StructTypeNode::new(vec![]));
         let json = serde_json::to_string(&node).unwrap();
+        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode","fields":[]}}"#
+            r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode","fields":[]}}"#;
+        // Absent arrays default to empty on read (skip-when-empty convention).
+        let json = r#"{"kind":"enumStructVariantTypeNode","name":"myVariant","struct":{"kind":"structTypeNode"}}"#;
         let node: EnumStructVariantTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

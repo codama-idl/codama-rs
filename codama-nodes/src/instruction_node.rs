@@ -61,16 +61,14 @@ mod tests {
             ..InstructionNode::default()
         };
         let json = serde_json::to_string(&node).unwrap();
-        assert_eq!(
-            json,
-            r#"{"kind":"instructionNode","name":"myInstruction","accounts":[],"arguments":[]}"#
-        );
+        // Empty arrays are omitted on write (skip-when-empty convention).
+        assert_eq!(json, r#"{"kind":"instructionNode","name":"myInstruction"}"#);
     }
 
     #[test]
     fn from_json() {
-        let json =
-            r#"{"kind":"instructionNode","name":"myInstruction","accounts":[],"arguments":[]}"#;
+        // Absent arrays default to empty on read (skip-when-empty convention).
+        let json = r#"{"kind":"instructionNode","name":"myInstruction"}"#;
         let node: InstructionNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

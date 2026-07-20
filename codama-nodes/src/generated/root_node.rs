@@ -9,5 +9,6 @@ pub struct RootNode {
 
     // Children.
     pub program: ProgramNode,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
     pub additional_programs: Vec<ProgramNode>,
 }
