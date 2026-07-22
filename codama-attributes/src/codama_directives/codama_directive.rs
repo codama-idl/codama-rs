@@ -1,9 +1,9 @@
 use crate::{
     AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
     DiscriminatorDirective, EncodingDirective, EnumDiscriminatorDirective, ErrorDirective,
-    FieldDirective, FixedSizeDirective, NameDirective, OptionalAccountStrategyDirective,
-    PdaDirective, ProgramDirective, SeedDirective, SizePrefixDirective, SkipDirective,
-    TypeDirective,
+    ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
+    OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, SeedDirective,
+    SizePrefixDirective, SkipDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -23,6 +23,7 @@ pub enum CodamaDirective {
     // Multi-purpose directives.
     Discriminator(DiscriminatorDirective),
     EnumDiscriminator(EnumDiscriminatorDirective),
+    Export(ExportDirective),
     Name(NameDirective),
     OptionalAccountStrategy(OptionalAccountStrategyDirective),
     Program(ProgramDirective),
@@ -58,6 +59,7 @@ impl CodamaDirective {
             // Multi-purpose directives.
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
+            "export" => Ok(ExportDirective::parse(meta)?.into()),
             "name" => Ok(NameDirective::parse(meta)?.into()),
             "optional_account_strategy" => {
                 Ok(OptionalAccountStrategyDirective::parse(meta)?.into())
@@ -95,6 +97,7 @@ impl CodamaDirective {
             // Multi-purpose directives.
             Self::Discriminator(_) => "discriminator",
             Self::EnumDiscriminator(_) => "enum_discriminator",
+            Self::Export(_) => "export",
             Self::Name(_) => "name",
             Self::OptionalAccountStrategy(_) => "optional_account_strategy",
             Self::Program(_) => "program",

@@ -46,6 +46,10 @@ impl KorokVisitor for SetDefinedTypesVisitor {
     }
 
     fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        if !korok.attributes.has_codama_export("CodamaType") {
+            return Ok(());
+        };
+
         let Ok(type_node) = TypeNode::try_from(korok.node.clone()) else {
             return Ok(());
         };
