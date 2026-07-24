@@ -67,6 +67,11 @@ impl KorokVisitor for ApplyTypeOverridesVisitor {
         self.visit_children(korok)?;
         apply_type_override(korok.into())
     }
+
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
+        apply_type_override(korok.into())
+    }
 }
 
 fn apply_type_override(mut korok: KorokMut) -> CodamaResult<()> {

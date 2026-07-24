@@ -1,0 +1,5 @@
+error: unrecognized codama derive
+ --> tests/codama_attribute/export_directive/invalid_derive.fail.rs:3:17
+  |
+3 | #[codama(export(NotADerive))]
+  |                 ^^^^^^^^^^

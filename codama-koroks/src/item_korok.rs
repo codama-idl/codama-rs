@@ -1,6 +1,6 @@
 use crate::{
     ConstKorok, EnumKorok, FileModuleKorok, ImplKorok, KorokTrait, ModuleKorok, StructKorok,
-    UnsupportedItemKorok,
+    TypeAliasKorok, UnsupportedItemKorok,
 };
 use codama_attributes::Attributes;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
@@ -17,6 +17,7 @@ pub enum ItemKorok<'a> {
     Enum(EnumKorok<'a>),
     Impl(ImplKorok<'a>),
     Const(ConstKorok<'a>),
+    TypeAlias(TypeAliasKorok<'a>),
     Unsupported(UnsupportedItemKorok<'a>),
 }
 
@@ -45,6 +46,7 @@ impl<'a> ItemKorok<'a> {
             syn::Item::Enum(_) => Ok(ItemKorok::Enum(EnumKorok::parse(item)?)),
             syn::Item::Impl(_) => Ok(ItemKorok::Impl(ImplKorok::parse(item)?)),
             syn::Item::Const(_) => Ok(ItemKorok::Const(ConstKorok::parse(item)?)),
+            syn::Item::Type(_) => Ok(ItemKorok::TypeAlias(TypeAliasKorok::parse(item)?)),
             _ => Ok(ItemKorok::Unsupported(UnsupportedItemKorok::parse(item)?)),
         }
     }
@@ -70,6 +72,7 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Module(k) => k.node(),
             ItemKorok::Impl(k) => k.node(),
             ItemKorok::Const(k) => k.node(),
+            ItemKorok::TypeAlias(k) => k.node(),
             ItemKorok::Unsupported(k) => k.node(),
         }
     }
@@ -82,6 +85,7 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Module(k) => k.set_node(node),
             ItemKorok::Impl(k) => k.set_node(node),
             ItemKorok::Const(k) => k.set_node(node),
+            ItemKorok::TypeAlias(k) => k.set_node(node),
             ItemKorok::Unsupported(k) => k.set_node(node),
         }
     }
@@ -94,6 +98,7 @@ impl KorokTrait for ItemKorok<'_> {
             ItemKorok::Module(k) => k.attributes(),
             ItemKorok::Impl(k) => k.attributes(),
             ItemKorok::Const(k) => k.attributes(),
+            ItemKorok::TypeAlias(k) => k.attributes(),
             ItemKorok::Unsupported(k) => k.attributes(),
         }
     }

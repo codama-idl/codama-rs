@@ -56,6 +56,10 @@ impl KorokVisitor for UniformVisitor {
         (self.callback)(korok.into(), self)
     }
 
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        (self.callback)(korok.into(), self)
+    }
+
     fn visit_unsupported_item(
         &mut self,
         korok: &mut codama_koroks::UnsupportedItemKorok,

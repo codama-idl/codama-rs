@@ -116,6 +116,11 @@ impl KorokVisitor for DebugVisitor {
         self.write("Const", Some(&ident.to_string()), korok.into())
     }
 
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        let ident = korok.ast.ident.to_string();
+        self.write("TypeAlias", Some(&ident), korok.into())
+    }
+
     fn visit_unsupported_item(
         &mut self,
         korok: &mut codama_koroks::UnsupportedItemKorok,

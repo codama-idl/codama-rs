@@ -1,5 +1,6 @@
 use crate::{
-    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, DeriveAttribute, TryFromFilter,
+    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, DeriveAttribute,
+    ExportDirective, TryFromFilter,
 };
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
@@ -90,6 +91,12 @@ impl<'a> Attributes<'a> {
                 .iter()
                 .any(|p| p.last_str() == last && prefixes.contains(&p.prefix().as_str()))
         })
+    }
+
+    pub fn has_codama_export(&self, derive: &str) -> bool {
+        self.iter()
+            .filter_map(ExportDirective::filter)
+            .any(|e| e.derive == derive)
     }
 
     pub fn has_codama_attribute(&self, name: &str) -> bool {

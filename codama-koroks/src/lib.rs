@@ -11,6 +11,7 @@ mod korok;
 mod module_korok;
 mod root_korok;
 mod struct_korok;
+mod type_alias_korok;
 mod unsupported_impl_item_korok;
 mod unsupported_item_korok;
 
@@ -27,5 +28,6 @@ pub use korok::*;
 pub use module_korok::*;
 pub use root_korok::*;
 pub use struct_korok::*;
+pub use type_alias_korok::*;
 pub use unsupported_impl_item_korok::*;
 pub use unsupported_item_korok::*;

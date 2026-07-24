@@ -1,0 +1,17 @@
+error: export expects a single derive name — e.g. `export(CodamaType)`
+ --> tests/codama_attribute/export_directive/missing_derive.fail.rs:3:10
+  |
+3 | #[codama(export)]
+  |          ^^^^^^
+
+error: export expects a single derive name — e.g. `export(CodamaType)`
+ --> tests/codama_attribute/export_directive/missing_derive.fail.rs:6:10
+  |
+6 | #[codama(export())]
+  |          ^^^^^^^^
+
+error: export expects a single derive name — e.g. `export(CodamaType)`
+ --> tests/codama_attribute/export_directive/missing_derive.fail.rs:9:10
+  |
+9 | #[codama(export(CodamaType, CodamaAccount))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
