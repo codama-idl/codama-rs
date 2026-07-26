@@ -1,4 +1,4 @@
-use codama_macros::{codama, CodamaEvent};
+use codama_macros::CodamaEvent;
 
 #[derive(CodamaEvent)]
 #[codama(type = boolean)]
