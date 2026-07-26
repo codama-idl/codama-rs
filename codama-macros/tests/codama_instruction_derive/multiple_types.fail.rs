@@ -1,4 +1,4 @@
-use codama_macros::{codama, CodamaInstruction};
+use codama_macros::CodamaInstruction;
 
 #[derive(CodamaInstruction)]
 #[codama(type = boolean)]
