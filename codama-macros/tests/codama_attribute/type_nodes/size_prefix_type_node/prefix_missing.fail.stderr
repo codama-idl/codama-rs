@@ -1,0 +1,11 @@
+error: prefix is missing
+ --> tests/codama_attribute/type_nodes/size_prefix_type_node/prefix_missing.fail.rs:3:17
+  |
+3 | #[codama(type = size_prefix(string))]
+  |                 ^^^^^^^^^^^^^^^^^^^
+
+error: prefix is missing
+ --> tests/codama_attribute/type_nodes/size_prefix_type_node/prefix_missing.fail.rs:6:17
+  |
+6 | #[codama(type = size_prefix(type = string))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^

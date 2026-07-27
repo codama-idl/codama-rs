@@ -6,7 +6,7 @@ use codama_koroks::FieldKorok;
 use codama_nodes::{
     FixedSizeTypeNode,
     NumberFormat::{U16, U32, U8},
-    NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
+    NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, TypeNode,
 };
 
 #[test]
@@ -106,6 +106,56 @@ fn it_replaces_fixed_size_type_nodes() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U8)).into())
+    );
+    Ok(())
+}
+
+#[test]
+fn it_matches_the_size_prefix_type_node_written_in_the_dsl() -> CodamaResult<()> {
+    // Via the modifier directive.
+    let modifier_ast: syn::Field = syn::parse_quote! {
+        #[codama(type = string)]
+        #[codama(size_prefix = number(u8))]
+        String
+    };
+    let mut modifier_korok = FieldKorok::parse(&modifier_ast)?;
+    modifier_korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    modifier_korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
+
+    // Via the type node in the DSL.
+    let dsl_ast: syn::Field = syn::parse_quote! {
+        #[codama(type = size_prefix(string, number(u8)))]
+        String
+    };
+    let mut dsl_korok = FieldKorok::parse(&dsl_ast)?;
+    dsl_korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    dsl_korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
+
+    assert_eq!(modifier_korok.node, dsl_korok.node);
+    assert_eq!(
+        dsl_korok.node,
+        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U8)).into())
+    );
+    Ok(())
+}
+
+#[test]
+fn it_serializes_to_the_expected_json() -> CodamaResult<()> {
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(type = size_prefix(string, number(u32)))]
+        String
+    };
+    let mut korok = FieldKorok::parse(&ast)?;
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+
+    let expected = r#"{"kind":"sizePrefixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"prefix":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+    assert_eq!(serde_json::to_string(&korok.node)?, expected);
+    assert_eq!(
+        serde_json::to_string(&SizePrefixTypeNode::<TypeNode>::new(
+            StringTypeNode::utf8(),
+            NumberTypeNode::le(U32)
+        ))?,
+        expected
     );
     Ok(())
 }
