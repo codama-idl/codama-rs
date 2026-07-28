@@ -1,0 +1,5 @@
+error: expected `=` followed by a single value: `size_prefix = ...`
+ --> tests/codama_attribute/size_prefix_directive/list_form.fail.rs:3:22
+  |
+3 | #[codama(size_prefix(string, number(u32)))]
+  |                      ^^^^^^^^^^^^^^^^^^^

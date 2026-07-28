@@ -140,6 +140,15 @@ mod tests {
     }
 
     #[test]
+    fn positional_order() {
+        // Positional args fill `type` then `prefix` and are never swapped.
+        assert_type_err!(
+            { size_prefix(number(u32), string) },
+            "prefix must be a NumberTypeNode"
+        );
+    }
+
+    #[test]
     fn type_missing() {
         assert_type_err!({ size_prefix(prefix = number(u32)) }, "type is missing");
     }
