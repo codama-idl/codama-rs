@@ -4,7 +4,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parse a type node that must resolve to a number, allowing the wrappers
 /// `NestedTypeNode` accepts, e.g. `number(u32)` or `fixed_size(number(u32), 4)`.
-pub(super) fn nested_number(
+pub(crate) fn nested_number(
     meta: &Meta,
     ident: &str,
 ) -> syn::Result<NestedTypeNode<NumberTypeNode>> {

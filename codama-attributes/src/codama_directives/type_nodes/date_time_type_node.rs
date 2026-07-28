@@ -1,4 +1,4 @@
-use super::nested_number::nested_number;
+use crate::codama_directives::nested_number::nested_number;
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{DateTimeTypeNode, NestedTypeNode, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
