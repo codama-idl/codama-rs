@@ -1,0 +1,11 @@
+error: type is already set
+ --> tests/codama_attribute/type_nodes/size_prefix_type_node/already_set.fail.rs:3:44
+  |
+3 | #[codama(type = size_prefix(type = string, type = bytes))]
+  |                                            ^^^^^^^^^^^^
+
+error: prefix is already set
+ --> tests/codama_attribute/type_nodes/size_prefix_type_node/already_set.fail.rs:6:50
+  |
+6 | #[codama(type = size_prefix(string, number(u32), number(u8)))]
+  |                                                  ^^^^^^^^^^

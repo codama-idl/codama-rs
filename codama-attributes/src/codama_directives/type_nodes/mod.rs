@@ -4,6 +4,7 @@ mod fixed_size_type_node;
 mod number_type_node;
 mod option_type_node;
 mod public_key_type_node;
+mod size_prefix_type_node;
 mod string_type_node;
 mod struct_field_meta_consumer;
 mod struct_field_type_node;
