@@ -1,0 +1,5 @@
+error: sentinel is missing
+ --> tests/codama_attribute/type_nodes/sentinel_type_node/sentinel_missing.fail.rs:3:17
+  |
+3 | #[codama(type = sentinel(string))]
+  |                 ^^^^^^^^^^^^^^^^
