@@ -1,24 +1,30 @@
 use crate::{utils::FromMeta, TypeDirectiveNode};
 use codama_nodes::{
-    BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, NumberTypeNode, OptionTypeNode,
-    PublicKeyTypeNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TypeNode, ZeroableOptionTypeNode,
+    AmountTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, FixedSizeTypeNode,
+    NumberTypeNode, OptionTypeNode, PublicKeyTypeNode, RegisteredTypeNode, RemainderOptionTypeNode,
+    SizePrefixTypeNode, SolAmountTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNode, ZeroableOptionTypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for RegisteredTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
+            "amount" => AmountTypeNode::from_meta(meta).map(Self::from),
             "boolean" => BooleanTypeNode::from_meta(meta).map(Self::from),
             "bytes" => BytesTypeNode::from_meta(meta).map(Self::from),
+            "date_time" => DateTimeTypeNode::from_meta(meta).map(Self::from),
             "field" => StructFieldTypeNode::from_meta(meta).map(Self::from),
             "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
             "number" => NumberTypeNode::from_meta(meta).map(Self::from),
             "option" => OptionTypeNode::from_meta(meta).map(Self::from),
             "public_key" => PublicKeyTypeNode::from_meta(meta).map(Self::from),
+            "remainder_option" => RemainderOptionTypeNode::from_meta(meta).map(Self::from),
             "size_prefix" => SizePrefixTypeNode::from_meta(meta).map(Self::from),
+            "sol_amount" => SolAmountTypeNode::from_meta(meta).map(Self::from),
             "string" => StringTypeNode::from_meta(meta).map(Self::from),
             "struct" => StructTypeNode::from_meta(meta).map(Self::from),
+            "tuple" => TupleTypeNode::from_meta(meta).map(Self::from),
             "zeroable_option" => ZeroableOptionTypeNode::from_meta(meta).map(Self::from),
             _ => Err(meta.error("unrecognized type")),
         }
