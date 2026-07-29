@@ -1,0 +1,5 @@
+error: size must be a NumberTypeNode
+ --> tests/codama_attribute/type_nodes/enum_type_node/invalid_size.fail.rs:3:29
+  |
+3 | #[codama(type = enum(size = string))]
+  |                             ^^^^^^

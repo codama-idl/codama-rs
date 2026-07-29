@@ -1,0 +1,5 @@
+error: name is missing
+ --> tests/codama_attribute/type_nodes/enum_type_node/variant_name_missing.fail.rs:3:22
+  |
+3 | #[codama(type = enum(variant()))]
+  |                      ^^^^^^^^^

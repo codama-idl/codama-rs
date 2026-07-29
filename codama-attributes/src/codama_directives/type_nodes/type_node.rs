@@ -1,11 +1,11 @@
 use crate::{utils::FromMeta, TypeDirectiveNode};
 use codama_nodes::{
-    AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode,
-    FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NumberTypeNode,
-    OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode, PublicKeyTypeNode, RegisteredTypeNode,
-    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
-    ZeroableOptionTypeNode,
+    AmountTypeNode, ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, EnumTypeNode,
+    EnumVariantTypeNode, FixedSizeTypeNode, HiddenPrefixTypeNode, HiddenSuffixTypeNode,
+    MapTypeNode, NumberTypeNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode,
+    PublicKeyTypeNode, RegisteredTypeNode, RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode,
+    SizePrefixTypeNode, SolAmountTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    TupleTypeNode, TypeNode, ZeroableOptionTypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -17,6 +17,7 @@ impl FromMeta for RegisteredTypeNode {
             "boolean" => BooleanTypeNode::from_meta(meta).map(Self::from),
             "bytes" => BytesTypeNode::from_meta(meta).map(Self::from),
             "date_time" => DateTimeTypeNode::from_meta(meta).map(Self::from),
+            "enum" => EnumTypeNode::from_meta(meta).map(Self::from),
             "field" => StructFieldTypeNode::from_meta(meta).map(Self::from),
             "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
             "hidden_prefix" => HiddenPrefixTypeNode::from_meta(meta).map(Self::from),
@@ -35,6 +36,13 @@ impl FromMeta for RegisteredTypeNode {
             "string" => StringTypeNode::from_meta(meta).map(Self::from),
             "struct" => StructTypeNode::from_meta(meta).map(Self::from),
             "tuple" => TupleTypeNode::from_meta(meta).map(Self::from),
+            // `RegisteredTypeNode` holds the three variant kinds separately
+            // rather than the `EnumVariantTypeNode` union, so unwrap it here.
+            "variant" => EnumVariantTypeNode::from_meta(meta).map(|node| match node {
+                EnumVariantTypeNode::Empty(node) => Self::from(node),
+                EnumVariantTypeNode::Struct(node) => Self::from(node),
+                EnumVariantTypeNode::Tuple(node) => Self::from(node),
+            }),
             "zeroable_option" => ZeroableOptionTypeNode::from_meta(meta).map(Self::from),
             _ => Err(meta.error("unrecognized type")),
         }
