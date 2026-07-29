@@ -1,0 +1,5 @@
+error: a variant payload must be a struct or a tuple
+ --> tests/codama_attribute/type_nodes/enum_type_node/invalid_variant_payload.fail.rs:3:22
+  |
+3 | #[codama(type = enum(variant("a", number(u8))))]
+  |                      ^^^^^^^^^^^^^^^^^^^^^^^^

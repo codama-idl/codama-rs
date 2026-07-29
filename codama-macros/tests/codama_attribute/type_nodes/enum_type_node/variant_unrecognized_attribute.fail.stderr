@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/enum_type_node/variant_unrecognized_attribute.fail.rs:3:35
+  |
+3 | #[codama(type = enum(variant("a", foo = 42)))]
+  |                                   ^^^^^^^^

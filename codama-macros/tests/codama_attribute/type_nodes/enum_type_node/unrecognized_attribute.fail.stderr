@@ -1,0 +1,5 @@
+error: expected variant(...) or size = ...
+ --> tests/codama_attribute/type_nodes/enum_type_node/unrecognized_attribute.fail.rs:3:22
+  |
+3 | #[codama(type = enum(foo = 42))]
+  |                      ^^^^^^^^
