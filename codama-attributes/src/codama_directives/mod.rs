@@ -1,3 +1,4 @@
+mod count_nodes;
 mod link_nodes;
 mod type_nodes;
 mod value_nodes;

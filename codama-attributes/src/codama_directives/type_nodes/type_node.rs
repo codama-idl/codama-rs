@@ -1,21 +1,24 @@
 use crate::{utils::FromMeta, TypeDirectiveNode};
 use codama_nodes::{
-    BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, NumberTypeNode, OptionTypeNode,
-    PublicKeyTypeNode, RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TypeNode, ZeroableOptionTypeNode,
+    ArrayTypeNode, BooleanTypeNode, BytesTypeNode, FixedSizeTypeNode, MapTypeNode, NumberTypeNode,
+    OptionTypeNode, PublicKeyTypeNode, RegisteredTypeNode, SetTypeNode, SizePrefixTypeNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TypeNode, ZeroableOptionTypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for RegisteredTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
+            "array" => ArrayTypeNode::from_meta(meta).map(Self::from),
             "boolean" => BooleanTypeNode::from_meta(meta).map(Self::from),
             "bytes" => BytesTypeNode::from_meta(meta).map(Self::from),
             "field" => StructFieldTypeNode::from_meta(meta).map(Self::from),
             "fixed_size" => FixedSizeTypeNode::from_meta(meta).map(Self::from),
+            "map" => MapTypeNode::from_meta(meta).map(Self::from),
             "number" => NumberTypeNode::from_meta(meta).map(Self::from),
             "option" => OptionTypeNode::from_meta(meta).map(Self::from),
             "public_key" => PublicKeyTypeNode::from_meta(meta).map(Self::from),
+            "set" => SetTypeNode::from_meta(meta).map(Self::from),
             "size_prefix" => SizePrefixTypeNode::from_meta(meta).map(Self::from),
             "string" => StringTypeNode::from_meta(meta).map(Self::from),
             "struct" => StructTypeNode::from_meta(meta).map(Self::from),
