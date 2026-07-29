@@ -1,0 +1,5 @@
+error: unrecognized type
+ --> tests/codama_attribute/type_nodes/tuple_type_node/unrecognized_item.fail.rs:3:23
+  |
+3 | #[codama(type = tuple(nonsense))]
+  |                       ^^^^^^^^
