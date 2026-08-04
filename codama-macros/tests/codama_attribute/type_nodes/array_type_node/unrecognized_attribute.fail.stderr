@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/array_type_node/unrecognized_attribute.fail.rs:3:23
+  |
+3 | #[codama(type = array(foo = 42))]
+  |                       ^^^^^^^^

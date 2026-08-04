@@ -1,0 +1,5 @@
+error: unrecognized count
+ --> tests/codama_attribute/type_nodes/array_type_node/unrecognized_count.fail.rs:3:43
+  |
+3 | #[codama(type = array(number(u8), count = nonsense))]
+  |                                           ^^^^^^^^

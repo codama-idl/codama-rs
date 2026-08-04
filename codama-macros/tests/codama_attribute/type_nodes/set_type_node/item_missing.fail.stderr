@@ -1,0 +1,5 @@
+error: item is missing
+ --> tests/codama_attribute/type_nodes/set_type_node/item_missing.fail.rs:3:17
+  |
+3 | #[codama(type = set(count = 3))]
+  |                 ^^^^^^^^^^^^^^

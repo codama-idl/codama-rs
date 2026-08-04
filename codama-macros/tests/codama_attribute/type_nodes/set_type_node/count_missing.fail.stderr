@@ -1,0 +1,5 @@
+error: count is missing
+ --> tests/codama_attribute/type_nodes/set_type_node/count_missing.fail.rs:3:17
+  |
+3 | #[codama(type = set(number(u8)))]
+  |                 ^^^^^^^^^^^^^^^

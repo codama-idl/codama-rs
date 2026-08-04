@@ -1,0 +1,5 @@
+error: value is missing
+ --> tests/codama_attribute/type_nodes/map_type_node/value_missing.fail.rs:3:17
+  |
+3 | #[codama(type = map(string, count = 3))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^
