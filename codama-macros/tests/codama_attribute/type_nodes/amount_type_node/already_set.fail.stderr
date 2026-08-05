@@ -1,0 +1,5 @@
+error: decimals is already set
+ --> tests/codama_attribute/type_nodes/amount_type_node/already_set.fail.rs:3:51
+  |
+3 | #[codama(type = amount(number(u64), decimals = 9, decimals = 6))]
+  |                                                   ^^^^^^^^^^^^

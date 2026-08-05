@@ -1,0 +1,5 @@
+error: number is missing
+ --> tests/codama_attribute/type_nodes/amount_type_node/number_missing.fail.rs:3:17
+  |
+3 | #[codama(type = amount(decimals = 9))]
+  |                 ^^^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/remainder_option_type_node/unrecognized_attribute.fail.rs:3:34
+  |
+3 | #[codama(type = remainder_option(foo = 42))]
+  |                                  ^^^^^^^^

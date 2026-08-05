@@ -1,0 +1,5 @@
+error: number is missing
+ --> tests/codama_attribute/type_nodes/sol_amount_type_node/number_missing.fail.rs:3:17
+  |
+3 | #[codama(type = sol_amount())]
+  |                 ^^^^^^^^^^^^

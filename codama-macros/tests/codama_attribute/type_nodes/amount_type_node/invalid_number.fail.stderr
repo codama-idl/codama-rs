@@ -1,0 +1,5 @@
+error: number must be a NumberTypeNode
+ --> tests/codama_attribute/type_nodes/amount_type_node/invalid_number.fail.rs:3:24
+  |
+3 | #[codama(type = amount(string))]
+  |                        ^^^^^^

@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/date_time_type_node/unrecognized_attribute.fail.rs:3:27
+  |
+3 | #[codama(type = date_time(foo = 42))]
+  |                           ^^^^^^^^
