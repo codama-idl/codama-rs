@@ -3,6 +3,8 @@ mod array_type_node;
 mod boolean_type_node;
 mod bytes_type_node;
 mod date_time_type_node;
+mod enum_type_node;
+mod enum_variant_type_node;
 mod fixed_size_type_node;
 mod map_type_node;
 mod number_type_node;
