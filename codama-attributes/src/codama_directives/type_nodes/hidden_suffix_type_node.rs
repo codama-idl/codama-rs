@@ -55,6 +55,14 @@ mod tests {
     }
 
     #[test]
+    fn no_constants() {
+        assert_type!(
+            { hidden_suffix(string) },
+            HiddenSuffixTypeNode::new(StringTypeNode::utf8(), vec![]).into()
+        );
+    }
+
+    #[test]
     fn type_missing() {
         assert_type_err!(
             { hidden_suffix(constant(number(u8), 1)) },

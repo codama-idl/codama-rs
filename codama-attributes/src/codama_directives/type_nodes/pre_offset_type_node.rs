@@ -1,3 +1,4 @@
+use super::offset_strategy::bare_path;
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{PreOffsetStrategy, PreOffsetTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
@@ -43,14 +44,6 @@ impl FromMeta for PreOffsetTypeNode<TypeNode> {
             offset.take(meta)?,
         ))
     }
-}
-
-fn bare_path(meta: &Meta) -> Option<String> {
-    meta.as_expr()
-        .ok()?
-        .as_path()
-        .ok()
-        .map(|path| path.to_string())
 }
 
 fn parse_strategy(name: &str) -> Option<PreOffsetStrategy> {
@@ -116,6 +109,11 @@ mod tests {
             { pre_offset(string, 4, strategy = nonsense) },
             "invalid strategy"
         );
+    }
+
+    #[test]
+    fn bare_invalid_strategy_is_read_as_a_type() {
+        assert_type_err!({ pre_offset(string, 4, nonsense) }, "unrecognized type");
     }
 
     #[test]

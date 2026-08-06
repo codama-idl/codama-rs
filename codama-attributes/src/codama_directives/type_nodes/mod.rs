@@ -8,6 +8,7 @@ mod hidden_prefix_type_node;
 mod hidden_suffix_type_node;
 mod map_type_node;
 mod number_type_node;
+mod offset_strategy;
 mod option_type_node;
 mod post_offset_type_node;
 mod pre_offset_type_node;
