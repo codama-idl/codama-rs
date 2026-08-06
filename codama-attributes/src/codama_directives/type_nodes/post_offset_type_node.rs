@@ -1,4 +1,3 @@
-use super::offset_strategy::bare_path;
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{PostOffsetStrategy, PostOffsetTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
@@ -45,6 +44,10 @@ impl FromMeta for PostOffsetTypeNode<TypeNode> {
             offset.take(meta)?,
         ))
     }
+}
+
+fn bare_path(meta: &Meta) -> Option<String> {
+    meta.as_path().ok().map(|path| path.to_string())
 }
 
 fn parse_strategy(name: &str) -> Option<PostOffsetStrategy> {
