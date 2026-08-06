@@ -1,7 +1,5 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{
-    EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, TypeNode, U8,
-};
+use codama_nodes::{EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for EnumTypeNode {
@@ -30,12 +28,11 @@ impl FromMeta for EnumTypeNode {
                 })?;
         }
 
-        Ok(EnumTypeNode {
-            variants,
-            size: size
-                .option()
-                .unwrap_or(NestedTypeNode::Value(NumberTypeNode::le(U8))),
-        })
+        let mut node = EnumTypeNode::new(variants);
+        if let Some(size) = size.option() {
+            node.size = size;
+        }
+        Ok(node)
     }
 }
 
@@ -44,7 +41,9 @@ mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
-        EnumEmptyVariantTypeNode, EnumTupleVariantTypeNode, NumberFormat::U16, TupleTypeNode,
+        EnumEmptyVariantTypeNode, EnumTupleVariantTypeNode,
+        NumberFormat::{U16, U8},
+        TupleTypeNode,
     };
 
     #[test]
