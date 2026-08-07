@@ -13,7 +13,7 @@ impl FromMeta for PostOffsetTypeNode<TypeNode> {
             // Strategies are written as bare paths. This also keeps the
             // `pre_offset` strategy distinct from the `pre_offset(...)` type node,
             // which is a list rather than a bare path.
-            if let Some(value) = bare_path(meta).as_deref().and_then(parse_strategy) {
+            if let Some(value) = meta.as_path().ok().and_then(parse_strategy) {
                 return strategy.set(value, meta);
             }
             match meta.path_str().as_str() {
@@ -21,7 +21,7 @@ impl FromMeta for PostOffsetTypeNode<TypeNode> {
                 "offset" => offset.set(meta.as_value()?.as_expr()?.as_signed_integer()?, meta),
                 "strategy" => {
                     let path = meta.as_value()?.as_expr()?.as_path()?;
-                    match parse_strategy(&path.to_string()) {
+                    match parse_strategy(path) {
                         Some(value) => strategy.set(value, meta),
                         None => Err(path.error("invalid strategy")),
                     }
@@ -46,12 +46,8 @@ impl FromMeta for PostOffsetTypeNode<TypeNode> {
     }
 }
 
-fn bare_path(meta: &Meta) -> Option<String> {
-    meta.as_path().ok().map(|path| path.to_string())
-}
-
-fn parse_strategy(name: &str) -> Option<PostOffsetStrategy> {
-    match name {
+fn parse_strategy(path: &syn::Path) -> Option<PostOffsetStrategy> {
+    match path.to_string().as_str() {
         "absolute" => Some(PostOffsetStrategy::Absolute),
         "padded" => Some(PostOffsetStrategy::Padded),
         "pre_offset" => Some(PostOffsetStrategy::PreOffset),
