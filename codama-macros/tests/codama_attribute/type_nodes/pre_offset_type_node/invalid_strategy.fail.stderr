@@ -1,0 +1,5 @@
+error: invalid strategy
+ --> tests/codama_attribute/type_nodes/pre_offset_type_node/invalid_strategy.fail.rs:3:50
+  |
+3 | #[codama(type = pre_offset(string, 4, strategy = nonsense))]
+  |                                                  ^^^^^^^^

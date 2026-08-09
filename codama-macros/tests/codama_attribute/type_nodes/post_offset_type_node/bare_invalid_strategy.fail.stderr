@@ -1,0 +1,5 @@
+error: unrecognized type
+ --> tests/codama_attribute/type_nodes/post_offset_type_node/bare_invalid_strategy.fail.rs:3:40
+  |
+3 | #[codama(type = post_offset(string, 4, nonsense))]
+  |                                        ^^^^^^^^

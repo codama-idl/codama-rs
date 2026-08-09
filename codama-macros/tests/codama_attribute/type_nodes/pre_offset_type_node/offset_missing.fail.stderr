@@ -1,0 +1,5 @@
+error: offset is missing
+ --> tests/codama_attribute/type_nodes/pre_offset_type_node/offset_missing.fail.rs:3:17
+  |
+3 | #[codama(type = pre_offset(string, strategy = relative))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
