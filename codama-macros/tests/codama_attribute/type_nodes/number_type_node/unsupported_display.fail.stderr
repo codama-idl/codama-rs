@@ -1,0 +1,5 @@
+error: duration display is not supported yet
+ --> tests/codama_attribute/type_nodes/number_type_node/unsupported_display.fail.rs:3:39
+  |
+3 | #[codama(type = number(u64, display = duration))]
+  |                                       ^^^^^^^^

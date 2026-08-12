@@ -1,0 +1,5 @@
+error: ticks_per_second must be greater than zero
+ --> tests/codama_attribute/type_nodes/number_type_node/zero_ticks_per_second.fail.rs:3:68
+  |
+3 | #[codama(type = number(i64, display = date_time(ticks_per_second = 0)))]
+  |                                                                    ^
