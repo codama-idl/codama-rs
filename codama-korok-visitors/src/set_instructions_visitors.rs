@@ -1,15 +1,16 @@
-use crate::{CombineTypesVisitor, KorokVisitor};
+use crate::{apply_struct_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
-    EnumDiscriminatorDirective, OptionalAccountStrategyDirective, ProgramDirective, TryFromFilter,
+    DisplayDirective, EnumDiscriminatorDirective, OptionalAccountStrategyDirective,
+    ProgramDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode, NestedTypeNode, Node,
-    NumberValueNode, OptionalAccountStrategy, ProgramNode, StructFieldTypeNode, StructTypeNode,
-    TypeNode,
+    InstructionAccountNode, InstructionArgumentNode, InstructionDisplayNode, InstructionNode,
+    NestedTypeNode, Node, NumberValueNode, OptionalAccountStrategy, ProgramNode,
+    StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -69,6 +70,7 @@ impl KorokVisitor for SetInstructionsVisitor {
             accounts: parse_accounts(&korok.attributes, &korok.fields)?,
             arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+            display: parse_instruction_display(&korok.attributes),
             ..InstructionNode::default()
         };
 
@@ -169,6 +171,7 @@ impl KorokVisitor for SetInstructionsVisitor {
                     Some(discriminator),
                 )?,
                 discriminators,
+                display: parse_instruction_display(&korok.attributes),
                 ..InstructionNode::default()
             }
             .into(),
@@ -182,6 +185,28 @@ fn parse_optional_account_strategy(attributes: &Attributes) -> Option<OptionalAc
     attributes
         .get_last(OptionalAccountStrategyDirective::filter)
         .map(|directive| directive.strategy)
+}
+
+fn parse_instruction_display(attributes: &Attributes) -> Option<InstructionDisplayNode> {
+    // Display properties are host-specific. Field properties are intentionally left for
+    // field and enum-variant display handling rather than interpreted as instruction metadata.
+    attributes
+        .get_all(DisplayDirective::filter)
+        .into_iter()
+        .fold(None, |display, directive| {
+            if directive.intent.is_none() && directive.interpolated_intent.is_none() {
+                return display;
+            }
+
+            let mut display = display.unwrap_or_default();
+            if let Some(intent) = &directive.intent {
+                display.intent = Some(intent.clone());
+            }
+            if let Some(interpolated_intent) = &directive.interpolated_intent {
+                display.interpolated_intent = Some(interpolated_intent.clone());
+            }
+            Some(display)
+        })
 }
 
 fn parse_accounts(
@@ -330,7 +355,11 @@ fn parse_enum_variant(
                                     .get(i)
                                     .and_then(|f| f.name())
                                     .unwrap_or_else(|| format!("arg{}", i).into());
-                                StructFieldTypeNode::new(name, item)
+                                let display = korok.fields.get(i).and_then(parse_field_display);
+                                StructFieldTypeNode {
+                                    display,
+                                    ..StructFieldTypeNode::new(name, item)
+                                }
                             })
                             .collect();
                         return Ok((node.name, StructTypeNode::new(fields)));
@@ -347,4 +376,14 @@ fn parse_enum_variant(
         korok.ast.ident
     );
     Err(korok.ast.error(message).into())
+}
+
+fn parse_field_display(field: &FieldKorok) -> Option<StructFieldDisplayNode> {
+    // Unnamed fields cannot carry StructFieldDisplayNode metadata during field traversal.
+    // Recover it here when an instruction tuple variant turns those fields into named arguments.
+    let mut display = None;
+    for directive in field.attributes.get_all(DisplayDirective::filter) {
+        apply_struct_field_display(&mut display, directive);
+    }
+    display
 }

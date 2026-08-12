@@ -3,11 +3,11 @@ use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccoun
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantPdaSeedNode,
-    ConstantValueNode, DefaultValueStrategy, Docs, FieldDiscriminatorNode,
+    ConstantValueNode, DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode,
     NumberFormat::{U32, U64, U8},
     NumberTypeNode, NumberValueNode, OptionTypeNode, PdaLinkNode, PdaNode, ProgramNode,
-    PublicKeyTypeNode, SizeDiscriminatorNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
-    StructTypeNode, VariablePdaSeedNode,
+    PublicKeyTypeNode, SizeDiscriminatorNode, StringTypeNode, StringValueNode,
+    StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, VariablePdaSeedNode,
 };
 
 #[test]
@@ -48,7 +48,7 @@ fn from_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             StructFieldTypeNode::new("mint_authority", PublicKeyTypeNode::new()),
                             StructFieldTypeNode::new("freeze_authority", OptionTypeNode::new(PublicKeyTypeNode::new())),
@@ -68,7 +68,7 @@ fn from_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
                             StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
@@ -115,7 +115,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -132,7 +132,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -177,7 +177,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U32).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u32).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                         ]).into(),
                         pda: None,
@@ -194,7 +194,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U32).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u32).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                         ]).into(),
                         pda: None,
@@ -240,7 +240,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -257,7 +257,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -274,7 +274,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(43u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -291,7 +291,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(100u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             }
                         ]).into(),
                         pda: None,
@@ -367,7 +367,7 @@ fn with_name_directives() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U8).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        display: None,
+                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                     }])
                     .into(),
                     pda: None,
@@ -409,7 +409,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U8).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        display: None,
+                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                     }])
                     .into(),
                     pda: None,
@@ -458,7 +458,7 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
                         docs: Docs::default(),
                         r#type: Box::new(NumberTypeNode::le(U64).into()),
                         default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                        display: None,
+                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                     }])
                     .into(),
                     pda: None,
@@ -509,7 +509,7 @@ fn with_seed_directives() -> CodamaResult<()> {
                                     docs: Docs::default(),
                                     r#type: Box::new(NumberTypeNode::le(U8).into()),
                                     default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                    display: None,
+                                    display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                                 },
                                 StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
                             ])
@@ -526,7 +526,7 @@ fn with_seed_directives() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },])
                         )
                     }
@@ -587,7 +587,7 @@ fn with_pda_directive() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         },])
                     )
                 }],
@@ -632,7 +632,7 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
                         ])

@@ -1,3 +1,4 @@
+mod apply_display_visitor;
 mod apply_type_modifiers_visitor;
 mod apply_type_overrides_visitor;
 mod combine_modules_visitor;
@@ -18,6 +19,7 @@ mod uniform_visitor;
 mod visitable;
 mod visitor;
 
+pub use apply_display_visitor::*;
 pub use apply_type_modifiers_visitor::*;
 pub use apply_type_overrides_visitor::*;
 pub use combine_modules_visitor::*;

@@ -1,3 +1,4 @@
+mod apply_display_visitor;
 mod apply_type_modifiers_visitor;
 mod apply_type_overrides_visitor;
 mod combine_modules_visitor;
