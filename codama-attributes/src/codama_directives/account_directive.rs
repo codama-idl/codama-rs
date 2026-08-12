@@ -4,7 +4,8 @@ use crate::{
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    CamelCaseString, Docs, InstructionAccountNode, InstructionInputValueNode, IsSigner,
+    CamelCaseString, Docs, InstructionAccountDisplayNode, InstructionAccountNode,
+    InstructionInputValueNode, IsSigner,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -16,6 +17,7 @@ pub struct AccountDirective {
     pub is_optional: bool,
     pub docs: Docs,
     pub default_value: Option<Resolvable<InstructionInputValueNode>>,
+    pub display: Option<InstructionAccountDisplayNode>,
 }
 
 impl AccountDirective {
@@ -34,6 +36,7 @@ impl AccountDirective {
         let mut default_value =
             SetOnce::<Resolvable<InstructionInputValueNode>>::new("default_value");
         let mut docs = SetOnce::<Docs>::new("docs");
+        let mut display = SetOnce::<InstructionAccountDisplayNode>::new("display");
         match meta.is_path_or_empty_list() {
             true => (),
             false => meta
@@ -48,6 +51,7 @@ impl AccountDirective {
                         meta,
                     ),
                     "docs" => docs.set(Docs::from_meta(meta)?, meta),
+                    "display" => display.set(InstructionAccountDisplayNode::from_meta(meta)?, meta),
                     _ => Err(meta.error("unrecognized attribute")),
                 })?,
         }
@@ -58,6 +62,7 @@ impl AccountDirective {
             is_optional: is_optional.take(meta)?,
             docs: docs.option().unwrap_or_default(),
             default_value: default_value.option(),
+            display: display.option(),
         })
     }
 
@@ -77,7 +82,7 @@ impl AccountDirective {
                     .transpose()?,
             ),
             account_link: None,
-            display: None,
+            display: self.display.clone(),
         })
     }
 }
@@ -107,7 +112,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::PayerValueNode;
+    use codama_nodes::{DisplaySkip, PayerValueNode};
 
     #[test]
     fn fully_set() {
@@ -124,6 +129,7 @@ mod tests {
                 is_optional: true,
                 default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
                 docs: Docs::default(),
+                display: None,
             }
         );
     }
@@ -149,6 +155,7 @@ mod tests {
                 is_optional: false,
                 default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
                 docs: Docs::default(),
+                display: None,
             }
         );
     }
@@ -168,6 +175,7 @@ mod tests {
                 is_optional: false,
                 default_value: None,
                 docs: Docs::default(),
+                display: None,
             }
         );
     }
@@ -196,6 +204,7 @@ mod tests {
                 is_optional: false,
                 default_value: None,
                 docs: vec!["what this account is for".to_string()].into(),
+                display: None,
             }
         );
     }
@@ -220,7 +229,27 @@ mod tests {
                     "Line 3".to_string()
                 ]
                 .into(),
+                display: None,
             }
+        );
+    }
+
+    #[test]
+    fn with_display() {
+        let meta: Meta = syn::parse_quote! {
+            account(name = "payer", display(label = "Payer", skip = never))
+        };
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        let directive = AccountDirective::parse(&meta, &ctx).unwrap();
+        let expected_display = InstructionAccountDisplayNode {
+            label: Some("Payer".to_string()),
+            skip: Some(DisplaySkip::Never),
+        };
+        assert_eq!(directive.display, Some(expected_display.clone()));
+        assert_eq!(
+            directive.to_instruction_account_node().unwrap().display,
+            Some(expected_display)
         );
     }
 }

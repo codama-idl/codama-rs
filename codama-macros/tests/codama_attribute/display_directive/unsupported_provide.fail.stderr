@@ -1,0 +1,5 @@
+error: provide directives are not supported yet
+ --> tests/codama_attribute/display_directive/unsupported_provide.fail.rs:3:10
+  |
+3 | #[codama(provide("decimals", account_field("mint", "decimals")))]
+  |          ^^^^^^^

@@ -1,0 +1,5 @@
+error: unrecognized instruction account display attribute
+ --> tests/codama_attribute/display_directive/invalid_account_display.fail.rs:3:42
+  |
+3 | #[codama(account(name = "payer", display(intent = "Pay")))]
+  |                                          ^^^^^^^^^^^^^^

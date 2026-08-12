@@ -1,7 +1,7 @@
 use crate::{
     AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
-    DiscriminatorDirective, EncodingDirective, EnumDiscriminatorDirective, ErrorDirective,
-    ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
+    DiscriminatorDirective, DisplayDirective, EncodingDirective, EnumDiscriminatorDirective,
+    ErrorDirective, ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
     OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, SeedDirective,
     SizePrefixDirective, SkipDirective, TypeDirective,
 };
@@ -22,6 +22,7 @@ pub enum CodamaDirective {
 
     // Multi-purpose directives.
     Discriminator(DiscriminatorDirective),
+    Display(DisplayDirective),
     EnumDiscriminator(EnumDiscriminatorDirective),
     Export(ExportDirective),
     Name(NameDirective),
@@ -58,6 +59,7 @@ impl CodamaDirective {
 
             // Multi-purpose directives.
             "discriminator" => Ok(DiscriminatorDirective::parse(meta)?.into()),
+            "display" => Ok(DisplayDirective::parse(meta)?.into()),
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
             "export" => Ok(ExportDirective::parse(meta)?.into()),
             "name" => Ok(NameDirective::parse(meta)?.into()),
@@ -74,6 +76,7 @@ impl CodamaDirective {
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
             "argument" => Ok(ArgumentDirective::parse(meta)?.into()),
+            "provide" => Err(path.error("provide directives are not supported yet")),
 
             // Error directives.
             "error" => Ok(ErrorDirective::parse(meta)?.into()),
@@ -96,6 +99,7 @@ impl CodamaDirective {
 
             // Multi-purpose directives.
             Self::Discriminator(_) => "discriminator",
+            Self::Display(_) => "display",
             Self::EnumDiscriminator(_) => "enum_discriminator",
             Self::Export(_) => "export",
             Self::Name(_) => "name",

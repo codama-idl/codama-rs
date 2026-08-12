@@ -1,0 +1,5 @@
+error: duration display is not supported yet
+ --> tests/codama_attribute/display_directive/unsupported_display.fail.rs:3:18
+  |
+3 | #[codama(display(duration))]
+  |                  ^^^^^^^^

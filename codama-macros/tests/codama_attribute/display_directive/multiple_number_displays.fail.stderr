@@ -1,0 +1,5 @@
+error: number display is already set
+ --> tests/codama_attribute/display_directive/multiple_number_displays.fail.rs:3:26
+  |
+3 | #[codama(display(amount, date_time))]
+  |                          ^^^^^^^^^
