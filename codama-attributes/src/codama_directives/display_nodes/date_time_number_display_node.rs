@@ -13,7 +13,12 @@ impl FromMeta for DateTimeNumberDisplayNode {
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "ticks_per_second" => {
-                ticks_per_second.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta)
+                let value = meta.as_value()?;
+                let ticks_per_second_value = value.as_expr()?.as_unsigned_integer()?;
+                if ticks_per_second_value == 0 {
+                    return Err(value.error("ticks_per_second must be greater than zero"));
+                }
+                ticks_per_second.set(ticks_per_second_value, meta)
             }
             _ => Err(meta.error("unrecognized date_time display attribute")),
         })?;
@@ -56,5 +61,16 @@ mod tests {
     fn rejects_positional_attributes() {
         let meta: Meta = syn::parse_quote! { date_time(1_000) };
         assert!(DateTimeNumberDisplayNode::from_meta(&meta).is_err());
+    }
+
+    #[test]
+    fn rejects_zero_ticks_per_second() {
+        let meta: Meta = syn::parse_quote! { date_time(ticks_per_second = 0) };
+        assert_eq!(
+            DateTimeNumberDisplayNode::from_meta(&meta)
+                .unwrap_err()
+                .to_string(),
+            "ticks_per_second must be greater than zero"
+        );
     }
 }

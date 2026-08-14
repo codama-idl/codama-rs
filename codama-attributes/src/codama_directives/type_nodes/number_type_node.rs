@@ -1,5 +1,5 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{Endianness, NumberFormat, NumberTypeNode};
+use codama_nodes::{Endianness, NumberDisplayNode, NumberFormat, NumberTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for NumberTypeNode {
@@ -7,6 +7,7 @@ impl FromMeta for NumberTypeNode {
         let pl = meta.assert_directive("number")?.as_path_list()?;
         let mut format = SetOnce::<NumberFormat>::new("format");
         let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
+        let mut display = SetOnce::<NumberDisplayNode>::new("display");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "format" => {
@@ -23,6 +24,7 @@ impl FromMeta for NumberTypeNode {
                     _ => Err(path.error("invalid endian")),
                 }
             }
+            "display" => display.set(NumberDisplayNode::from_meta(meta.as_value()?)?, meta),
             _ => {
                 if let Ok(path) = meta.as_path() {
                     if let Ok(value) = NumberFormat::try_from(path.to_string()) {
@@ -36,7 +38,11 @@ impl FromMeta for NumberTypeNode {
             }
         })?;
 
-        Ok(Self::new(format.take(meta)?, endian.take(meta)?))
+        Ok(NumberTypeNode {
+            format: format.take(meta)?,
+            endian: endian.take(meta)?,
+            display: Box::new(display.option()),
+        })
     }
 }
 
@@ -44,7 +50,10 @@ impl FromMeta for NumberTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use NumberFormat::{U16, U64};
+    use codama_nodes::{
+        AmountNumberDisplayNode, DateTimeNumberDisplayNode, NumberValueNode, StringValueNode,
+    };
+    use NumberFormat::{I64, U16, U64};
 
     #[test]
     fn implicit() {
@@ -91,6 +100,47 @@ mod tests {
     }
 
     #[test]
+    fn amount_display() {
+        assert_type!(
+            { number(u64, display = amount(decimals = 9, unit = "SOL")) },
+            NumberTypeNode {
+                display: Box::new(Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
+                    decimals: Box::new(Some(NumberValueNode::new(9u64).into())),
+                    unit: Box::new(Some(StringValueNode::new("SOL").into())),
+                }))),
+                ..NumberTypeNode::le(U64)
+            }
+            .into()
+        );
+    }
+
+    #[test]
+    fn date_time_display() {
+        assert_type!(
+            { number(i64, display = date_time) },
+            NumberTypeNode {
+                display: Box::new(Some(NumberDisplayNode::DateTime(
+                    DateTimeNumberDisplayNode::default()
+                ))),
+                ..NumberTypeNode::le(I64)
+            }
+            .into()
+        );
+        assert_type!(
+            { number(i64, display = date_time(ticks_per_second = 1_000)) },
+            NumberTypeNode {
+                display: Box::new(Some(NumberDisplayNode::DateTime(
+                    DateTimeNumberDisplayNode {
+                        ticks_per_second: Some(1_000),
+                    }
+                ))),
+                ..NumberTypeNode::le(I64)
+            }
+            .into()
+        );
+    }
+
+    #[test]
     fn missing_format() {
         assert_type_err!({ number(le) }, "format is missing");
     }
@@ -103,6 +153,14 @@ mod tests {
     #[test]
     fn endian_already_set() {
         assert_type_err!({ number(le, be) }, "endian is already set");
+    }
+
+    #[test]
+    fn display_already_set() {
+        assert_type_err!(
+            { number(u64, display = amount, display = date_time) },
+            "display is already set"
+        );
     }
 
     #[test]

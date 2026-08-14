@@ -3,9 +3,7 @@ use crate::{
     Attribute, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{
-    AmountNumberDisplayNode, DateTimeNumberDisplayNode, DisplaySkip, NumberDisplayNode,
-};
+use codama_nodes::{DisplaySkip, NumberDisplayNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -39,18 +37,11 @@ impl DisplayDirective {
             "skip" => skip.set(DisplaySkip::from_meta(meta.as_value()?)?, meta),
             "flatten" => flatten.set(bool::from_meta(meta)?, meta),
             "flatten_prefix" => flatten_prefix.set(meta.as_value()?.as_expr()?.as_string()?, meta),
-            "amount" => number_display.set(
-                NumberDisplayNode::Amount(AmountNumberDisplayNode::from_meta(meta)?),
-                meta,
-            ),
-            "date_time" => number_display.set(
-                NumberDisplayNode::DateTime(DateTimeNumberDisplayNode::from_meta(meta)?),
-                meta,
-            ),
-            "duration" => Err(meta.error("duration display is not supported yet")),
+            "amount" | "date_time" | "duration" | "injected" => {
+                number_display.set(NumberDisplayNode::from_meta(meta)?, meta)
+            }
             "string" => Err(meta.error("string display is not supported yet")),
             "skip_inner_data" => Err(meta.error("enum variant display is not supported yet")),
-            "injected" => Err(meta.error("injected display values are not supported yet")),
             _ => Err(meta.error("unrecognized display attribute")),
         })?;
 
@@ -95,7 +86,10 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a DisplayDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{InstructionAccountDisplayNode, NumberValueNode, StringValueNode};
+    use codama_nodes::{
+        AmountNumberDisplayNode, DateTimeNumberDisplayNode, InstructionAccountDisplayNode,
+        NumberValueNode, StringValueNode,
+    };
 
     fn parse_display(tokens: proc_macro2::TokenStream) -> syn::Result<DisplayDirective> {
         let meta: Meta = syn::parse2(tokens)?;

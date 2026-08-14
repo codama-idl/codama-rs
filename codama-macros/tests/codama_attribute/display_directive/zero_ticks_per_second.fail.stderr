@@ -1,0 +1,5 @@
+error: ticks_per_second must be greater than zero
+ --> tests/codama_attribute/display_directive/zero_ticks_per_second.fail.rs:3:47
+  |
+3 | #[codama(display(date_time(ticks_per_second = 0)))]
+  |                                               ^

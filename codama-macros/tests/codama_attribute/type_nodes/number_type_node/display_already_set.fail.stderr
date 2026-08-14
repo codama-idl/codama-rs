@@ -1,0 +1,5 @@
+error: display is already set
+ --> tests/codama_attribute/type_nodes/number_type_node/display_already_set.fail.rs:3:47
+  |
+3 | #[codama(type = number(u64, display = amount, display = date_time))]
+  |                                               ^^^^^^^^^^^^^^^^^^^
