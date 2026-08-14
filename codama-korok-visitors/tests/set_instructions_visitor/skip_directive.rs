@@ -2,9 +2,10 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
-    DefaultValueStrategy, Docs, FieldDiscriminatorNode, InstructionArgumentNode, InstructionNode,
+    DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode, InstructionArgumentNode,
+    InstructionNode,
     NumberFormat::{U64, U8},
-    NumberTypeNode, NumberValueNode, ProgramNode,
+    NumberTypeNode, NumberValueNode, ProgramNode, StructFieldDisplayNode,
 };
 
 #[test]
@@ -40,7 +41,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -58,7 +59,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
                         ],
@@ -105,7 +106,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -120,7 +121,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -166,7 +167,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()
@@ -181,7 +182,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }],
                         discriminators: vec![
                             FieldDiscriminatorNode::new("discriminator", 0).into()

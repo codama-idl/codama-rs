@@ -2,9 +2,10 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::EnumKorok;
 use codama_nodes::{
-    DefaultValueStrategy, Docs, EventNode, FieldDiscriminatorNode,
+    DefaultValueStrategy, DisplaySkip, Docs, EventNode, FieldDiscriminatorNode,
     NumberFormat::{U64, U8},
-    NumberTypeNode, NumberValueNode, ProgramNode, StructFieldTypeNode, StructTypeNode,
+    NumberTypeNode, NumberValueNode, ProgramNode, StructFieldDisplayNode, StructFieldTypeNode,
+    StructTypeNode,
 };
 
 #[test]
@@ -41,7 +42,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
@@ -60,7 +61,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                 docs: Docs::default(),
                                 r#type: Box::new(NumberTypeNode::le(U8).into()),
                                 default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                                display: None,
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                             },
                             StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
                         ])
@@ -109,7 +110,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }])
                         .into()),
                         discriminators: vec![
@@ -125,7 +126,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             docs: Docs::default(),
                             r#type: Box::new(NumberTypeNode::le(U8).into()),
                             default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                            display: None,
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                         }])
                         .into()),
                         discriminators: vec![

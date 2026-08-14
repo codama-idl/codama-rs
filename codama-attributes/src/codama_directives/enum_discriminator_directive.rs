@@ -4,8 +4,8 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    CamelCaseString, InstructionArgumentNode, NestedTypeNode, Node, NumberFormat::U8,
-    NumberTypeNode, StructFieldTypeNode, TypeNode,
+    CamelCaseString, DisplaySkip, InstructionArgumentNode, NestedTypeNode, Node, NumberFormat::U8,
+    NumberTypeNode, StructFieldDisplayNode, StructFieldTypeNode, TypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -89,13 +89,16 @@ impl From<&Option<Node>> for EnumDiscriminatorDirective {
 
 impl From<&EnumDiscriminatorDirective> for StructFieldTypeNode {
     fn from(directive: &EnumDiscriminatorDirective) -> Self {
-        StructFieldTypeNode::new(
-            directive.name.clone().unwrap_or("discriminator".into()),
-            directive
-                .size
-                .clone()
-                .unwrap_or(NumberTypeNode::le(U8).into()),
-        )
+        StructFieldTypeNode {
+            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+            ..StructFieldTypeNode::new(
+                directive.name.clone().unwrap_or("discriminator".into()),
+                directive
+                    .size
+                    .clone()
+                    .unwrap_or(NumberTypeNode::le(U8).into()),
+            )
+        }
     }
 }
 
@@ -157,6 +160,28 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "enum_discriminator must specify at least one of: name, size"
+        );
+    }
+
+    #[test]
+    fn creates_hidden_struct_fields() {
+        let directive = EnumDiscriminatorDirective::default();
+        let field = StructFieldTypeNode::from(&directive);
+
+        assert_eq!(
+            field.display,
+            Some(StructFieldDisplayNode::skipped(DisplaySkip::Always))
+        );
+    }
+
+    #[test]
+    fn creates_hidden_instruction_arguments() {
+        let directive = EnumDiscriminatorDirective::default();
+        let argument = InstructionArgumentNode::from(&directive);
+
+        assert_eq!(
+            argument.display,
+            Some(StructFieldDisplayNode::skipped(DisplaySkip::Always))
         );
     }
 }

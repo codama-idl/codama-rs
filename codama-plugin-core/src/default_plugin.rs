@@ -1,10 +1,10 @@
 use crate::KorokPlugin;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, CombineModulesVisitor,
-    IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor, SetDefaultValuesVisitor,
-    SetDefinedTypesVisitor, SetErrorsVisitor, SetEventsVisitor, SetInstructionsVisitor,
-    SetPdasVisitor, SetProgramMetadataVisitor,
+    ApplyDisplayVisitor, ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor,
+    CombineModulesVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor,
+    SetDefaultValuesVisitor, SetDefinedTypesVisitor, SetErrorsVisitor, SetEventsVisitor,
+    SetInstructionsVisitor, SetPdasVisitor, SetProgramMetadataVisitor,
 };
 
 pub struct DefaultPlugin;
@@ -13,6 +13,7 @@ impl KorokPlugin for DefaultPlugin {
         visitable.accept(&mut IdentifyFieldTypesVisitor::new())?;
         visitable.accept(&mut ApplyTypeOverridesVisitor::new())?;
         visitable.accept(&mut ApplyTypeModifiersVisitor::new())?;
+        visitable.accept(&mut ApplyDisplayVisitor::new())?;
         visitable.accept(&mut SetDefaultValuesVisitor::new())?;
         Ok(())
     }

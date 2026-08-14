@@ -15,9 +15,16 @@ pub enum SystemInstruction {
     #[codama(account(name = "account", signer, writable))]
     Assign { program_address: Pubkey },
 
-    #[codama(account(name = "source", signer, writable))]
-    #[codama(account(name = "destination", writable))]
-    TransferSol { amount: u64 },
+    #[codama(display(
+        intent = "Transfer SOL",
+        interpolated_intent = "Transfer ${data.amount} from ${accounts.source} to ${accounts.destination}"
+    ))]
+    #[codama(account(name = "source", signer, writable, display(label = "From")))]
+    #[codama(account(name = "destination", writable, display(label = "To")))]
+    TransferSol {
+        #[codama(display(label = "Amount", amount(decimals = 9, unit = "SOL")))]
+        amount: u64,
+    },
 
     #[codama(account(name = "payer", signer, writable))]
     #[codama(account(name = "new_account", writable))]

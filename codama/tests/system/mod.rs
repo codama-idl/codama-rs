@@ -101,6 +101,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -161,6 +165,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 1
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -187,13 +195,21 @@ fn get_idl() {
             "kind": "instructionAccountNode",
             "name": "source",
             "isWritable": true,
-            "isSigner": true
+            "isSigner": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
           },
           {
             "kind": "instructionAccountNode",
             "name": "destination",
             "isWritable": true,
-            "isSigner": false
+            "isSigner": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
           }
         ],
         "arguments": [
@@ -209,6 +225,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 2
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -217,7 +237,22 @@ fn get_idl() {
             "type": {
               "kind": "numberTypeNode",
               "format": "u64",
-              "endian": "le"
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
             }
           }
         ],
@@ -227,7 +262,12 @@ fn get_idl() {
             "name": "discriminator",
             "offset": 0
           }
-        ]
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Transfer SOL",
+          "interpolatedIntent": "Transfer ${data.amount} from ${accounts.source} to ${accounts.destination}"
+        }
       },
       {
         "kind": "instructionNode",
@@ -265,6 +305,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 3
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -364,6 +408,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 4
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           }
         ],
@@ -431,6 +479,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 5
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -495,6 +547,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 6
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -543,6 +599,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 7
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -585,6 +645,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 8
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -635,6 +699,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 9
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -715,6 +783,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 10
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -792,6 +864,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 11
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           },
           {
@@ -859,6 +935,10 @@ fn get_idl() {
             "defaultValue": {
               "kind": "numberValueNode",
               "number": 12
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           }
         ],
