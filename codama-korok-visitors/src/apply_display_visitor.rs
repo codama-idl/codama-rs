@@ -3,7 +3,7 @@ use codama_attributes::{
     Attribute, CodamaAttribute, CodamaDirective, DisplayDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
-use codama_koroks::{KorokMut, KorokTrait};
+use codama_koroks::{FieldKorok, KorokMut, KorokTrait};
 use codama_nodes::{
     HasKind, Node, NumberDisplayNode, RegisteredTypeNode, StructFieldDisplayNode, TypeNode,
 };
@@ -94,7 +94,7 @@ fn apply_display_to_type_node(
     Ok(type_node.into())
 }
 
-pub(crate) fn apply_struct_field_display(
+fn apply_struct_field_display(
     display: &mut Option<StructFieldDisplayNode>,
     directive: &DisplayDirective,
 ) {
@@ -119,6 +119,16 @@ pub(crate) fn apply_struct_field_display(
     if let Some(flatten_prefix) = &directive.flatten_prefix {
         display.flatten_prefix = Some(flatten_prefix.clone());
     }
+}
+
+pub(crate) fn parse_field_display(field: &FieldKorok) -> Option<StructFieldDisplayNode> {
+    // Unnamed fields cannot carry StructFieldDisplayNode metadata during field traversal.
+    // Recover it here when a tuple variant turns those fields into named struct fields.
+    let mut display = None;
+    for directive in field.attributes.get_all(DisplayDirective::filter) {
+        apply_struct_field_display(&mut display, directive);
+    }
+    display
 }
 
 fn apply_optional_number_display(
