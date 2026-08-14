@@ -1,0 +1,5 @@
+error: unrecognized display attribute
+ --> tests/codama_attribute/display_directive/positional_attribute.fail.rs:3:18
+  |
+3 | #[codama(display("Transfer tokens"))]
+  |                  ^^^^^^^^^^^^^^^^^
