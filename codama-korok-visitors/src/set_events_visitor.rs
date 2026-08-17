@@ -1,4 +1,4 @@
-use crate::{CombineTypesVisitor, KorokVisitor};
+use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     DiscriminatorDirective, EnumDiscriminatorDirective, ProgramDirective, TryFromFilter,
 };
@@ -216,8 +216,11 @@ fn parse_enum_variant(
                                     .get(i)
                                     .and_then(|f| f.name())
                                     .unwrap_or_else(|| format!("arg{}", i).into());
-
-                                StructFieldTypeNode::new(name, item)
+                                let display = korok.fields.get(i).and_then(parse_field_display);
+                                StructFieldTypeNode {
+                                    display,
+                                    ..StructFieldTypeNode::new(name, item)
+                                }
                             })
                             .collect();
 

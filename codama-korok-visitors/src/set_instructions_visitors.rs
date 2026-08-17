@@ -1,4 +1,4 @@
-use crate::{apply_struct_field_display, CombineTypesVisitor, KorokVisitor};
+use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
     DisplayDirective, EnumDiscriminatorDirective, OptionalAccountStrategyDirective,
@@ -10,7 +10,7 @@ use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
     InstructionAccountNode, InstructionArgumentNode, InstructionDisplayNode, InstructionNode,
     NestedTypeNode, Node, NumberValueNode, OptionalAccountStrategy, ProgramNode,
-    StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, TypeNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -376,14 +376,4 @@ fn parse_enum_variant(
         korok.ast.ident
     );
     Err(korok.ast.error(message).into())
-}
-
-fn parse_field_display(field: &FieldKorok) -> Option<StructFieldDisplayNode> {
-    // Unnamed fields cannot carry StructFieldDisplayNode metadata during field traversal.
-    // Recover it here when an instruction tuple variant turns those fields into named arguments.
-    let mut display = None;
-    for directive in field.attributes.get_all(DisplayDirective::filter) {
-        apply_struct_field_display(&mut display, directive);
-    }
-    display
 }
