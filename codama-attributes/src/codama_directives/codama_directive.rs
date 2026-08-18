@@ -66,7 +66,7 @@ impl CodamaDirective {
             "optional_account_strategy" => {
                 Ok(OptionalAccountStrategyDirective::parse(meta)?.into())
             }
-            "program" => Ok(ProgramDirective::parse(meta, ctx)?.into()),
+            "program" => Ok(ProgramDirective::parse(meta)?.into()),
             "seed" => Ok(SeedDirective::parse(meta, ctx)?.into()),
             "skip" => Ok(SkipDirective::parse(meta)?.into()),
 

@@ -1,4 +1,5 @@
 mod membership;
+mod program_override;
 mod system;
 
 pub fn get_path(relative_path: &str) -> std::path::PathBuf {
