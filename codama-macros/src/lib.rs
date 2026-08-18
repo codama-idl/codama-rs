@@ -3,6 +3,8 @@ use proc_macro::TokenStream;
 mod attributes;
 #[cfg(not(target_os = "solana"))]
 mod derives;
+#[cfg(not(target_os = "solana"))]
+mod program;
 
 fn codama_derive(input: TokenStream) -> TokenStream {
     #[cfg(not(target_os = "solana"))]
@@ -24,6 +26,18 @@ fn codama_attribute(attr: TokenStream, input: TokenStream) -> TokenStream {
     {
         let _ = attr;
         input
+    }
+}
+
+fn codama_program_macro(input: TokenStream) -> TokenStream {
+    #[cfg(not(target_os = "solana"))]
+    {
+        program::codama_program(input)
+    }
+    #[cfg(target_os = "solana")]
+    {
+        let _ = input;
+        TokenStream::new()
     }
 }
 
@@ -75,4 +89,9 @@ pub fn codama_type_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn codama(attr: TokenStream, input: TokenStream) -> TokenStream {
     codama_attribute(attr, input)
+}
+
+#[proc_macro]
+pub fn codama_program(input: TokenStream) -> TokenStream {
+    codama_program_macro(input)
 }

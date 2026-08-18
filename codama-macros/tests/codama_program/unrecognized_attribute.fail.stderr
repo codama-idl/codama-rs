@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_program/unrecognized_attribute.fail.rs:3:43
+  |
+3 | codama_program!(name = "associatedToken", version = "1.0.0");
+  |                                           ^^^^^^^^^^^^^^^^^

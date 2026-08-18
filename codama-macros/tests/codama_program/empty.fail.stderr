@@ -1,0 +1,7 @@
+error: expected at least one of `name` or `address`
+ --> tests/codama_program/empty.fail.rs:3:1
+  |
+3 | codama_program!();
+  | ^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `codama_program` (in Nightly builds, run with -Z macro-backtrace for more info)

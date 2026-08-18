@@ -1,5 +1,5 @@
 use cargo_toml::{Inheritable, Manifest, Package, Value};
-use codama_attributes::{ProgramDirective, TryFromFilter};
+use codama_attributes::CodamaProgramMacro;
 use codama_errors::CodamaResult;
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Node, ProgramNode};
@@ -7,10 +7,12 @@ use codama_syn_helpers::extensions::*;
 
 use crate::KorokVisitor;
 
-/// Fill program metadata using the Cargo.toml manifest and the `solana_program::declare_id!` macro.
+/// Fill program metadata from the `codama_program!` macro, the Cargo.toml
+/// manifest and the `solana_program::declare_id!` macro (in that precedence).
 #[derive(Default)]
 pub struct SetProgramMetadataVisitor {
     identified_public_key: Option<String>,
+    identified_program: Option<CodamaProgramMacro>,
 }
 
 impl SetProgramMetadataVisitor {
@@ -42,13 +44,14 @@ impl KorokVisitor for SetProgramMetadataVisitor {
             _ => return Ok(()),
         };
 
-        // Apply an explicit crate-level `program(...)` override before the
-        // crate-derived defaults below, which only fill fields left empty.
-        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
-            if let Some(name) = &pd.name {
+        // Apply an explicit `codama_program!` override before the crate-derived
+        // defaults below, which only fill fields the override left empty.
+        // E.g. `codama_program!(name = "myProgram");`
+        if let Some(program_macro) = &self.identified_program {
+            if let Some(name) = &program_macro.name {
                 program.name = name.clone();
             }
-            if let Some(address) = &pd.address {
+            if let Some(address) = &program_macro.address {
                 program.public_key = address.clone();
             }
         }
@@ -99,11 +102,24 @@ impl KorokVisitor for SetProgramMetadataVisitor {
             return Ok(());
         };
 
-        if let ("" | "solana_program", "declare_id") =
+        if let ("" | "solana_program" | "solana_address" | "solana_pubkey", "declare_id") =
             (mac.path.prefix().as_str(), mac.path.last_str().as_str())
         {
             self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
         };
+
+        // Read the primary program override from a `codama_program!` macro.
+        // E.g. `codama_program!(name = "myProgram");`
+        if let ("" | "codama" | "codama_macros", "codama_program") =
+            (mac.path.prefix().as_str(), mac.path.last_str().as_str())
+        {
+            if self.identified_program.is_some() {
+                return Err(mac
+                    .error("`codama_program!` can only be used once per crate")
+                    .into());
+            }
+            self.identified_program = Some(CodamaProgramMacro::parse(mac.tokens.clone())?);
+        }
 
         Ok(())
     }
