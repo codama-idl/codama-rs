@@ -1,4 +1,5 @@
 use cargo_toml::{Inheritable, Manifest, Package, Value};
+use codama_attributes::{ProgramDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Node, ProgramNode};
@@ -40,6 +41,17 @@ impl KorokVisitor for SetProgramMetadataVisitor {
             // Don't update the node if it is set to anything else.
             _ => return Ok(()),
         };
+
+        // Apply an explicit crate-level `program(...)` override before the
+        // crate-derived defaults below, which only fill fields left empty.
+        if let Some(pd) = korok.attributes.get_last(ProgramDirective::filter) {
+            if let Some(name) = &pd.name {
+                program.name = name.clone();
+            }
+            if let Some(address) = &pd.address {
+                program.public_key = address.clone();
+            }
+        }
 
         // Update the program name using the Cargo.toml package name.
         // E.g. `name = "my-program"`

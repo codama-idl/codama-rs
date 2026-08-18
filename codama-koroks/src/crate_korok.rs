@@ -1,5 +1,5 @@
 use crate::{ItemKorok, KorokTrait};
-use codama_attributes::Attributes;
+use codama_attributes::{AttributeContext, Attributes};
 use codama_errors::{combine_errors, CodamaError, CodamaResult};
 use codama_nodes::Node;
 use codama_stores::CrateStore;
@@ -15,7 +15,8 @@ pub struct CrateKorok<'a> {
 impl<'a> CrateKorok<'a> {
     pub fn parse(store: &'a CrateStore) -> CodamaResult<Self> {
         let (attributes, items) = combine_errors!(
-            Attributes::parse(&store.file.attrs, (&store.file).into()).map_err(CodamaError::from),
+            Attributes::parse(&store.file.attrs, AttributeContext::Crate(&store.file))
+                .map_err(CodamaError::from),
             ItemKorok::parse_all(&store.file.items, &store.file_modules, &mut 0,),
         )?;
         Ok(Self {
