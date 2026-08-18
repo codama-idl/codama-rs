@@ -263,6 +263,45 @@ fn it_fails_on_repeated_codama_program_macros() -> CodamaResult<()> {
     Ok(())
 }
 
+#[test]
+fn it_ignores_codama_program_macros_from_other_crates() -> CodamaResult<()> {
+    // Only bare, `codama::` and `codama_macros::` prefixes are recognised, so a
+    // foreign `codama_program!` is ignored — even one whose arguments would not
+    // parse as ours.
+    let mut store = CrateStore::hydrate(quote! {
+        other_crate::codama_program!(this = "would not parse");
+    })?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    store.manifest = Some(manifest);
+
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    assert_eq!(program.name, "myCrateName".into());
+    Ok(())
+}
+
+#[test]
+fn it_gets_program_ids_from_the_solana_address_declare_id_macro() -> CodamaResult<()> {
+    let store = CrateStore::hydrate(quote! {
+        solana_address::declare_id!("MyProgramAddress1111111111111111111111111");
+    })?;
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    assert_eq!(
+        program.public_key,
+        "MyProgramAddress1111111111111111111111111"
+    );
+    Ok(())
+}
+
 pub fn get_path(relative_path: &str) -> std::path::PathBuf {
     let project_dir = env!("CARGO_MANIFEST_DIR");
     std::path::Path::new(project_dir)

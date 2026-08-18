@@ -102,7 +102,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
             return Ok(());
         };
 
-        if let ("" | "solana_program", "declare_id") =
+        if let ("" | "solana_program" | "solana_address" | "solana_pubkey", "declare_id") =
             (mac.path.prefix().as_str(), mac.path.last_str().as_str())
         {
             self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
@@ -110,7 +110,9 @@ impl KorokVisitor for SetProgramMetadataVisitor {
 
         // Read the primary program override from a `codama_program!` macro.
         // E.g. `codama_program!(name = "myProgram");`
-        if mac.path.last_str() == "codama_program" {
+        if let ("" | "codama" | "codama_macros", "codama_program") =
+            (mac.path.prefix().as_str(), mac.path.last_str().as_str())
+        {
             if self.identified_program.is_some() {
                 return Err(mac
                     .error("`codama_program!` can only be used once per crate")
