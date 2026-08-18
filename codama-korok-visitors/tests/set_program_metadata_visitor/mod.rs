@@ -140,6 +140,82 @@ fn it_does_not_override_existing_values() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_overrides_the_program_name_from_a_crate_level_directive() -> CodamaResult<()> {
+    // The crate-level `program(name = ...)` omits the address, which therefore
+    // still resolves from `declare_id!`.
+    let store = CrateStore::hydrate(quote! {
+        #![codama(program(name = "myProgramName"))]
+
+        solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
+    })?;
+
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    assert_eq!(program.name, "myProgramName".into());
+    assert_eq!(
+        program.public_key,
+        "MyProgramAddress1111111111111111111111111"
+    );
+    Ok(())
+}
+
+#[test]
+fn it_overrides_the_program_name_over_the_manifest_default() -> CodamaResult<()> {
+    let mut store = CrateStore::hydrate(quote! {
+        #![codama(program(name = "myProgramName"))]
+    })?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    store.manifest = Some(manifest);
+
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    // The directive wins the name; the address and version still come from the
+    // manifest since the directive omitted the address.
+    assert_eq!(program.name, "myProgramName".into());
+    assert_eq!(program.version, "1.2.3");
+    assert_eq!(
+        program.public_key,
+        "MyProgramAddress1111111111111111111111111"
+    );
+    Ok(())
+}
+
+#[test]
+fn it_overrides_the_program_address_from_a_crate_level_directive() -> CodamaResult<()> {
+    // The crate-level directive may also override the address, taking precedence
+    // over both the manifest and `declare_id!`.
+    let mut store = CrateStore::hydrate(quote! {
+        #![codama(program(address = "MyOverrideAddress11111111111111111111111111"))]
+
+        solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
+    })?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    store.manifest = Some(manifest);
+
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    // Name still comes from the manifest; the address is the directive override.
+    assert_eq!(program.name, "myCrateName".into());
+    assert_eq!(
+        program.public_key,
+        "MyOverrideAddress11111111111111111111111111"
+    );
+    Ok(())
+}
+
+#[test]
 fn it_does_nothing_to_existing_nodes_that_are_not_roots_or_programs() -> CodamaResult<()> {
     let store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
