@@ -19,6 +19,7 @@ pub struct SetInstructionsVisitor {
     enum_name: String,
     enum_discriminator: EnumDiscriminatorDirective,
     enum_current_discriminator: usize,
+    enum_optional_account_strategy: Option<OptionalAccountStrategy>,
 }
 
 impl Default for SetInstructionsVisitor {
@@ -37,6 +38,7 @@ impl Default for SetInstructionsVisitor {
             enum_name: "".to_string(),
             enum_discriminator: EnumDiscriminatorDirective::default(),
             enum_current_discriminator: 0,
+            enum_optional_account_strategy: None,
         }
     }
 }
@@ -107,6 +109,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.enum_name = korok.ast.ident.to_string();
         self.enum_discriminator = enum_discriminator;
         self.enum_current_discriminator = 0;
+        self.enum_optional_account_strategy = parse_optional_account_strategy(&korok.attributes);
         self.visit_children(korok)?;
 
         // Gather all instructions in a `ProgramNode`.
@@ -162,7 +165,9 @@ impl KorokVisitor for SetInstructionsVisitor {
         korok.node = Some(
             InstructionNode {
                 name,
-                optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
+                // The variant-level directive wins over the enum-level default.
+                optional_account_strategy: parse_optional_account_strategy(&korok.attributes)
+                    .or(self.enum_optional_account_strategy),
                 accounts: parse_accounts(&korok.attributes, &korok.fields)?,
                 arguments: parse_arguments(
                     &korok.attributes,
