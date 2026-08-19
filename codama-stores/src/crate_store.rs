@@ -20,7 +20,7 @@ impl CrateStore {
         // Find and load the closest Cargo.toml file — a.k.a. the crate's manifest.
         let manifest_path = get_closest_manifest_path(path.as_ref())?;
         let mut manifest = Manifest::from_path(&manifest_path)?;
-        manifest.complete_from_path(path.as_ref())?;
+        manifest.complete_from_path(&manifest_path)?;
 
         // Find the crate's content from the manifest.
         let relative_product_path = get_product_path(&manifest)?;

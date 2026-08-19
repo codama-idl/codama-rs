@@ -1,5 +1,5 @@
 use crate::get_path;
-use codama_stores::RootStore;
+use codama_stores::{CrateStore, RootStore};
 
 #[test]
 fn load_single_crate() {
@@ -57,4 +57,27 @@ fn load_single_crate() {
     // The modules have no nested modules.
     assert_eq!(membership_module.file_modules.len(), 0);
     assert_eq!(person_module.file_modules.len(), 0);
+}
+
+#[test]
+fn load_single_crate_from_relative_paths() {
+    // Loading a crate must work regardless of how its path is spelled,
+    // including bare single-segment relative paths. Other tests are unaffected
+    // by the temporary directory change since they all use absolute paths.
+    let original_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir(get_path("single_crate")).unwrap();
+
+    for path in ["crate", "./crate"] {
+        let crate_store = CrateStore::load(path)
+            .unwrap_or_else(|error| panic!("failed to load `{path}`: {error}"));
+        assert_eq!(
+            crate_store.path.canonicalize().unwrap(),
+            get_path("single_crate/crate/src/lib.rs")
+                .canonicalize()
+                .unwrap(),
+            "unexpected product path for `{path}`"
+        );
+    }
+
+    std::env::set_current_dir(original_dir).unwrap();
 }
