@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/remaining_accounts_directive/unrecognized_attribute.fail.rs:3:50
+  |
+3 | #[codama(remaining_accounts(argument("signers"), banana))]
+  |                                                  ^^^^^^

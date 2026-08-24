@@ -2,8 +2,8 @@ use crate::{
     AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
     DiscriminatorDirective, DisplayDirective, EncodingDirective, EnumDiscriminatorDirective,
     ErrorDirective, ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
-    OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, SeedDirective,
-    SizePrefixDirective, SkipDirective, TypeDirective,
+    OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, RemainingAccountsDirective,
+    SeedDirective, SizePrefixDirective, SkipDirective, TypeDirective,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 use derive_more::derive::From;
@@ -37,6 +37,7 @@ pub enum CodamaDirective {
     // Instruction directives.
     Account(AccountDirective),
     Argument(ArgumentDirective),
+    RemainingAccounts(RemainingAccountsDirective),
 
     // Error directives.
     Error(ErrorDirective),
@@ -76,6 +77,7 @@ impl CodamaDirective {
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
             "argument" => Ok(ArgumentDirective::parse(meta)?.into()),
+            "remaining_accounts" => Ok(RemainingAccountsDirective::parse(meta)?.into()),
             "provide" => Err(path.error("provide directives are not supported yet")),
 
             // Error directives.
@@ -114,6 +116,7 @@ impl CodamaDirective {
             // Instruction directives.
             Self::Account(_) => "account",
             Self::Argument(_) => "argument",
+            Self::RemainingAccounts(_) => "remaining_accounts",
 
             // Error directives.
             Self::Error(_) => "error",

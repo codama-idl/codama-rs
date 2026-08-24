@@ -1,0 +1,5 @@
+error: expected boolean or `"either"`
+ --> tests/codama_attribute/remaining_accounts_directive/invalid_signer.fail.rs:3:59
+  |
+3 | #[codama(remaining_accounts(argument("signers"), signer = invalid))]
+  |                                                           ^^^^^^^
