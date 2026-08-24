@@ -2,7 +2,7 @@ use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
     DisplayDirective, EnumDiscriminatorDirective, OptionalAccountStrategyDirective,
-    ProgramDirective, TryFromFilter,
+    ProgramDirective, RemainingAccountsDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -71,6 +71,7 @@ impl KorokVisitor for SetInstructionsVisitor {
             optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
             accounts: parse_accounts(&korok.attributes, &korok.fields)?,
             arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
+            remaining_accounts: RemainingAccountsDirective::nodes(&korok.attributes),
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
             display: parse_instruction_display(&korok.attributes),
             ..InstructionNode::default()
@@ -175,6 +176,7 @@ impl KorokVisitor for SetInstructionsVisitor {
                     data,
                     Some(discriminator),
                 )?,
+                remaining_accounts: RemainingAccountsDirective::nodes(&korok.attributes),
                 discriminators,
                 display: parse_instruction_display(&korok.attributes),
                 ..InstructionNode::default()

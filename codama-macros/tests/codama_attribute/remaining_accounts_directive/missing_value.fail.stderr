@@ -1,0 +1,5 @@
+error: remaining_accounts must specify one of: argument
+ --> tests/codama_attribute/remaining_accounts_directive/missing_value.fail.rs:3:10
+  |
+3 | #[codama(remaining_accounts(signer, optional))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

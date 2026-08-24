@@ -1,0 +1,8 @@
+[package]
+name = "memo"
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata.solana]
+program-id = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"

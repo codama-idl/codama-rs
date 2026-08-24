@@ -1,4 +1,5 @@
 mod membership;
+mod memo;
 mod program_override;
 mod system;
 
