@@ -23,7 +23,7 @@ pub trait ExprExtension {
     /// Returns the integer value of the expression if it is a literal signed integer.
     fn as_signed_integer<T>(&self) -> syn::Result<T>
     where
-        T: std::str::FromStr + std::ops::Neg<Output = T>,
+        T: std::str::FromStr,
         T::Err: std::fmt::Display,
     {
         let this = self.get_self();
@@ -32,13 +32,19 @@ pub trait ExprExtension {
                 op: syn::UnOp::Neg(_),
                 expr: unsigned_expr,
                 ..
-            }) => unsigned_expr
-                .as_unsigned_integer::<T>()
-                .map(|value| value.neg()),
-            _ => this.as_unsigned_integer::<T>(),
+            }) => match &**unsigned_expr {
+                // Parse the sign together with the digits rather than negating
+                // the magnitude: `T::MIN` has no positive counterpart in `T`.
+                Expr::Lit(ExprLit {
+                    lit: syn::Lit::Int(value),
+                    ..
+                }) => format!("-{}", value.base10_digits()).parse::<T>().ok(),
+                _ => None,
+            },
+            _ => this.as_unsigned_integer::<T>().ok(),
         };
 
-        result.map_err(|_| this.error("expected a signed integer"))
+        result.ok_or_else(|| this.error("expected a signed integer"))
     }
 
     fn as_unsigned_float<T>(&self) -> syn::Result<T>
@@ -157,6 +163,22 @@ mod tests {
         let expr: Expr = syn::parse_quote! { 42 };
         let result = expr.as_signed_integer::<isize>().unwrap();
         assert_eq!(result, 42isize);
+    }
+
+    #[test]
+    fn as_signed_integer_ok_with_min() {
+        let expr: Expr = syn::parse_quote! { -9223372036854775808 };
+        assert_eq!(expr.as_signed_integer::<i64>().unwrap(), i64::MIN);
+
+        let expr: Expr = syn::parse_quote! { -128 };
+        assert_eq!(expr.as_signed_integer::<i8>().unwrap(), i8::MIN);
+    }
+
+    #[test]
+    fn as_signed_integer_err_when_out_of_range() {
+        let expr: Expr = syn::parse_quote! { -129 };
+        let error = expr.as_signed_integer::<i8>().unwrap_err();
+        assert_eq!(error.to_string(), "expected a signed integer");
     }
 
     #[test]
