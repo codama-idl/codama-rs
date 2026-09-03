@@ -20,6 +20,10 @@ fn it_identifies_pubkey_types() {
         get_node_from_type(quote! { solana_program::Pubkey }),
         Some(PublicKeyTypeNode::new().into())
     );
+    assert_eq!(
+        get_node_from_type(quote! { solana_program::pubkey::Pubkey }),
+        Some(PublicKeyTypeNode::new().into())
+    );
     assert_eq!(get_node_from_type(quote! { Pubkey<T> }), None);
     assert_eq!(
         get_node_from_type(quote! { Address }),
