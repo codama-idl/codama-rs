@@ -100,6 +100,14 @@ mod tests {
     }
 
     #[test]
+    fn min_offset() {
+        assert_type!(
+            { post_offset(string, -2147483648, relative) },
+            PostOffsetTypeNode::relative(StringTypeNode::utf8(), i32::MIN).into()
+        );
+    }
+
+    #[test]
     fn negative_offset() {
         assert_type!(
             { post_offset(string, -4, relative) },
