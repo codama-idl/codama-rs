@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn min_offset() {
         assert_type!(
-            { pre_offset(string, -2147483648, relative) },
+            { pre_offset(type = string, offset = -2147483648, strategy = relative) },
             PreOffsetTypeNode::relative(StringTypeNode::utf8(), i32::MIN).into()
         );
     }
