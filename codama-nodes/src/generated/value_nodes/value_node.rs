@@ -1,8 +1,8 @@
 use crate::{
-    ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode, HasKind,
-    InjectedValueNode, MapEntryValueNode, MapValueNode, NoneValueNode, NumberValueNode,
-    PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructFieldValueNode,
-    StructValueNode, TupleValueNode,
+    ArrayValueNode, BooleanValueNode, BytesValueNode, ConstantValueNode, EnumValueNode,
+    FloatValueNode, HasKind, InjectedValueNode, IntegerValueNode, MapEntryValueNode, MapValueNode,
+    NoneValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode,
+    StructFieldValueNode, StructValueNode, TupleValueNode,
 };
 use codama_nodes_derive::{node_union, RegisteredNodes};
 
@@ -14,10 +14,11 @@ pub enum RegisteredValueNode {
     Bytes(BytesValueNode),
     Constant(ConstantValueNode),
     Enum(EnumValueNode),
+    Float(FloatValueNode),
     Injected(InjectedValueNode),
+    Integer(IntegerValueNode),
     Map(MapValueNode),
     None(NoneValueNode),
-    Number(NumberValueNode),
     PublicKey(PublicKeyValueNode),
     Set(SetValueNode),
     Some(SomeValueNode),

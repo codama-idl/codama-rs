@@ -1,4 +1,4 @@
-use crate::DisplaySkip;
+use crate::{DisplaySkip, PluginNode, Text};
 use codama_nodes_derive::node;
 
 #[node]
@@ -6,9 +6,13 @@ use codama_nodes_derive::node;
 pub struct InstructionAccountDisplayNode {
     // Data.
     #[serde(skip_serializing_if = "crate::is_default")]
-    pub label: Option<String>,
-    #[serde(skip_serializing_if = "crate::is_default")]
     pub skip: Option<DisplaySkip>,
+
+    // Children.
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub label: Option<Text>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<InstructionAccountDisplayNode> for crate::Node {

@@ -20,19 +20,8 @@ describe('getUnionPageFragment', () => {
 
     it('lists every member of the flattened union as a variant, sorted alphabetically', () => {
         const result = getUnionPageFragment(linkUnion, spec);
-        // The spec union `linkNode` references `union(\'registeredLinkNode\')`
-        // which expands to 7 leaf nodes; the generator strips the
-        // `LinkNode` suffix and pascalCases the rest.
         const variants = result.content.match(/^\s*(\w+)\(/gm)?.map(s => s.trim().replace('(', '')) ?? [];
-        expect(variants).toEqual([
-            'Account',
-            'DefinedType',
-            'Instruction',
-            'InstructionAccount',
-            'InstructionArgument',
-            'Pda',
-            'Program',
-        ]);
+        expect(variants).toEqual(['Account', 'DefinedType', 'Instruction', 'InstructionAccount', 'Pda', 'Program']);
     });
 
     it('emits an `impl HasIdentifier for PdaValuePda` block dispatching to each variant', () => {
@@ -40,6 +29,11 @@ describe('getUnionPageFragment', () => {
         expect(result.content).toContain('impl HasIdentifier for PdaValuePda {');
         expect(result.content).toContain('PdaValuePda::Pda(node) => node.identifier(),');
         expect(result.content).toContain('PdaValuePda::PdaLink(node) => node.identifier(),');
+    });
+
+    it('emits an `impl HasIdentifier for LinkNode` because every link node has a required identifier', () => {
+        const result = getUnionPageFragment(linkUnion, spec);
+        expect(result.content).toContain('impl HasIdentifier for LinkNode {');
     });
 
     it('carries the codama_nodes_derive::node_union import plus the crate-rooted imports for every member type and the HasIdentifier helpers', () => {
@@ -53,14 +47,10 @@ describe('getUnionPageFragment', () => {
     });
 
     it('strips the longest common PascalCase suffix when naming variants of an inline union', () => {
-        // `constantPdaSeedValue`'s flattened members include
-        // `programIdValueNode` + 14 value-node leaves; the derived
-        // common suffix is `ValueNode`, so variants are stripped to
-        // `ProgramId`, `Number`, …
         const result = getUnionPageFragment(constantPdaSeedValueUnion, spec);
         expect(result.content).toContain('pub enum ConstantPdaSeedValue {');
         expect(result.content).toContain('ProgramId(ProgramIdValueNode),');
-        expect(result.content).toContain('Number(NumberValueNode),');
+        expect(result.content).toContain('Integer(IntegerValueNode),');
         expect(result.content).toContain('String(StringValueNode),');
         // Not every variant has a stringIdentifier name -> no HasIdentifier impl.
         expect(result.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');

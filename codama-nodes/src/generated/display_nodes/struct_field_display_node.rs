@@ -1,4 +1,4 @@
-use crate::DisplaySkip;
+use crate::{DisplaySkip, PluginNode, Text, ValueLabelDisplayNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -6,13 +6,19 @@ use codama_nodes_derive::node;
 pub struct StructFieldDisplayNode {
     // Data.
     #[serde(skip_serializing_if = "crate::is_default")]
-    pub label: Option<String>,
-    #[serde(skip_serializing_if = "crate::is_default")]
     pub skip: Option<DisplaySkip>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub flatten: Option<bool>,
+
+    // Children.
     #[serde(skip_serializing_if = "crate::is_default")]
-    pub flatten_prefix: Option<String>,
+    pub label: Option<Text>,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub flatten_prefix: Option<Text>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub value_labels: Vec<ValueLabelDisplayNode>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<StructFieldDisplayNode> for crate::Node {

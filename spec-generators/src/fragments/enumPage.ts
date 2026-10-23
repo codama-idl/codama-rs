@@ -21,8 +21,8 @@ import { use } from './helpers';
  * emitted in the order declared by the spec. Bespoke per-enum impls
  * (`Default`, `TryFrom`, custom `Serialize`/`Deserialize`, …) stay
  * hand-written in the non-generated companion file alongside the
- * generated shell — same split as e.g. `Number` (generated reference,
- * hand-written impls).
+ * generated shell. Same split as e.g. `OptionalAccountStrategy`
+ * (generated shell, hand-written `Default`).
  *
  * The generator deliberately does NOT emit `#[derive(Default)]`: the
  * spec doesn't carry a "default variant" notion, so any required

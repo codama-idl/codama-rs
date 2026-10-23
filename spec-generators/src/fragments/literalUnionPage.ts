@@ -23,18 +23,18 @@ import { literalUnionVariantName, type LiteralUnionTypeRef } from '../literalUni
  * is likewise hand-written because the spec doesn't carry a
  * default-variant notion. Both impls live in the hand-written
  * companion file alongside the generated shell — the same split
- * already used by `Number` and the enumeration `Default`s from PR #9.
+ * the enumerations use for their `Default`.
  *
  * Variants are emitted in spec declaration order using
  * {@link literalUnionVariantName} (`true`→`True`, `false`→`False`,
- * string→PascalCase).
+ * string→PascalCase, a number gets the type name as prefix, e.g. `Base2`).
  *
  * No `use` imports are required: the standard derives are all in the
  * Rust prelude.
  */
 export function getLiteralUnionPageFragment(ref: LiteralUnionTypeRef): Fragment {
     const variantLines = mergeFragments(
-        ref.values.map(v => fragment`${literalUnionVariantName(v)},`),
+        ref.values.map(v => fragment`${literalUnionVariantName(v, ref.typeName)},`),
         parts => parts.join('\n'),
     );
     return fragment`#[derive(Debug, PartialEq, Eq, Clone, Copy)]\npub enum ${ref.typeName} {\n${variantLines}\n}\n`;

@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, ValueNode};
+use crate::{CamelCaseString, PluginNode, ValueNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -10,6 +10,8 @@ pub struct InjectedValueNode {
     // Children.
     #[serde(skip_serializing_if = "crate::is_default")]
     pub fallback: Box<Option<ValueNode>>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<InjectedValueNode> for crate::Node {
