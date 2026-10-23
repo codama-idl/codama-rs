@@ -27,6 +27,9 @@ pub enum CodamaError {
     #[error("Invalid encoding: {0}")]
     InvalidBytesEncoding(String),
 
+    #[error("Invalid decimal: {0}")]
+    InvalidDecimal(String),
+
     #[error("Invalid number format: {0}")]
     InvalidNumberFormat(String),
 
