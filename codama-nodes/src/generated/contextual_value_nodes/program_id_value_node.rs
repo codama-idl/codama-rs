@@ -1,8 +1,13 @@
+use crate::PluginNode;
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Copy, Default)]
-pub struct ProgramIdValueNode {}
+#[derive(Default)]
+pub struct ProgramIdValueNode {
+    // Children.
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
+}
 
 impl From<ProgramIdValueNode> for crate::Node {
     fn from(val: ProgramIdValueNode) -> Self {

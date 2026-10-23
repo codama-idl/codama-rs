@@ -1,4 +1,4 @@
-use crate::{ConditionalValueCondition, InstructionInputValueNode, ValueNode};
+use crate::{ConditionalValueCondition, InstructionInputValueNode, PluginNode, ValueNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -11,6 +11,8 @@ pub struct ConditionalValueNode {
     pub if_true: Box<Option<InstructionInputValueNode>>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub if_false: Box<Option<InstructionInputValueNode>>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<ConditionalValueNode> for crate::Node {

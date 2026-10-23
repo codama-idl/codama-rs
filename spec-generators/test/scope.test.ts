@@ -3,17 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { CATEGORY_DIRECTORIES } from '../src/defaults';
 import { buildRenderScope, type RenderOptions } from '../src/options';
 
-const options: RenderOptions = { targetSpecMajor: 1 };
+const options: RenderOptions = { targetSpecMajor: 2 };
 
 describe('buildRenderScope', () => {
-    it('defaults categoryDirectories to the v1 table', () => {
+    it('defaults categoryDirectories to the default table', () => {
         const scope = buildRenderScope(options);
         expect(scope.categoryDirectories).toBe(CATEGORY_DIRECTORIES);
     });
 
     it('threads the caller-supplied targetSpecMajor through', () => {
-        const scope = buildRenderScope({ targetSpecMajor: 2 });
-        expect(scope.targetSpecMajor).toBe(2);
+        const scope = buildRenderScope({ targetSpecMajor: 3 });
+        expect(scope.targetSpecMajor).toBe(3);
     });
 
     it('returns a frozen scope', () => {

@@ -11,6 +11,7 @@ import {
 import { type Fragment } from '@codama/fragments/rust';
 import { getSpec, type Spec } from '@codama/spec';
 
+import { withBaseAttributes } from './baseAttributes';
 import { CATEGORY_ROUTING } from './defaults';
 import {
     getCodamaVersionPageFragment,
@@ -23,7 +24,6 @@ import {
     getUnionPageFragment,
 } from './fragments';
 import { getReferencedLiteralUnions } from './literalUnions';
-import { isNestableNode } from './nodeFlavor';
 import {
     buildRenderScope,
     type GenerateOptions,
@@ -57,7 +57,7 @@ export interface GenerateResult {
 export function generate(): GenerateResult {
     const spec = getSpec();
     const outputDir = joinPath(getRepoDirectory(), 'codama-nodes', 'src', 'generated');
-    generateInto(spec, { outputDir, targetSpecMajor: 1 });
+    generateInto(spec, { outputDir, targetSpecMajor: 2 });
     return { outputDir };
 }
 
@@ -80,7 +80,7 @@ export function generateInto(spec: Spec, options: GenerateOptions): void {
 export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Fragment> {
     validateRenderOptions(spec, options);
     const scope = buildRenderScope(options);
-    const specPages = getSpecPagesRenderMap(spec, scope);
+    const specPages = getSpecPagesRenderMap(withBaseAttributes(spec), scope);
     const modPages = getModPagesRenderMap(specPages);
     return mergeRenderMaps([specPages, modPages]);
 }
@@ -115,17 +115,12 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
         }
 
         for (const node of category.nodes) {
-            // Nestable type nodes (members of `nestedTypeNode.wrappers`)
-            // are generic over `<T: TypeNodeUnionTrait>` with bespoke
-            // nest/un-nest conversions and `NestedTypeNodeTrait`
-            // impls. They stay hand-written in v1.
-            if (isNestableNode(node.kind, spec)) continue;
             const path = joinPath(folder, `${snakeCase(node.kind)}.rs`);
             entries[path] = getPageFragment(getNodePageFragment(node, routing, spec));
         }
         // `emitUnions: false` keeps a category's unions entirely
-        // hand-written (currently `type`, whose four unions are
-        // generic / cross-category / have bespoke `TryFrom` bridges).
+        // hand-written (currently `type`: `typeNode` holds the
+        // cross-category `definedTypeLinkNode`, which `registeredTypeNode` lacks).
         if (routing.emitUnions === false) continue;
         for (const union of getEmittableUnions(category, spec)) {
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
