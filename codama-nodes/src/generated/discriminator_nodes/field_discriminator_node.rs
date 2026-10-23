@@ -1,12 +1,16 @@
-use crate::CamelCaseString;
+use crate::PluginNode;
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct FieldDiscriminatorNode {
     // Data.
-    pub name: CamelCaseString,
+    pub path: String,
     pub offset: u64,
+
+    // Children.
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<FieldDiscriminatorNode> for crate::Node {

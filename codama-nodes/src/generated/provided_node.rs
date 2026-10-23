@@ -1,15 +1,15 @@
-use crate::{CamelCaseString, HasIdentifier, Node};
+use crate::{CamelCaseString, HasIdentifier, Node, PluginNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct ProvidedNode {
     // Data.
-    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
-    #[serde(rename = "name")]
     pub identifier: CamelCaseString,
 
     // Children.
     pub node: Box<Node>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl HasIdentifier for ProvidedNode {

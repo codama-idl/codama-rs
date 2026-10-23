@@ -9,7 +9,7 @@ export interface RenderOptions {
      * Map from each spec `category.name` to the output subdirectory
      * its entities are emitted into (relative to `generated/`). Use an
      * empty string for the top-level (no subdirectory). Omitted means
-     * "use the v1 defaults" ({@link CATEGORY_DIRECTORIES}).
+     * "use the defaults" ({@link CATEGORY_DIRECTORIES}).
      */
     readonly categoryDirectories?: ReadonlyMap<string, string>;
     /** The spec major version this invocation targets. */

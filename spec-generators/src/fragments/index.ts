@@ -2,7 +2,7 @@ export * from './attributeBodyLine';
 export * from './codamaVersionPage';
 export * from './enumPage';
 export * from './fromImpl';
-export * from './hasNameImpl';
+export * from './hasIdentifierImpl';
 export * from './helpers';
 export * from './literalUnionPage';
 export * from './modPage';

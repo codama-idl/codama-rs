@@ -2,29 +2,24 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { AttributeSpec, NodeSpec } from '@codama/spec';
 
-import { TEMP_NAME_NODE_EXCEPTIONS } from '../defaults';
 import { use } from './helpers';
 
 /**
- * `true` when the attribute renders as the Rust field `identifier` with `#[serde(rename = "name")]`.
- * Applies to a `name: stringIdentifier()` attribute unless the node is in {@link TEMP_NAME_NODE_EXCEPTIONS}.
- * TODO(spec v2): keyed on the v1 `name` attribute and the temporary exception list. At the v2 pin, key on `identifier`.
+ * `true` for a required `identifier: stringIdentifier()` attribute, which renders as `identifier: CamelCaseString`.
+ * An optional one renders as `Option<CamelCaseString>`, which `HasIdentifier::identifier()` cannot return.
  */
-export function isIdentifierAttribute(node: NodeSpec, attr: AttributeSpec): boolean {
+export function isIdentifierAttribute(attr: AttributeSpec): boolean {
     return (
-        attr.name === 'name' &&
+        attr.name === 'identifier' &&
         attr.type.kind === 'string' &&
         attr.type.constraint === 'identifier' &&
-        !TEMP_NAME_NODE_EXCEPTIONS.has(node.kind)
+        attr.optional !== true
     );
 }
 
-/**
- * `true` when the node has a Rust field `identifier`, the only condition for a `HasIdentifier` impl.
- * If the spec renames the `name` attribute, nothing matches and the generator skips the impl without an error.
- */
+/** `true` when the node has a required identifier, the only condition for a `HasIdentifier` impl. */
 export function nodeHasIdentifier(node: NodeSpec): boolean {
-    return node.attributes.some(a => isIdentifierAttribute(node, a));
+    return node.attributes.some(isIdentifierAttribute);
 }
 
 /**

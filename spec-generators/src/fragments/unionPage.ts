@@ -3,7 +3,7 @@ import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust'
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
 import { flattenNodeUnion, getInlineUnionStripSuffix, getReferencedUnionNames, isInlineUnion } from '../unions';
-import { getUnionHasIdentifierImplFragment } from './hasNameImpl';
+import { getUnionHasIdentifierImplFragment } from './hasIdentifierImpl';
 import { use } from './helpers';
 
 /**
@@ -15,7 +15,7 @@ import { use } from './helpers';
  *      union's implied node suffix (e.g. `accountLinkNode` in
  *      `linkNode` → `Account`).
  *   2. `impl HasIdentifier for XxxUnion { … }` when every member node has a
- *      Rust field `identifier`.
+ *      required identifier.
  */
 export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const unionName = pascalCase(union.name);
@@ -63,8 +63,8 @@ function variantStripSuffix(union: UnionSpec, spec: Spec): string {
  *
  *   - `accountLinkNode`      in union `linkNode`             → `Account`
  *   - `fixedCountNode`       in union `countNode`            → `Fixed`
- *   - `numberValueNode`      in inline `constantPdaSeedValue`
- *     (stripSuffix = `ValueNode`)                            → `Number`
+ *   - `integerValueNode`     in inline `constantPdaSeedValue`
+ *     (stripSuffix = `ValueNode`)                            → `Integer`
  *   - `programIdValueNode`   in inline `constantPdaSeedValue`
  *     (stripSuffix = `ValueNode`)                            → `ProgramId`
  */

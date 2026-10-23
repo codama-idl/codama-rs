@@ -12,7 +12,7 @@ type LiteralValue = boolean | number | string;
  * One distinct `literalUnion` discovered in the spec, paired with the
  * type name the generator will emit for it.
  *
- * A `literalUnion` TypeExpr is anonymous and inline in v1: it has no
+ * A `literalUnion` TypeExpr is anonymous and inline: it has no
  * name slot of its own, so the generated Rust type name is derived
  * from the **attribute** that references it
  * (`pascalCase(attr.name)`). Distinct value-sets become distinct
@@ -32,14 +32,14 @@ export interface LiteralUnionTypeRef {
  * the type name derived from its referencing attribute.
  *
  * The walk is recursive (mirrors `getReferencedUnionNames`): a
- * `literalUnion` nested inside an `array.of` / `tuple.items` would be
- * found, even though no such case exists in v1.
+ * `literalUnion` nested inside an `array.of` would be found, even
+ * though the spec has no such case.
  *
  * Throws when the same value-set is referenced by two
  * differently-named attributes — that would make the derived type
- * name ambiguous. This case doesn't occur in v1 (the sole literalUnion
- * is `isSigner` used by two `isSigner` attributes), but the guard
- * keeps the contract explicit so a future spec regression surfaces.
+ * name ambiguous. The spec has no such case (`isSigner` is used by two
+ * `isSigner` attributes, `base` by one), but the guard keeps the
+ * contract explicit so a future spec regression surfaces.
  */
 export function getReferencedLiteralUnions(spec: Spec): readonly LiteralUnionTypeRef[] {
     const byValueKey = new Map<string, { values: readonly LiteralValue[]; attrName: string }>();
@@ -67,9 +67,7 @@ export function getReferencedLiteralUnions(spec: Spec): readonly LiteralUnionTyp
         }
     }
 
-    return [...byValueKey.values()]
-        .map(({ values, attrName }) => ({ typeName: pascalCase(attrName), values }))
-        .toSorted((a, b) => a.typeName.localeCompare(b.typeName));
+    return [...byValueKey.values()].map(({ values, attrName }) => ({ typeName: pascalCase(attrName), values }));
 }
 
 /**
@@ -78,12 +76,17 @@ export function getReferencedLiteralUnions(spec: Spec): readonly LiteralUnionTyp
  *   - `true`     → `True`
  *   - `false`    → `False`
  *   - `"either"` → `Either` (string values are PascalCased).
- *
- * Numeric values would also PascalCase via their string form, but no
- * v1 literalUnion uses numbers.
+ *   - `2` in type `Base` -> `Base2`. A Rust identifier cannot start with a digit.
  */
-export function literalUnionVariantName(value: LiteralValue): string {
+export function literalUnionVariantName(value: LiteralValue, typeName: string): string {
     if (typeof value === 'boolean') return value ? 'True' : 'False';
     if (typeof value === 'string') return pascalCase(value);
-    return pascalCase(String(value));
+    // number values. Only `base: 2 | 10` reaches this in v2.
+    // Resulting variant names: Base2, Base10.
+    if (!Number.isSafeInteger(value) || value < 0) {
+        throw new Error(
+            `literalUnion value ${value} of type "${typeName}" has no Rust variant name. Numeric values must be non-negative safe integers.`,
+        );
+    }
+    return `${typeName}${value}`;
 }
