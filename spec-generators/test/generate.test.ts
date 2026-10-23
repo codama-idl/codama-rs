@@ -188,27 +188,35 @@ describe('getRenderMap', () => {
 
     it('per-node pages resolve their crate imports to a grouped `use crate::{…}` block plus the macro line', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
-        expect(entry.content).toContain('use crate::{CamelCaseString, HasName, ProgramLinkNode};');
+        expect(entry.content).toContain('use crate::{CamelCaseString, HasIdentifier, ProgramLinkNode};');
         expect(entry.content).toContain('use codama_nodes_derive::node;');
     });
 
-    it('per-node pages declare the struct, the From impl, and the HasName impl', () => {
+    // TODO(spec v2): expects the temporary serde rename. The next v2 regeneration drops it, update this expectation.
+    it('per-node pages declare the struct, the From impl, and the HasIdentifier impl', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
         expect(entry.content).toContain('#[node]');
         expect(entry.content).toContain('pub struct AccountLinkNode {');
+        expect(entry.content).toContain(
+            [
+                '// TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.',
+                '#[serde(rename = "name")]',
+                'pub identifier: CamelCaseString,',
+            ].join('\n'),
+        );
         expect(entry.content).toContain('impl From<AccountLinkNode> for crate::Node {');
-        expect(entry.content).toContain('impl HasName for AccountLinkNode {');
+        expect(entry.content).toContain('impl HasIdentifier for AccountLinkNode {');
     });
 
-    it('emits the LinkNode union with the node_union macro, every variant, and a HasName impl', () => {
+    // TODO(spec v2): checks the TEMP_NAME_NODE_EXCEPTIONS list. Update or delete when v2 drops it.
+    it('emits the LinkNode union with the node_union macro and every variant, without a HasIdentifier impl', () => {
         const entry = getFromRenderMap(map, 'link_nodes/link_node.rs');
         expect(entry.content).toContain('use codama_nodes_derive::node_union;');
         expect(entry.content).toContain('#[node_union]');
         expect(entry.content).toContain('pub enum LinkNode {');
         expect(entry.content).toContain('Account(AccountLinkNode),');
         expect(entry.content).toContain('Program(ProgramLinkNode),');
-        expect(entry.content).toContain('impl HasName for LinkNode {');
-        expect(entry.content).toContain('LinkNode::Account(node) => node.name(),');
+        expect(entry.content).not.toContain('impl HasIdentifier');
     });
 
     it('emits link_nodes/mod.rs listing every per-file module alphabetically with mod + pub use lines', () => {
@@ -257,13 +265,13 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('pub struct RemainderCountNode {}');
         });
 
-        it('emits the CountNode union with Fixed/Prefixed/Remainder variants and no HasName impl', () => {
+        it('emits the CountNode union with Fixed/Prefixed/Remainder variants and no HasIdentifier impl', () => {
             const entry = getFromRenderMap(map, 'count_nodes/count_node.rs');
             expect(entry.content).toContain('pub enum CountNode {');
             expect(entry.content).toContain('Fixed(FixedCountNode),');
             expect(entry.content).toContain('Prefixed(PrefixedCountNode),');
             expect(entry.content).toContain('Remainder(RemainderCountNode),');
-            expect(entry.content).not.toContain('impl HasName for CountNode');
+            expect(entry.content).not.toContain('impl HasIdentifier for CountNode');
         });
     });
 
@@ -277,14 +285,15 @@ describe('getRenderMap', () => {
             expect(size.content).toContain('pub size: u64,');
         });
 
-        it('emits HasName only on FieldDiscriminatorNode (only member with a stringIdentifier name)', () => {
+        // TODO(spec v2): checks the TEMP_NAME_NODE_EXCEPTIONS list. Update or delete when v2 drops it.
+        it('keeps the field `name` on FieldDiscriminatorNode and emits no HasIdentifier impl', () => {
             const field = getFromRenderMap(map, 'discriminator_nodes/field_discriminator_node.rs');
-            expect(field.content).toContain('impl HasName for FieldDiscriminatorNode {');
+            expect(field.content).toContain('pub name: CamelCaseString,');
+            expect(field.content).not.toContain('impl HasIdentifier');
             const constant = getFromRenderMap(map, 'discriminator_nodes/constant_discriminator_node.rs');
-            expect(constant.content).not.toContain('impl HasName');
+            expect(constant.content).not.toContain('impl HasIdentifier');
             const union = getFromRenderMap(map, 'discriminator_nodes/discriminator_node.rs');
-            // Not every variant has a name -> no union HasName impl.
-            expect(union.content).not.toContain('impl HasName for DiscriminatorNode');
+            expect(union.content).not.toContain('impl HasIdentifier for DiscriminatorNode');
         });
     });
 
@@ -338,27 +347,27 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('Number(NumberValueNode),');
             expect(entry.content).toContain('String(StringValueNode),');
             expect(entry.content).toContain('Boolean(BooleanValueNode),');
-            // No HasName: variants like NumberValueNode have no name attribute.
-            expect(entry.content).not.toContain('impl HasName for ConstantPdaSeedValue');
+            // No HasIdentifier: variants like NumberValueNode have no name attribute.
+            expect(entry.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');
         });
 
-        it('routes VariablePdaSeedNode through Node::PdaSeed with HasName + a bare Docs field', () => {
+        it('routes VariablePdaSeedNode through Node::PdaSeed with HasIdentifier + a bare Docs field', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/variable_pda_seed_node.rs');
             expect(entry.content).toContain('pub struct VariablePdaSeedNode {');
-            expect(entry.content).toContain('pub name: CamelCaseString,');
+            expect(entry.content).toContain('pub identifier: CamelCaseString,');
             expect(entry.content).toContain('pub docs: Docs,');
             // Box rule: direct union fields are boxed.
             expect(entry.content).toContain('pub r#type: Box<TypeNode>,');
-            expect(entry.content).toContain('impl HasName for VariablePdaSeedNode {');
+            expect(entry.content).toContain('impl HasIdentifier for VariablePdaSeedNode {');
         });
 
-        it('emits the PdaSeedNode category union with Constant/Variable variants and no HasName', () => {
+        it('emits the PdaSeedNode category union with Constant/Variable variants and no HasIdentifier', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/pda_seed_node.rs');
             expect(entry.content).toContain('pub enum PdaSeedNode {');
             expect(entry.content).toContain('Constant(ConstantPdaSeedNode),');
             expect(entry.content).toContain('Variable(VariablePdaSeedNode),');
-            // ConstantPdaSeedNode has no name -> no union HasName impl.
-            expect(entry.content).not.toContain('impl HasName for PdaSeedNode');
+            // ConstantPdaSeedNode has no name -> no union HasIdentifier impl.
+            expect(entry.content).not.toContain('impl HasIdentifier for PdaSeedNode');
         });
     });
 
@@ -499,8 +508,8 @@ describe('getRenderMap', () => {
             const entry = getFromRenderMap(map, 'provided_node.rs');
             expect(entry.content).toContain('pub struct ProvidedNode {');
             expect(entry.content).toContain('pub node: Box<Node>,');
-            // `name` is a stringIdentifier, so the node still gets a HasName impl.
-            expect(entry.content).toContain('impl HasName for ProvidedNode {');
+            // `name` is a stringIdentifier, so the node still gets a HasIdentifier impl.
+            expect(entry.content).toContain('impl HasIdentifier for ProvidedNode {');
         });
 
         it('renders instructionNode.provides as a bare `Vec<ProvidedNode>` and its optional display child', () => {

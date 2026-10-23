@@ -23,7 +23,7 @@ impl InstructionArgumentNode {
 impl From<StructFieldTypeNode> for InstructionArgumentNode {
     fn from(value: StructFieldTypeNode) -> Self {
         Self {
-            name: value.name,
+            name: value.identifier,
             default_value_strategy: value.default_value_strategy,
             docs: value.docs,
             // `StructFieldTypeNode.r#type` is `Box<TypeNode>`;

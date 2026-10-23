@@ -43,18 +43,21 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].name, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
-    assert_eq!(root.additional_programs[0].name, "externalProgram".into());
+    assert_eq!(
+        root.additional_programs[0].identifier,
+        "externalProgram".into()
+    );
     assert_eq!(
         root.additional_programs[0].public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
-        root.additional_programs[0].accounts[0].name,
+        root.additional_programs[0].accounts[0].identifier,
         "externalAccount".into()
     );
 
@@ -96,18 +99,21 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].name, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
-    assert_eq!(root.additional_programs[0].name, "externalProgram".into());
+    assert_eq!(
+        root.additional_programs[0].identifier,
+        "externalProgram".into()
+    );
     assert_eq!(
         root.additional_programs[0].public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
-        root.additional_programs[0].accounts[0].name,
+        root.additional_programs[0].accounts[0].identifier,
         "externalAccount".into()
     );
 
@@ -154,7 +160,10 @@ fn it_merges_multiple_items_with_same_program_directive() -> CodamaResult<()> {
 
     // Both items share the same address, so they merge into a single additional program.
     assert_eq!(root.additional_programs.len(), 1);
-    assert_eq!(root.additional_programs[0].name, "externalProgram".into());
+    assert_eq!(
+        root.additional_programs[0].identifier,
+        "externalProgram".into()
+    );
     assert_eq!(
         root.additional_programs[0].public_key,
         "ExtProg111111111111111111111111111111111111"
@@ -215,22 +224,28 @@ fn it_applies_program_directive_on_mod_block() -> CodamaResult<()> {
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].name, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
     assert_eq!(root.program.instructions.len(), 1);
-    assert_eq!(root.program.instructions[0].name, "myInstruction".into());
+    assert_eq!(
+        root.program.instructions[0].identifier,
+        "myInstruction".into()
+    );
 
     // The external program should be an additional program with its items.
     assert_eq!(root.additional_programs.len(), 1);
     let ext = &root.additional_programs[0];
-    assert_eq!(ext.name, "externalProgram".into());
+    assert_eq!(ext.identifier, "externalProgram".into());
     assert_eq!(
         ext.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(ext.accounts.len(), 1);
-    assert_eq!(ext.accounts[0].name, "someExternalAccount".into());
+    assert_eq!(ext.accounts[0].identifier, "someExternalAccount".into());
     assert_eq!(ext.instructions.len(), 1);
-    assert_eq!(ext.instructions[0].name, "someExternalInstruction".into());
+    assert_eq!(
+        ext.instructions[0].identifier,
+        "someExternalInstruction".into()
+    );
 
     Ok(())
 }

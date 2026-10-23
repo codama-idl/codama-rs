@@ -7,7 +7,7 @@ impl VariablePdaSeedNode {
         U: Into<TypeNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
         }
@@ -22,18 +22,18 @@ mod tests {
     #[test]
     fn new() {
         let node = VariablePdaSeedNode::new("my_seed", NumberTypeNode::le(U32));
-        assert_eq!(node.name, CamelCaseString::new("mySeed"));
+        assert_eq!(node.identifier, CamelCaseString::new("mySeed"));
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
     fn direct_instantiation() {
         let node = VariablePdaSeedNode {
-            name: "mySeed".into(),
+            identifier: "mySeed".into(),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
         };
-        assert_eq!(node.name, CamelCaseString::new("mySeed"));
+        assert_eq!(node.identifier, CamelCaseString::new("mySeed"));
         assert_eq!(*node.docs, vec!["Hello".to_string()]);
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }

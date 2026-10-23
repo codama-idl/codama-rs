@@ -7,7 +7,7 @@ impl DefinedTypeNode {
         U: Into<TypeNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
         }
@@ -22,7 +22,7 @@ mod tests {
     #[test]
     fn new() {
         let node = DefinedTypeNode::new("myType", NumberTypeNode::le(U8));
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
     }
@@ -30,11 +30,11 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = DefinedTypeNode {
-            name: "myType".into(),
+            identifier: "myType".into(),
             docs: Docs::default(),
             r#type: Box::new(NumberTypeNode::le(U8).into()),
         };
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
     }

@@ -1,6 +1,6 @@
 use crate::{
     AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode,
-    HasName, InstructionNode, PdaNode, ProgramOrigin,
+    HasIdentifier, InstructionNode, PdaNode, ProgramOrigin,
 };
 use codama_nodes_derive::node;
 
@@ -8,7 +8,9 @@ use codama_nodes_derive::node;
 #[derive(Default)]
 pub struct ProgramNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     pub public_key: String,
     pub version: String,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -33,8 +35,8 @@ pub struct ProgramNode {
     pub constants: Vec<ConstantNode>,
 }
 
-impl HasName for ProgramNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for ProgramNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

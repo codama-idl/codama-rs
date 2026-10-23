@@ -57,3 +57,24 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
     ['type', 'type_nodes'],
     ['value', 'value_nodes'],
 ]);
+
+/**
+ * v1 nodes whose `name` attribute keeps the Rust field `name`.
+ * Every other `name: stringIdentifier()` attribute renders as the Rust field `identifier`, the spec v2 name.
+ * Spec v2 has no `identifier` on these nodes.
+ * TODO(spec v2): temporary list, not defined by the spec. Delete it at the spec v2 pin.
+ */
+export const TEMP_NAME_NODE_EXCEPTIONS: ReadonlySet<string> = new Set([
+    // Spec v2 renames the attribute to `namespace` or `path`, or the node to `dataValueNode`.
+    'argumentValueNode',
+    'fieldDiscriminatorNode',
+    'pluginNode',
+    // Spec v2 removes the node or merges it into `enumVariantTypeNode`.
+    // The `enumVariantTypeNode` merge replaces the 3 enum variant structs, so a field rename here gains nothing.
+    'enumEmptyVariantTypeNode',
+    'enumStructVariantTypeNode',
+    'enumTupleVariantTypeNode',
+    'instructionArgumentLinkNode',
+    'instructionArgumentNode',
+    'resolverValueNode',
+]);

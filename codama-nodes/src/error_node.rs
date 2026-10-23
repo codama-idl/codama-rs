@@ -7,7 +7,7 @@ impl ErrorNode {
         U: Into<String>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             code,
             message: message.into(),
             docs: Docs::default(),
@@ -22,7 +22,7 @@ mod tests {
     #[test]
     fn new() {
         let node = ErrorNode::new("myError", 42, "Something went wrong");
-        assert_eq!(node.name, CamelCaseString::new("myError"));
+        assert_eq!(node.identifier, CamelCaseString::new("myError"));
         assert_eq!(node.code, 42);
         assert_eq!(node.message, "Something went wrong".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -31,12 +31,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ErrorNode {
-            name: "myError".into(),
+            identifier: "myError".into(),
             code: 42,
             message: "Something went wrong".into(),
             docs: Docs::default(),
         };
-        assert_eq!(node.name, CamelCaseString::new("myError"));
+        assert_eq!(node.identifier, CamelCaseString::new("myError"));
         assert_eq!(node.code, 42);
         assert_eq!(node.message, "Something went wrong".to_string());
         assert_eq!(node.docs, Docs::default());

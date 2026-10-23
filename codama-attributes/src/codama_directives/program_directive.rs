@@ -38,52 +38,52 @@ impl ProgramDirective {
     pub fn update_or_wrap_program_node(&self, node: Node) -> Node {
         match node {
             Node::Root(mut root) => {
-                root.program.name = self.name.clone();
+                root.program.identifier = self.name.clone();
                 root.program.public_key = self.address.clone();
                 root.into()
             }
             Node::Program(mut program) => {
-                program.name = self.name.clone();
+                program.identifier = self.name.clone();
                 program.public_key = self.address.clone();
                 program.into()
             }
             Node::Account(account) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 accounts: vec![account],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Constant(constant) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 constants: vec![constant],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Instruction(instruction) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 instructions: vec![instruction],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Error(error) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 errors: vec![error],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Pda(pda) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 pdas: vec![pda],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Event(event) => ProgramNode {
-                name: self.name.clone(),
+                identifier: self.name.clone(),
                 public_key: self.address.clone(),
                 events: vec![event],
                 ..ProgramNode::default()

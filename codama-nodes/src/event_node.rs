@@ -7,7 +7,7 @@ impl EventNode {
         U: Into<TypeNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             docs: Docs::default(),
             data: Box::new(data.into()),
             discriminators: vec![],
@@ -30,7 +30,7 @@ mod tests {
             ]),
         );
 
-        assert_eq!(node.name, CamelCaseString::new("myEvent"));
+        assert_eq!(node.identifier, CamelCaseString::new("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,
@@ -45,7 +45,7 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = EventNode {
-            name: "myEvent".into(),
+            identifier: "myEvent".into(),
             docs: Docs::default(),
             data: Box::new(
                 StructTypeNode::new(vec![
@@ -57,7 +57,7 @@ mod tests {
             discriminators: vec![],
         };
 
-        assert_eq!(node.name, CamelCaseString::new("myEvent"));
+        assert_eq!(node.identifier, CamelCaseString::new("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,

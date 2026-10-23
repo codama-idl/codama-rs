@@ -36,7 +36,7 @@ fn it_applies_displays_to_instruction_structs() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "transfer".into(),
+                identifier: "transfer".into(),
                 arguments: vec![InstructionArgumentNode {
                     display: Some(StructFieldDisplayNode::new("Amount")),
                     r#type: Box::new(
@@ -90,7 +90,7 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "withdraw".into(),
+                        identifier: "withdraw".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 default_value_strategy: Some(
@@ -118,7 +118,7 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "deposit".into(),
+                        identifier: "deposit".into(),
                         arguments: vec![InstructionArgumentNode {
                             default_value_strategy: Some(
                                 codama_nodes::DefaultValueStrategy::Omitted,

@@ -20,11 +20,11 @@ describe('getPageFragment', () => {
     it('groups multiple crate:: imports into a single `use crate::{…}` line, sorted alphabetically', () => {
         const body = addFragmentImports(fragment`pub type X = Foo;`, [
             'crate::CamelCaseString',
-            'crate::HasName',
+            'crate::HasIdentifier',
             'crate::ProgramLinkNode',
         ]);
         const result = getPageFragment(body);
-        expect(result.content).toMatch(/^use crate::\{CamelCaseString, HasName, ProgramLinkNode\};/);
+        expect(result.content).toMatch(/^use crate::\{CamelCaseString, HasIdentifier, ProgramLinkNode\};/);
     });
 
     it('keeps non-crate paths on their own use lines, sorted after the crate group', () => {

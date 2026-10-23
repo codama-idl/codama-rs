@@ -22,10 +22,10 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                name: "externalProgram".into(),
+                identifier: "externalProgram".into(),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 instructions: vec![InstructionNode {
-                    name: "transfer".into(),
+                    identifier: "transfer".into(),
                     arguments: vec![InstructionArgumentNode::new(
                         "amount",
                         NumberTypeNode::le(U64)
@@ -58,12 +58,12 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         Some(codama_nodes::Node::Program(p)) => p,
         _ => panic!("expected ProgramNode"),
     };
-    assert_eq!(program.name, "externalProgram".into());
+    assert_eq!(program.identifier, "externalProgram".into());
     assert_eq!(
         program.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(program.instructions.len(), 1);
-    assert_eq!(program.instructions[0].name, "transfer".into());
+    assert_eq!(program.instructions[0].identifier, "transfer".into());
     Ok(())
 }

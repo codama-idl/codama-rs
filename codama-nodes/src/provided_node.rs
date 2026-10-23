@@ -7,7 +7,7 @@ impl ProvidedNode {
         U: Into<Node>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             node: Box::new(node.into()),
         }
     }
@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn new() {
         let node = ProvidedNode::new("my_value", NumberValueNode::new(42));
-        assert_eq!(node.name, CamelCaseString::new("myValue"));
+        assert_eq!(node.identifier, CamelCaseString::new("myValue"));
         assert_eq!(*node.node, Node::from(NumberValueNode::new(42)));
     }
 

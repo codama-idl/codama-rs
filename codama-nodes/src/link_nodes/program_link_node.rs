@@ -5,7 +5,9 @@ impl ProgramLinkNode {
     where
         T: Into<CamelCaseString>,
     {
-        Self { name: name.into() }
+        Self {
+            identifier: name.into(),
+        }
     }
 }
 
@@ -28,19 +30,19 @@ mod tests {
     #[test]
     fn new() {
         let node = ProgramLinkNode::new("my_program");
-        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
     }
 
     #[test]
     fn from_string() {
         let node: ProgramLinkNode = String::from("my_program").into();
-        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
     }
 
     #[test]
     fn from_str() {
         let node: ProgramLinkNode = "my_program".into();
-        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
     }
 
     #[test]
