@@ -5,6 +5,8 @@ impl StringTypeNode {
         Self {
             encoding,
             display: None,
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 

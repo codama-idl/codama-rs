@@ -1,99 +1,151 @@
+use crate::Text;
 use serde::{Deserialize, Serialize};
-use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::ops::Deref;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
-pub struct Docs(Vec<String>);
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Docs(Option<Text>);
 
 impl Docs {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn push<T: Into<String>>(&mut self, line: T) {
+        let line = line.into();
+        match &mut self.0 {
+            None => self.0 = Some(Text::String(line)),
+            Some(text) => {
+                let content = match text {
+                    Text::String(content) => content,
+                    Text::Node(node) => &mut node.content,
+                };
+                if !content.is_empty() {
+                    content.push('\n');
+                }
+                content.push_str(&line);
+            }
+        }
     }
 
-    pub fn add_doc<T: Into<String>>(mut self, value: T) -> Self {
-        self.0.push(value.into());
-        self
-    }
-
-    pub fn push<T: Into<String>>(&mut self, value: T) {
-        self.0.push(value.into());
-    }
-
+    /// Empty text counts as no docs, so callers that merge docs can replace it.
+    /// The text still serializes as written.
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        match &self.0 {
+            None => true,
+            Some(Text::String(content)) => content.is_empty(),
+            Some(Text::Node(node)) => node.content.is_empty() && node.plugins.is_empty(),
+        }
     }
 }
 
 impl From<Vec<String>> for Docs {
-    fn from(vec: Vec<String>) -> Self {
-        Self(vec)
+    fn from(lines: Vec<String>) -> Self {
+        if lines.is_empty() {
+            return Self::default();
+        }
+        Self(Some(Text::String(lines.join("\n"))))
     }
 }
 
 impl Deref for Docs {
-    type Target = Vec<String>;
+    type Target = Option<Text>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for Docs {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl AsRef<[String]> for Docs {
-    fn as_ref(&self) -> &[String] {
-        &self.0
-    }
-}
-
-impl AsMut<[String]> for Docs {
-    fn as_mut(&mut self) -> &mut [String] {
-        &mut self.0
-    }
-}
-
-impl Index<usize> for Docs {
-    type Output = String;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.0[index]
-    }
-}
-
-impl IndexMut<usize> for Docs {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.0[index]
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{PluginNode, TextNode};
 
     #[test]
-    fn new() {
-        let docs = Docs::new();
-        assert_eq!(docs.0, Vec::<String>::new());
+    fn default() {
+        let docs = Docs::default();
+        assert!(docs.is_empty());
+        assert_eq!(*docs, None);
     }
 
     #[test]
-    fn new_and_push() {
-        let mut docs = Docs::new();
+    fn push() {
+        let mut docs = Docs::default();
         docs.push("Hello");
         docs.push(String::from("World"));
-        docs.push('!');
-        assert_eq!(
-            docs.0,
-            vec!["Hello".to_string(), "World".to_string(), "!".to_string()]
-        );
+        assert_eq!(*docs, Some(Text::from("Hello\nWorld")));
+    }
+
+    #[test]
+    fn push_to_text_node() {
+        let mut docs = Docs(Some(Text::from(TextNode {
+            content: "Hello".to_string(),
+            plugins: vec![],
+        })));
+        docs.push("World");
+        assert_eq!(docs.as_ref().map(Text::content), Some("Hello\nWorld"));
     }
 
     #[test]
     fn from_vec() {
         let docs: Docs = vec!["Hello".to_string(), "World".to_string()].into();
-        assert_eq!(docs.0, vec!["Hello".to_string(), "World".to_string()]);
+        assert_eq!(*docs, Some(Text::from("Hello\nWorld")));
+    }
+
+    #[test]
+    fn from_empty_vec() {
+        let docs: Docs = vec![].into();
+        assert!(docs.is_empty());
+    }
+
+    #[test]
+    fn to_json() {
+        let docs: Docs = vec!["Hello".to_string(), "World".to_string()].into();
+        let json = serde_json::to_string(&docs).unwrap();
+        assert_eq!(json, r#""Hello\nWorld""#);
+    }
+
+    #[test]
+    fn from_json() {
+        let docs: Docs = serde_json::from_str(r#""Hello\nWorld""#).unwrap();
+        assert_eq!(docs, vec!["Hello".to_string(), "World".to_string()].into());
+    }
+
+    #[test]
+    fn from_empty_json() {
+        let docs: Docs = serde_json::from_str(r#""""#).unwrap();
+        assert!(docs.is_empty());
+        let json = serde_json::to_string(&docs).unwrap();
+        assert_eq!(json, r#""""#);
+    }
+
+    #[test]
+    fn push_to_empty_json() {
+        let mut docs: Docs = serde_json::from_str(r#""""#).unwrap();
+        docs.push("Hello");
+        assert_eq!(*docs, Some(Text::from("Hello")));
+    }
+
+    #[test]
+    fn from_vec_with_empty_string() {
+        let docs: Docs = vec![String::new()].into();
+        assert!(docs.is_empty());
+    }
+
+    #[test]
+    fn empty_text_node() {
+        let docs = Docs(Some(Text::from(TextNode {
+            content: String::new(),
+            plugins: vec![],
+        })));
+        assert!(docs.is_empty());
+    }
+
+    #[test]
+    fn empty_text_node_with_plugins() {
+        let docs = Docs(Some(Text::from(TextNode {
+            content: String::new(),
+            plugins: vec![PluginNode {
+                namespace: "anchor".to_string(),
+                ..PluginNode::default()
+            }],
+        })));
+        assert!(!docs.is_empty());
     }
 }
