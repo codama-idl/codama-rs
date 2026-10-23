@@ -7,7 +7,7 @@ impl PdaSeedValueNode {
         U: Into<PdaSeedValueValue>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             value: Box::new(value.into()),
         }
     }
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn new() {
         let node = PdaSeedValueNode::new("answer", NumberValueNode::new(42));
-        assert_eq!(node.name, CamelCaseString::from("answer"));
+        assert_eq!(node.identifier, CamelCaseString::from("answer"));
         assert_eq!(
             *node.value,
             PdaSeedValueValue::Number(NumberValueNode::new(42))

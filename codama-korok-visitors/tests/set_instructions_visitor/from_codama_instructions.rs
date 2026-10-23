@@ -41,7 +41,7 @@ fn from_enum() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         accounts: vec![
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
@@ -61,7 +61,7 @@ fn from_enum() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
                         arguments: vec![
                             InstructionArgumentNode {
@@ -110,7 +110,7 @@ fn from_enum_with_arguments_only() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -126,7 +126,7 @@ fn from_enum_with_arguments_only() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -178,7 +178,7 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         accounts: vec![
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
@@ -197,7 +197,7 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
                         arguments: vec![
                             InstructionArgumentNode {
@@ -240,7 +240,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -255,7 +255,7 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -305,7 +305,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         accounts: vec![
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
@@ -325,7 +325,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
                         arguments: vec![
                             InstructionArgumentNode {
@@ -370,7 +370,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -385,7 +385,7 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -429,7 +429,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -444,7 +444,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -459,7 +459,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "write".into(),
+                        identifier: "write".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -474,7 +474,7 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "close".into(),
+                        identifier: "close".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -551,7 +551,7 @@ fn with_name_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![InstructionArgumentNode {
                         name: "discriminator".into(),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -590,7 +590,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![InstructionArgumentNode {
                         name: "discriminator".into(),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -636,7 +636,7 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![InstructionArgumentNode {
                         name: "banana".into(),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -675,7 +675,7 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![
                         InstructionArgumentNode {
                             default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
@@ -716,7 +716,7 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![
                         InstructionArgumentNode {
                             default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
@@ -757,7 +757,7 @@ fn with_appended_argument_attributes() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "initialize".into(),
+                    identifier: "initialize".into(),
                     arguments: vec![
                         InstructionArgumentNode {
                             default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
@@ -807,7 +807,7 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "charge".into(),
+                    identifier: "charge".into(),
                     accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
                     arguments: vec![
                         InstructionArgumentNode {
@@ -871,7 +871,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "warp".into(),
+                        identifier: "warp".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -887,7 +887,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "fireTorpedoes".into(),
+                        identifier: "fireTorpedoes".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -903,7 +903,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "cheat".into(),
+                        identifier: "cheat".into(),
                         arguments: vec![InstructionArgumentNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -957,7 +957,7 @@ fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    name: "charge".into(),
+                    identifier: "charge".into(),
                     accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
                     arguments: vec![
                         InstructionArgumentNode {

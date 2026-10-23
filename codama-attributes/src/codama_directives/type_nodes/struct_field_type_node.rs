@@ -28,7 +28,7 @@ impl FromMeta for StructFieldTypeNode {
             .map_err(|e| meta.error(e.to_string()))?;
 
         Ok(StructFieldTypeNode {
-            name: consumer.name.take(meta)?,
+            identifier: consumer.name.take(meta)?,
             r#type: Box::new(r#type),
             default_value: Box::new(default_value),
             default_value_strategy,

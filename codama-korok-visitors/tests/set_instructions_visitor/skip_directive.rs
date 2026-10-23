@@ -33,7 +33,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -51,7 +51,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![
                             InstructionArgumentNode {
                                 name: "discriminator".into(),
@@ -99,7 +99,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "initialize".into(),
+                        identifier: "initialize".into(),
                         arguments: vec![InstructionArgumentNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -114,7 +114,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "update".into(),
+                        identifier: "update".into(),
                         arguments: vec![InstructionArgumentNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -160,7 +160,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        name: "first".into(),
+                        identifier: "first".into(),
                         arguments: vec![InstructionArgumentNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
@@ -175,7 +175,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        name: "third".into(),
+                        identifier: "third".into(),
                         arguments: vec![InstructionArgumentNode {
                             name: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),

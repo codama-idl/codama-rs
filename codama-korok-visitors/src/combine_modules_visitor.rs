@@ -2,7 +2,7 @@ use crate::KorokVisitor;
 use codama_attributes::ProgramDirective;
 use codama_errors::CodamaResult;
 use codama_koroks::KorokTrait;
-use codama_nodes::{HasName, Node, ProgramNode, RootNode};
+use codama_nodes::{HasIdentifier, Node, ProgramNode, RootNode};
 
 #[derive(Default)]
 pub struct CombineModulesVisitor {
@@ -122,31 +122,31 @@ fn get_scraps_root_node(nodes: Vec<Node>) -> Option<RootNode> {
     for node in nodes {
         match node {
             Node::Account(node) => {
-                add_or_replace_node_with_name(&mut root.program.accounts, node);
+                add_or_replace_node_with_identifier(&mut root.program.accounts, node);
                 has_scraps = true
             }
             Node::Constant(node) => {
-                add_or_replace_node_with_name(&mut root.program.constants, node);
+                add_or_replace_node_with_identifier(&mut root.program.constants, node);
                 has_scraps = true
             }
             Node::Instruction(node) => {
-                add_or_replace_node_with_name(&mut root.program.instructions, node);
+                add_or_replace_node_with_identifier(&mut root.program.instructions, node);
                 has_scraps = true
             }
             Node::DefinedType(node) => {
-                add_or_replace_node_with_name(&mut root.program.defined_types, node);
+                add_or_replace_node_with_identifier(&mut root.program.defined_types, node);
                 has_scraps = true
             }
             Node::Error(node) => {
-                add_or_replace_node_with_name(&mut root.program.errors, node);
+                add_or_replace_node_with_identifier(&mut root.program.errors, node);
                 has_scraps = true
             }
             Node::Pda(node) => {
-                add_or_replace_node_with_name(&mut root.program.pdas, node);
+                add_or_replace_node_with_identifier(&mut root.program.pdas, node);
                 has_scraps = true
             }
             Node::Event(node) => {
-                add_or_replace_node_with_name(&mut root.program.events, node);
+                add_or_replace_node_with_identifier(&mut root.program.events, node);
                 has_scraps = true
             }
             _ => (),
@@ -200,8 +200,8 @@ fn should_merge_program_nodes(this: &ProgramNode, that: &ProgramNode, from_paren
 
 /// Merge `that` ProgramNode into `this` ProgramNode.
 fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
-    if this.name.is_empty() {
-        this.name = that.name;
+    if this.identifier.is_empty() {
+        this.identifier = that.identifier;
     }
     if this.public_key.is_empty() {
         this.public_key = that.public_key;
@@ -215,29 +215,32 @@ fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     if this.docs.is_empty() {
         this.docs = that.docs;
     }
-    merge_nodes_with_name(&mut this.accounts, that.accounts);
-    merge_nodes_with_name(&mut this.instructions, that.instructions);
-    merge_nodes_with_name(&mut this.defined_types, that.defined_types);
-    merge_nodes_with_name(&mut this.pdas, that.pdas);
-    merge_nodes_with_name(&mut this.events, that.events);
-    merge_nodes_with_name(&mut this.errors, that.errors);
-    merge_nodes_with_name(&mut this.constants, that.constants);
+    merge_nodes_with_identifier(&mut this.accounts, that.accounts);
+    merge_nodes_with_identifier(&mut this.instructions, that.instructions);
+    merge_nodes_with_identifier(&mut this.defined_types, that.defined_types);
+    merge_nodes_with_identifier(&mut this.pdas, that.pdas);
+    merge_nodes_with_identifier(&mut this.events, that.events);
+    merge_nodes_with_identifier(&mut this.errors, that.errors);
+    merge_nodes_with_identifier(&mut this.constants, that.constants);
 }
 
-fn merge_nodes_with_name<T>(nodes: &mut Vec<T>, new_nodes: Vec<T>)
+fn merge_nodes_with_identifier<T>(nodes: &mut Vec<T>, new_nodes: Vec<T>)
 where
-    T: HasName,
+    T: HasIdentifier,
 {
     for that in new_nodes {
-        add_or_replace_node_with_name(nodes, that);
+        add_or_replace_node_with_identifier(nodes, that);
     }
 }
 
-fn add_or_replace_node_with_name<T>(nodes: &mut Vec<T>, new_node: T)
+fn add_or_replace_node_with_identifier<T>(nodes: &mut Vec<T>, new_node: T)
 where
-    T: HasName,
+    T: HasIdentifier,
 {
-    if let Some(existing) = nodes.iter_mut().find(|d| d.name() == new_node.name()) {
+    if let Some(existing) = nodes
+        .iter_mut()
+        .find(|d| d.identifier() == new_node.identifier())
+    {
         *existing = new_node;
     } else {
         nodes.push(new_node);

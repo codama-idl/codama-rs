@@ -32,6 +32,7 @@ describe('getNodeStructFragment', () => {
         expect([...result.imports.keys()]).toContain('codama_nodes_derive::node');
     });
 
+    // TODO(spec v2): expects the temporary serde rename. The next v2 regeneration drops it, update this expectation.
     it('partitions data attributes before child attributes with section comments', () => {
         const spec = defineNode('accountLinkNode', {
             attributes: [optionalAttribute('program', node('programLinkNode')), attribute('name', stringIdentifier())],
@@ -43,7 +44,14 @@ describe('getNodeStructFragment', () => {
         expect(childrenIdx).toBeGreaterThan(-1);
         expect(dataIdx).toBeLessThan(childrenIdx);
         // No leading indentation on field lines — rustfmt restores it.
-        expect(out).toContain('// Data.\npub name: CamelCaseString,');
+        expect(out).toContain(
+            [
+                '// Data.',
+                '// TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.',
+                '#[serde(rename = "name")]',
+                'pub identifier: CamelCaseString,',
+            ].join('\n'),
+        );
         expect(out).toContain(
             [
                 '// Children.',

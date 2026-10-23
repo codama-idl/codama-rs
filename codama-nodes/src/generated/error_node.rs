@@ -1,19 +1,21 @@
-use crate::{CamelCaseString, Docs, HasName};
+use crate::{CamelCaseString, Docs, HasIdentifier};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct ErrorNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     pub code: u32,
     pub message: String,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 }
 
-impl HasName for ErrorNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for ErrorNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

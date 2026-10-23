@@ -45,7 +45,7 @@ impl FieldDirective {
     /// Returns an error if any unresolved directives remain.
     pub fn to_struct_field_type_node(&self) -> CodamaResult<StructFieldTypeNode> {
         Ok(StructFieldTypeNode {
-            name: self.name.clone(),
+            identifier: self.name.clone(),
             r#type: Box::new(self.r#type.try_resolved()?.clone()),
             docs: self.docs.clone(),
             default_value: Box::new(

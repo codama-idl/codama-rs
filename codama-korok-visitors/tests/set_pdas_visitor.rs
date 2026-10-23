@@ -211,7 +211,7 @@ fn it_wraps_pda_in_program_node_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                name: "associatedToken".into(),
+                identifier: "associatedToken".into(),
                 public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
                 pdas: vec![PdaNode::new(
                     "associatedToken",
@@ -246,7 +246,7 @@ fn it_wraps_pda_in_program_node_from_enum_with_program_directive() -> CodamaResu
         korok.node,
         Some(
             ProgramNode {
-                name: "associatedToken".into(),
+                identifier: "associatedToken".into(),
                 public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
                 pdas: vec![PdaNode::new(
                     "associatedToken",

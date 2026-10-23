@@ -29,6 +29,6 @@ pub trait HasKind {
     fn kind(&self) -> &'static str;
 }
 
-pub trait HasName {
-    fn name(&self) -> &CamelCaseString;
+pub trait HasIdentifier {
+    fn identifier(&self) -> &CamelCaseString;
 }

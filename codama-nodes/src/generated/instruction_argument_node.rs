@@ -1,6 +1,6 @@
 use crate::{
-    CamelCaseString, DefaultValueStrategy, Docs, HasName, InstructionInputValueNode,
-    StructFieldDisplayNode, TypeNode,
+    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, StructFieldDisplayNode,
+    TypeNode,
 };
 use codama_nodes_derive::node;
 
@@ -19,10 +19,4 @@ pub struct InstructionArgumentNode {
     pub default_value: Box<Option<InstructionInputValueNode>>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub display: Option<StructFieldDisplayNode>,
-}
-
-impl HasName for InstructionArgumentNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
-    }
 }

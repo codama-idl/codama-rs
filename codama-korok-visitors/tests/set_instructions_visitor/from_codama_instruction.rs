@@ -33,7 +33,7 @@ fn from_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 accounts: vec![
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode::new("payer", true, true),
@@ -68,7 +68,7 @@ fn from_struct_with_arguments_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 arguments: vec![
                     InstructionArgumentNode::new("amount", NumberTypeNode::le(U64)),
                     InstructionArgumentNode::new("is_canonical", BooleanTypeNode::default(),),
@@ -101,7 +101,7 @@ fn from_struct_with_accounts_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 accounts: vec![
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode::new("payer", true, true),
@@ -134,7 +134,7 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 accounts: vec![
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode::new("payer", true, true),
@@ -172,10 +172,10 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 accounts: vec![
                     InstructionAccountNode {
-                        name: "rentSysvar".into(),
+                        identifier: "rentSysvar".into(),
                         default_value: Box::new(Some(
                             PublicKeyValueNode::new("SysvarRent111111111111111111111111111111111")
                                 .into(),
@@ -188,7 +188,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         display: None,
                     },
                     InstructionAccountNode {
-                        name: "tokenProgram".into(),
+                        identifier: "tokenProgram".into(),
                         default_value: Box::new(Some(
                             PublicKeyValueNode::new("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
                                 .into(),
@@ -202,7 +202,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                     },
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode {
-                        name: "payer".into(),
+                        identifier: "payer".into(),
                         is_signer: true.into(),
                         is_writable: true,
                         default_value: Box::new(Some(PayerValueNode::new().into())),
@@ -243,7 +243,7 @@ fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 arguments: vec![
                     InstructionArgumentNode {
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
@@ -284,7 +284,7 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 accounts: vec![
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode {
@@ -319,7 +319,7 @@ fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 arguments: vec![
                     InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
                     InstructionArgumentNode {
@@ -350,7 +350,7 @@ fn from_empty_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 ..InstructionNode::default()
             }
             .into()
@@ -408,7 +408,7 @@ fn with_name_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 ..InstructionNode::default()
             }
             .into()
@@ -433,7 +433,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
                     FieldDiscriminatorNode::new("discriminator", 0).into(),
@@ -462,7 +462,7 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 arguments: vec![
                     InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
                     InstructionArgumentNode::new("name", StringTypeNode::utf8()),
@@ -494,7 +494,7 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 arguments: vec![
                     InstructionArgumentNode {
                         default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
@@ -531,7 +531,7 @@ fn with_appended_argument_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 arguments: vec![
                     InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
                     InstructionArgumentNode::new("name", StringTypeNode::utf8()),
@@ -566,7 +566,7 @@ fn with_prepended_and_appended_argument_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 arguments: vec![
                     InstructionArgumentNode::new("year_of_birth", NumberTypeNode::le(U8)),
                     InstructionArgumentNode::new("is_member", BooleanTypeNode::default()),

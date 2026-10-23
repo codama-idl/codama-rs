@@ -3,7 +3,7 @@ import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust'
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
 import { flattenNodeUnion, getInlineUnionStripSuffix, getReferencedUnionNames, isInlineUnion } from '../unions';
-import { getUnionHasNameImplFragment } from './hasNameImpl';
+import { getUnionHasIdentifierImplFragment } from './hasNameImpl';
 import { use } from './helpers';
 
 /**
@@ -14,24 +14,24 @@ import { use } from './helpers';
  *      alphabetically. Variant name = pascalCase(kind) minus the
  *      union's implied node suffix (e.g. `accountLinkNode` in
  *      `linkNode` → `Account`).
- *   2. `impl HasName for XxxUnion { … }` when every member node has a
- *      `name: stringIdentifier()` attribute.
+ *   2. `impl HasIdentifier for XxxUnion { … }` when every member node has a
+ *      Rust field `identifier`.
  */
 export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const unionName = pascalCase(union.name);
     const variants = buildVariants(union, spec);
 
     const enumFragment = buildEnumFragment(unionName, variants);
-    const hasNameFragment = getUnionHasNameImplFragment(unionName, variants);
+    const hasIdentifierFragment = getUnionHasIdentifierImplFragment(unionName, variants);
 
-    const blocks: (Fragment | undefined)[] = [enumFragment, hasNameFragment];
+    const blocks: (Fragment | undefined)[] = [enumFragment, hasIdentifierFragment];
     return mergeFragments(blocks, parts => parts.join('\n\n'));
 }
 
 interface UnionVariant {
     /** The Rust variant name (PascalCase, stripped suffix). */
     readonly name: string;
-    /** The wrapped node spec (for `HasName` dispatch). */
+    /** The wrapped node spec (for `HasIdentifier` dispatch). */
     readonly node: NodeSpec;
 }
 

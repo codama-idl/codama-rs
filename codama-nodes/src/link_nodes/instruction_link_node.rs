@@ -6,7 +6,7 @@ impl InstructionLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: None,
         }
     }
@@ -16,7 +16,7 @@ impl InstructionLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: Some(program),
         }
     }
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn new() {
         let node = InstructionLinkNode::new("my_instruction");
-        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.identifier, CamelCaseString::new("myInstruction"));
     }
 
     #[test]
@@ -50,21 +50,21 @@ mod tests {
             "my_instruction",
             ProgramLinkNode::new("my_program"),
         );
-        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.identifier, CamelCaseString::new("myInstruction"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn from_string() {
         let node: InstructionLinkNode = String::from("my_instruction").into();
-        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.identifier, CamelCaseString::new("myInstruction"));
         assert_eq!(node.program, None);
     }
 
     #[test]
     fn from_str() {
         let node: InstructionLinkNode = "my_instruction".into();
-        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.identifier, CamelCaseString::new("myInstruction"));
         assert_eq!(node.program, None);
     }
 

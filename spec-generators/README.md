@@ -6,7 +6,7 @@ This project is **never published**. It is only invoked at development time, via
 
 ## Architecture
 
-The generator owns its full pipeline. It knows which spec major it targets, which output directory it writes to, and which compatibility knobs it needs. It does not take a spec as a parameter — it imports it directly from `@codama/spec`.
+The generator owns its full pipeline. It knows which spec major it targets, which output directory it writes to, and which compatibility settings it needs. It does not take a spec as a parameter — it imports it directly from `@codama/spec`.
 
 The bin script (`bin/generate.ts`) wraps the top-level `generate()` function for `pnpm generate`.
 
@@ -62,7 +62,7 @@ pnpm generate
 
 ## Scope (v1)
 
-This first iteration generates source files for nodes and unions in spec category `link`. Each generated per-node file contains the struct definition wrapped in `#[node]`, a `From<Self> for crate::Node` impl routing through the category's union variant, and a `HasName` impl when the node has a `name: stringIdentifier()` attribute. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasName` impl when every member node has a `name` attribute.
+This first iteration generates source files for nodes and unions in spec category `link`. Each generated per-node file contains the struct definition wrapped in `#[node]`, a `From<Self> for crate::Node` impl routing through the category's union variant, and a `HasIdentifier` impl when the node has a `name: stringIdentifier()` attribute. That attribute renders as the Rust field `identifier` with `#[serde(rename = "name")]`, except on the nodes in `TEMP_NAME_NODE_EXCEPTIONS` (`src/defaults.ts`), which keep the field `name` and get no impl. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasIdentifier` impl when every member node has one.
 
 Other categories (`count`, `discriminator`, `pdaSeed`, `value`, `topLevel`, `contextualValue`, `type`) stay hand-written for now and will land in future PRs. Per-node constructors (`AccountLinkNode::new`, etc.), bespoke `TryFrom` impls, and `#[cfg(test)] mod tests` blocks also stay hand-written, in `codama-nodes/src/<name>.rs` files that `use` the generated struct.
 

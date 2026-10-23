@@ -6,7 +6,7 @@ impl AccountLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: None,
         }
     }
@@ -16,7 +16,7 @@ impl AccountLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: Some(program),
         }
     }
@@ -41,28 +41,28 @@ mod tests {
     #[test]
     fn new() {
         let node = AccountLinkNode::new("my_account");
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
     }
 
     #[test]
     fn new_from_program() {
         let node =
             AccountLinkNode::new_from_program("my_account", ProgramLinkNode::new("my_program"));
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn from_string() {
         let node: AccountLinkNode = String::from("my_account").into();
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert_eq!(node.program, None);
     }
 
     #[test]
     fn from_str() {
         let node: AccountLinkNode = "my_account".into();
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert_eq!(node.program, None);
     }
 

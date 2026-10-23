@@ -6,7 +6,7 @@ use codama_nodes::{
 
 fn create_instruction_with_single_arg(name: &str, arg_name: &str) -> InstructionNode {
     InstructionNode {
-        name: name.into(),
+        identifier: name.into(),
         arguments: vec![InstructionArgumentNode::new(
             arg_name,
             BooleanTypeNode::default(),
@@ -18,7 +18,7 @@ fn create_instruction_with_single_arg(name: &str, arg_name: &str) -> Instruction
 #[test]
 fn it_merges_instructions_into_root_nodes() {
     let create_instruction = InstructionNode {
-        name: "create".into(),
+        identifier: "create".into(),
         accounts: vec![
             InstructionAccountNode::new("payer", true, true),
             InstructionAccountNode::new("authority", false, false),
@@ -26,7 +26,7 @@ fn it_merges_instructions_into_root_nodes() {
         ..InstructionNode::default()
     };
     let update_instruction = InstructionNode {
-        name: "update".into(),
+        identifier: "update".into(),
         accounts: vec![InstructionAccountNode::new("authority", false, true)],
         ..InstructionNode::default()
     };

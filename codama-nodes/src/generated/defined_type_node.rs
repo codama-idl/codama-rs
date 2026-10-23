@@ -1,10 +1,12 @@
-use crate::{CamelCaseString, Docs, HasName, TypeNode};
+use crate::{CamelCaseString, Docs, HasIdentifier, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct DefinedTypeNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
@@ -12,8 +14,8 @@ pub struct DefinedTypeNode {
     pub r#type: Box<TypeNode>,
 }
 
-impl HasName for DefinedTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for DefinedTypeNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

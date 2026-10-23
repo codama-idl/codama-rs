@@ -151,7 +151,7 @@ impl KorokVisitor for SetAccountsVisitor {
             )),
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
-        let discriminator_name = discriminator.name.clone();
+        let discriminator_name = discriminator.identifier.clone();
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
         let data = data.map_nested_type_node(|node| {
             let mut fields = node.fields;
@@ -184,7 +184,7 @@ fn parse_struct(
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
         if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from((*node.r#type).clone()) {
-            return Ok((node.name.clone(), data));
+            return Ok((node.identifier.clone(), data));
         };
     };
 
@@ -244,15 +244,17 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
 
     // Create a PDA node from the seed directives.
     let pda_name = match &account.pda {
-        Some(pda_link) => pda_link.name.clone(),
-        None => account.name.clone(),
+        Some(pda_link) => pda_link.identifier.clone(),
+        None => account.identifier.clone(),
     };
     let pda = parse_pda_node(pda_name, attributes, fields)?;
 
     // Add both the account and the linked PDA to a program node.
     Ok(ProgramNode {
         accounts: vec![AccountNode {
-            pda: account.pda.or(Some(PdaLinkNode::new(pda.name.clone()))),
+            pda: account
+                .pda
+                .or(Some(PdaLinkNode::new(pda.identifier.clone()))),
             ..account
         }],
         pdas: vec![pda],

@@ -48,7 +48,7 @@ pub fn parse_pda_node(
     fields: &[FieldKorok],
 ) -> CodamaResult<PdaNode> {
     Ok(PdaNode {
-        name,
+        identifier: name,
         seeds: parse_pda_seed_nodes(attributes, fields)?,
         docs: Docs::default(),
         program_id: None,
@@ -79,9 +79,10 @@ pub fn parse_pda_seed_nodes(
                         return None;
                     }
                     let (name, type_node) = match &field.node {
-                        Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => {
-                            (struct_field.name.clone(), (*struct_field.r#type).clone())
-                        }
+                        Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => (
+                            struct_field.identifier.clone(),
+                            (*struct_field.r#type).clone(),
+                        ),
                         _ => match TypeNode::try_from(field.node.clone()) {
                             Ok(type_node) => (name.clone().into(), type_node),
                             Err(_) => return None,

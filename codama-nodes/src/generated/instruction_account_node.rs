@@ -1,5 +1,5 @@
 use crate::{
-    AccountLinkNode, CamelCaseString, Docs, HasName, InstructionAccountDisplayNode,
+    AccountLinkNode, CamelCaseString, Docs, HasIdentifier, InstructionAccountDisplayNode,
     InstructionInputValueNode, IsSigner,
 };
 use codama_nodes_derive::node;
@@ -7,7 +7,9 @@ use codama_nodes_derive::node;
 #[node]
 pub struct InstructionAccountNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     pub is_writable: bool,
     pub is_signer: IsSigner,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -24,8 +26,8 @@ pub struct InstructionAccountNode {
     pub display: Option<InstructionAccountDisplayNode>,
 }
 
-impl HasName for InstructionAccountNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for InstructionAccountNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

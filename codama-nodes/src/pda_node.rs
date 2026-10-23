@@ -6,7 +6,7 @@ impl PdaNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             docs: Docs::default(),
             program_id: None,
             seeds,
@@ -32,7 +32,7 @@ mod tests {
                 VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
             ],
         );
-        assert_eq!(node.name, CamelCaseString::new("associatedToken"));
+        assert_eq!(node.identifier, CamelCaseString::new("associatedToken"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.program_id, None);
         assert_eq!(
@@ -51,12 +51,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = PdaNode {
-            name: "myPda".into(),
+            identifier: "myPda".into(),
             docs: Docs::default(),
             program_id: Some("1234..5678".into()),
             seeds: vec![],
         };
-        assert_eq!(node.name, CamelCaseString::new("myPda"));
+        assert_eq!(node.identifier, CamelCaseString::new("myPda"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.program_id, Some("1234..5678".into()));
         assert_eq!(node.seeds, vec![]);

@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, EnumVariantDisplayNode, HasName, NestedTypeNode, TupleTypeNode};
+use crate::{CamelCaseString, EnumVariantDisplayNode, NestedTypeNode, TupleTypeNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -17,11 +17,5 @@ pub struct EnumTupleVariantTypeNode {
 impl From<EnumTupleVariantTypeNode> for crate::Node {
     fn from(val: EnumTupleVariantTypeNode) -> Self {
         crate::Node::Type(val.into())
-    }
-}
-
-impl HasName for EnumTupleVariantTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }

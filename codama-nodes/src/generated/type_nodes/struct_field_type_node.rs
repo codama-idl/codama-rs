@@ -1,5 +1,5 @@
 use crate::{
-    CamelCaseString, DefaultValueStrategy, Docs, HasName, StructFieldDisplayNode, TypeNode,
+    CamelCaseString, DefaultValueStrategy, Docs, HasIdentifier, StructFieldDisplayNode, TypeNode,
     ValueNode,
 };
 use codama_nodes_derive::node;
@@ -7,7 +7,9 @@ use codama_nodes_derive::node;
 #[node]
 pub struct StructFieldTypeNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub default_value_strategy: Option<DefaultValueStrategy>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -27,8 +29,8 @@ impl From<StructFieldTypeNode> for crate::Node {
     }
 }
 
-impl HasName for StructFieldTypeNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for StructFieldTypeNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

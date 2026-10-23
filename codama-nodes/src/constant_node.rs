@@ -8,7 +8,7 @@ impl ConstantNode {
         V: Into<ValueNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
             value: Box::new(value.into()),
@@ -29,7 +29,7 @@ mod tests {
             NumberTypeNode::le(U64),
             NumberValueNode::new(100u64),
         );
-        assert_eq!(node.name, CamelCaseString::new("maxItems"));
+        assert_eq!(node.identifier, CamelCaseString::new("maxItems"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
         assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(100u64)));
@@ -38,12 +38,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ConstantNode {
-            name: "appName".into(),
+            identifier: "appName".into(),
             docs: Docs::default(),
             r#type: Box::new(StringTypeNode::utf8().into()),
             value: Box::new(StringValueNode::new("MyApp").into()),
         };
-        assert_eq!(node.name, CamelCaseString::new("appName"));
+        assert_eq!(node.identifier, CamelCaseString::new("appName"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(

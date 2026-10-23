@@ -137,7 +137,7 @@ impl KorokVisitor for SetEventsVisitor {
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
 
-        let discriminator_name = discriminator.name.clone();
+        let discriminator_name = discriminator.identifier.clone();
 
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
 
@@ -171,7 +171,7 @@ fn parse_struct(
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
         if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from((*node.r#type).clone()) {
-            return Ok((node.name.clone(), data));
+            return Ok((node.identifier.clone(), data));
         };
     };
 

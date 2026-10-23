@@ -7,7 +7,7 @@ impl StructFieldTypeNode {
         U: Into<TypeNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             default_value_strategy: None,
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
@@ -25,14 +25,14 @@ mod tests {
     #[test]
     fn new() {
         let node = StructFieldTypeNode::new("my_field", NumberTypeNode::le(U32));
-        assert_eq!(node.name, CamelCaseString::new("myField"));
+        assert_eq!(node.identifier, CamelCaseString::new("myField"));
         assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U32)));
     }
 
     #[test]
     fn direct_instantiation() {
         let node = StructFieldTypeNode {
-            name: "myField".into(),
+            identifier: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
@@ -40,7 +40,7 @@ mod tests {
             display: None,
         };
 
-        assert_eq!(node.name, CamelCaseString::new("myField"));
+        assert_eq!(node.identifier, CamelCaseString::new("myField"));
         assert_eq!(
             node.default_value_strategy,
             Some(DefaultValueStrategy::Optional)
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn to_json_full() {
         let node = StructFieldTypeNode {
-            name: "myField".into(),
+            identifier: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(NumberTypeNode::le(U32).into()),
@@ -97,7 +97,7 @@ mod tests {
         assert_eq!(
             node,
             StructFieldTypeNode {
-                name: "myField".into(),
+                identifier: "myField".into(),
                 default_value_strategy: Some(DefaultValueStrategy::Optional),
                 docs: vec!["Hello".to_string()].into(),
                 r#type: Box::new(NumberTypeNode::le(U32).into()),
