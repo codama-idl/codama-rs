@@ -324,18 +324,6 @@ mod tests {
     }
 
     #[test]
-    fn argument_directive_with_resolvable_type() {
-        let meta: Meta = syn::parse_quote! { argument("age", foo::number_type) };
-        let directive = crate::ArgumentDirective::parse(&meta).unwrap();
-        assert!(directive.r#type.is_unresolved());
-        let Resolvable::Unresolved(ref t) = directive.r#type else {
-            panic!("expected unresolved type");
-        };
-        assert_eq!(t.namespace, "foo");
-        assert_eq!(t.name, "number_type");
-    }
-
-    #[test]
     fn seed_directive_with_resolvable_type_and_value() {
         let meta: Meta =
             syn::parse_quote! { seed(type = foo::custom_type, value = bar::custom_value) };

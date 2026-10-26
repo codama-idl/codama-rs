@@ -1,6 +1,6 @@
-use crate::utils::{FromMeta, SetOnce};
+use crate::utils::{removed_syntax, FromMeta, SetOnce};
 use codama_nodes::{
-    AccountValueNode, ArgumentValueNode, CamelCaseString, PdaSeedValueNode, PdaSeedValueValue,
+    AccountValueNode, CamelCaseString, DataValueNode, PdaSeedValueNode, PdaSeedValueValue,
     StringValueNode, ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
@@ -9,7 +9,8 @@ impl FromMeta for PdaSeedValueValue {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
             "account" => AccountValueNode::from_meta(meta).map(Self::from),
-            "argument" => ArgumentValueNode::from_meta(meta).map(Self::from),
+            "argument" => removed_syntax(meta, "argument(...)", "data(...)"),
+            "data" => DataValueNode::from_meta(meta).map(Self::from),
             _ => ValueNode::from_meta(meta).map(Self::from),
         }
     }
@@ -17,12 +18,18 @@ impl FromMeta for PdaSeedValueValue {
 
 impl FromMeta for PdaSeedValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        // Account and Argument value node shortcut.
-        if let Ok(value) = AccountValueNode::from_meta(meta) {
-            return Ok(PdaSeedValueNode::new(value.identifier.clone(), value));
-        }
-        if let Ok(value) = ArgumentValueNode::from_meta(meta) {
-            return Ok(PdaSeedValueNode::new(value.name.clone(), value));
+        // Account and data value node shortcut.
+        match meta.path_str().as_str() {
+            "account" => {
+                let value = AccountValueNode::from_meta(meta)?;
+                return Ok(PdaSeedValueNode::new(value.identifier.clone(), value));
+            }
+            "argument" => return removed_syntax(meta, "argument(...)", "data(...)"),
+            "data" => {
+                let value = DataValueNode::from_meta(meta)?;
+                return Ok(PdaSeedValueNode::new(value.path.to_string(), value));
+            }
+            _ => {}
         }
 
         // Regular seed parsing.
@@ -40,6 +47,10 @@ impl FromMeta for PdaSeedValueNode {
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
                     }
                 }
+                // A path or a list is a value keyword, so its error is the user's error.
+                if meta.is_path_or_list() {
+                    return value.set(PdaSeedValueValue::from_meta(meta)?, meta);
+                }
                 if let Ok(seed_value) = PdaSeedValueValue::from_meta(meta) {
                     return value.set(seed_value, meta);
                 }
@@ -53,7 +64,7 @@ impl FromMeta for PdaSeedValueNode {
 
 #[cfg(test)]
 mod tests {
-    use codama_nodes::NumberValueNode;
+    use codama_nodes::{IntegerValueNode, Path};
 
     use super::*;
 
@@ -63,7 +74,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", NumberValueNode::new(42u8))
+            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
         );
     }
 
@@ -73,7 +84,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", NumberValueNode::new(42u8))
+            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
         );
     }
 
@@ -88,12 +99,15 @@ mod tests {
     }
 
     #[test]
-    fn explicit_argument_value_node() {
-        let meta: Meta = syn::parse_quote! { seed("identifier", argument("identifier")) };
+    fn explicit_data_value_node() {
+        let meta: Meta = syn::parse_quote! { seed("identifier", data("identifier")) };
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", ArgumentValueNode::new("identifier"))
+            PdaSeedValueNode::new(
+                "identifier",
+                DataValueNode::new(Path::try_from("identifier").unwrap())
+            )
         );
     }
 
@@ -108,13 +122,29 @@ mod tests {
     }
 
     #[test]
-    fn implicit_argument_value_node() {
-        let meta: Meta = syn::parse_quote! { argument("identifier") };
+    fn implicit_data_value_node() {
+        let meta: Meta = syn::parse_quote! { data("identifier") };
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", ArgumentValueNode::new("identifier"))
+            PdaSeedValueNode::new(
+                "identifier",
+                DataValueNode::new(Path::try_from("identifier").unwrap())
+            )
         );
+    }
+
+    #[test]
+    fn argument_is_removed() {
+        let hint = "argument(...) is removed in v2, use data(...)";
+        for meta in [
+            syn::parse_quote! { argument("identifier") },
+            syn::parse_quote! { seed("identifier", argument("identifier")) },
+            syn::parse_quote! { seed(name = "identifier", value = argument("identifier")) },
+        ] {
+            let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
+            assert_eq!(error.to_string(), hint);
+        }
     }
 
     #[test]

@@ -1,9 +1,9 @@
 use codama_macros::codama;
 
-#[codama(type = option(number(u8), number(u16)))]
+#[codama(type = option(integer(u8), integer(u16)))]
 pub struct Test;
 
-#[codama(type = option(item = number(u8), item = number(u16)))]
+#[codama(type = option(item = integer(u8), item = integer(u16)))]
 pub struct TestExplicit;
 
 fn main() {}

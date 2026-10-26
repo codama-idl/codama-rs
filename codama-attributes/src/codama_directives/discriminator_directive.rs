@@ -1,11 +1,11 @@
 use crate::{
-    utils::{FromMeta, SetOnce},
+    utils::{field_path, FromMeta, SetOnce},
     Attribute, Attributes, CodamaAttribute, CodamaDirective, TryFromFilter,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    BytesEncoding, CamelCaseString, ConstantDiscriminatorNode, ConstantValueNode,
-    DiscriminatorNode, FieldDiscriminatorNode, SizeDiscriminatorNode,
+    BytesEncoding, ConstantDiscriminatorNode, ConstantValueNode, DiscriminatorNode,
+    FieldDiscriminatorNode, Path, SizeDiscriminatorNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -34,7 +34,7 @@ impl DiscriminatorDirective {
         let mut bytes = SetOnce::<BytesValue>::new("bytes");
         let mut encoding =
             SetOnce::<BytesEncoding>::new("encoding").initial_value(BytesEncoding::Base16);
-        let mut field = SetOnce::<CamelCaseString>::new("field");
+        let mut field = SetOnce::<Path>::new("field");
         let mut offset = SetOnce::<u64>::new("offset").initial_value(0);
         let mut size = SetOnce::<u64>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
@@ -66,7 +66,8 @@ impl DiscriminatorDirective {
                 if kind != DiscriminatorKind::Field {
                     return Err(meta.error(format!("field cannot be used when {kind} is set")));
                 }
-                field.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta)
+                let expr = meta.as_value()?.as_expr()?;
+                field.set(field_path(&expr.as_string()?, expr)?, meta)
             }
             "offset" => {
                 if kind == DiscriminatorKind::Size {
@@ -320,7 +321,11 @@ mod tests {
         assert_eq!(
             directive,
             DiscriminatorDirective {
-                discriminator: FieldDiscriminatorNode::new("AccountType", 0).into(),
+                discriminator: FieldDiscriminatorNode::new(
+                    Path::try_from("accountType").unwrap(),
+                    0
+                )
+                .into(),
             }
         );
     }
@@ -332,9 +337,36 @@ mod tests {
         assert_eq!(
             directive,
             DiscriminatorDirective {
-                discriminator: FieldDiscriminatorNode::new("AccountType", 42).into(),
+                discriminator: FieldDiscriminatorNode::new(
+                    Path::try_from("accountType").unwrap(),
+                    42
+                )
+                .into(),
             }
         );
+    }
+
+    #[test]
+    fn field_discriminator_with_nested_path() {
+        let meta: Meta = syn::parse_quote! { discriminator(field = "header.account_type") };
+        let directive = DiscriminatorDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive,
+            DiscriminatorDirective {
+                discriminator: FieldDiscriminatorNode::new(
+                    Path::try_from("header.accountType").unwrap(),
+                    0
+                )
+                .into(),
+            }
+        );
+    }
+
+    #[test]
+    fn field_discriminator_with_invalid_path() {
+        let meta: Meta = syn::parse_quote! { discriminator(field = "1st") };
+        let error = DiscriminatorDirective::parse(&meta).unwrap_err();
+        assert_eq!(error.to_string(), "Invalid path: 1st");
     }
 
     #[test]

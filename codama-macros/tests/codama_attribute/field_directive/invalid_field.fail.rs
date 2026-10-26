@@ -3,7 +3,7 @@ use codama_macros::codama;
 #[codama(field())]
 pub struct EmptyTest;
 
-#[codama(field(number(u8)))]
+#[codama(field(integer(u8)))]
 pub struct NameMissingTest;
 
 #[codama(field("age"))]

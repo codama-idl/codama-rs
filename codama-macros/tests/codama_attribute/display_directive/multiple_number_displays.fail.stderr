@@ -1,5 +1,5 @@
 error: number display is already set
- --> tests/codama_attribute/display_directive/multiple_number_displays.fail.rs:3:26
+ --> tests/codama_attribute/display_directive/multiple_number_displays.fail.rs:3:40
   |
-3 | #[codama(display(amount, date_time))]
-  |                          ^^^^^^^^^
+3 | #[codama(display(amount(decimals = 9), amount(decimals = 6)))]
+  |                                        ^^^^^^^^^^^^^^^^^^^^

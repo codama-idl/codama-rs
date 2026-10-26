@@ -1,5 +1,5 @@
-error: prefix must be a NumberTypeNode
- --> tests/codama_attribute/type_nodes/array_type_node/invalid_prefix.fail.rs:3:50
+error: prefix must be an IntegerTypeNode
+ --> tests/codama_attribute/type_nodes/array_type_node/invalid_prefix.fail.rs:3:51
   |
-3 | #[codama(type = array(number(u8), prefixed_count(string)))]
-  |                                                  ^^^^^^
+3 | #[codama(type = array(integer(u8), prefixed_count(string)))]
+  |                                                   ^^^^^^

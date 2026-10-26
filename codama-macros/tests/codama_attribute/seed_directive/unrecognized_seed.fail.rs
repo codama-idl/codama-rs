@@ -6,7 +6,7 @@ pub struct EmptyTest;
 #[codama(seed())]
 pub struct EmptyTestWithBraces;
 
-#[codama(seed(type = number(u8)))]
+#[codama(seed(type = integer(u8)))]
 pub struct TestWithTypeOnly;
 
 fn main() {}

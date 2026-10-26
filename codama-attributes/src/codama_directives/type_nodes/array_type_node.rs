@@ -37,41 +37,41 @@ mod tests {
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
         FixedCountNode,
-        NumberFormat::{U32, U8},
-        NumberTypeNode, PrefixedCountNode, RemainderCountNode, StringTypeNode,
+        IntegerFormat::{U32, U8},
+        IntegerTypeNode, PrefixedCountNode, RemainderCountNode, StringTypeNode,
     };
 
     #[test]
     fn implicit() {
         assert_type!(
-            { array(number(u8), fixed_count(3)) },
-            ArrayTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(3)).into()
+            { array(integer(u8), fixed_count(3)) },
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(3)).into()
         );
     }
 
     #[test]
     fn bare_integer_count() {
         assert_type!(
-            { array(number(u8), 3) },
-            ArrayTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(3)).into()
+            { array(integer(u8), 3) },
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(3)).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { array(item = number(u8), count = fixed_count(3)) },
-            ArrayTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(3)).into()
+            { array(item = integer(u8), count = fixed_count(3)) },
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(3)).into()
         );
     }
 
     #[test]
     fn prefixed_count() {
         assert_type!(
-            { array(string, prefixed_count(number(u32))) },
+            { array(string, prefixed_count(integer(u32))) },
             ArrayTypeNode::new(
                 StringTypeNode::utf8(),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         );
@@ -80,8 +80,8 @@ mod tests {
     #[test]
     fn remainder_count() {
         assert_type!(
-            { array(number(u8), remainder_count) },
-            ArrayTypeNode::new(NumberTypeNode::le(U8), RemainderCountNode::new()).into()
+            { array(integer(u8), remainder_count) },
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), RemainderCountNode::new()).into()
         );
     }
 
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn count_missing() {
-        assert_type_err!({ array(number(u8)) }, "count is missing");
+        assert_type_err!({ array(integer(u8)) }, "count is missing");
     }
 
     #[test]

@@ -2,9 +2,7 @@ use crate::{
     utils::{FromMeta, MetaConsumer, SetOnce},
     DefaultValueDirective, Resolvable,
 };
-use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, TypeNode, ValueNode,
-};
+use codama_nodes::{CamelCaseString, DefaultValueStrategy, Docs, TypeNode, ValueNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 pub(crate) struct StructFieldMetaConsumer {
@@ -59,9 +57,10 @@ impl StructFieldMetaConsumer {
                     this.name.set(value.into(), meta)?;
                     return Ok(None);
                 }
-                // Try parsing as a built-in type node or a resolvable directive.
-                if let Ok(resolvable) = Resolvable::<TypeNode>::from_meta(&meta) {
-                    this.r#type.set(resolvable, meta)?;
+                // A path or a list is a type keyword or a resolvable directive, so its error is the user's error.
+                if meta.is_path_or_list() {
+                    this.r#type
+                        .set(Resolvable::<TypeNode>::from_meta(&meta)?, meta)?;
                     return Ok(None);
                 }
                 Ok(Some(meta))
@@ -73,17 +72,6 @@ impl StructFieldMetaConsumer {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "default_value" | "value" => {
                 let directive = DefaultValueDirective::parse_value_nodes_only(&meta)?;
-                this.default_value.set(directive, meta)?;
-                Ok(None)
-            }
-            _ => Ok(Some(meta)),
-        })
-    }
-
-    pub fn consume_argument_default_value(self) -> syn::Result<Self> {
-        self.consume_metas(|this, meta| match meta.path_str().as_str() {
-            "default_value" | "value" => {
-                let directive = DefaultValueDirective::parse(&meta)?;
                 this.default_value.set(directive, meta)?;
                 Ok(None)
             }
@@ -116,13 +104,5 @@ impl StructFieldMetaConsumer {
                     .map(Resolvable::Resolved),
                 Resolvable::Unresolved(d) => Some(Resolvable::Unresolved(d.clone())),
             })
-    }
-
-    pub fn default_instruction_input_value_node(
-        &self,
-    ) -> Option<Resolvable<InstructionInputValueNode>> {
-        self.default_value
-            .option_ref()
-            .map(|directive| directive.node.clone())
     }
 }
