@@ -1,9 +1,9 @@
-use crate::InstructionDisplayNode;
+use crate::{InstructionDisplayNode, Text};
 
 impl InstructionDisplayNode {
     pub fn new<T>(intent: T) -> Self
     where
-        T: Into<String>,
+        T: Into<Text>,
     {
         Self {
             intent: Some(intent.into()),
@@ -13,7 +13,7 @@ impl InstructionDisplayNode {
 
     pub fn interpolated<T>(interpolated_intent: T) -> Self
     where
-        T: Into<String>,
+        T: Into<Text>,
     {
         Self {
             interpolated_intent: Some(interpolated_intent.into()),
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn new() {
         let node = InstructionDisplayNode::new("Transfer");
-        assert_eq!(node.intent.as_deref(), Some("Transfer"));
+        assert_eq!(node.intent, Some(Text::from("Transfer")));
         assert_eq!(node.interpolated_intent, None);
     }
 
@@ -38,16 +38,17 @@ mod tests {
         let node = InstructionDisplayNode::interpolated("Send {amount} to {to}");
         assert_eq!(node.intent, None);
         assert_eq!(
-            node.interpolated_intent.as_deref(),
-            Some("Send {amount} to {to}")
+            node.interpolated_intent,
+            Some(Text::from("Send {amount} to {to}"))
         );
     }
 
     #[test]
     fn to_json() {
         let node = InstructionDisplayNode {
-            intent: Some("Transfer".to_string()),
-            interpolated_intent: Some("Send {amount} to {to}".to_string()),
+            intent: Some("Transfer".into()),
+            interpolated_intent: Some("Send {amount} to {to}".into()),
+            plugins: vec![],
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(

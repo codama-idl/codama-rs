@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, PluginNode};
+use crate::{CamelCaseString, Path, PluginNode};
 use codama_nodes_derive::node;
 
 #[node]
@@ -7,7 +7,7 @@ pub struct AccountDataValueNode {
     // Data.
     pub account: CamelCaseString,
     #[serde(skip_serializing_if = "crate::is_default")]
-    pub path: Option<String>,
+    pub path: Option<Path>,
 
     // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]

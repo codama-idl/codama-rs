@@ -1,11 +1,10 @@
-use crate::PluginNode;
+use crate::{Path, PluginNode};
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Default)]
 pub struct DataValueNode {
     // Data.
-    pub path: String,
+    pub path: Path,
 
     // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]

@@ -9,6 +9,7 @@ impl ConstantPdaSeedNode {
         Self {
             r#type: Box::new(r#type.into()),
             value: Box::new(value.into()),
+            plugins: vec![],
         }
     }
 }
@@ -25,10 +26,11 @@ impl From<ValueNode> for ConstantPdaSeedValue {
             ValueNode::Bytes(n) => Self::Bytes(n),
             ValueNode::Constant(n) => Self::Constant(n),
             ValueNode::Enum(n) => Self::Enum(n),
+            ValueNode::Float(n) => Self::Float(n),
             ValueNode::Injected(n) => Self::Injected(n),
+            ValueNode::Integer(n) => Self::Integer(n),
             ValueNode::Map(n) => Self::Map(n),
             ValueNode::None(n) => Self::None(n),
-            ValueNode::Number(n) => Self::Number(n),
             ValueNode::PublicKey(n) => Self::PublicKey(n),
             ValueNode::Set(n) => Self::Set(n),
             ValueNode::Some(n) => Self::Some(n),
@@ -42,35 +44,35 @@ impl From<ValueNode> for ConstantPdaSeedValue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, NumberValueNode, U64};
+    use crate::{IntegerTypeNode, IntegerValueNode, U64};
 
     #[test]
     fn new() {
-        let node = ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
-        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
+        let node = ConstantPdaSeedNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(42u64));
+        assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(
             *node.value,
-            ConstantPdaSeedValue::Number(NumberValueNode::new(42u64))
+            ConstantPdaSeedValue::Integer(IntegerValueNode::new(42u64))
         );
     }
 
     #[test]
     fn to_json() {
-        let node = ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
+        let node = ConstantPdaSeedNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(42u64));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"constantPdaSeedNode","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#
+            r#"{"kind":"constantPdaSeedNode","type":{"kind":"integerTypeNode","format":"u64","endian":"le"},"value":{"kind":"integerValueNode","value":"42"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"constantPdaSeedNode","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":42}}"#;
+        let json = r#"{"kind":"constantPdaSeedNode","type":{"kind":"integerTypeNode","format":"u64","endian":"le"},"value":{"kind":"integerValueNode","value":"42"}}"#;
         let node: ConstantPdaSeedNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            ConstantPdaSeedNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64))
+            ConstantPdaSeedNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(42u64))
         );
     }
 }

@@ -2,7 +2,10 @@ use crate::BytesTypeNode;
 
 impl BytesTypeNode {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            transforms: vec![],
+            plugins: vec![],
+        }
     }
 }
 
@@ -13,7 +16,13 @@ mod tests {
     #[test]
     fn new() {
         let node = BytesTypeNode::new();
-        assert_eq!(node, BytesTypeNode {});
+        assert_eq!(
+            node,
+            BytesTypeNode {
+                transforms: vec![],
+                plugins: vec![],
+            }
+        );
     }
 
     #[test]
