@@ -266,6 +266,25 @@ describe('getRenderMap', () => {
         expect(impls).not.toContain('value_nodes/public_key_value_node.rs');
     });
 
+    it('emits HasTransforms for the 19 nodes with a transforms attribute and for no union', () => {
+        const impls = [...map.entries()]
+            .filter(([, f]) => f.content.includes('impl HasTransforms for'))
+            .map(([k]) => k);
+        expect(impls).toHaveLength(19);
+        expect(impls).toContain('type_nodes/integer_type_node.rs');
+        expect(impls).not.toContain('type_nodes/struct_field_type_node.rs');
+        expect(impls.filter(k => !k.startsWith('type_nodes/'))).toEqual(['link_nodes/defined_type_link_node.rs']);
+    });
+
+    it('emits both the HasIdentifier and the HasTransforms impl for DefinedTypeLinkNode', () => {
+        const entry = getFromRenderMap(map, 'link_nodes/defined_type_link_node.rs');
+        expect(entry.content).toContain(
+            'use crate::{CamelCaseString, HasIdentifier, HasTransforms, PluginNode, ProgramLinkNode, TransformNode};',
+        );
+        expect(entry.content).toContain('impl HasIdentifier for DefinedTypeLinkNode {');
+        expect(entry.content).toContain('impl HasTransforms for DefinedTypeLinkNode {');
+    });
+
     describe('count category', () => {
         it('routes FixedCountNode through Node::Count and emits the u64 field plus #[derive(Default)]', () => {
             const entry = getFromRenderMap(map, 'count_nodes/fixed_count_node.rs');

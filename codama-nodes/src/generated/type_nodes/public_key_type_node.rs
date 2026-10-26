@@ -1,4 +1,4 @@
-use crate::{AccountLinkNode, PluginNode, TransformNode};
+use crate::{AccountLinkNode, HasTransforms, PluginNode, TransformNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -16,5 +16,14 @@ pub struct PublicKeyTypeNode {
 impl From<PublicKeyTypeNode> for crate::Node {
     fn from(val: PublicKeyTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for PublicKeyTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

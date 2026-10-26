@@ -1,4 +1,4 @@
-use crate::{IntegerTypeNode, PluginNode, TransformNode};
+use crate::{HasTransforms, IntegerTypeNode, PluginNode, TransformNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -18,5 +18,14 @@ pub struct DurationTypeNode {
 impl From<DurationTypeNode> for crate::Node {
     fn from(val: DurationTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for DurationTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

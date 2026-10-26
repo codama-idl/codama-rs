@@ -17,6 +17,14 @@ describe('getNodePageFragment', () => {
         expect(sections[2]).toMatch(/^impl HasIdentifier for ProgramLinkNode/);
     });
 
+    it('appends the HasTransforms impl after the HasIdentifier impl when the node has a transforms attribute', () => {
+        const result = getNodePageFragment(nodeOf('definedTypeLinkNode'), linkRouting, spec);
+        const sections = result.content.split('\n\n');
+        expect(sections.at(-2)).toMatch(/^impl HasIdentifier for DefinedTypeLinkNode/);
+        expect(sections.at(-1)).toMatch(/^impl HasTransforms for DefinedTypeLinkNode/);
+        expect([...result.imports.keys()]).toContain('crate::HasTransforms');
+    });
+
     it('omits the HasIdentifier impl when the node has no required identifier', () => {
         const out = getNodePageFragment(nodeOf('remainderCountNode'), linkRouting, spec).content;
         expect(out).not.toContain('HasIdentifier');
