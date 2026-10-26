@@ -4,3 +4,5 @@ mod instruction_account_display_node;
 mod instruction_display_node;
 mod string_display_node;
 mod struct_field_display_node;
+mod unit_number_display_node;
+mod value_label_display_node;

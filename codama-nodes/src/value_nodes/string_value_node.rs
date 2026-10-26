@@ -7,6 +7,7 @@ impl StringValueNode {
     {
         Self {
             string: string.into(),
+            plugins: vec![],
         }
     }
 }

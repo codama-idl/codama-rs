@@ -1,36 +1,38 @@
 use crate::{CamelCaseString, PdaLinkNode, ProgramLinkNode};
 
 impl PdaLinkNode {
-    pub fn new<T>(name: T) -> Self
+    pub fn new<T>(identifier: T) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             program: None,
+            plugins: vec![],
         }
     }
 
-    pub fn new_from_program<T>(name: T, program: ProgramLinkNode) -> Self
+    pub fn new_from_program<T>(identifier: T, program: ProgramLinkNode) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             program: Some(program),
+            plugins: vec![],
         }
     }
 }
 
 impl From<String> for PdaLinkNode {
-    fn from(name: String) -> Self {
-        Self::new(name)
+    fn from(identifier: String) -> Self {
+        Self::new(identifier)
     }
 }
 
 impl From<&str> for PdaLinkNode {
-    fn from(name: &str) -> Self {
-        Self::new(name)
+    fn from(identifier: &str) -> Self {
+        Self::new(identifier)
     }
 }
 
@@ -69,12 +71,12 @@ mod tests {
     fn to_json() {
         let node = PdaLinkNode::new("myPda");
         let json = serde_json::to_string(&node).unwrap();
-        assert_eq!(json, r#"{"kind":"pdaLinkNode","name":"myPda"}"#);
+        assert_eq!(json, r#"{"kind":"pdaLinkNode","identifier":"myPda"}"#);
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"pdaLinkNode","name":"myPda"}"#;
+        let json = r#"{"kind":"pdaLinkNode","identifier":"myPda"}"#;
         let node: PdaLinkNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, PdaLinkNode::new("myPda"));
     }
