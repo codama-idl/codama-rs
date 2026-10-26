@@ -30,6 +30,9 @@ pub enum CodamaError {
     #[error("Invalid decimal: {0}")]
     InvalidDecimal(String),
 
+    #[error("Invalid namespace: {0}")]
+    InvalidNamespace(String),
+
     #[error("Invalid path: {0}")]
     InvalidPath(String),
 

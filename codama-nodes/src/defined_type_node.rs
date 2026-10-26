@@ -1,15 +1,16 @@
 use crate::{CamelCaseString, DefinedTypeNode, Docs, TypeNode};
 
 impl DefinedTypeNode {
-    pub fn new<T, U>(name: T, r#type: U) -> Self
+    pub fn new<T, U>(identifier: T, r#type: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<TypeNode>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
+            plugins: vec![],
         }
     }
 }
@@ -17,14 +18,14 @@ impl DefinedTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, U8};
+    use crate::{IntegerTypeNode, U8};
 
     #[test]
     fn new() {
-        let node = DefinedTypeNode::new("myType", NumberTypeNode::le(U8));
+        let node = DefinedTypeNode::new("myType", IntegerTypeNode::le(U8));
         assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
+        assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U8)));
     }
 
     #[test]
@@ -32,27 +33,31 @@ mod tests {
         let node = DefinedTypeNode {
             identifier: "myType".into(),
             docs: Docs::default(),
-            r#type: Box::new(NumberTypeNode::le(U8).into()),
+            r#type: Box::new(IntegerTypeNode::le(U8).into()),
+            plugins: vec![],
         };
         assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U8)));
+        assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U8)));
     }
 
     #[test]
     fn to_json() {
-        let node = DefinedTypeNode::new("myType", NumberTypeNode::le(U8));
+        let node = DefinedTypeNode::new("myType", IntegerTypeNode::le(U8));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"definedTypeNode","name":"myType","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+            r#"{"kind":"definedTypeNode","identifier":"myType","type":{"kind":"integerTypeNode","format":"u8","endian":"le"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"definedTypeNode","name":"myType","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let json = r#"{"kind":"definedTypeNode","identifier":"myType","type":{"kind":"integerTypeNode","format":"u8","endian":"le"}}"#;
         let node: DefinedTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, DefinedTypeNode::new("myType", NumberTypeNode::le(U8)));
+        assert_eq!(
+            node,
+            DefinedTypeNode::new("myType", IntegerTypeNode::le(U8))
+        );
     }
 }

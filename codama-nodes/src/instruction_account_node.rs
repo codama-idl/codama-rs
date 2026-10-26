@@ -1,13 +1,13 @@
 use crate::{CamelCaseString, Docs, InstructionAccountNode, IsSigner};
 
 impl InstructionAccountNode {
-    pub fn new<T, U>(name: T, is_writable: bool, is_signer: U) -> Self
+    pub fn new<T, U>(identifier: T, is_writable: bool, is_signer: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<IsSigner>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             is_writable,
             is_signer: is_signer.into(),
             is_optional: None,
@@ -15,6 +15,7 @@ impl InstructionAccountNode {
             default_value: Box::new(None),
             account_link: None,
             display: None,
+            plugins: vec![],
         }
     }
 }
@@ -22,7 +23,7 @@ impl InstructionAccountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{AccountValueNode, InstructionInputValueNode};
+    use crate::{AccountValueNode, InstructionInputValueNode, Text};
 
     #[test]
     fn new() {
@@ -46,12 +47,13 @@ mod tests {
             default_value: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             account_link: None,
             display: None,
+            plugins: vec![],
         };
         assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::Either);
         assert_eq!(node.is_optional, Some(true));
-        assert_eq!(*node.docs, vec!["Hello".to_string()]);
+        assert_eq!(*node.docs, Some(Text::from("Hello")));
         assert_eq!(
             *node.default_value,
             Some(InstructionInputValueNode::AccountValue(
@@ -66,13 +68,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"instructionAccountNode","name":"myAccount","isWritable":false,"isSigner":true}"#
+            r#"{"kind":"instructionAccountNode","identifier":"myAccount","isWritable":false,"isSigner":true}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"instructionAccountNode","name":"myAccount","isWritable":false,"isSigner":true}"#;
+        let json = r#"{"kind":"instructionAccountNode","identifier":"myAccount","isWritable":false,"isSigner":true}"#;
         let node: InstructionAccountNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, InstructionAccountNode::new("myAccount", false, true));
     }
