@@ -94,6 +94,7 @@ describe('getNodeStructFragment', () => {
             'floatValueNode',
             'fieldDiscriminatorNode',
             'dataValueNode',
+            'pluginNode',
         ]) {
             expect(getNodeStructFragment(nodeOf(kind), spec).content).not.toContain('Default');
         }
