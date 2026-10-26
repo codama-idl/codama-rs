@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn new() {
         let node = NoneValueNode::new();
-        assert_eq!(node, NoneValueNode {});
+        assert_eq!(node, NoneValueNode { plugins: vec![] });
     }
 
     #[test]
