@@ -1,8 +1,8 @@
 mod account_bump_value_node;
 mod account_value_node;
-mod argument_value_node;
 mod boolean_value_node;
 mod constant_value_node;
+mod data_value_node;
 mod instruction_input_value_node;
 mod number_value_node;
 mod payer_value_node;

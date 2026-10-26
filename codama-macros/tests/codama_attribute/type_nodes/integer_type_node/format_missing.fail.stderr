@@ -1,0 +1,11 @@
+error: format is missing
+ --> tests/codama_attribute/type_nodes/integer_type_node/format_missing.fail.rs:3:17
+  |
+3 | #[codama(type = integer(le))]
+  |                 ^^^^^^^^^^^
+
+error: format is missing
+ --> tests/codama_attribute/type_nodes/integer_type_node/format_missing.fail.rs:6:17
+  |
+6 | #[codama(type = integer(endian = le))]
+  |                 ^^^^^^^^^^^^^^^^^^^^

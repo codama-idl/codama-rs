@@ -26,8 +26,8 @@ mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
-        NumberFormat::{U32, U8},
-        NumberTypeNode, PublicKeyTypeNode, StringTypeNode,
+        IntegerFormat::{U32, U8},
+        IntegerTypeNode, PublicKeyTypeNode, StringTypeNode,
     };
 
     #[test]
@@ -39,17 +39,17 @@ mod tests {
     #[test]
     fn single_item() {
         assert_type!(
-            { tuple(number(u32)) },
-            TupleTypeNode::new(vec![NumberTypeNode::le(U32).into()]).into()
+            { tuple(integer(u32)) },
+            TupleTypeNode::new(vec![IntegerTypeNode::le(U32).into()]).into()
         );
     }
 
     #[test]
     fn multiple_items() {
         assert_type!(
-            { tuple(number(u32), string, public_key) },
+            { tuple(integer(u32), string, public_key) },
             TupleTypeNode::new(vec![
-                NumberTypeNode::le(U32).into(),
+                IntegerTypeNode::le(U32).into(),
                 StringTypeNode::utf8().into(),
                 PublicKeyTypeNode::new().into(),
             ])
@@ -60,9 +60,9 @@ mod tests {
     #[test]
     fn nested() {
         assert_type!(
-            { tuple(option(number(u8)), tuple(string)) },
+            { tuple(option(integer(u8)), tuple(string)) },
             TupleTypeNode::new(vec![
-                codama_nodes::OptionTypeNode::new(NumberTypeNode::le(U8)).into(),
+                codama_nodes::OptionTypeNode::new(IntegerTypeNode::le(U8)).into(),
                 TupleTypeNode::new(vec![StringTypeNode::utf8().into()]).into(),
             ])
             .into()

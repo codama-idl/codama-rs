@@ -1,0 +1,5 @@
+error: display is already set
+ --> tests/codama_attribute/type_nodes/integer_type_node/display_already_set.fail.rs:3:62
+  |
+3 | #[codama(type = integer(u64, display = amount(decimals = 9), display = amount(decimals = 6)))]
+  |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

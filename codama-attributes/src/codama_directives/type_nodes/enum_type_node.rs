@@ -1,12 +1,12 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, TypeNode};
+use codama_nodes::{EnumTypeNode, EnumVariantTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for EnumTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("enum")?;
         let mut variants: Vec<EnumVariantTypeNode> = Vec::new();
-        let mut size: SetOnce<NestedTypeNode<NumberTypeNode>> = SetOnce::new("size");
+        let mut size: SetOnce<IntegerTypeNode> = SetOnce::new("size");
 
         if !meta.is_path_or_empty_list() {
             meta.as_path_list()?
@@ -14,9 +14,9 @@ impl FromMeta for EnumTypeNode {
                     "size" => {
                         let value = meta.as_value()?;
                         let node = TypeNode::from_meta(value)?;
-                        let size_node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
+                        let size_node = match IntegerTypeNode::try_from_type_node(node) {
                             Ok(node) => node,
-                            Err(_) => return Err(value.error("size must be a NumberTypeNode")),
+                            Err(_) => return Err(value.error("size must be an IntegerTypeNode")),
                         };
                         size.set(size_node, meta)
                     }
@@ -41,8 +41,7 @@ mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
-        EnumEmptyVariantTypeNode, EnumTupleVariantTypeNode,
-        NumberFormat::{U16, U8},
+        IntegerFormat::{U16, U8},
         TupleTypeNode,
     };
 
@@ -57,8 +56,8 @@ mod tests {
         assert_type!(
             { enum(variant("pending"), variant("done")) },
             EnumTypeNode::new(vec![
-                EnumEmptyVariantTypeNode::new("pending").into(),
-                EnumEmptyVariantTypeNode::new("done").into(),
+                EnumVariantTypeNode::new("pending"),
+                EnumVariantTypeNode::new("done"),
             ])
             .into()
         );
@@ -67,12 +66,11 @@ mod tests {
     #[test]
     fn tuple_variant() {
         assert_type!(
-            { enum(variant("pair", tuple(number(u8)))) },
-            EnumTypeNode::new(vec![EnumTupleVariantTypeNode::new(
+            { enum(variant("pair", tuple(integer(u8)))) },
+            EnumTypeNode::new(vec![EnumVariantTypeNode::with_data(
                 "pair",
-                TupleTypeNode::new(vec![NumberTypeNode::le(U8).into()])
-            )
-            .into()])
+                TupleTypeNode::new(vec![IntegerTypeNode::le(U8).into()])
+            )])
             .into()
         );
     }
@@ -82,8 +80,8 @@ mod tests {
         assert_type!(
             { enum(variant("a")) },
             EnumTypeNode {
-                variants: vec![EnumEmptyVariantTypeNode::new("a").into()],
-                size: NestedTypeNode::Value(NumberTypeNode::le(U8)),
+                size: IntegerTypeNode::le(U8),
+                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("a")])
             }
             .into()
         );
@@ -92,10 +90,10 @@ mod tests {
     #[test]
     fn explicit_size() {
         assert_type!(
-            { enum(variant("a"), size = number(u16)) },
+            { enum(variant("a"), size = integer(u16)) },
             EnumTypeNode {
-                variants: vec![EnumEmptyVariantTypeNode::new("a").into()],
-                size: NestedTypeNode::Value(NumberTypeNode::le(U16)),
+                size: IntegerTypeNode::le(U16),
+                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("a")])
             }
             .into()
         );
@@ -105,7 +103,7 @@ mod tests {
     fn invalid_size() {
         assert_type_err!(
             { enum(size = string) },
-            "size must be a NumberTypeNode"
+            "size must be an IntegerTypeNode"
         );
     }
 

@@ -1,20 +1,20 @@
 use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::{NestedTypeNode, NumberTypeNode, TypeNode};
+use codama_nodes::{IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct SizePrefixDirective {
-    pub prefix: NestedTypeNode<NumberTypeNode>,
+    pub prefix: IntegerTypeNode,
 }
 
 impl SizePrefixDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let value = meta.assert_directive("size_prefix")?.as_value()?;
         let node = TypeNode::from_meta(value)?;
-        let prefix = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
+        let prefix = match IntegerTypeNode::try_from_type_node(node) {
             Ok(node) => node,
-            Err(_) => return Err(value.error("prefix must be a NumberTypeNode")),
+            Err(_) => return Err(value.error("prefix must be an IntegerTypeNode")),
         };
         Ok(Self { prefix })
     }
@@ -45,16 +45,16 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a SizePrefixDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::NumberFormat::U32;
+    use codama_nodes::IntegerFormat::U32;
 
     #[test]
     fn ok() {
-        let meta: Meta = syn::parse_quote! { size_prefix = number(u32) };
+        let meta: Meta = syn::parse_quote! { size_prefix = integer(u32) };
         let directive = SizePrefixDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             SizePrefixDirective {
-                prefix: NumberTypeNode::le(U32).into(),
+                prefix: IntegerTypeNode::le(U32),
             }
         );
     }

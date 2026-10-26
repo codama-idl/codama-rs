@@ -1,5 +1,5 @@
 error: expected a single value, found a list
  --> tests/codama_attribute/type_directive/double_type.fail.rs:3:18
   |
-3 | #[codama(type = (number(u32), public_key))]
-  |                  ^^^^^^^^^^^^^^^^^^^^^^^
+3 | #[codama(type = (integer(u32), public_key))]
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^

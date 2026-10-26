@@ -1,11 +1,11 @@
 error: item is already set
- --> tests/codama_attribute/type_nodes/option_type_node/item_already_set.fail.rs:3:36
+ --> tests/codama_attribute/type_nodes/option_type_node/item_already_set.fail.rs:3:37
   |
-3 | #[codama(type = option(number(u8), number(u16)))]
-  |                                    ^^^^^^^^^^^
+3 | #[codama(type = option(integer(u8), integer(u16)))]
+  |                                     ^^^^^^^^^^^^
 
 error: item is already set
- --> tests/codama_attribute/type_nodes/option_type_node/item_already_set.fail.rs:6:43
+ --> tests/codama_attribute/type_nodes/option_type_node/item_already_set.fail.rs:6:44
   |
-6 | #[codama(type = option(item = number(u8), item = number(u16)))]
-  |                                           ^^^^^^^^^^^^^^^^^^
+6 | #[codama(type = option(item = integer(u8), item = integer(u16)))]
+  |                                            ^^^^^^^^^^^^^^^^^^^

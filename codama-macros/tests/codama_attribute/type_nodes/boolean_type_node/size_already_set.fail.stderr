@@ -1,11 +1,11 @@
 error: size is already set
- --> tests/codama_attribute/type_nodes/boolean_type_node/size_already_set.fail.rs:3:38
+ --> tests/codama_attribute/type_nodes/boolean_type_node/size_already_set.fail.rs:3:39
   |
-3 | #[codama(type = boolean(number(u32), number(u32)))]
-  |                                      ^^^^^^^^^^^
+3 | #[codama(type = boolean(integer(u32), integer(u32)))]
+  |                                       ^^^^^^^^^^^^
 
 error: size is already set
- --> tests/codama_attribute/type_nodes/boolean_type_node/size_already_set.fail.rs:6:45
+ --> tests/codama_attribute/type_nodes/boolean_type_node/size_already_set.fail.rs:6:46
   |
-6 | #[codama(type = boolean(size = number(u32), size = number(u32)))]
-  |                                             ^^^^^^^^^^^^^^^^^^
+6 | #[codama(type = boolean(size = integer(u32), size = integer(u32)))]
+  |                                              ^^^^^^^^^^^^^^^^^^^

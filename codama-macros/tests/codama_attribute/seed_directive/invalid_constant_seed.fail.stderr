@@ -1,8 +1,8 @@
 error: constant seeds cannot specify name
- --> tests/codama_attribute/seed_directive/invalid_constant_seed.fail.rs:3:46
+ --> tests/codama_attribute/seed_directive/invalid_constant_seed.fail.rs:3:47
   |
-3 | #[codama(seed(type = number(u8), value = 42, name = "amount"))]
-  |                                              ^^^^^^^^^^^^^^^
+3 | #[codama(seed(type = integer(u8), value = 42, name = "amount"))]
+  |                                               ^^^^^^^^^^^^^^^
 
 error: unrecognized type
  --> tests/codama_attribute/seed_directive/invalid_constant_seed.fail.rs:6:22
@@ -11,7 +11,7 @@ error: unrecognized type
   |                      ^^^^^^^^^^^^
 
 error: unrecognized value
- --> tests/codama_attribute/seed_directive/invalid_constant_seed.fail.rs:9:42
+ --> tests/codama_attribute/seed_directive/invalid_constant_seed.fail.rs:9:43
   |
-9 | #[codama(seed(type = number(u8), value = invalid_value))]
-  |                                          ^^^^^^^^^^^^^
+9 | #[codama(seed(type = integer(u8), value = invalid_value))]
+  |                                           ^^^^^^^^^^^^^

@@ -1,15 +1,15 @@
 use codama_macros::codama;
 
-#[codama(type = field("age", number(u32)))]
+#[codama(type = field("age", integer(u32)))]
 pub struct ImplicitTest;
 
-#[codama(type = field(name = "age", type = number(u32)))]
+#[codama(type = field(name = "age", type = integer(u32)))]
 pub struct ExplicitTest;
 
-#[codama(type = field("age", number(u32), default_value = 42))]
+#[codama(type = field("age", integer(u32), default_value = 42))]
 pub struct TestWithDefaultValue;
 
-#[codama(type = field("age", number(u32), value = 42))]
+#[codama(type = field("age", integer(u32), value = 42))]
 pub struct TestWithDefaultValueStrategy;
 
 fn main() {}
