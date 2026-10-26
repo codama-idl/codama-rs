@@ -65,11 +65,10 @@ mod tests {
 
     #[test]
     fn new_nested() {
-        let pda = PdaNode {
-            identifier: "counter".into(),
-            seeds: vec![VariablePdaSeedNode::new("value", IntegerTypeNode::le(U32)).into()],
-            ..PdaNode::default()
-        };
+        let pda = PdaNode::new(
+            "counter",
+            vec![VariablePdaSeedNode::new("value", IntegerTypeNode::le(U32)).into()],
+        );
         let node = PdaValueNode::new(
             pda.clone(),
             vec![PdaSeedValueNode::new("value", IntegerValueNode::new(42))],

@@ -1,15 +1,16 @@
 use crate::{CamelCaseString, Docs, PdaNode, PdaSeedNode};
 
 impl PdaNode {
-    pub fn new<T>(name: T, seeds: Vec<PdaSeedNode>) -> Self
+    pub fn new<T>(identifier: T, seeds: Vec<PdaSeedNode>) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             docs: Docs::default(),
             program_id: None,
             seeds,
+            plugins: vec![],
         }
     }
 }
@@ -18,7 +19,7 @@ impl PdaNode {
 mod tests {
     use super::*;
     use crate::{
-        ConstantPdaSeedNode, NumberTypeNode, NumberValueNode, PublicKeyTypeNode,
+        ConstantPdaSeedNode, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode,
         VariablePdaSeedNode, U8,
     };
 
@@ -28,7 +29,8 @@ mod tests {
             "associatedToken",
             vec![
                 VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
-                ConstantPdaSeedNode::new(NumberTypeNode::le(U8), NumberValueNode::new(42u8)).into(),
+                ConstantPdaSeedNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(42u8))
+                    .into(),
                 VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
             ],
         );
@@ -40,8 +42,8 @@ mod tests {
             vec![
                 PdaSeedNode::Variable(VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new())),
                 PdaSeedNode::Constant(ConstantPdaSeedNode::new(
-                    NumberTypeNode::le(U8),
-                    NumberValueNode::new(42u8)
+                    IntegerTypeNode::le(U8),
+                    IntegerValueNode::new(42u8)
                 )),
                 PdaSeedNode::Variable(VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new())),
             ]
@@ -55,6 +57,7 @@ mod tests {
             docs: Docs::default(),
             program_id: Some("1234..5678".into()),
             seeds: vec![],
+            plugins: vec![],
         };
         assert_eq!(node.identifier, CamelCaseString::new("myPda"));
         assert_eq!(node.docs, Docs::default());
@@ -66,14 +69,12 @@ mod tests {
     fn to_json() {
         let node = PdaNode::new("myPda", vec![]);
         let json = serde_json::to_string(&node).unwrap();
-        // Empty arrays are omitted on write (skip-when-empty convention).
-        assert_eq!(json, r#"{"kind":"pdaNode","name":"myPda"}"#);
+        assert_eq!(json, r#"{"kind":"pdaNode","identifier":"myPda"}"#);
     }
 
     #[test]
     fn from_json() {
-        // Absent arrays default to empty on read (skip-when-empty convention).
-        let json = r#"{"kind":"pdaNode","name":"myPda"}"#;
+        let json = r#"{"kind":"pdaNode","identifier":"myPda"}"#;
         let node: PdaNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, PdaNode::new("myPda", vec![]));
     }

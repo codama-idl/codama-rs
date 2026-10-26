@@ -7,6 +7,7 @@ impl Default for RootNode {
             version: CODAMA_VERSION.into(),
             program: Default::default(),
             additional_programs: Default::default(),
+            plugins: vec![],
         }
     }
 }
@@ -79,6 +80,7 @@ mod tests {
                 ProgramNode::new("myProgramDependencyA", "2222"),
                 ProgramNode::new("myProgramDependencyB", "3333"),
             ],
+            plugins: vec![],
         };
         assert_eq!(node.program, ProgramNode::new("myProgram", "1111"));
         assert_eq!(
@@ -99,17 +101,15 @@ mod tests {
             ..ProgramNode::default()
         });
         let json = serde_json::to_string(&node).unwrap();
-        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"rootNode","standard":"codama","version":"1.8.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}}"#
+            r#"{"kind":"rootNode","standard":"codama","version":"2.0.0","program":{"kind":"programNode","identifier":"myProgram","publicKey":"1234..5678","version":"1.2.3"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        // Absent arrays default to empty on read (skip-when-empty convention).
-        let json = r#"{"kind":"rootNode","standard":"codama","version":"1.8.0","program":{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}}"#;
+        let json = r#"{"kind":"rootNode","standard":"codama","version":"2.0.0","program":{"kind":"programNode","identifier":"myProgram","publicKey":"1234..5678","version":"1.2.3"}}"#;
         let node: RootNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

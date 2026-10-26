@@ -578,9 +578,9 @@ describe('getRenderMap', () => {
             expect(getFromRenderMap(map, 'account_node.rs').content).toContain('pub size: Option<u64>,');
         });
 
-        it('renders errorNode.message as `Text` and pluginNode.namespace as `String`', () => {
+        it('renders errorNode.message as `Text` and pluginNode.namespace as `Namespace`', () => {
             expect(getFromRenderMap(map, 'error_node.rs').content).toContain('pub message: Text,');
-            expect(getFromRenderMap(map, 'plugin_node.rs').content).toContain('pub namespace: String,');
+            expect(getFromRenderMap(map, 'plugin_node.rs').content).toContain('pub namespace: Namespace,');
         });
 
         it('renders optional scalars as `Option<T>` uniformly', () => {

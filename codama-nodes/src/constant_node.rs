@@ -1,17 +1,18 @@
 use crate::{CamelCaseString, ConstantNode, Docs, TypeNode, ValueNode};
 
 impl ConstantNode {
-    pub fn new<T, U, V>(name: T, r#type: U, value: V) -> Self
+    pub fn new<T, U, V>(identifier: T, r#type: U, value: V) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<TypeNode>,
         V: Into<ValueNode>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
             value: Box::new(value.into()),
+            plugins: vec![],
         }
     }
 }
@@ -19,20 +20,23 @@ impl ConstantNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, NumberValueNode, StringTypeNode, StringValueNode, U64};
+    use crate::{IntegerTypeNode, IntegerValueNode, StringTypeNode, StringValueNode, U64};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
         let node = ConstantNode::new(
             "max_items",
-            NumberTypeNode::le(U64),
-            NumberValueNode::new(100u64),
+            IntegerTypeNode::le(U64),
+            IntegerValueNode::new(100u64),
         );
         assert_eq!(node.identifier, CamelCaseString::new("maxItems"));
         assert_eq!(node.docs, Docs::default());
-        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(100u64)));
+        assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U64)));
+        assert_eq!(
+            *node.value,
+            ValueNode::Integer(IntegerValueNode::new(100u64))
+        );
     }
 
     #[test]
@@ -42,6 +46,7 @@ mod tests {
             docs: Docs::default(),
             r#type: Box::new(StringTypeNode::utf8().into()),
             value: Box::new(StringValueNode::new("MyApp").into()),
+            plugins: vec![],
         };
         assert_eq!(node.identifier, CamelCaseString::new("appName"));
         assert_eq!(node.docs, Docs::default());
@@ -56,26 +61,26 @@ mod tests {
     fn to_json() {
         let node = ConstantNode::new(
             "maxItems",
-            NumberTypeNode::le(U64),
-            NumberValueNode::new(100u64),
+            IntegerTypeNode::le(U64),
+            IntegerValueNode::new(100u64),
         );
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"constantNode","name":"maxItems","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":100}}"#
+            r#"{"kind":"constantNode","identifier":"maxItems","type":{"kind":"integerTypeNode","format":"u64","endian":"le"},"value":{"kind":"integerValueNode","value":"100"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"constantNode","name":"maxItems","type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":100}}"#;
+        let json = r#"{"kind":"constantNode","identifier":"maxItems","type":{"kind":"integerTypeNode","format":"u64","endian":"le"},"value":{"kind":"integerValueNode","value":"100"}}"#;
         let node: ConstantNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
             ConstantNode::new(
                 "maxItems",
-                NumberTypeNode::le(U64),
-                NumberValueNode::new(100u64)
+                IntegerTypeNode::le(U64),
+                IntegerValueNode::new(100u64)
             )
         );
     }
@@ -84,14 +89,14 @@ mod tests {
     fn to_json_with_docs() {
         let mut node = ConstantNode::new(
             "maxItems",
-            NumberTypeNode::le(U64),
-            NumberValueNode::new(100u64),
+            IntegerTypeNode::le(U64),
+            IntegerValueNode::new(100u64),
         );
-        node.docs = Docs::new().add_doc("Maximum number of items.");
+        node.docs = vec!["Maximum number of items.".to_string()].into();
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"constantNode","name":"maxItems","docs":["Maximum number of items."],"type":{"kind":"numberTypeNode","format":"u64","endian":"le"},"value":{"kind":"numberValueNode","number":100}}"#
+            r#"{"kind":"constantNode","identifier":"maxItems","docs":"Maximum number of items.","type":{"kind":"integerTypeNode","format":"u64","endian":"le"},"value":{"kind":"integerValueNode","value":"100"}}"#
         );
     }
 }

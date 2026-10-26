@@ -1,16 +1,17 @@
 use crate::{CamelCaseString, Docs, EventNode, TypeNode};
 
 impl EventNode {
-    pub fn new<T, U>(name: T, data: U) -> Self
+    pub fn new<T, U>(identifier: T, data: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<TypeNode>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             docs: Docs::default(),
             data: Box::new(data.into()),
             discriminators: vec![],
+            plugins: vec![],
         }
     }
 }
@@ -18,7 +19,7 @@ impl EventNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U8};
+    use crate::{IntegerTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U8};
 
     #[test]
     fn new() {
@@ -26,7 +27,7 @@ mod tests {
             "myEvent",
             StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
             ]),
         );
 
@@ -36,7 +37,7 @@ mod tests {
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.discriminators, vec![]);
@@ -50,11 +51,12 @@ mod tests {
             data: Box::new(
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                 ])
                 .into(),
             ),
             discriminators: vec![],
+            plugins: vec![],
         };
 
         assert_eq!(node.identifier, CamelCaseString::new("myEvent"));
@@ -63,7 +65,7 @@ mod tests {
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.discriminators, vec![]);
@@ -75,7 +77,7 @@ mod tests {
             "myEvent",
             StructTypeNode::new(vec![
                 StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
             ]),
         );
 
@@ -83,13 +85,13 @@ mod tests {
 
         assert_eq!(
             json,
-            r#"{"kind":"eventNode","name":"myEvent","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","name":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","name":"age","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}]}}"#
+            r#"{"kind":"eventNode","identifier":"myEvent","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","identifier":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","identifier":"age","type":{"kind":"integerTypeNode","format":"u8","endian":"le"}}]}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"eventNode","name":"myEvent","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","name":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","name":"age","type":{"kind":"numberTypeNode","format":"u8","endian":"le"}}]}}"#;
+        let json = r#"{"kind":"eventNode","identifier":"myEvent","data":{"kind":"structTypeNode","fields":[{"kind":"structFieldTypeNode","identifier":"name","type":{"kind":"stringTypeNode","encoding":"utf8"}},{"kind":"structFieldTypeNode","identifier":"age","type":{"kind":"integerTypeNode","format":"u8","endian":"le"}}]}}"#;
 
         let node: EventNode = serde_json::from_str(json).unwrap();
 
@@ -99,7 +101,7 @@ mod tests {
                 "myEvent",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                 ]),
             )
         );
