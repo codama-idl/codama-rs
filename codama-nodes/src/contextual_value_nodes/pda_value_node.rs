@@ -9,6 +9,7 @@ impl PdaValueNode {
             pda: Box::new(pda.into()),
             seeds,
             program_id: Box::new(None),
+            plugins: vec![],
         }
     }
 
@@ -21,6 +22,7 @@ impl PdaValueNode {
             pda: Box::new(pda.into()),
             seeds,
             program_id: Box::new(Some(program_id.into())),
+            plugins: vec![],
         }
     }
 }
@@ -29,7 +31,7 @@ impl PdaValueNode {
 mod tests {
     use super::*;
     use crate::{
-        AccountValueNode, NumberTypeNode, NumberValueNode, PdaLinkNode, PdaNode,
+        AccountValueNode, IntegerTypeNode, IntegerValueNode, PdaLinkNode, PdaNode,
         PublicKeyValueNode, VariablePdaSeedNode, U32,
     };
 
@@ -42,7 +44,7 @@ mod tests {
                     "mint",
                     PublicKeyValueNode::new("33QJ9VtGKRS7wstQiwuigk1cBVYEPp3XBCC1g9WkDFEE"),
                 ),
-                PdaSeedValueNode::new("edition", NumberValueNode::new(42)),
+                PdaSeedValueNode::new("edition", IntegerValueNode::new(42)),
             ],
         );
         assert_eq!(
@@ -56,30 +58,26 @@ mod tests {
                     "mint",
                     PublicKeyValueNode::new("33QJ9VtGKRS7wstQiwuigk1cBVYEPp3XBCC1g9WkDFEE")
                 ),
-                PdaSeedValueNode::new("edition", NumberValueNode::new(42)),
+                PdaSeedValueNode::new("edition", IntegerValueNode::new(42)),
             ]
         );
     }
 
     #[test]
     fn new_nested() {
+        let pda = PdaNode {
+            identifier: "counter".into(),
+            seeds: vec![VariablePdaSeedNode::new("value", IntegerTypeNode::le(U32)).into()],
+            ..PdaNode::default()
+        };
         let node = PdaValueNode::new(
-            PdaNode::new(
-                "counter",
-                vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
-            ),
-            vec![PdaSeedValueNode::new("value", NumberValueNode::new(42))],
+            pda.clone(),
+            vec![PdaSeedValueNode::new("value", IntegerValueNode::new(42))],
         );
-        assert_eq!(
-            *node.pda,
-            PdaValuePda::Pda(PdaNode::new(
-                "counter",
-                vec![VariablePdaSeedNode::new("value", NumberTypeNode::le(U32)).into()],
-            ))
-        );
+        assert_eq!(*node.pda, PdaValuePda::Pda(pda));
         assert_eq!(
             node.seeds,
-            vec![PdaSeedValueNode::new("value", NumberValueNode::new(42)),]
+            vec![PdaSeedValueNode::new("value", IntegerValueNode::new(42))]
         );
     }
 
@@ -87,17 +85,16 @@ mod tests {
     fn to_json() {
         let node = PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]);
         let json = serde_json::to_string(&node).unwrap();
-        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"}}"#
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","identifier":"myPda"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        // Absent arrays default to empty on read (skip-when-empty convention).
-        let json: &str = r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"}}"#;
+        let json: &str =
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","identifier":"myPda"}}"#;
         let node: PdaValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]));
     }
@@ -110,10 +107,9 @@ mod tests {
             AccountValueNode::new("myProgramAccount"),
         );
         let json = serde_json::to_string(&node).unwrap();
-        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","name":"myPda"},"programId":{"kind":"accountValueNode","name":"myProgramAccount"}}"#
+            r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","identifier":"myPda"},"programId":{"kind":"accountValueNode","identifier":"myProgramAccount"}}"#
         );
     }
 }

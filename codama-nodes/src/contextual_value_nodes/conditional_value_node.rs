@@ -1,25 +1,30 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        AccountValueNode, ArgumentValueNode, ConditionalValueCondition, ConditionalValueNode,
-        InstructionInputValueNode, NumberValueNode, ValueNode,
+        AccountValueNode, ConditionalValueCondition, ConditionalValueNode, DataValueNode,
+        InstructionInputValueNode, IntegerValueNode, Path, ValueNode,
     };
+
+    fn path(value: &str) -> Path {
+        value.parse().unwrap()
+    }
 
     #[test]
     fn direct_instantiation() {
         let node = ConditionalValueNode {
-            condition: Box::new(ArgumentValueNode::new("myArgument").into()),
-            value: Box::new(Some(NumberValueNode::new(42).into())),
+            condition: Box::new(DataValueNode::new(path("myField")).into()),
+            value: Box::new(Some(IntegerValueNode::new(42).into())),
             if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             if_false: Box::new(None),
+            plugins: vec![],
         };
         assert_eq!(
             *node.condition,
-            ConditionalValueCondition::Argument(ArgumentValueNode::new("myArgument"))
+            ConditionalValueCondition::Data(DataValueNode::new(path("myField")))
         );
         assert_eq!(
             *node.value,
-            Some(ValueNode::Number(NumberValueNode::new(42)))
+            Some(ValueNode::Integer(IntegerValueNode::new(42)))
         );
         assert_eq!(
             *node.if_true,
@@ -33,29 +38,31 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ConditionalValueNode {
-            condition: Box::new(ArgumentValueNode::new("myArgument").into()),
-            value: Box::new(Some(NumberValueNode::new(42).into())),
+            condition: Box::new(DataValueNode::new(path("myField")).into()),
+            value: Box::new(Some(IntegerValueNode::new(42).into())),
             if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             if_false: Box::new(None),
+            plugins: vec![],
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"ifTrue":{"kind":"accountValueNode","name":"myOtherAccount"}}"#
+            r#"{"kind":"conditionalValueNode","condition":{"kind":"dataValueNode","path":"myField"},"value":{"kind":"integerValueNode","value":"42"},"ifTrue":{"kind":"accountValueNode","identifier":"myOtherAccount"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"conditionalValueNode","condition":{"kind":"argumentValueNode","name":"myArgument"},"value":{"kind":"numberValueNode","number":42},"ifTrue":{"kind":"accountValueNode","name":"myOtherAccount"}}"#;
+        let json = r#"{"kind":"conditionalValueNode","condition":{"kind":"dataValueNode","path":"myField"},"value":{"kind":"integerValueNode","value":"42"},"ifTrue":{"kind":"accountValueNode","identifier":"myOtherAccount"}}"#;
         let node: ConditionalValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
             ConditionalValueNode {
-                condition: Box::new(ArgumentValueNode::new("myArgument").into()),
-                value: Box::new(Some(NumberValueNode::new(42u32).into())),
+                condition: Box::new(DataValueNode::new(path("myField")).into()),
+                value: Box::new(Some(IntegerValueNode::new(42u32).into())),
                 if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
                 if_false: Box::new(None),
+                plugins: vec![],
             }
         );
     }

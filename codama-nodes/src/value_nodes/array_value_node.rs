@@ -2,49 +2,53 @@ use crate::{ArrayValueNode, ValueNode};
 
 impl ArrayValueNode {
     pub fn new(items: Vec<ValueNode>) -> Self {
-        Self { items }
+        Self {
+            items,
+            plugins: vec![],
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NumberValueNode;
+    use crate::IntegerValueNode;
 
     #[test]
     fn new() {
         let node = ArrayValueNode::new(vec![
-            NumberValueNode::new(1).into(),
-            NumberValueNode::new(2).into(),
-            NumberValueNode::new(3).into(),
+            IntegerValueNode::new(1).into(),
+            IntegerValueNode::new(2).into(),
+            IntegerValueNode::new(3).into(),
         ]);
         assert_eq!(
             node.items,
             vec![
-                ValueNode::Number(NumberValueNode::new(1)),
-                ValueNode::Number(NumberValueNode::new(2)),
-                ValueNode::Number(NumberValueNode::new(3)),
+                ValueNode::Integer(IntegerValueNode::new(1)),
+                ValueNode::Integer(IntegerValueNode::new(2)),
+                ValueNode::Integer(IntegerValueNode::new(3)),
             ]
         );
     }
 
     #[test]
     fn to_json() {
-        let node = ArrayValueNode::new(vec![NumberValueNode::new(42u32).into()]);
+        let node = ArrayValueNode::new(vec![IntegerValueNode::new(42u32).into()]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"arrayValueNode","items":[{"kind":"numberValueNode","number":42}]}"#
+            r#"{"kind":"arrayValueNode","items":[{"kind":"integerValueNode","value":"42"}]}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"arrayValueNode","items":[{"kind":"numberValueNode","number":42}]}"#;
+        let json =
+            r#"{"kind":"arrayValueNode","items":[{"kind":"integerValueNode","value":"42"}]}"#;
         let node: ArrayValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            ArrayValueNode::new(vec![NumberValueNode::new(42u32).into()])
+            ArrayValueNode::new(vec![IntegerValueNode::new(42u32).into()])
         );
     }
 }

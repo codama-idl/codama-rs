@@ -1,22 +1,22 @@
 use crate::{CamelCaseString, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
 
 impl PdaSeedValueNode {
-    pub fn new<T, U>(name: T, value: U) -> Self
+    pub fn new<T, U>(identifier: T, value: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<PdaSeedValueValue>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             value: Box::new(value.into()),
+            plugins: vec![],
         }
     }
 }
 
 /// Bridge from the broader `ValueNode` union into `PdaSeedValueValue`.
-/// `PdaSeedValueValue` is `accountValueNode | argumentValueNode | valueNode`
-/// (17 variants total) — every value-node leaf maps to its same-named
-/// `PdaSeedValueValue` variant.
+/// `PdaSeedValueValue` is `accountValueNode | dataValueNode | valueNode`,
+/// so every value-node leaf maps to its same-named `PdaSeedValueValue` variant.
 impl From<ValueNode> for PdaSeedValueValue {
     fn from(value: ValueNode) -> Self {
         match value {
@@ -25,10 +25,11 @@ impl From<ValueNode> for PdaSeedValueValue {
             ValueNode::Bytes(value) => Self::Bytes(value),
             ValueNode::Constant(value) => Self::Constant(value),
             ValueNode::Enum(value) => Self::Enum(value),
+            ValueNode::Float(value) => Self::Float(value),
             ValueNode::Injected(value) => Self::Injected(value),
+            ValueNode::Integer(value) => Self::Integer(value),
             ValueNode::Map(value) => Self::Map(value),
             ValueNode::None(value) => Self::None(value),
-            ValueNode::Number(value) => Self::Number(value),
             ValueNode::PublicKey(value) => Self::PublicKey(value),
             ValueNode::Set(value) => Self::Set(value),
             ValueNode::Some(value) => Self::Some(value),
@@ -42,35 +43,54 @@ impl From<ValueNode> for PdaSeedValueValue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NumberValueNode;
+    use crate::{DataValueNode, FloatValueNode, IntegerValueNode, Path};
 
     #[test]
     fn new() {
-        let node = PdaSeedValueNode::new("answer", NumberValueNode::new(42));
+        let node = PdaSeedValueNode::new("answer", IntegerValueNode::new(42));
         assert_eq!(node.identifier, CamelCaseString::from("answer"));
         assert_eq!(
             *node.value,
-            PdaSeedValueValue::Number(NumberValueNode::new(42))
+            PdaSeedValueValue::Integer(IntegerValueNode::new(42))
+        );
+    }
+
+    #[test]
+    fn new_with_data_value() {
+        let path: Path = "amount".parse().unwrap();
+        let node = PdaSeedValueNode::new("amount", DataValueNode::new(path.clone()));
+        assert_eq!(
+            *node.value,
+            PdaSeedValueValue::Data(DataValueNode::new(path))
+        );
+    }
+
+    #[test]
+    fn from_value_node() {
+        let value: ValueNode = FloatValueNode::new(1.5).into();
+        assert_eq!(
+            PdaSeedValueValue::from(value),
+            PdaSeedValueValue::Float(FloatValueNode::new(1.5))
         );
     }
 
     #[test]
     fn to_json() {
-        let node = PdaSeedValueNode::new("answer", NumberValueNode::new(42));
+        let node = PdaSeedValueNode::new("answer", IntegerValueNode::new(42));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"pdaSeedValueNode","name":"answer","value":{"kind":"numberValueNode","number":42}}"#
+            r#"{"kind":"pdaSeedValueNode","identifier":"answer","value":{"kind":"integerValueNode","value":"42"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json: &str = r#"{"kind":"pdaSeedValueNode","name":"answer","value":{"kind":"numberValueNode","number":42}}"#;
+        let json: &str = r#"{"kind":"pdaSeedValueNode","identifier":"answer","value":{"kind":"integerValueNode","value":"42"}}"#;
         let node: PdaSeedValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("answer", NumberValueNode::new(42u32))
+            PdaSeedValueNode::new("answer", IntegerValueNode::new(42u32))
         );
     }
 }

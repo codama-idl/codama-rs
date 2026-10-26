@@ -1,6 +1,6 @@
 use crate::{
-    CountNode, FixedCountNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
-    RemainderCountNode, SetTypeNode, TypeNode,
+    CountNode, FixedCountNode, IntegerTypeNode, PrefixedCountNode, RemainderCountNode, SetTypeNode,
+    TypeNode,
 };
 
 impl SetTypeNode {
@@ -12,6 +12,8 @@ impl SetTypeNode {
         Self {
             item: Box::new(item.into()),
             count: Box::new(count.into()),
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 
@@ -25,7 +27,7 @@ impl SetTypeNode {
     pub fn prefixed<T, U>(item: T, prefix: U) -> Self
     where
         T: Into<TypeNode>,
-        U: Into<NestedTypeNode<NumberTypeNode>>,
+        U: Into<IntegerTypeNode>,
     {
         Self::new(item, PrefixedCountNode::new(prefix))
     }
@@ -41,22 +43,22 @@ impl SetTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, StringTypeNode, U32, U64};
+    use crate::{StringTypeNode, U32, U64};
 
     #[test]
     fn new() {
-        let node = SetTypeNode::new(NumberTypeNode::le(U64), FixedCountNode::new(42));
-        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        let node = SetTypeNode::new(IntegerTypeNode::le(U64), FixedCountNode::new(42));
+        assert_eq!(*node.item, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(*node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn prefixed() {
-        let node = SetTypeNode::prefixed(StringTypeNode::utf8(), NumberTypeNode::le(U32));
+        let node = SetTypeNode::prefixed(StringTypeNode::utf8(), IntegerTypeNode::le(U32));
         assert_eq!(*node.item, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(
             *node.count,
-            CountNode::Prefixed(PrefixedCountNode::new(NumberTypeNode::le(U32)))
+            CountNode::Prefixed(PrefixedCountNode::new(IntegerTypeNode::le(U32)))
         );
     }
 
@@ -69,25 +71,25 @@ mod tests {
 
     #[test]
     fn remainder() {
-        let node = SetTypeNode::remainder(NumberTypeNode::le(U64));
-        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        let node = SetTypeNode::remainder(IntegerTypeNode::le(U64));
+        assert_eq!(*node.item, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(*node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
 
     #[test]
     fn to_json() {
-        let node = SetTypeNode::fixed(NumberTypeNode::le(U64), 42);
+        let node = SetTypeNode::fixed(IntegerTypeNode::le(U64), 42);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"setTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#
+            r#"{"kind":"setTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"setTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#;
+        let json = r#"{"kind":"setTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#;
         let node: SetTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, SetTypeNode::fixed(NumberTypeNode::le(U64), 42));
+        assert_eq!(node, SetTypeNode::fixed(IntegerTypeNode::le(U64), 42));
     }
 }
