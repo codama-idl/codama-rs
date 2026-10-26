@@ -2,25 +2,29 @@ use crate::{TupleTypeNode, TypeNode};
 
 impl TupleTypeNode {
     pub fn new(items: Vec<TypeNode>) -> Self {
-        Self { items }
+        Self {
+            items,
+            transforms: vec![],
+            plugins: vec![],
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, StringTypeNode, U32};
+    use crate::{IntegerTypeNode, StringTypeNode, U32};
 
     #[test]
     fn new() {
         let node = TupleTypeNode::new(vec![
-            NumberTypeNode::le(U32).into(),
+            IntegerTypeNode::le(U32).into(),
             StringTypeNode::utf8().into(),
         ]);
         assert_eq!(
             node.items,
             vec![
-                TypeNode::Number(NumberTypeNode::le(U32)),
+                TypeNode::Integer(IntegerTypeNode::le(U32)),
                 TypeNode::String(StringTypeNode::utf8())
             ]
         );
@@ -29,24 +33,24 @@ mod tests {
     #[test]
     fn to_json() {
         let node = TupleTypeNode::new(vec![
-            NumberTypeNode::le(U32).into(),
+            IntegerTypeNode::le(U32).into(),
             StringTypeNode::utf8().into(),
         ]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"tupleTypeNode","items":[{"kind":"numberTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#
+            r#"{"kind":"tupleTypeNode","items":[{"kind":"integerTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"tupleTypeNode","items":[{"kind":"numberTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#;
+        let json = r#"{"kind":"tupleTypeNode","items":[{"kind":"integerTypeNode","format":"u32","endian":"le"},{"kind":"stringTypeNode","encoding":"utf8"}]}"#;
         let node: TupleTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
             TupleTypeNode::new(vec![
-                NumberTypeNode::le(U32).into(),
+                IntegerTypeNode::le(U32).into(),
                 StringTypeNode::utf8().into(),
             ])
         );

@@ -1,6 +1,6 @@
 use crate::{
-    CountNode, FixedCountNode, MapTypeNode, NestedTypeNode, NumberTypeNode, PrefixedCountNode,
-    RemainderCountNode, TypeNode,
+    CountNode, FixedCountNode, IntegerTypeNode, MapTypeNode, PrefixedCountNode, RemainderCountNode,
+    TypeNode,
 };
 
 impl MapTypeNode {
@@ -14,6 +14,8 @@ impl MapTypeNode {
             key: Box::new(key.into()),
             value: Box::new(value.into()),
             count: Box::new(count.into()),
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 
@@ -29,7 +31,7 @@ impl MapTypeNode {
     where
         K: Into<TypeNode>,
         V: Into<TypeNode>,
-        P: Into<NestedTypeNode<NumberTypeNode>>,
+        P: Into<IntegerTypeNode>,
     {
         Self::new(key, value, PrefixedCountNode::new(prefix))
     }
@@ -46,20 +48,18 @@ impl MapTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FixedSizeTypeNode, NumberTypeNode, StringTypeNode, U32, U64};
+    use crate::{FixedSizeTransformNode, HasTransforms, StringTypeNode, U32, U64};
 
     #[test]
     fn new() {
+        let key = StringTypeNode::utf8().add_transform(FixedSizeTransformNode::new(10));
         let node = MapTypeNode::new(
-            FixedSizeTypeNode::new(StringTypeNode::utf8(), 10),
-            NumberTypeNode::le(U64),
+            key.clone(),
+            IntegerTypeNode::le(U64),
             FixedCountNode::new(42),
         );
-        assert_eq!(
-            *node.key,
-            TypeNode::FixedSize(FixedSizeTypeNode::new(StringTypeNode::utf8(), 10))
-        );
-        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.key, TypeNode::String(key));
+        assert_eq!(*node.value, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(*node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
@@ -67,50 +67,50 @@ mod tests {
     fn prefixed() {
         let node = MapTypeNode::prefixed(
             StringTypeNode::utf8(),
-            NumberTypeNode::le(U64),
-            NumberTypeNode::le(U32),
+            IntegerTypeNode::le(U64),
+            IntegerTypeNode::le(U32),
         );
         assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(
             *node.count,
-            CountNode::Prefixed(PrefixedCountNode::new(NumberTypeNode::le(U32)))
+            CountNode::Prefixed(PrefixedCountNode::new(IntegerTypeNode::le(U32)))
         );
     }
 
     #[test]
     fn fixed() {
-        let node = MapTypeNode::fixed(StringTypeNode::utf8(), NumberTypeNode::le(U64), 42);
+        let node = MapTypeNode::fixed(StringTypeNode::utf8(), IntegerTypeNode::le(U64), 42);
         assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(*node.count, CountNode::Fixed(FixedCountNode::new(42)));
     }
 
     #[test]
     fn remainder() {
-        let node = MapTypeNode::remainder(StringTypeNode::utf8(), NumberTypeNode::le(U64));
+        let node = MapTypeNode::remainder(StringTypeNode::utf8(), IntegerTypeNode::le(U64));
         assert_eq!(*node.key, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(*node.value, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.value, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(*node.count, CountNode::Remainder(RemainderCountNode::new()));
     }
 
     #[test]
     fn to_json() {
-        let node = MapTypeNode::fixed(StringTypeNode::utf8(), NumberTypeNode::le(U64), 42);
+        let node = MapTypeNode::fixed(StringTypeNode::utf8(), IntegerTypeNode::le(U64), 42);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"mapTypeNode","key":{"kind":"stringTypeNode","encoding":"utf8"},"value":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#
+            r#"{"kind":"mapTypeNode","key":{"kind":"stringTypeNode","encoding":"utf8"},"value":{"kind":"integerTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"mapTypeNode","key":{"kind":"stringTypeNode","encoding":"utf8"},"value":{"kind":"numberTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#;
+        let json = r#"{"kind":"mapTypeNode","key":{"kind":"stringTypeNode","encoding":"utf8"},"value":{"kind":"integerTypeNode","format":"u64","endian":"le"},"count":{"kind":"fixedCountNode","value":42}}"#;
         let node: MapTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            MapTypeNode::fixed(StringTypeNode::utf8(), NumberTypeNode::le(U64), 42)
+            MapTypeNode::fixed(StringTypeNode::utf8(), IntegerTypeNode::le(U64), 42)
         );
     }
 }
