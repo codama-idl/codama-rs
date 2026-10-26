@@ -1,4 +1,6 @@
-use crate::{Endianness, FloatFormat, PluginNode, TransformNode, UnitNumberDisplayNode};
+use crate::{
+    Endianness, FloatFormat, HasTransforms, PluginNode, TransformNode, UnitNumberDisplayNode,
+};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -22,5 +24,14 @@ pub struct FloatTypeNode {
 impl From<FloatTypeNode> for crate::Node {
     fn from(val: FloatTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for FloatTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

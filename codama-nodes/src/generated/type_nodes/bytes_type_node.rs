@@ -1,4 +1,4 @@
-use crate::{PluginNode, TransformNode};
+use crate::{HasTransforms, PluginNode, TransformNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -14,5 +14,14 @@ pub struct BytesTypeNode {
 impl From<BytesTypeNode> for crate::Node {
     fn from(val: BytesTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for BytesTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

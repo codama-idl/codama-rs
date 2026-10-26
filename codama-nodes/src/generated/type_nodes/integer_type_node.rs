@@ -1,4 +1,6 @@
-use crate::{Endianness, IntegerFormat, NumberDisplayNode, PluginNode, TransformNode};
+use crate::{
+    Endianness, HasTransforms, IntegerFormat, NumberDisplayNode, PluginNode, TransformNode,
+};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -22,5 +24,14 @@ pub struct IntegerTypeNode {
 impl From<IntegerTypeNode> for crate::Node {
     fn from(val: IntegerTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for IntegerTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }
