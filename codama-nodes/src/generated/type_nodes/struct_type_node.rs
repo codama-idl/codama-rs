@@ -1,4 +1,4 @@
-use crate::{PluginNode, StructFieldTypeNode, TransformNode};
+use crate::{HasTransforms, PluginNode, StructFieldTypeNode, TransformNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -16,5 +16,14 @@ pub struct StructTypeNode {
 impl From<StructTypeNode> for crate::Node {
     fn from(val: StructTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for StructTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

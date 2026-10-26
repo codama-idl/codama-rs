@@ -1,4 +1,6 @@
-use crate::{CamelCaseString, HasIdentifier, PluginNode, ProgramLinkNode, TransformNode};
+use crate::{
+    CamelCaseString, HasIdentifier, HasTransforms, PluginNode, ProgramLinkNode, TransformNode,
+};
 use codama_nodes_derive::node;
 
 #[node]
@@ -25,5 +27,14 @@ impl From<DefinedTypeLinkNode> for crate::Node {
 impl HasIdentifier for DefinedTypeLinkNode {
     fn identifier(&self) -> &CamelCaseString {
         &self.identifier
+    }
+}
+
+impl HasTransforms for DefinedTypeLinkNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

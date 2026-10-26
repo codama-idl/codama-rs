@@ -3,6 +3,7 @@ export * from './codamaVersionPage';
 export * from './enumPage';
 export * from './fromImpl';
 export * from './hasIdentifierImpl';
+export * from './hasTransformsImpl';
 export * from './helpers';
 export * from './literalUnionPage';
 export * from './modPage';
