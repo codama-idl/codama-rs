@@ -8,6 +8,7 @@ impl BytesValueNode {
         Self {
             encoding,
             data: data.into(),
+            plugins: vec![],
         }
     }
 

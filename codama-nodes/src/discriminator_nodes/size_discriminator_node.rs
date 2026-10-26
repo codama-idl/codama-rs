@@ -2,7 +2,10 @@ use crate::SizeDiscriminatorNode;
 
 impl SizeDiscriminatorNode {
     pub fn new(size: u64) -> Self {
-        Self { size }
+        Self {
+            size,
+            plugins: vec![],
+        }
     }
 }
 

@@ -2,7 +2,10 @@ use crate::FixedCountNode;
 
 impl FixedCountNode {
     pub fn new(value: u64) -> Self {
-        Self { value }
+        Self {
+            value,
+            plugins: vec![],
+        }
     }
 }
 

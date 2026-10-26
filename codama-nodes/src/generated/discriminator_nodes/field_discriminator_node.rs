@@ -1,11 +1,10 @@
-use crate::PluginNode;
+use crate::{Path, PluginNode};
 use codama_nodes_derive::node;
 
 #[node]
-#[derive(Default)]
 pub struct FieldDiscriminatorNode {
     // Data.
-    pub path: String,
+    pub path: Path,
     pub offset: u64,
 
     // Children.

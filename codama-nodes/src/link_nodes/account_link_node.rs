@@ -1,36 +1,38 @@
 use crate::{AccountLinkNode, CamelCaseString, ProgramLinkNode};
 
 impl AccountLinkNode {
-    pub fn new<T>(name: T) -> Self
+    pub fn new<T>(identifier: T) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             program: None,
+            plugins: vec![],
         }
     }
 
-    pub fn new_from_program<T>(name: T, program: ProgramLinkNode) -> Self
+    pub fn new_from_program<T>(identifier: T, program: ProgramLinkNode) -> Self
     where
         T: Into<CamelCaseString>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             program: Some(program),
+            plugins: vec![],
         }
     }
 }
 
 impl From<String> for AccountLinkNode {
-    fn from(name: String) -> Self {
-        Self::new(name)
+    fn from(identifier: String) -> Self {
+        Self::new(identifier)
     }
 }
 
 impl From<&str> for AccountLinkNode {
-    fn from(name: &str) -> Self {
-        Self::new(name)
+    fn from(identifier: &str) -> Self {
+        Self::new(identifier)
     }
 }
 
@@ -70,12 +72,15 @@ mod tests {
     fn to_json() {
         let node = AccountLinkNode::new("myAccount");
         let json = serde_json::to_string(&node).unwrap();
-        assert_eq!(json, r#"{"kind":"accountLinkNode","name":"myAccount"}"#);
+        assert_eq!(
+            json,
+            r#"{"kind":"accountLinkNode","identifier":"myAccount"}"#
+        );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"accountLinkNode","name":"myAccount"}"#;
+        let json = r#"{"kind":"accountLinkNode","identifier":"myAccount"}"#;
         let node: AccountLinkNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, AccountLinkNode::new("myAccount"));
     }
