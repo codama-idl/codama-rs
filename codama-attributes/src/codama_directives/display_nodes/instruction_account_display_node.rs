@@ -15,8 +15,9 @@ impl FromMeta for InstructionAccountDisplayNode {
         })?;
 
         let display = Self {
-            label: label.option(),
+            label: label.option().map(Into::into),
             skip: skip.option(),
+            plugins: vec![],
         };
         if display == Self::default() {
             return Err(meta.error("instruction account display requires at least one attribute"));
@@ -35,8 +36,9 @@ mod tests {
         assert_eq!(
             InstructionAccountDisplayNode::from_meta(&meta).unwrap(),
             InstructionAccountDisplayNode {
-                label: Some("Payer".to_string()),
+                label: Some("Payer".into()),
                 skip: Some(DisplaySkip::Always),
+                plugins: vec![],
             }
         );
     }

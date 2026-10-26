@@ -119,13 +119,13 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a SeedDirective {
 
 #[cfg(test)]
 mod tests {
-    use codama_nodes::{NumberFormat::U8, NumberTypeNode, NumberValueNode, PublicKeyTypeNode};
+    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode};
 
     use super::*;
 
     #[test]
     fn defined_constant() {
-        let meta: Meta = syn::parse_quote! { seed(type = number(u8), value = 42) };
+        let meta: Meta = syn::parse_quote! { seed(type = integer(u8), value = 42) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = SeedDirective::parse(&meta, &ctx).unwrap();
@@ -133,8 +133,8 @@ mod tests {
             directive,
             SeedDirective {
                 seed: SeedDirectiveType::Constant {
-                    r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
-                    value: Resolvable::Resolved(NumberValueNode::new(42u8).into()),
+                    r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
+                    value: Resolvable::Resolved(IntegerValueNode::new(42u8).into()),
                 },
             }
         );

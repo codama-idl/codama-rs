@@ -1,20 +1,19 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{DateTimeTypeNode, NestedTypeNode, NumberTypeNode, TypeNode};
+use codama_nodes::{DateTimeTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for DateTimeTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("date_time")?.as_path_list()?;
-        let mut number: SetOnce<NestedTypeNode<NumberTypeNode>> = SetOnce::new("number");
+        let mut number: SetOnce<IntegerTypeNode> = SetOnce::new("number");
 
         pl.each(|ref meta| {
-            // A positional `number(u64)` shares its path with the `number` field,
-            // so lists and bare paths are always read as the type node.
+            // Lists and bare paths go to the type parser first, so `number(u64)` gets its hint, not the `number =` field.
             if meta.is_path_or_list() {
                 let node = TypeNode::from_meta(meta)?;
-                let number_node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
+                let number_node = match IntegerTypeNode::try_from_type_node(node) {
                     Ok(node) => node,
-                    Err(_) => return Err(meta.error("number must be a NumberTypeNode")),
+                    Err(_) => return Err(meta.error("number must be an IntegerTypeNode")),
                 };
                 return number.set(number_node, meta);
             }
@@ -22,9 +21,9 @@ impl FromMeta for DateTimeTypeNode {
                 "number" => {
                     let value = meta.as_value()?;
                     let node = TypeNode::from_meta(value)?;
-                    let number_node = match NestedTypeNode::<NumberTypeNode>::try_from(node) {
+                    let number_node = match IntegerTypeNode::try_from_type_node(node) {
                         Ok(node) => node,
-                        Err(_) => return Err(value.error("number must be a NumberTypeNode")),
+                        Err(_) => return Err(value.error("number must be an IntegerTypeNode")),
                     };
                     number.set(number_node, meta)
                 }
@@ -39,49 +38,40 @@ impl FromMeta for DateTimeTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
-    use codama_nodes::{FixedSizeTypeNode, NumberFormat::U64};
+    use codama_nodes::IntegerFormat::U64;
 
     #[test]
-    fn implicit() {
-        assert_type!(
-            { date_time(number(u64)) },
-            DateTimeTypeNode::new(NumberTypeNode::le(U64)).into()
-        );
+    fn parses() {
+        for meta in [
+            syn::parse_quote! { date_time(integer(u64)) },
+            syn::parse_quote! { date_time(number = integer(u64)) },
+        ] {
+            assert_eq!(
+                DateTimeTypeNode::from_meta(&meta).unwrap(),
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
+            );
+        }
     }
 
     #[test]
-    fn explicit() {
-        assert_type!(
-            { date_time(number = number(u64)) },
-            DateTimeTypeNode::new(NumberTypeNode::le(U64)).into()
-        );
-    }
-
-    #[test]
-    fn nested_number() {
-        assert_type!(
-            { date_time(fixed_size(number(u64), 8)) },
-            DateTimeTypeNode::new(FixedSizeTypeNode::<NestedTypeNode<NumberTypeNode>>::new(
-                NumberTypeNode::le(U64),
-                8
-            ))
-            .into()
-        );
-    }
-
-    #[test]
-    fn invalid_number() {
-        assert_type_err!({ date_time(string) }, "number must be a NumberTypeNode");
-    }
-
-    #[test]
-    fn number_missing() {
-        assert_type_err!({ date_time() }, "number is missing");
-    }
-
-    #[test]
-    fn unrecognized_attribute() {
-        assert_type_err!({ date_time(foo = 42) }, "unrecognized attribute");
+    fn errors() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { date_time(string) },
+                "number must be an IntegerTypeNode",
+            ),
+            (syn::parse_quote! { date_time() }, "number is missing"),
+            (
+                syn::parse_quote! { date_time(foo = 42) },
+                "unrecognized attribute",
+            ),
+            (
+                syn::parse_quote! { date_time(number(u64)) },
+                "number(...) is removed in v2, use integer(...) or float(...)",
+            ),
+        ] {
+            let error = DateTimeTypeNode::from_meta(&meta).unwrap_err();
+            assert_eq!(error.to_string(), expected);
+        }
     }
 }

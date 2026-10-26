@@ -46,17 +46,17 @@ mod tests {
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
         FixedCountNode,
-        NumberFormat::{U32, U8},
-        NumberTypeNode, PrefixedCountNode, PublicKeyTypeNode, StringTypeNode,
+        IntegerFormat::{U32, U8},
+        IntegerTypeNode, PrefixedCountNode, PublicKeyTypeNode, StringTypeNode,
     };
 
     #[test]
     fn implicit() {
         assert_type!(
-            { map(public_key, number(u8), fixed_count(3)) },
+            { map(public_key, integer(u8), fixed_count(3)) },
             MapTypeNode::new(
                 PublicKeyTypeNode::new(),
-                NumberTypeNode::le(U8),
+                IntegerTypeNode::le(U8),
                 FixedCountNode::new(3)
             )
             .into()
@@ -66,10 +66,10 @@ mod tests {
     #[test]
     fn bare_integer_count() {
         assert_type!(
-            { map(string, number(u8), 3) },
+            { map(string, integer(u8), 3) },
             MapTypeNode::new(
                 StringTypeNode::utf8(),
-                NumberTypeNode::le(U8),
+                IntegerTypeNode::le(U8),
                 FixedCountNode::new(3)
             )
             .into()
@@ -82,14 +82,14 @@ mod tests {
             {
                 map(
                     key = string,
-                    value = number(u8),
-                    count = prefixed_count(number(u32)),
+                    value = integer(u8),
+                    count = prefixed_count(integer(u32)),
                 )
             },
             MapTypeNode::new(
                 StringTypeNode::utf8(),
-                NumberTypeNode::le(U8),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                IntegerTypeNode::le(U8),
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         );
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn count_missing() {
-        assert_type_err!({ map(string, number(u8)) }, "count is missing");
+        assert_type_err!({ map(string, integer(u8)) }, "count is missing");
     }
 
     #[test]

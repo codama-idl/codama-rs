@@ -13,5 +13,5 @@ error: seed must at least specify `name` for variable seeds or `type` and `value
 error: seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds
  --> tests/codama_attribute/seed_directive/unrecognized_seed.fail.rs:9:10
   |
-9 | #[codama(seed(type = number(u8)))]
-  |          ^^^^^^^^^^^^^^^^^^^^^^^
+9 | #[codama(seed(type = integer(u8)))]
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^

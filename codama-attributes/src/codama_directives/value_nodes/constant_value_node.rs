@@ -36,7 +36,7 @@ impl FromMeta for ConstantValueNode {
 mod tests {
     use super::*;
     use codama_nodes::{
-        NumberFormat::U8, NumberTypeNode, NumberValueNode, StringTypeNode, StringValueNode,
+        IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, StringTypeNode, StringValueNode,
     };
 
     fn parse(meta: Meta) -> syn::Result<ConstantValueNode> {
@@ -46,8 +46,8 @@ mod tests {
     #[test]
     fn implicit() {
         assert_eq!(
-            parse(syn::parse_quote! { constant(number(u8), 42) }).unwrap(),
-            ConstantValueNode::new(NumberTypeNode::le(U8), NumberValueNode::new(42u64))
+            parse(syn::parse_quote! { constant(integer(u8), 42) }).unwrap(),
+            ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(42u64))
         );
     }
 
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn value_missing() {
-        let error = parse(syn::parse_quote! { constant(number(u8)) }).unwrap_err();
+        let error = parse(syn::parse_quote! { constant(integer(u8)) }).unwrap_err();
         assert_eq!(error.to_string(), "value is missing");
     }
 

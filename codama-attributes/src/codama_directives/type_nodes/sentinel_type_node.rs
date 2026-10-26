@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn implicit() {
         assert_type!(
-            { sentinel(string, constant(number(u8), 255)) },
+            { sentinel(string, constant(integer(u8), 255)) },
             SentinelTypeNode::new(StringTypeNode::utf8(), sentinel_255()).into()
         );
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn explicit() {
         assert_type!(
-            { sentinel(type = string, sentinel = constant(number(u8), 255)) },
+            { sentinel(type = string, sentinel = constant(integer(u8), 255)) },
             SentinelTypeNode::new(StringTypeNode::utf8(), sentinel_255()).into()
         );
     }
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn type_missing() {
-        assert_type_err!({ sentinel(constant(number(u8), 255)) }, "type is missing");
+        assert_type_err!({ sentinel(constant(integer(u8), 255)) }, "type is missing");
     }
 
     #[test]

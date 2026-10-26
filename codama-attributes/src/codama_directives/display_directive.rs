@@ -87,8 +87,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a DisplayDirective {
 mod tests {
     use super::*;
     use codama_nodes::{
-        AmountNumberDisplayNode, DateTimeNumberDisplayNode, InstructionAccountDisplayNode,
-        NumberValueNode, StringValueNode,
+        AmountNumberDisplayNode, InstructionAccountDisplayNode, IntegerValueNode, StringValueNode,
     };
 
     fn parse_display(tokens: proc_macro2::TokenStream) -> syn::Result<DisplayDirective> {
@@ -148,24 +147,15 @@ mod tests {
         .unwrap();
         assert_eq!(
             display.number_display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
-                decimals: Box::new(Some(NumberValueNode::new(9u64).into())),
-                unit: Box::new(Some(StringValueNode::new("SOL").into())),
-            }))
+            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+                IntegerValueNode::new(9u64),
+                StringValueNode::new("SOL")
+            )))
         );
     }
 
     #[test]
-    fn parses_empty_amount_display() {
-        let display = parse_display(quote::quote! { display(amount) }).unwrap();
-        assert_eq!(
-            display.number_display,
-            Some(NumberDisplayNode::Amount(Default::default()))
-        );
-    }
-
-    #[test]
-    fn parses_partial_amount_displays() {
+    fn parses_amount_display_without_unit() {
         let decimals = parse_display(quote::quote! {
             display(amount(decimals = 6))
         })
@@ -173,45 +163,24 @@ mod tests {
         assert_eq!(
             decimals.number_display,
             Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
-                decimals: Box::new(Some(NumberValueNode::new(6u64).into())),
+                decimals: Box::new(IntegerValueNode::new(6u64).into()),
                 unit: Box::new(None),
-            }))
-        );
-
-        let unit = parse_display(quote::quote! {
-            display(amount(unit = "bytes"))
-        })
-        .unwrap();
-        assert_eq!(
-            unit.number_display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
-                decimals: Box::new(None),
-                unit: Box::new(Some(StringValueNode::new("bytes").into())),
+                plugins: vec![],
             }))
         );
     }
 
     #[test]
-    fn parses_date_time_display() {
-        let display = parse_display(quote::quote! {
-            display(date_time(ticks_per_second = 1_000))
-        })
-        .unwrap();
-        assert_eq!(
-            display.number_display,
-            Some(NumberDisplayNode::DateTime(DateTimeNumberDisplayNode {
-                ticks_per_second: Some(1_000),
-            }))
-        );
-    }
-
-    #[test]
-    fn parses_empty_date_time_display() {
-        let display = parse_display(quote::quote! { display(date_time) }).unwrap();
-        assert_eq!(
-            display.number_display,
-            Some(NumberDisplayNode::DateTime(Default::default()))
-        );
+    fn rejects_amount_display_without_decimals() {
+        for tokens in [
+            quote::quote! { display(amount) },
+            quote::quote! { display(amount(unit = "bytes")) },
+        ] {
+            assert_eq!(
+                parse_display(tokens).unwrap_err().to_string(),
+                "decimals is missing"
+            );
+        }
     }
 
     #[test]
@@ -220,8 +189,9 @@ mod tests {
         assert_eq!(
             InstructionAccountDisplayNode::from_meta(&meta).unwrap(),
             InstructionAccountDisplayNode {
-                label: Some("Payer".to_string()),
+                label: Some("Payer".into()),
                 skip: Some(DisplaySkip::Always),
+                plugins: vec![],
             }
         );
     }
@@ -245,7 +215,7 @@ mod tests {
     #[test]
     fn rejects_multiple_number_displays() {
         let error = parse_display(quote::quote! {
-            display(amount, date_time)
+            display(amount(decimals = 9), amount(decimals = 6))
         })
         .unwrap_err();
         assert_eq!(error.to_string(), "number display is already set");
@@ -288,7 +258,6 @@ mod tests {
         for tokens in [
             quote::quote! { display("Transfer tokens") },
             quote::quote! { display(amount(9, "SOL")) },
-            quote::quote! { display(date_time(1_000)) },
         ] {
             assert!(parse_display(tokens).is_err());
         }

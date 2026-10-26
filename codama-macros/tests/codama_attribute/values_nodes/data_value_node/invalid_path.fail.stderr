@@ -1,0 +1,23 @@
+error: expected a string
+ --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:3:31
+  |
+3 | #[codama(default_value = data(42))]
+  |                               ^^
+
+error: expected a string
+ --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:6:31
+  |
+6 | #[codama(default_value = data(banana))]
+  |                               ^^^^^^
+
+error: expected a string
+ --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:9:31
+  |
+9 | #[codama(default_value = data(name = "amount"))]
+  |                               ^^^^^^^^^^^^^^^
+
+error: Invalid path: a..b
+  --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:12:31
+   |
+12 | #[codama(default_value = data("a..b"))]
+   |                               ^^^^^^

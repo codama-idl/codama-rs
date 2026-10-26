@@ -49,11 +49,11 @@ mod tests {
 
     #[test]
     fn parsed_fields() {
-        let node = parse_node(syn::parse_quote! { size_prefix(string, number(u32)) });
+        let node = parse_node(syn::parse_quote! { size_prefix(string, integer(u32)) });
         assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
 
-        let node = parse_node(syn::parse_quote! { size_prefix(bytes, number(u16, be)) });
+        let node = parse_node(syn::parse_quote! { size_prefix(bytes, integer(u16, be)) });
         assert_eq!(*node.r#type, TypeNode::Bytes(BytesTypeNode::new()));
         assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::be(U16)));
     }
@@ -61,11 +61,11 @@ mod tests {
     #[test]
     fn equivalent_syntaxes() {
         let expected = SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32));
-        let positional = parse_node(syn::parse_quote! { size_prefix(string, number(u32)) });
+        let positional = parse_node(syn::parse_quote! { size_prefix(string, integer(u32)) });
         let named_prefix =
-            parse_node(syn::parse_quote! { size_prefix(string, prefix = number(u32)) });
+            parse_node(syn::parse_quote! { size_prefix(string, prefix = integer(u32)) });
         let fully_explicit =
-            parse_node(syn::parse_quote! { size_prefix(type = string, prefix = number(u32)) });
+            parse_node(syn::parse_quote! { size_prefix(type = string, prefix = integer(u32)) });
 
         assert_eq!(positional, expected);
         assert_eq!(named_prefix, expected);
@@ -77,15 +77,15 @@ mod tests {
     #[test]
     fn explicit() {
         assert_type!(
-            { size_prefix(type = string, prefix = number(u32)) },
+            { size_prefix(type = string, prefix = integer(u32)) },
             SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
         );
         assert_type!(
-            { size_prefix(prefix = number(u32), type = string) },
+            { size_prefix(prefix = integer(u32), type = string) },
             SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
         );
         assert_type!(
-            { size_prefix(prefix = number(u32), string) },
+            { size_prefix(prefix = integer(u32), string) },
             SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
         );
     }
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn nested() {
         assert_type!(
-            { option(size_prefix(string, number(u8))) },
+            { option(size_prefix(string, integer(u8))) },
             OptionTypeNode::new(SizePrefixTypeNode::new(
                 StringTypeNode::utf8(),
                 NumberTypeNode::le(U8)
@@ -101,7 +101,7 @@ mod tests {
             .into()
         );
 
-        let meta: Meta = syn::parse_quote! { option(size_prefix(string, number(u8))) };
+        let meta: Meta = syn::parse_quote! { option(size_prefix(string, integer(u8))) };
         let node = OptionTypeNode::from_meta(&meta).unwrap();
         assert_eq!(
             *node.item,
@@ -115,7 +115,7 @@ mod tests {
     #[test]
     fn nested_prefix() {
         assert_type!(
-            { size_prefix(string, fixed_size(number(u32), 4)) },
+            { size_prefix(string, fixed_size(integer(u32), 4)) },
             SizePrefixTypeNode::new(
                 StringTypeNode::utf8(),
                 FixedSizeTypeNode::<NestedTypeNode<NumberTypeNode>>::new(
@@ -143,14 +143,14 @@ mod tests {
     fn positional_order() {
         // Positional args fill `type` then `prefix` and are never swapped.
         assert_type_err!(
-            { size_prefix(number(u32), string) },
+            { size_prefix(integer(u32), string) },
             "prefix must be a NumberTypeNode"
         );
     }
 
     #[test]
     fn type_missing() {
-        assert_type_err!({ size_prefix(prefix = number(u32)) }, "type is missing");
+        assert_type_err!({ size_prefix(prefix = integer(u32)) }, "type is missing");
     }
 
     #[test]
@@ -165,7 +165,7 @@ mod tests {
             "type is already set"
         );
         assert_type_err!(
-            { size_prefix(string, number(u32), number(u8)) },
+            { size_prefix(string, integer(u32), integer(u8)) },
             "prefix is already set"
         );
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn unrecognized_type() {
         assert_type_err!(
-            { size_prefix(unrecognized, number(u32)) },
+            { size_prefix(unrecognized, integer(u32)) },
             "unrecognized type"
         );
     }

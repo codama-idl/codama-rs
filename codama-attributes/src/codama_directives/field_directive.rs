@@ -23,9 +23,10 @@ impl FieldDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("field")?;
         let consumer = StructFieldMetaConsumer::from_meta(meta)?
+            // `after` goes first, because `consume_field` reads every other bare path as a type.
+            .consume_after()?
             .consume_field()?
             .consume_default_value()?
-            .consume_after()?
             .assert_fully_consumed()?;
 
         let default_value = consumer.default_value_node();
@@ -56,6 +57,7 @@ impl FieldDirective {
             ),
             default_value_strategy: self.default_value_strategy,
             display: None,
+            plugins: vec![],
         })
     }
 }
@@ -85,18 +87,18 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a FieldDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{NumberFormat::U8, NumberTypeNode, NumberValueNode};
+    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode};
 
     #[test]
     fn ok() {
-        let meta: Meta = syn::parse_quote! { field("age", number(u8)) };
+        let meta: Meta = syn::parse_quote! { field("age", integer(u8)) };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             FieldDirective {
                 after: false,
                 name: "age".into(),
-                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
                 default_value_strategy: None,
@@ -106,14 +108,14 @@ mod tests {
 
     #[test]
     fn after() {
-        let meta: Meta = syn::parse_quote! { field(after, "age", number(u8)) };
+        let meta: Meta = syn::parse_quote! { field(after, "age", integer(u8)) };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             FieldDirective {
                 after: true,
                 name: "age".into(),
-                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
                 default_value_strategy: None,
@@ -123,31 +125,41 @@ mod tests {
 
     #[test]
     fn with_default_value() {
-        let meta: Meta = syn::parse_quote! { field("age", number(u8), default_value = 42) };
+        let meta: Meta = syn::parse_quote! { field("age", integer(u8), default_value = 42) };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             FieldDirective {
                 after: false,
                 name: "age".into(),
-                r#type: Resolvable::Resolved(NumberTypeNode::le(U8).into()),
+                r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
-                default_value: Some(Resolvable::Resolved(NumberValueNode::new(42u8).into())),
+                default_value: Some(Resolvable::Resolved(IntegerValueNode::new(42u8).into())),
                 default_value_strategy: None,
             }
         );
     }
 
     #[test]
+    fn invalid_type() {
+        let meta: Meta = syn::parse_quote! { field("len", number(u8), default_value = 5) };
+        let error = FieldDirective::parse(&meta).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "number(...) is removed in v2, use integer(...) or float(...)"
+        );
+    }
+
+    #[test]
     fn with_docs_string() {
-        let meta: Meta = syn::parse_quote! { field("splines", number(u8), docs = "Splines") };
+        let meta: Meta = syn::parse_quote! { field("splines", integer(u8), docs = "Splines") };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(directive.docs, vec!["Splines".to_string()].into());
     }
 
     #[test]
     fn with_docs_array() {
-        let meta: Meta = syn::parse_quote! { field("age", number(u8), docs = ["Splines", "Must be pre-reticulated"]) };
+        let meta: Meta = syn::parse_quote! { field("age", integer(u8), docs = ["Splines", "Must be pre-reticulated"]) };
         let directive = FieldDirective::parse(&meta).unwrap();
         assert_eq!(
             directive.docs,

@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn single_constant() {
         assert_type!(
-            { hidden_suffix(string, constant(number(u8), 1)) },
+            { hidden_suffix(string, constant(integer(u8), 1)) },
             HiddenSuffixTypeNode::new(StringTypeNode::utf8(), vec![constant(1)]).into()
         );
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn multiple_constants_keep_their_order() {
         assert_type!(
-            { hidden_suffix(string, constant(number(u8), 1), constant(number(u8), 2)) },
+            { hidden_suffix(string, constant(integer(u8), 1), constant(integer(u8), 2)) },
             HiddenSuffixTypeNode::new(StringTypeNode::utf8(), vec![constant(1), constant(2)])
                 .into()
         );
@@ -65,7 +65,7 @@ mod tests {
     #[test]
     fn type_missing() {
         assert_type_err!(
-            { hidden_suffix(constant(number(u8), 1)) },
+            { hidden_suffix(constant(integer(u8), 1)) },
             "type is missing"
         );
     }
