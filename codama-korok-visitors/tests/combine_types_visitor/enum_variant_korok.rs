@@ -25,8 +25,8 @@ fn it_creates_enum_empty_variants() -> CodamaResult<()> {
 fn it_creates_enum_struct_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo { x: i32, y: i32 } };
     let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node = Some(StructFieldTypeNode::new("x", NumberTypeNode::le(I32)).into());
-    korok.fields[1].node = Some(StructFieldTypeNode::new("y", NumberTypeNode::le(I32)).into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)).into());
+    korok.fields[1].node = Some(StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -36,8 +36,8 @@ fn it_creates_enum_struct_variants() -> CodamaResult<()> {
             EnumStructVariantTypeNode::new(
                 "foo",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("x", NumberTypeNode::le(I32)),
-                    StructFieldTypeNode::new("y", NumberTypeNode::le(I32)),
+                    StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                 ])
             )
             .into()
@@ -50,7 +50,7 @@ fn it_creates_enum_struct_variants() -> CodamaResult<()> {
 fn it_creates_enum_tuple_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo (u64, String) };
     let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node = Some(NumberTypeNode::le(U64).into());
+    korok.fields[0].node = Some(IntegerTypeNode::le(U64).into());
     korok.fields[1].node = Some(StringTypeNode::utf8().into());
 
     assert_eq!(korok.node, None);
@@ -61,7 +61,7 @@ fn it_creates_enum_tuple_variants() -> CodamaResult<()> {
             EnumTupleVariantTypeNode::new(
                 "foo",
                 TupleTypeNode::new(vec![
-                    NumberTypeNode::le(U64).into(),
+                    IntegerTypeNode::le(U64).into(),
                     StringTypeNode::utf8().into(),
                 ])
             )
@@ -164,7 +164,7 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
 #[test]
 fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! {
-        #[codama(field("age", number(u8)))]
+        #[codama(field("age", integer(u8)))]
         #[codama(field("name", string(utf8)))]
         Person
     };
@@ -178,7 +178,7 @@ fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
             EnumStructVariantTypeNode::new(
                 "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
@@ -191,8 +191,8 @@ fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
 #[test]
 fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! {
-        #[codama(field("discriminator", number(u8), value = 0))]
-        #[codama(field("age", number(u8)))]
+        #[codama(field("discriminator", integer(u8), value = 0))]
+        #[codama(field("age", integer(u8)))]
         Person {
             name: String,
         }
@@ -209,11 +209,11 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode {
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                        default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        ..StructFieldTypeNode::new("discriminator", NumberTypeNode::le(U8))
+                        ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
                     },
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
@@ -226,7 +226,7 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
 #[test]
 fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! {
-        #[codama(field(after, "age", number(u8)))]
+        #[codama(field(after, "age", integer(u8)))]
         #[codama(field(after, "is_member", boolean))]
         Person {
             name: String,
@@ -244,7 +244,7 @@ fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
                 ])
             )

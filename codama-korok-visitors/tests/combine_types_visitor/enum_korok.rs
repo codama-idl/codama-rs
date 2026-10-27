@@ -22,8 +22,8 @@ fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
     let variant_move = EnumStructVariantTypeNode::new(
         "move",
         StructTypeNode::new(vec![
-            StructFieldTypeNode::new("x", NumberTypeNode::le(I32)),
-            StructFieldTypeNode::new("y", NumberTypeNode::le(I32)),
+            StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+            StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
         ]),
     );
     let variant_write = EnumTupleVariantTypeNode::new(
@@ -74,7 +74,7 @@ fn it_ignores_invalid_variants() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! { enum Direction { Left, InvalidNode } };
     let mut korok = EnumKorok::parse(&item)?;
     korok.variants[0].node = Some(EnumEmptyVariantTypeNode::new("left").into());
-    korok.variants[1].node = Some(NumberTypeNode::le(I32).into());
+    korok.variants[1].node = Some(IntegerTypeNode::le(I32).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -112,7 +112,9 @@ fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaR
                 "message",
                 EnumTypeNode {
                     variants: vec![variant_hello.into(), variant_bye.into(),],
-                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                    size: IntegerTypeNode::le(U32),
+                    transforms: vec![],
+                    plugins: vec![],
                 }
             )
             .into()
@@ -125,7 +127,7 @@ fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaR
 fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directives(
 ) -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(enum_discriminator(size = number(u32)))]
+        #[codama(enum_discriminator(size = integer(u32)))]
         enum Message { Hello, Bye }
     };
     let mut korok = EnumKorok::parse(&item)?;
@@ -143,7 +145,9 @@ fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directive
                 "message",
                 EnumTypeNode {
                     variants: vec![variant_hello.into(), variant_bye.into()],
-                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                    size: IntegerTypeNode::le(U32),
+                    transforms: vec![],
+                    plugins: vec![],
                 }
             )
             .into()
@@ -155,7 +159,7 @@ fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directive
 #[test]
 fn it_prefers_enum_discriminator_sizes_over_repr_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(enum_discriminator(size = number(u32)))]
+        #[codama(enum_discriminator(size = integer(u32)))]
         #[repr(u8)]
         enum Message { Hello, Bye }
     };
@@ -174,7 +178,9 @@ fn it_prefers_enum_discriminator_sizes_over_repr_attributes() -> CodamaResult<()
                 "message",
                 EnumTypeNode {
                     variants: vec![variant_hello.into(), variant_bye.into()],
-                    size: NestedTypeNode::Value(NumberTypeNode::le(U32)),
+                    size: IntegerTypeNode::le(U32),
+                    transforms: vec![],
+                    plugins: vec![],
                 }
             )
             .into()
@@ -203,7 +209,9 @@ fn it_defaults_defined_enums_to_u8_without_repr_or_enum_discriminator() -> Codam
                 "message",
                 EnumTypeNode {
                     variants: vec![variant_hello.into(), variant_bye.into()],
-                    size: NestedTypeNode::Value(NumberTypeNode::le(U8)),
+                    size: IntegerTypeNode::le(U8),
+                    transforms: vec![],
+                    plugins: vec![],
                 }
             )
             .into()

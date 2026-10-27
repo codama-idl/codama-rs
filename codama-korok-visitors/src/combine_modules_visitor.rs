@@ -209,9 +209,6 @@ fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     if this.version.is_empty() {
         this.version = that.version;
     }
-    if this.origin.is_none() {
-        this.origin = that.origin;
-    }
     if this.docs.is_empty() {
         this.docs = that.docs;
     }

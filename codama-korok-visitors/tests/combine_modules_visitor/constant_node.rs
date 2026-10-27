@@ -1,17 +1,17 @@
 use super::utils::{combine_modules, CombineModulesInput};
-use codama_nodes::{ConstantNode, NumberTypeNode, NumberValueNode, ProgramNode, RootNode, U64};
+use codama_nodes::{ConstantNode, IntegerTypeNode, IntegerValueNode, ProgramNode, RootNode, U64};
 
 #[test]
 fn it_merges_constants_into_root_nodes() {
     let max_items = ConstantNode::new(
         "maxItems",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(10u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(10u64),
     );
     let max_size = ConstantNode::new(
         "maxSize",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(20u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(20u64),
     );
     assert_eq!(
         combine_modules(
@@ -32,8 +32,10 @@ fn it_merges_constants_into_root_nodes() {
 
 #[test]
 fn it_merges_constants_inside_programs_into_root_nodes() {
-    let constant_a = ConstantNode::new("foo", NumberTypeNode::le(U64), NumberValueNode::new(1u64));
-    let constant_b = ConstantNode::new("bar", NumberTypeNode::le(U64), NumberValueNode::new(2u64));
+    let constant_a =
+        ConstantNode::new("foo", IntegerTypeNode::le(U64), IntegerValueNode::new(1u64));
+    let constant_b =
+        ConstantNode::new("bar", IntegerTypeNode::le(U64), IntegerValueNode::new(2u64));
     let program_a = ProgramNode::default().add_constant(constant_a.clone());
     let program_b = ProgramNode::default().add_constant(constant_b.clone());
     assert_eq!(
@@ -57,18 +59,18 @@ fn it_merges_constants_inside_programs_into_root_nodes() {
 fn it_deduplicates_constants_with_identical_names_by_using_the_last_one() {
     let first_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(1u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(2u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(2u64),
     );
     let third_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(3u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(3u64),
     );
     assert_eq!(
         combine_modules(
@@ -85,13 +87,13 @@ fn it_deduplicates_constants_with_identical_names_by_using_the_last_one() {
 fn it_deduplicates_constants_with_identical_names_inside_programs() {
     let first_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(1u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(2u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(2u64),
     );
     let program_a = ProgramNode::default().add_constant(first_constant);
     let program_b = ProgramNode::default().add_constant(second_constant.clone());
@@ -109,13 +111,13 @@ fn it_deduplicates_constants_with_identical_names_inside_programs() {
 fn it_deduplicates_constants_with_identical_names_with_an_initial_program_node() {
     let first_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(1u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
         "duplicated",
-        NumberTypeNode::le(U64),
-        NumberValueNode::new(2u64),
+        IntegerTypeNode::le(U64),
+        IntegerValueNode::new(2u64),
     );
     let program_a = ProgramNode::default().add_constant(first_constant);
     let program_b = ProgramNode::default().add_constant(second_constant.clone());

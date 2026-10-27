@@ -1,6 +1,6 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeLinkNode, Node, NumberFormat::U64, NumberTypeNode, OptionTypeNode,
+    BooleanTypeNode, DefinedTypeLinkNode, IntegerFormat::U64, IntegerTypeNode, Node, OptionTypeNode,
 };
 use quote::quote;
 
@@ -9,7 +9,7 @@ fn it_identifies_option_types() {
     assert_eq!(
         get_node_from_type(quote! { Option<u64> }),
         Some(Node::Type(
-            OptionTypeNode::new(NumberTypeNode::le(U64)).into()
+            OptionTypeNode::new(IntegerTypeNode::le(U64)).into()
         ))
     );
     assert_eq!(

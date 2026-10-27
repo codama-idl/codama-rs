@@ -132,7 +132,7 @@ impl KorokVisitor for SetEventsVisitor {
         let discriminator = StructFieldTypeNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Box::new(Some(
-                NumberValueNode::new(current_discriminator as u64).into(),
+                IntegerValueNode::new(current_discriminator as u64).into(),
             )),
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };

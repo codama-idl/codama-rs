@@ -10,9 +10,9 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_wraps_any_type_into_a_size_prefix_type_node() -> CodamaResult<()> {
+fn it_adds_a_size_prefix_transform_to_any_type() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(size_prefix = number(u8))]
+        #[codama(size_prefix = integer(u8))]
         u32
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -28,9 +28,9 @@ fn it_wraps_any_type_into_a_size_prefix_type_node() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_accepts_nested_number_type_nodes_as_size_prefixes() -> CodamaResult<()> {
+fn it_accepts_integer_type_nodes_with_transforms_as_size_prefixes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(size_prefix = fixed_size(number(u8), 42))]
+        #[codama(size_prefix = fixed_size(integer(u8), 42))]
         u32
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -52,10 +52,10 @@ fn it_accepts_nested_number_type_nodes_as_size_prefixes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_wraps_any_overridden_type_into_a_size_prefix_type_node() -> CodamaResult<()> {
+fn it_adds_a_size_prefix_transform_to_any_overridden_type() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
-        #[codama(size_prefix = number(u8))]
+        #[codama(size_prefix = integer(u8))]
         String
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -71,11 +71,11 @@ fn it_wraps_any_overridden_type_into_a_size_prefix_type_node() -> CodamaResult<(
 }
 
 #[test]
-fn it_replaces_the_size_of_existing_size_prefix_type_nodes() -> CodamaResult<()> {
+fn it_replaces_existing_size_prefix_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
-        #[codama(size_prefix = number(u8))]
-        #[codama(size_prefix = number(u16))]
+        #[codama(size_prefix = integer(u8))]
+        #[codama(size_prefix = integer(u16))]
         String
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -91,11 +91,11 @@ fn it_replaces_the_size_of_existing_size_prefix_type_nodes() -> CodamaResult<()>
 }
 
 #[test]
-fn it_replaces_fixed_size_type_nodes() -> CodamaResult<()> {
+fn it_replaces_fixed_size_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
         #[codama(fixed_size = 42)]
-        #[codama(size_prefix = number(u8))]
+        #[codama(size_prefix = integer(u8))]
         String
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -111,11 +111,11 @@ fn it_replaces_fixed_size_type_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_matches_the_size_prefix_type_node_written_in_the_dsl() -> CodamaResult<()> {
+fn it_matches_the_size_prefix_written_in_the_dsl() -> CodamaResult<()> {
     // Via the modifier directive.
     let modifier_ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
-        #[codama(size_prefix = number(u8))]
+        #[codama(size_prefix = integer(u8))]
         String
     };
     let mut modifier_korok = FieldKorok::parse(&modifier_ast)?;
@@ -124,7 +124,7 @@ fn it_matches_the_size_prefix_type_node_written_in_the_dsl() -> CodamaResult<()>
 
     // Via the type node in the DSL.
     let dsl_ast: syn::Field = syn::parse_quote! {
-        #[codama(type = size_prefix(string, number(u8)))]
+        #[codama(type = size_prefix(string, integer(u8)))]
         String
     };
     let mut dsl_korok = FieldKorok::parse(&dsl_ast)?;
@@ -134,7 +134,11 @@ fn it_matches_the_size_prefix_type_node_written_in_the_dsl() -> CodamaResult<()>
     assert_eq!(modifier_korok.node, dsl_korok.node);
     assert_eq!(
         dsl_korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U8)).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -142,19 +146,19 @@ fn it_matches_the_size_prefix_type_node_written_in_the_dsl() -> CodamaResult<()>
 #[test]
 fn it_serializes_to_the_expected_json() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(type = size_prefix(string, number(u32)))]
+        #[codama(type = size_prefix(string, integer(u32)))]
         String
     };
     let mut korok = FieldKorok::parse(&ast)?;
     korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
 
-    let expected = r#"{"kind":"sizePrefixTypeNode","type":{"kind":"stringTypeNode","encoding":"utf8"},"prefix":{"kind":"numberTypeNode","format":"u32","endian":"le"}}"#;
+    let expected = r#"{"kind":"stringTypeNode","encoding":"utf8","transforms":[{"kind":"sizePrefixTransformNode","prefix":{"kind":"integerTypeNode","format":"u32","endian":"le"}}]}"#;
     assert_eq!(serde_json::to_string(&korok.node)?, expected);
     assert_eq!(
-        serde_json::to_string(&SizePrefixTypeNode::<TypeNode>::new(
-            StringTypeNode::utf8(),
-            NumberTypeNode::le(U32)
-        ))?,
+        serde_json::to_string(
+            &StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+        )?,
         expected
     );
     Ok(())
@@ -163,7 +167,7 @@ fn it_serializes_to_the_expected_json() -> CodamaResult<()> {
 #[test]
 fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(size_prefix = number(u8))]
+        #[codama(size_prefix = integer(u8))]
         field: u32
     };
     let mut korok = FieldKorok::parse(&ast)?;

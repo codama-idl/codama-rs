@@ -31,7 +31,7 @@ fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new(
                         "name",
                         SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
@@ -61,8 +61,8 @@ fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "coordinates",
                 TupleTypeNode::new(vec![
-                    NumberTypeNode::le(U32).into(),
-                    NumberTypeNode::le(U32).into(),
+                    IntegerTypeNode::le(U32).into(),
+                    IntegerTypeNode::le(U32).into(),
                 ])
             )
             .into()
@@ -84,7 +84,7 @@ fn it_sets_defined_types_on_structs_with_single_unnammed_fields() -> CodamaResul
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(DefinedTypeNode::new("age", NumberTypeNode::le(U8)).into())
+        Some(DefinedTypeNode::new("age", IntegerTypeNode::le(U8)).into())
     );
     Ok(())
 }
@@ -131,8 +131,8 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
                     EnumStructVariantTypeNode::new(
                         "move",
                         StructTypeNode::new(vec![
-                            StructFieldTypeNode::new("x", NumberTypeNode::le(I32)),
-                            StructFieldTypeNode::new("y", NumberTypeNode::le(I32)),
+                            StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                            StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                         ])
                     )
                     .into(),
@@ -375,7 +375,7 @@ fn it_fails_if_enum_variants_are_not_valid_enum_variant_nodes() -> CodamaResult<
 fn it_sets_defined_types_on_type_aliases_with_type_directives() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[codama(export(CodamaType))]
-        #[codama(type = struct(field("len", number(u8)), field("value", fixed_size(string, 25))))]
+        #[codama(type = struct(field("len", integer(u8)), field("value", fixed_size(string, 25))))]
         pub type BoundedString25 = PodString<25>;
     };
     let mut korok = TypeAliasKorok::parse(&item)?;
@@ -390,10 +390,10 @@ fn it_sets_defined_types_on_type_aliases_with_type_directives() -> CodamaResult<
             DefinedTypeNode::new(
                 "boundedString25",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("len", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("len", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new(
                         "value",
-                        FixedSizeTypeNode::new(StringTypeNode::utf8(), 25)
+                        StringTypeNode::utf8().add_transform(FixedSizeTransformNode::new(25))
                     ),
                 ])
             )
@@ -416,7 +416,7 @@ fn it_sets_defined_types_on_type_aliases_with_resolvable_targets() -> CodamaResu
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(DefinedTypeNode::new("lamports", NumberTypeNode::le(U64)).into())
+        Some(DefinedTypeNode::new("lamports", IntegerTypeNode::le(U64)).into())
     );
     Ok(())
 }
@@ -432,7 +432,7 @@ fn it_ignores_type_aliases_without_export_directives() -> CodamaResult<()> {
     assert_eq!(korok.node, None);
     korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut SetDefinedTypesVisitor::new())?;
-    assert_eq!(korok.node, Some(NumberTypeNode::le(U64).into()));
+    assert_eq!(korok.node, Some(IntegerTypeNode::le(U64).into()));
     Ok(())
 }
 

@@ -213,12 +213,14 @@ impl KorokVisitor for CombineTypesVisitor {
             .or(korok
                 .attributes
                 .get_first(ReprAttribute::filter)
-                .and_then(|attr| attr.get_number_type_node())
-                .map(NestedTypeNode::Value))
-            .unwrap_or(NestedTypeNode::Value(NumberTypeNode::le(U8)));
+                .and_then(|attr| attr.get_integer_type_node()))
+            .unwrap_or(IntegerTypeNode::le(U8));
 
-        korok.node =
-            Some(DefinedTypeNode::new(korok.name(), EnumTypeNode { variants, size }).into());
+        let r#enum = EnumTypeNode {
+            size,
+            ..EnumTypeNode::new(variants)
+        };
+        korok.node = Some(DefinedTypeNode::new(korok.name(), r#enum).into());
         Ok(())
     }
 

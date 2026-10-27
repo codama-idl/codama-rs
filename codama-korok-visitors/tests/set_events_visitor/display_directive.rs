@@ -4,8 +4,8 @@ use codama_korok_visitors::{
 };
 use codama_koroks::EnumKorok;
 use codama_nodes::{
-    AmountNumberDisplayNode, DisplaySkip, NumberDisplayNode, NumberFormat::U64, NumberTypeNode,
-    NumberValueNode, StringValueNode, StructFieldDisplayNode, StructFieldTypeNode,
+    AmountNumberDisplayNode, DisplaySkip, IntegerFormat::U64, IntegerTypeNode, IntegerValueNode,
+    NumberDisplayNode, StringValueNode, StructFieldDisplayNode, StructFieldTypeNode,
 };
 
 fn event_fields(item: syn::Item) -> CodamaResult<Vec<StructFieldTypeNode>> {
@@ -41,10 +41,12 @@ fn it_preserves_tuple_field_displays() -> CodamaResult<()> {
     assert_eq!(
         fields[1].display,
         Some(StructFieldDisplayNode {
-            label: Some("Amount".to_string()),
+            label: Some("Amount".into()),
             skip: Some(DisplaySkip::Always),
             flatten: Some(true),
-            flatten_prefix: Some("Withdraw ".to_string()),
+            flatten_prefix: Some("Withdraw ".into()),
+            value_labels: vec![],
+            plugins: vec![],
         })
     );
     Ok(())
@@ -82,14 +84,14 @@ fn it_preserves_both_halves_of_a_tuple_field_display() -> CodamaResult<()> {
     );
     assert_eq!(
         *fields[1].r#type,
-        NumberTypeNode {
+        IntegerTypeNode {
             display: Box::new(Some(NumberDisplayNode::Amount(
                 AmountNumberDisplayNode::new(
-                    NumberValueNode::new(9u64),
+                    IntegerValueNode::new(9u64),
                     StringValueNode::new("SOL"),
                 ),
             ))),
-            ..NumberTypeNode::le(U64)
+            ..IntegerTypeNode::le(U64)
         }
         .into()
     );

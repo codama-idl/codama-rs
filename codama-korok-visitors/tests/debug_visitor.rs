@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{DebugVisitor, IdentifyFieldTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
-use codama_nodes::{NumberFormat::U32, NumberTypeNode, StructFieldTypeNode};
+use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StructFieldTypeNode};
 
 #[test]
 fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
@@ -13,7 +13,7 @@ fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
     korok.accept(&mut visitor)?;
 
     let node_json =
-        serde_json::to_string(&StructFieldTypeNode::new("bar", NumberTypeNode::le(U32)))?;
+        serde_json::to_string(&StructFieldTypeNode::new("bar", IntegerTypeNode::le(U32)))?;
 
     assert_eq!(
         visitor.get_result(),

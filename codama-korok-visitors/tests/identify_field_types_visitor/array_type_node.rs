@@ -1,17 +1,17 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, Node, NumberTypeNode,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, IntegerTypeNode, Node,
     PrefixedCountNode, U32, U8,
 };
 use quote::quote;
 
 #[test]
 fn it_identifies_vec_types() {
-    let u32_prefix = PrefixedCountNode::new(NumberTypeNode::le(U32));
+    let u32_prefix = PrefixedCountNode::new(IntegerTypeNode::le(U32));
     assert_eq!(
         get_node_from_type(quote! { Vec<u8> }),
         Some(Node::Type(
-            ArrayTypeNode::new(NumberTypeNode::le(U8), u32_prefix.clone()).into()
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), u32_prefix.clone()).into()
         ))
     );
     assert_eq!(
@@ -30,7 +30,7 @@ fn it_identifies_vecs_of_custom_types() {
         Some(Node::Type(
             ArrayTypeNode::new(
                 DefinedTypeLinkNode::new("myCustomType"),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         ))
@@ -42,7 +42,7 @@ fn it_identifies_fixed_array_types() {
     assert_eq!(
         get_node_from_type(quote! { [u8; 5] }),
         Some(Node::Type(
-            ArrayTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(5)).into()
+            ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(5)).into()
         ))
     );
     assert_eq!(

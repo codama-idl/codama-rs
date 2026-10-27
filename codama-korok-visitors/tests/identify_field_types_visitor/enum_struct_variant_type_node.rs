@@ -15,8 +15,8 @@ fn it_identifies_struct_variants() {
             EnumStructVariantTypeNode::new(
                 "move",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("x", NumberTypeNode::le(I32)),
-                    StructFieldTypeNode::new("y", NumberTypeNode::le(I32)),
+                    StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                 ])
             )
             .into()

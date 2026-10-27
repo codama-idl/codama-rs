@@ -15,7 +15,7 @@ fn it_identifies_tuple_variants() {
             EnumTupleVariantTypeNode::new(
                 "push",
                 TupleTypeNode::new(vec![
-                    NumberTypeNode::le(U8).into(),
+                    IntegerTypeNode::le(U8).into(),
                     BooleanTypeNode::default().into()
                 ])
             )

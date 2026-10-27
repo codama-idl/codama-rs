@@ -1,6 +1,6 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeLinkNode, MapTypeNode, Node, NumberTypeNode, PrefixedCountNode,
+    BooleanTypeNode, DefinedTypeLinkNode, IntegerTypeNode, MapTypeNode, Node, PrefixedCountNode,
     U32, U64,
 };
 use quote::quote;
@@ -11,9 +11,9 @@ fn it_identifies_map_types() {
         get_node_from_type(quote! { HashMap<u64, bool> }),
         Some(Node::Type(
             MapTypeNode::new(
-                NumberTypeNode::le(U64),
+                IntegerTypeNode::le(U64),
                 BooleanTypeNode::default(),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         ))
@@ -35,8 +35,8 @@ fn it_identifies_maps_of_custom_types() {
         Some(Node::Type(
             MapTypeNode::new(
                 DefinedTypeLinkNode::new("myCustomType"),
-                NumberTypeNode::le(U64),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                IntegerTypeNode::le(U64),
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         ))

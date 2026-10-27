@@ -8,7 +8,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_wraps_any_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
+fn it_adds_a_fixed_size_transform_to_any_type() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(fixed_size = 8)]
         u32
@@ -26,7 +26,7 @@ fn it_wraps_any_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> CodamaResult<()> {
+fn it_adds_a_fixed_size_transform_to_any_overridden_type() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
         #[codama(fixed_size = 42)]
@@ -45,7 +45,7 @@ fn it_wraps_any_overridden_type_into_a_fixed_size_type_node() -> CodamaResult<()
 }
 
 #[test]
-fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> CodamaResult<()> {
+fn it_replaces_existing_fixed_size_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(type = string)]
         #[codama(fixed_size = 111)]
@@ -65,7 +65,7 @@ fn it_replaces_the_size_of_existing_fixed_size_type_nodes() -> CodamaResult<()> 
 }
 
 #[test]
-fn it_replaces_size_prefixed_type_nodes() -> CodamaResult<()> {
+fn it_replaces_size_prefix_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(fixed_size = 42)]
         String
