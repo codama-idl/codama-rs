@@ -1,16 +1,16 @@
 use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    AccountDirective, ArgumentDirective, Attributes, DefaultValueDirective, DiscriminatorDirective,
-    DisplayDirective, EnumDiscriminatorDirective, OptionalAccountStrategyDirective,
-    ProgramDirective, RemainingAccountsDirective, TryFromFilter,
+    AccountDirective, Attributes, DefaultValueDirective, DiscriminatorDirective, DisplayDirective,
+    EnumDiscriminatorDirective, OptionalAccountStrategyDirective, ProgramDirective,
+    RemainingAccountsDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionDisplayNode, InstructionNode,
-    NestedTypeNode, Node, NumberValueNode, OptionalAccountStrategy, ProgramNode,
-    StructFieldTypeNode, StructTypeNode, TypeNode,
+    InjectedValueNode, InstructionAccountNode, InstructionDisplayNode, InstructionInputValueNode,
+    InstructionNode, IntegerValueNode, Node, OptionalAccountStrategy, ProgramNode, ProvidedNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 
@@ -66,13 +66,15 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         // Transform the defined type into an instruction node.
         let (name, data) = parse_struct(korok)?;
+        let (data, provides) = parse_data(&korok.fields, data, None)?;
         let instruction = InstructionNode {
             identifier: name,
             optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
             accounts: parse_accounts(&korok.attributes, &korok.fields)?,
-            arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
+            data: Box::new(data),
             remaining_accounts: RemainingAccountsDirective::nodes(&korok.attributes),
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
+            provides,
             display: parse_instruction_display(&korok.attributes),
             ..InstructionNode::default()
         };
@@ -150,18 +152,17 @@ impl KorokVisitor for SetInstructionsVisitor {
         };
 
         let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
-        let discriminator = InstructionArgumentNode {
+        let discriminator = StructFieldTypeNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Box::new(Some(
                 IntegerValueNode::new(current_discriminator as u64).into(),
             )),
-            ..InstructionArgumentNode::from(&self.enum_discriminator)
+            ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
+        let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
-        discriminators.insert(
-            0,
-            FieldDiscriminatorNode::new(discriminator.name.clone(), 0).into(),
-        );
+        discriminators.insert(0, discriminator_node.into());
+        let (data, provides) = parse_data(&korok.fields, data, Some(discriminator))?;
 
         korok.node = Some(
             InstructionNode {
@@ -170,14 +171,10 @@ impl KorokVisitor for SetInstructionsVisitor {
                 optional_account_strategy: parse_optional_account_strategy(&korok.attributes)
                     .or(self.enum_optional_account_strategy),
                 accounts: parse_accounts(&korok.attributes, &korok.fields)?,
-                arguments: parse_arguments(
-                    &korok.attributes,
-                    &korok.fields,
-                    data,
-                    Some(discriminator),
-                )?,
+                data: Box::new(data),
                 remaining_accounts: RemainingAccountsDirective::nodes(&korok.attributes),
                 discriminators,
+                provides,
                 display: parse_instruction_display(&korok.attributes),
                 ..InstructionNode::default()
             }
@@ -241,72 +238,90 @@ fn parse_accounts(
         .collect::<Vec<_>>())
 }
 
-fn parse_arguments(
-    attributes: &Attributes,
+fn parse_data(
     fields: &[FieldKorok],
-    data: StructTypeNode,
-    discriminator: Option<InstructionArgumentNode>,
-) -> CodamaResult<Vec<InstructionArgumentNode>> {
+    mut data: StructTypeNode,
+    discriminator: Option<StructFieldTypeNode>,
+) -> CodamaResult<(Option<TypeNode>, Vec<ProvidedNode>)> {
+    // Fields are parsed in data order, so the `provides` list follows the same order.
+    let mut provides = Vec::new();
+
     // Here we must reconcile the struct fields combined in the `CombineTypesVisitor`
     // with their original `FieldKoroks` to check for `default_value` directives
-    // that would have been ignored on fields but are relevant for instruction arguments.
+    // that would have been ignored on fields but are relevant for instruction data.
     //
     // For struct fields: match by name (accounts may be filtered, so positions don't align).
     // For tuple fields: match by index (no filtering, positions align directly).
-    let arguments_from_data = Vec::<InstructionArgumentNode>::from(data)
+    let fields_from_data = std::mem::take(&mut data.fields)
         .into_iter()
         .enumerate()
-        .map(|(i, argument)| {
-            if argument.default_value.is_some() {
-                return Ok(argument);
+        .map(|(i, data_field)| {
+            if data_field.default_value.is_some() {
+                return Ok(data_field);
             }
             let field = fields
                 .iter()
                 .enumerate()
                 .find_map(|(fi, field)| match field.name() {
-                    Some(name) if name == argument.name => Some(field),
+                    // A named account field is not data, so a data field with its name takes no default from it.
+                    Some(name)
+                        if name == data_field.identifier
+                            && !field.attributes.has_codama_attribute("account") =>
+                    {
+                        Some(field)
+                    }
                     None if fi == i => Some(field),
                     _ => None,
                 });
             let Some(field) = field else {
-                return Ok(argument);
+                return Ok(data_field);
             };
             let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter) else {
-                return Ok(argument);
+                return Ok(data_field);
             };
 
-            Ok(InstructionArgumentNode {
-                default_value: Box::new(Some(directive.node.try_resolved()?.clone())),
-                default_value_strategy: directive.default_value_strategy,
-                ..argument
-            })
+            Ok(set_default_value(
+                data_field,
+                directive.node.try_resolved()?,
+                directive.default_value_strategy,
+                &mut provides,
+            ))
         })
         .collect::<CodamaResult<Vec<_>>>()?;
 
-    let (before, after): (Vec<_>, Vec<_>) = attributes
-        .get_all(ArgumentDirective::filter)
-        .into_iter()
-        .partition(|attr| !attr.after);
-    let before = before
-        .into_iter()
-        .map(|attr| attr.to_instruction_argument_node())
-        .collect::<CodamaResult<Vec<_>>>()?;
-    let after = after
-        .into_iter()
-        .map(|attr| attr.to_instruction_argument_node())
-        .collect::<CodamaResult<Vec<_>>>()?;
+    data.fields = discriminator.into_iter().chain(fields_from_data).collect();
 
-    let mut arguments: Vec<InstructionArgumentNode> = before
-        .into_iter()
-        .chain(arguments_from_data)
-        .chain(after)
-        .collect();
+    // An instruction without fields has no data.
+    let data = (!data.fields.is_empty()).then(|| data.into());
+    Ok((data, provides))
+}
 
-    if let Some(discriminator) = discriminator {
-        arguments.insert(0, discriminator);
+/// Sets the default value of an instruction field.
+/// A contextual value such as `payer` is not a data value, so the field injects it from the `provides` list.
+fn set_default_value(
+    field: StructFieldTypeNode,
+    default_value: &InstructionInputValueNode,
+    default_value_strategy: Option<DefaultValueStrategy>,
+    provides: &mut Vec<ProvidedNode>,
+) -> StructFieldTypeNode {
+    let default_value = ValueNode::try_from(default_value.clone()).unwrap_or_else(|_| {
+        // A second field with this identifier injects the same key with the same default, so it adds no entry.
+        if !provides
+            .iter()
+            .any(|provided| provided.identifier == field.identifier)
+        {
+            provides.push(ProvidedNode::new(
+                field.identifier.clone(),
+                default_value.clone(),
+            ));
+        }
+        InjectedValueNode::new(field.identifier.clone()).into()
+    });
+    StructFieldTypeNode {
+        default_value: Box::new(Some(default_value)),
+        default_value_strategy,
+        ..field
     }
-
-    Ok(arguments)
 }
 
 fn parse_struct(
@@ -336,42 +351,34 @@ fn parse_enum_variant(
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
         if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
-            match node {
-                // Ensure we have a non-nested `StructTypeNode`.
-                EnumVariantTypeNode::Struct(node) => {
-                    if let NestedTypeNode::Value(data) = node.r#struct {
-                        return Ok((node.name, data));
-                    };
-                }
+            match *node.data {
+                Some(TypeNode::Struct(data)) => return Ok((node.identifier, data)),
                 // Or an empty variant.
-                EnumVariantTypeNode::Empty(node) => {
-                    return Ok((node.name, StructTypeNode::new(vec![])))
-                }
+                None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
                 // Or a tuple variant — convert items to struct fields.
                 // Use field.name() which returns #[codama(name = "...")] if provided,
                 // otherwise fall back to synthetic names like "arg0", "arg1".
-                EnumVariantTypeNode::Tuple(node) => {
-                    if let NestedTypeNode::Value(tuple) = node.tuple {
-                        let fields = tuple
-                            .items
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, item)| {
-                                let name = korok
-                                    .fields
-                                    .get(i)
-                                    .and_then(|f| f.name())
-                                    .unwrap_or_else(|| format!("arg{}", i).into());
-                                let display = korok.fields.get(i).and_then(parse_field_display);
-                                StructFieldTypeNode {
-                                    display,
-                                    ..StructFieldTypeNode::new(name, item)
-                                }
-                            })
-                            .collect();
-                        return Ok((node.name, StructTypeNode::new(fields)));
-                    };
+                Some(TypeNode::Tuple(tuple)) => {
+                    let fields = tuple
+                        .items
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, item)| {
+                            let name = korok
+                                .fields
+                                .get(i)
+                                .and_then(|f| f.name())
+                                .unwrap_or_else(|| format!("arg{}", i).into());
+                            let display = korok.fields.get(i).and_then(parse_field_display);
+                            StructFieldTypeNode {
+                                display,
+                                ..StructFieldTypeNode::new(name, item)
+                            }
+                        })
+                        .collect();
+                    return Ok((node.identifier, StructTypeNode::new(fields)));
                 }
+                _ => {}
             }
         };
     };
