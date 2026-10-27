@@ -52,6 +52,7 @@ pub fn parse_pda_node(
         seeds: parse_pda_seed_nodes(attributes, fields)?,
         docs: Docs::default(),
         program_id: None,
+        plugins: vec![],
     })
 }
 

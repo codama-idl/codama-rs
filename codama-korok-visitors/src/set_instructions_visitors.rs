@@ -153,7 +153,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         let discriminator = InstructionArgumentNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Box::new(Some(
-                NumberValueNode::new(current_discriminator as u64).into(),
+                IntegerValueNode::new(current_discriminator as u64).into(),
             )),
             ..InstructionArgumentNode::from(&self.enum_discriminator)
         };
@@ -207,10 +207,10 @@ fn parse_instruction_display(attributes: &Attributes) -> Option<InstructionDispl
 
             let mut display = display.unwrap_or_default();
             if let Some(intent) = &directive.intent {
-                display.intent = Some(intent.clone());
+                display.intent = Some(intent.clone().into());
             }
             if let Some(interpolated_intent) = &directive.interpolated_intent {
-                display.interpolated_intent = Some(interpolated_intent.clone());
+                display.interpolated_intent = Some(interpolated_intent.clone().into());
             }
             Some(display)
         })

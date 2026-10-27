@@ -23,8 +23,8 @@ fn it_wraps_all_variants_in_a_defined_enum() {
                 EnumStructVariantTypeNode::new(
                     "move",
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("x", NumberTypeNode::le(I32)),
-                        StructFieldTypeNode::new("y", NumberTypeNode::le(I32))
+                        StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                        StructFieldTypeNode::new("y", IntegerTypeNode::le(I32))
                     ])
                 )
                 .into(),

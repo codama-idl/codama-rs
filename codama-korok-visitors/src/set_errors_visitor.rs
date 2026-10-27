@@ -102,8 +102,9 @@ impl KorokVisitor for SetErrorsVisitor {
             ErrorNode {
                 identifier: korok.name(),
                 code,
-                message,
+                message: message.into(),
                 docs: Docs::default(),
+                plugins: vec![],
             }
             .into(),
         );

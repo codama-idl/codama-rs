@@ -1,11 +1,12 @@
+use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{CrateKorok, EnumKorok, StructKorok};
 use codama_nodes::{
     BooleanTypeNode, DefaultValueStrategy, DefinedTypeLinkNode, DisplaySkip, Docs, EventNode,
     FieldDiscriminatorNode,
-    NumberFormat::{U32, U64, U8},
-    NumberTypeNode, NumberValueNode, ProgramNode, PublicKeyTypeNode, StructFieldDisplayNode,
+    IntegerFormat::{U32, U64, U8},
+    IntegerTypeNode, IntegerValueNode, ProgramNode, PublicKeyTypeNode, StructFieldDisplayNode,
     StructFieldTypeNode, StructTypeNode,
 };
 use codama_stores::CrateStore;
@@ -39,42 +40,58 @@ fn from_enum() -> CodamaResult<()> {
                     EventNode {
                         identifier: "transfer".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![
-                            StructFieldTypeNode {
-                                identifier: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
-                            StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
-                        ])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                            ])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "burn".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![
-                            StructFieldTypeNode {
-                                identifier: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
-                            StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
-                        ])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                            ])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     }
                 ],
                 ..ProgramNode::default()
@@ -106,34 +123,42 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                     EventNode {
                         identifier: "ping".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "pong".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     }
                 ],
                 ..ProgramNode::default()
@@ -166,34 +191,42 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                     EventNode {
                         identifier: "transfer".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U32).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u32).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U32).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u32).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "burn".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U32).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(1u32).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U32).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u32).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     }
                 ],
                 ..ProgramNode::default()
@@ -227,66 +260,82 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                     EventNode {
                         identifier: "transfer".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "burn".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "mint".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(43u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(43u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "close".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(100u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(100u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                 ],
                 ..ProgramNode::default()
@@ -354,13 +403,17 @@ fn with_name_directives() -> CodamaResult<()> {
                             identifier: "discriminator".into(),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                            r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                             display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                            plugins: vec![],
                         }])
                         .into()
                     ),
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                    ],
+                    plugins: vec![],
                 }],
                 ..ProgramNode::default()
             }
@@ -404,9 +457,10 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                                 identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
                             },
                             StructFieldTypeNode::new(
                                 "arg0",
@@ -416,7 +470,10 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                         ])
                         .into()
                     ),
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                    ],
+                    plugins: vec![],
                 }],
                 ..ProgramNode::default()
             }
@@ -454,56 +511,76 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                     EventNode {
                         identifier: "transfer".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![
-                            StructFieldTypeNode {
-                                identifier: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
-                        ])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                            ])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "ping".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![
-                            StructFieldTypeNode {
-                                identifier: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            StructFieldTypeNode::new("arg0", BooleanTypeNode::default()),
-                        ])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("arg0", BooleanTypeNode::default()),
+                            ])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                     EventNode {
                         identifier: "pong".into(),
                         docs: Docs::default(),
-                        data: Box::new(StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }])
-                        .into()),
+                        data: Box::new(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(2u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into()
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
+                        plugins: vec![],
                     },
                 ],
                 ..ProgramNode::default()

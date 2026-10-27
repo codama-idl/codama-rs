@@ -67,11 +67,6 @@ fn apply_display(
             apply_optional_number_display(&mut field.r#type, directive, attribute)?;
             Ok(Some(field.into()))
         }
-        Node::InstructionArgument(mut argument) => {
-            apply_struct_field_display(&mut argument.display, directive);
-            apply_optional_number_display(&mut argument.r#type, directive, attribute)?;
-            Ok(Some(argument.into()))
-        }
         node => apply_display_to_type_node(node, directive, attribute).map(Some),
     }
 }
@@ -108,7 +103,7 @@ fn apply_struct_field_display(
 
     let display = display.get_or_insert_default();
     if let Some(label) = &directive.label {
-        display.label = Some(label.clone());
+        display.label = Some(label.clone().into());
     }
     if let Some(skip) = directive.skip {
         display.skip = Some(skip);
@@ -117,7 +112,7 @@ fn apply_struct_field_display(
         display.flatten = Some(flatten);
     }
     if let Some(flatten_prefix) = &directive.flatten_prefix {
-        display.flatten_prefix = Some(flatten_prefix.clone());
+        display.flatten_prefix = Some(flatten_prefix.clone().into());
     }
 }
 
@@ -147,21 +142,14 @@ fn apply_number_display(
     display: &NumberDisplayNode,
     attribute: &CodamaAttribute,
 ) -> CodamaResult<()> {
-    // Follow only value-bearing edges. Nested type modifiers preserve the decoded value,
-    // option encodings expose one optional payload, and arrays apply presentation per item.
+    // Follow only value-bearing edges.
+    // Option encodings expose one optional payload, and arrays apply presentation per item.
     // Framing children and semantic number wrappers must keep their own display semantics.
     match type_node {
-        TypeNode::Number(number) => {
-            *number.display = Some(display.clone());
+        TypeNode::Integer(integer) => {
+            *integer.display = Some(display.clone());
             Ok(())
         }
-        TypeNode::FixedSize(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::SizePrefix(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::PreOffset(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::PostOffset(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::HiddenPrefix(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::HiddenSuffix(node) => apply_number_display(&mut node.r#type, display, attribute),
-        TypeNode::Sentinel(node) => apply_number_display(&mut node.r#type, display, attribute),
         TypeNode::Option(node) => apply_number_display(&mut node.item, display, attribute),
         TypeNode::RemainderOption(node) => {
             apply_number_display(&mut node.item, display, attribute)
