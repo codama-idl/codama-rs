@@ -1,7 +1,7 @@
 use crate::identify_field_types_visitor::utils::get_node_from_enum_variant;
 use codama_nodes::{
-    BooleanTypeNode, EnumTupleVariantTypeNode, Node, NumberTypeNode, RegisteredTypeNode,
-    TupleTypeNode, U8,
+    BooleanTypeNode, EnumVariantTypeNode, IntegerTypeNode, Node, RegisteredTypeNode, TupleTypeNode,
+    U8,
 };
 use quote::quote;
 
@@ -12,7 +12,7 @@ fn it_identifies_tuple_variants() {
             Push(u8, bool)
         }),
         Some(Node::Type(
-            EnumTupleVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "push",
                 TupleTypeNode::new(vec![
                     IntegerTypeNode::le(U8).into(),
@@ -30,8 +30,8 @@ fn it_identifies_literal_discriminators() {
         get_node_from_enum_variant(quote! {
             Push(u8, bool) = 42
         }),
-        Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(
-            EnumTupleVariantTypeNode {
+        Some(Node::Type(RegisteredTypeNode::EnumVariant(
+            EnumVariantTypeNode {
                 discriminator: Some(42),
                 ..
             }
@@ -45,8 +45,8 @@ fn it_does_not_identify_discriminators_from_complex_expressions() {
         get_node_from_enum_variant(quote! {
             Push(u8, bool) = 1 + 3 * 42
         }),
-        Some(Node::Type(RegisteredTypeNode::EnumTupleVariant(
-            EnumTupleVariantTypeNode {
+        Some(Node::Type(RegisteredTypeNode::EnumVariant(
+            EnumVariantTypeNode {
                 discriminator: None,
                 ..
             }

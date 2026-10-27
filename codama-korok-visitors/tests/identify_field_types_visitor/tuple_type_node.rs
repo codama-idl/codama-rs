@@ -1,7 +1,7 @@
 use crate::identify_field_types_visitor::utils::get_node_from_item;
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeNode, Node, NumberFormat::U64, NumberTypeNode, SizePrefixTypeNode,
-    StringTypeNode, TupleTypeNode, U32, U8,
+    BooleanTypeNode, DefinedTypeNode, HasTransforms, IntegerFormat::U64, IntegerTypeNode, Node,
+    SizePrefixTransformNode, StringTypeNode, TupleTypeNode, U32, U8,
 };
 use quote::quote;
 
@@ -14,7 +14,9 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
         Some(Node::DefinedType(DefinedTypeNode::new(
             "person",
             TupleTypeNode::new(vec![
-                SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                    .into(),
                 IntegerTypeNode::le(U8).into(),
                 BooleanTypeNode::default().into(),
             ])

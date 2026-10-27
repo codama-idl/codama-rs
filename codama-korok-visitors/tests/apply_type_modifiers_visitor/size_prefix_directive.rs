@@ -4,9 +4,10 @@ use codama_korok_visitors::{
 };
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    FixedSizeTypeNode,
-    NumberFormat::{U16, U32, U8},
-    NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, TypeNode,
+    ConstantValueNode, FixedSizeTransformNode, HasTransforms, HiddenPrefixTransformNode,
+    IntegerFormat::{U16, U32, U8},
+    IntegerTypeNode, IntegerValueNode, SizePrefixTransformNode, StringTypeNode,
+    StructFieldTypeNode,
 };
 
 #[test]
@@ -22,7 +23,11 @@ fn it_adds_a_size_prefix_transform_to_any_type() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(NumberTypeNode::le(U32), NumberTypeNode::le(U8)).into())
+        Some(
+            IntegerTypeNode::le(U32)
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -41,11 +46,11 @@ fn it_accepts_integer_type_nodes_with_transforms_as_size_prefixes() -> CodamaRes
     assert_eq!(
         korok.node,
         Some(
-            SizePrefixTypeNode::new(
-                NumberTypeNode::le(U32),
-                FixedSizeTypeNode::new(NumberTypeNode::le(U8), 42)
-            )
-            .into()
+            IntegerTypeNode::le(U32)
+                .add_transform(SizePrefixTransformNode::new(
+                    IntegerTypeNode::le(U8).add_transform(FixedSizeTransformNode::new(42))
+                ))
+                .into()
         )
     );
     Ok(())
@@ -65,7 +70,11 @@ fn it_adds_a_size_prefix_transform_to_any_overridden_type() -> CodamaResult<()> 
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U8)).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -85,7 +94,11 @@ fn it_replaces_existing_size_prefix_transforms() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U16)).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U16)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -105,7 +118,37 @@ fn it_replaces_fixed_size_transforms() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U8)).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+                .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_appends_size_transforms_after_other_transforms() -> CodamaResult<()> {
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(type = hidden_prefix(string, constant(integer(u8), 1)))]
+        #[codama(size_prefix = integer(u8))]
+        String
+    };
+    let mut korok = FieldKorok::parse(&ast)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(HiddenPrefixTransformNode::new(vec![
+                    ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(1u8))
+                ]))
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -180,7 +223,8 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "field",
-                SizePrefixTypeNode::new(NumberTypeNode::le(U32), NumberTypeNode::le(U8))
+                IntegerTypeNode::le(U32)
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
             )
             .into()
         )
