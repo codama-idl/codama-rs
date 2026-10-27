@@ -244,55 +244,31 @@ impl KorokVisitor for CombineTypesVisitor {
             .as_ref()
             .and_then(|(_, x)| x.as_unsigned_integer::<u32>().ok());
 
-        korok.node = match korok.ast.fields {
+        let variant = match korok.ast.fields {
             syn::Fields::Named(_) => {
                 let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
-                Some(
-                    EnumStructVariantTypeNode {
-                        name: korok.name(),
-                        r#struct: StructTypeNode::new(fields).into(),
-                        discriminator,
-                        display: None,
-                    }
-                    .into(),
-                )
+                EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
             }
             syn::Fields::Unnamed(_) => {
-                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
-                Some(
-                    EnumTupleVariantTypeNode {
-                        name: korok.name(),
-                        tuple: TupleTypeNode::new(items).into(),
-                        discriminator,
-                        display: None,
-                    }
-                    .into(),
-                )
+                let items = self.parse_unnamed_fields(&korok.fields, &korok.attributes, &parent)?;
+                EnumVariantTypeNode::with_data(korok.name(), TupleTypeNode::new(items))
             }
             _ => {
                 let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 if !fields.is_empty() {
-                    Some(
-                        EnumStructVariantTypeNode {
-                            name: korok.name(),
-                            r#struct: StructTypeNode::new(fields).into(),
-                            discriminator,
-                            display: None,
-                        }
-                        .into(),
-                    )
+                    EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
                 } else {
-                    Some(
-                        EnumEmptyVariantTypeNode {
-                            name: korok.name(),
-                            discriminator,
-                            display: None,
-                        }
-                        .into(),
-                    )
+                    EnumVariantTypeNode::new(korok.name())
                 }
             }
         };
+        korok.node = Some(
+            EnumVariantTypeNode {
+                discriminator,
+                ..variant
+            }
+            .into(),
+        );
         Ok(())
     }
 }

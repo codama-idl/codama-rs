@@ -2,9 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumVariantKorok;
 use codama_nodes::{
-    BooleanTypeNode, DefaultValueStrategy, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
-    EnumTupleVariantTypeNode, NumberFormat::U8, NumberTypeNode, NumberValueNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
+    BooleanTypeNode, DefaultValueStrategy, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode,
+    IntegerValueNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
 };
 
 #[test]
@@ -14,10 +13,7 @@ fn it_creates_enum_empty_variants() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(
-        korok.node,
-        Some(EnumEmptyVariantTypeNode::new("foo").into())
-    );
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("foo").into()));
     Ok(())
 }
 
@@ -33,7 +29,7 @@ fn it_creates_enum_struct_variants() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumStructVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "foo",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
@@ -58,7 +54,7 @@ fn it_creates_enum_tuple_variants() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumTupleVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "foo",
                 TupleTypeNode::new(vec![
                     IntegerTypeNode::le(U64).into(),
@@ -81,10 +77,9 @@ fn it_keeps_track_of_the_variant_discriminant() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumEmptyVariantTypeNode {
-                name: "foo".into(),
+            EnumVariantTypeNode {
                 discriminator: Some(42),
-                display: None,
+                ..EnumVariantTypeNode::new("foo")
             }
             .into()
         )
@@ -97,12 +92,9 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast)?;
 
-    korok.node = Some(EnumEmptyVariantTypeNode::new("bar").into());
+    korok.node = Some(EnumVariantTypeNode::new("bar").into());
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(
-        korok.node,
-        Some(EnumEmptyVariantTypeNode::new("bar").into())
-    );
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("bar").into()));
     Ok(())
 }
 
@@ -154,10 +146,7 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(
-        korok.node,
-        Some(EnumEmptyVariantTypeNode::new("bar").into())
-    );
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("bar").into()));
     Ok(())
 }
 
@@ -175,7 +164,7 @@ fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumStructVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
@@ -205,7 +194,7 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumStructVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode {
@@ -240,7 +229,7 @@ fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            EnumStructVariantTypeNode::new(
+            EnumVariantTypeNode::with_data(
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),

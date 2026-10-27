@@ -1,9 +1,10 @@
 use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, MapTypeNode,
-    NumberFormat::*, NumberTypeNode, OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode,
-    SetTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, FloatFormat::*,
+    FloatTypeNode, HasTransforms, IntegerFormat::*, IntegerTypeNode, MapTypeNode, OptionTypeNode,
+    PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTransformNode, StringTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -81,7 +82,9 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                     Some(PublicKeyTypeNode::new().into())
                 }
                 ("" | "std::string", "String", []) => Some(
-                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
+                    StringTypeNode::utf8()
+                        .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                        .into(),
                 ),
                 ("" | "std::option", "Option", [t]) => {
                     get_type_node(t).map(|item| OptionTypeNode::new(item).into())

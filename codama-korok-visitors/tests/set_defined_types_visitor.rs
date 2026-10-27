@@ -4,10 +4,10 @@ use codama_korok_visitors::{
 };
 use codama_koroks::{EnumKorok, StructKorok, TypeAliasKorok};
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode,
-    EnumTupleVariantTypeNode, EnumTypeNode, FixedSizeTypeNode,
-    NumberFormat::{I32, U32, U64, U8},
-    NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+    BooleanTypeNode, DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, FixedSizeTransformNode,
+    HasTransforms,
+    IntegerFormat::{I32, U32, U64, U8},
+    IntegerTypeNode, SizePrefixTransformNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
     TupleTypeNode,
 };
 
@@ -34,7 +34,8 @@ fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
                     StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new(
                         "name",
-                        SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
+                        StringTypeNode::utf8()
+                            .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
                     ),
                 ])
             )
@@ -127,24 +128,20 @@ fn it_sets_defined_types_on_enums() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "message",
                 EnumTypeNode::new(vec![
-                    EnumEmptyVariantTypeNode::new("quit").into(),
-                    EnumStructVariantTypeNode::new(
+                    EnumVariantTypeNode::new("quit"),
+                    EnumVariantTypeNode::with_data(
                         "move",
                         StructTypeNode::new(vec![
                             StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
                             StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                         ])
-                    )
-                    .into(),
-                    EnumTupleVariantTypeNode::new(
+                    ),
+                    EnumVariantTypeNode::with_data(
                         "write",
-                        TupleTypeNode::new(vec![SizePrefixTypeNode::new(
-                            StringTypeNode::utf8(),
-                            NumberTypeNode::le(U32)
-                        )
-                        .into()])
-                    )
-                    .into(),
+                        TupleTypeNode::new(vec![StringTypeNode::utf8()
+                            .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                            .into()])
+                    ),
                 ])
             )
             .into()
@@ -174,20 +171,16 @@ fn it_sets_defined_types_on_enums_with_explicit_discriminators() -> CodamaResult
             DefinedTypeNode::new(
                 "message",
                 EnumTypeNode::new(vec![
-                    EnumEmptyVariantTypeNode::new("write").into(),
-                    EnumEmptyVariantTypeNode {
-                        name: "move".into(),
+                    EnumVariantTypeNode::new("write"),
+                    EnumVariantTypeNode {
                         discriminator: Some(42),
-                        display: None,
-                    }
-                    .into(),
-                    EnumEmptyVariantTypeNode::new("run").into(),
-                    EnumEmptyVariantTypeNode {
-                        name: "quit".into(),
+                        ..EnumVariantTypeNode::new("move")
+                    },
+                    EnumVariantTypeNode::new("run"),
+                    EnumVariantTypeNode {
                         discriminator: Some(100),
-                        display: None,
-                    }
-                    .into(),
+                        ..EnumVariantTypeNode::new("quit")
+                    },
                 ])
             )
             .into()

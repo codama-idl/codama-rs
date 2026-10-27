@@ -4,7 +4,8 @@ use codama_korok_visitors::{
 };
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    FixedSizeTypeNode, NumberFormat::U32, NumberTypeNode, StringTypeNode, StructFieldTypeNode,
+    FixedSizeTransformNode, HasTransforms, IntegerFormat::U32, IntegerTypeNode, StringTypeNode,
+    StructFieldTypeNode,
 };
 
 #[test]
@@ -20,7 +21,11 @@ fn it_adds_a_fixed_size_transform_to_any_type() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(FixedSizeTypeNode::new(NumberTypeNode::le(U32), 8).into())
+        Some(
+            IntegerTypeNode::le(U32)
+                .add_transform(FixedSizeTransformNode::new(8))
+                .into()
+        )
     );
     Ok(())
 }
@@ -39,7 +44,11 @@ fn it_adds_a_fixed_size_transform_to_any_overridden_type() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(FixedSizeTransformNode::new(42))
+                .into()
+        )
     );
     Ok(())
 }
@@ -59,7 +68,11 @@ fn it_replaces_existing_fixed_size_transforms() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 222).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(FixedSizeTransformNode::new(222))
+                .into()
+        )
     );
     Ok(())
 }
@@ -77,7 +90,11 @@ fn it_replaces_size_prefix_transforms() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(FixedSizeTypeNode::new(StringTypeNode::utf8(), 42).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(FixedSizeTransformNode::new(42))
+                .into()
+        )
     );
     Ok(())
 }
@@ -96,8 +113,11 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     assert_eq!(
         korok.node,
         Some(
-            StructFieldTypeNode::new("field", FixedSizeTypeNode::new(NumberTypeNode::le(U32), 8))
-                .into()
+            StructFieldTypeNode::new(
+                "field",
+                IntegerTypeNode::le(U32).add_transform(FixedSizeTransformNode::new(8))
+            )
+            .into()
         )
     );
     Ok(())
