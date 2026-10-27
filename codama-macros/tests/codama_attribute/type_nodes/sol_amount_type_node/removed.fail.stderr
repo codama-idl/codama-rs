@@ -1,0 +1,17 @@
+error: sol_amount(...) is removed in v2, use fixed_point(..., scale = 9, unit = "SOL")
+ --> tests/codama_attribute/type_nodes/sol_amount_type_node/removed.fail.rs:3:17
+  |
+3 | #[codama(type = sol_amount(number(u64)))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: sol_amount(...) is removed in v2, use fixed_point(..., scale = 9, unit = "SOL")
+ --> tests/codama_attribute/type_nodes/sol_amount_type_node/removed.fail.rs:6:42
+  |
+6 | #[codama(type = struct(field("lamports", sol_amount(number(u64)))))]
+  |                                          ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: sol_amount(...) is removed in v2, use fixed_point(..., scale = 9, unit = "SOL")
+ --> tests/codama_attribute/type_nodes/sol_amount_type_node/removed.fail.rs:9:28
+  |
+9 | #[codama(field("lamports", sol_amount(number = number(u64))))]
+  |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

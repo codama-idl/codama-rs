@@ -1,0 +1,5 @@
+error: number must not have a unit or a display
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/number_with_unit.fail.rs:3:29
+  |
+3 | #[codama(type = fixed_point(integer(u64, unit = "USDC"), scale = 6))]
+  |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^

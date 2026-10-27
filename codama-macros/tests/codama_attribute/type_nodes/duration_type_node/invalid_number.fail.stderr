@@ -1,0 +1,5 @@
+error: number must be an IntegerTypeNode
+ --> tests/codama_attribute/type_nodes/duration_type_node/invalid_number.fail.rs:3:26
+  |
+3 | #[codama(type = duration(string))]
+  |                          ^^^^^^
