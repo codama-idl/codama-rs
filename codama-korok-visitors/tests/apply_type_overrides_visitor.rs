@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{ApplyTypeOverridesVisitor, KorokVisitable};
 use codama_koroks::{FieldKorok, StructKorok};
 use codama_nodes::{
-    AmountNumberDisplayNode, BooleanTypeNode, DefinedTypeLinkNode, NumberDisplayNode,
-    NumberFormat::U64, NumberTypeNode, NumberValueNode, StringValueNode, StructFieldTypeNode,
+    AmountNumberDisplayNode, BooleanTypeNode, DefinedTypeLinkNode, IntegerFormat::U64,
+    IntegerTypeNode, IntegerValueNode, NumberDisplayNode, StringValueNode, StructFieldTypeNode,
 };
 
 #[test]
@@ -92,7 +92,7 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
 #[test]
 fn it_preserves_number_display_metadata() -> CodamaResult<()> {
     let item: syn::Field = syn::parse_quote! {
-        #[codama(type = number(
+        #[codama(type = integer(
             u64,
             display = amount(decimals = 9, unit = "SOL")
         ))]
@@ -106,12 +106,14 @@ fn it_preserves_number_display_metadata() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "amount",
-                NumberTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
-                        decimals: Box::new(Some(NumberValueNode::new(9u64).into())),
-                        unit: Box::new(Some(StringValueNode::new("SOL").into())),
-                    }))),
-                    ..NumberTypeNode::le(U64)
+                IntegerTypeNode {
+                    display: Box::new(Some(NumberDisplayNode::Amount(
+                        AmountNumberDisplayNode::new(
+                            IntegerValueNode::new(9u64),
+                            StringValueNode::new("SOL"),
+                        )
+                    ))),
+                    ..IntegerTypeNode::le(U64)
                 }
             )
             .into()

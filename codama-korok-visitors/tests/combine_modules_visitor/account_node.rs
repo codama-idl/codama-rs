@@ -1,6 +1,6 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
-    AccountNode, BooleanTypeNode, NumberTypeNode, ProgramNode, RootNode, StringTypeNode,
+    AccountNode, BooleanTypeNode, IntegerTypeNode, ProgramNode, RootNode, StringTypeNode,
     StructFieldTypeNode, StructTypeNode, U32,
 };
 
@@ -27,7 +27,7 @@ fn it_merges_accounts_into_root_nodes() {
         "person",
         StructTypeNode::new(vec![
             StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-            StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
         ]),
     );
     assert_eq!(

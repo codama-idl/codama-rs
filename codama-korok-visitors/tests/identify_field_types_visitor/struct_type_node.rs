@@ -23,9 +23,9 @@ fn it_wraps_all_named_fields_in_a_defined_struct() {
                     "name",
                     SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
                 ),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                 StructFieldTypeNode::new("member", BooleanTypeNode::default()),
-                StructFieldTypeNode::new("is_alive", NumberTypeNode::le(U8))
+                StructFieldTypeNode::new("is_alive", IntegerTypeNode::le(U8))
             ])
         )))
     );

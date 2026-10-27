@@ -15,7 +15,7 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
             "person",
             TupleTypeNode::new(vec![
                 SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
-                NumberTypeNode::le(U8).into(),
+                IntegerTypeNode::le(U8).into(),
                 BooleanTypeNode::default().into(),
             ])
         )))
@@ -26,6 +26,6 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
 fn it_uses_the_inner_type_directly_on_single_unnamed_fields() {
     assert_eq!(
         get_node_from_item(quote! { struct Slot(u64); }),
-        Some(DefinedTypeNode::new("slot", NumberTypeNode::le(U64)).into())
+        Some(DefinedTypeNode::new("slot", IntegerTypeNode::le(U64)).into())
     );
 }
