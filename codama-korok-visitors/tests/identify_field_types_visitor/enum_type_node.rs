@@ -1,8 +1,8 @@
 use crate::identify_field_types_visitor::utils::get_node_from_item;
 use codama_nodes::{
-    DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, I32, U32,
+    DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, HasTransforms, IntegerTypeNode, Node,
+    SizePrefixTransformNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+    I32, U32,
 };
 use quote::quote;
 
@@ -19,24 +19,20 @@ fn it_wraps_all_variants_in_a_defined_enum() {
         Some(Node::DefinedType(DefinedTypeNode::new(
             "message",
             EnumTypeNode::new(vec![
-                EnumEmptyVariantTypeNode::new("quit").into(),
-                EnumStructVariantTypeNode::new(
+                EnumVariantTypeNode::new("quit"),
+                EnumVariantTypeNode::with_data(
                     "move",
                     StructTypeNode::new(vec![
                         StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
                         StructFieldTypeNode::new("y", IntegerTypeNode::le(I32))
                     ])
-                )
-                .into(),
-                EnumTupleVariantTypeNode::new(
+                ),
+                EnumVariantTypeNode::with_data(
                     "write",
-                    TupleTypeNode::new(vec![SizePrefixTypeNode::new(
-                        StringTypeNode::utf8(),
-                        NumberTypeNode::le(U32)
-                    )
-                    .into()])
-                )
-                .into(),
+                    TupleTypeNode::new(vec![StringTypeNode::utf8()
+                        .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                        .into()])
+                ),
             ])
         )))
     );
