@@ -5,8 +5,7 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, EventNode, FieldDiscriminatorNode,
-    NestedTypeNode, NestedTypeNodeTrait, Node, NumberValueNode, ProgramNode, StructFieldTypeNode,
-    StructTypeNode,
+    IntegerValueNode, Node, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -137,21 +136,15 @@ impl KorokVisitor for SetEventsVisitor {
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
 
-        let discriminator_name = discriminator.identifier.clone();
+        let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
 
-        let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
+        let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
 
-        let data = data.map_nested_type_node(|node| {
-            let mut fields = node.fields;
-
-            fields.insert(0, discriminator);
-
-            StructTypeNode { fields }
-        });
+        data.fields.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
 
-        discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
+        discriminators.insert(0, discriminator_node.into());
 
         let event = EventNode {
             discriminators,
@@ -166,18 +159,18 @@ impl KorokVisitor for SetEventsVisitor {
 
 fn parse_struct(
     korok: &codama_koroks::StructKorok,
-) -> CodamaResult<(CamelCaseString, NestedTypeNode<StructTypeNode>)> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
-        if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from((*node.r#type).clone()) {
+        if let TypeNode::Struct(data) = (*node.r#type).clone() {
             return Ok((node.identifier.clone(), data));
         };
     };
 
     // Handle error.
     let message = format!(
-        "The \"{}\" struct could not be used as an Event because its type is not a `NestedTypeNode<StructTypeNode>`.",
+        "The \"{}\" struct could not be used as an Event because its type is not a `StructTypeNode`.",
         korok.ast.ident,
     );
 
@@ -187,46 +180,40 @@ fn parse_struct(
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &str,
-) -> CodamaResult<(CamelCaseString, NestedTypeNode<StructTypeNode>)> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
         if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
-            match node {
-                // Ensure we have a non-nested `StructTypeNode`.
-                EnumVariantTypeNode::Struct(node) => {
-                    return Ok((node.name, node.r#struct));
-                }
+            match *node.data {
+                Some(TypeNode::Struct(data)) => return Ok((node.identifier, data)),
                 // Or an empty variant.
-                EnumVariantTypeNode::Empty(node) => {
-                    return Ok((node.name, StructTypeNode::new(vec![]).into()))
-                }
+                None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
                 // Or a tuple variant — convert items to struct fields.
                 // Use field.name() which returns #[codama(name = "...")] if provided,
                 // otherwise fall back to synthetic names like "arg0", "arg1".
-                EnumVariantTypeNode::Tuple(node) => {
-                    if let NestedTypeNode::Value(tuple) = node.tuple {
-                        let fields = tuple
-                            .items
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, item)| {
-                                let name = korok
-                                    .fields
-                                    .get(i)
-                                    .and_then(|f| f.name())
-                                    .unwrap_or_else(|| format!("arg{}", i).into());
-                                let display = korok.fields.get(i).and_then(parse_field_display);
-                                StructFieldTypeNode {
-                                    display,
-                                    ..StructFieldTypeNode::new(name, item)
-                                }
-                            })
-                            .collect();
+                Some(TypeNode::Tuple(tuple)) => {
+                    let fields = tuple
+                        .items
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, item)| {
+                            let name = korok
+                                .fields
+                                .get(i)
+                                .and_then(|f| f.name())
+                                .unwrap_or_else(|| format!("arg{}", i).into());
+                            let display = korok.fields.get(i).and_then(parse_field_display);
+                            StructFieldTypeNode {
+                                display,
+                                ..StructFieldTypeNode::new(name, item)
+                            }
+                        })
+                        .collect();
 
-                        return Ok((node.name, StructTypeNode::new(fields).into()));
-                    };
+                    return Ok((node.identifier, StructTypeNode::new(fields)));
                 }
+                _ => {}
             }
         };
     };

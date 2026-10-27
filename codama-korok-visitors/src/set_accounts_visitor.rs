@@ -7,8 +7,8 @@ use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
     AccountNode, CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode,
-    FieldDiscriminatorNode, NestedTypeNode, NestedTypeNodeTrait, Node, NumberValueNode,
-    PdaLinkNode, ProgramNode, StructFieldTypeNode, StructTypeNode,
+    FieldDiscriminatorNode, IntegerValueNode, Node, PdaLinkNode, ProgramNode, StructFieldTypeNode,
+    StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -151,16 +151,12 @@ impl KorokVisitor for SetAccountsVisitor {
             )),
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
-        let discriminator_name = discriminator.identifier.clone();
-        let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
-        let data = data.map_nested_type_node(|node| {
-            let mut fields = node.fields;
-            fields.insert(0, discriminator);
-            StructTypeNode { fields }
-        });
+        let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
+        let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
+        data.fields.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
-        discriminators.insert(0, FieldDiscriminatorNode::new(discriminator_name, 0).into());
+        discriminators.insert(0, discriminator_node.into());
 
         let account = AccountNode {
             discriminators,
@@ -179,18 +175,18 @@ impl KorokVisitor for SetAccountsVisitor {
 
 fn parse_struct(
     korok: &codama_koroks::StructKorok,
-) -> CodamaResult<(CamelCaseString, NestedTypeNode<StructTypeNode>)> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
-        if let Ok(data) = NestedTypeNode::<StructTypeNode>::try_from((*node.r#type).clone()) {
+        if let TypeNode::Struct(data) = (*node.r#type).clone() {
             return Ok((node.identifier.clone(), data));
         };
     };
 
     // Handle error.
     let message = format!(
-        "The \"{}\" struct could not be used as an Account because its type is not a `NestedTypeNode<StructTypeNode>`.",
+        "The \"{}\" struct could not be used as an Account because its type is not a `StructTypeNode`.",
         korok.ast.ident,
     );
     Err(korok.ast.error(message).into())
@@ -199,20 +195,15 @@ fn parse_struct(
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &str,
-) -> CodamaResult<(CamelCaseString, NestedTypeNode<StructTypeNode>)> {
+) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
         if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
-            match node {
-                // Ensure we have a non-nested `StructTypeNode`.
-                EnumVariantTypeNode::Struct(node) => {
-                    return Ok((node.name, node.r#struct));
-                }
+            match *node.data {
+                Some(TypeNode::Struct(data)) => return Ok((node.identifier, data)),
                 // Or an empty variant.
-                EnumVariantTypeNode::Empty(node) => {
-                    return Ok((node.name, StructTypeNode::new(vec![]).into()))
-                }
+                None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
                 _ => {}
             }
         };

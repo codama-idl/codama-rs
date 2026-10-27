@@ -6,8 +6,8 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
-    FixedSizeTypeNode, HasKind, NestedTypeLeaf, NestedTypeNode, NestedTypeNodeTrait, Node,
-    RegisteredTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
+    FixedSizeTransformNode, HasKind, HasTransforms, Node, RegisteredTypeNode,
+    SizePrefixTransformNode, TransformNode, TypeNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -120,18 +120,17 @@ fn apply_encoding_directive(
     input: ApplyAttributeInput,
 ) -> CodamaResult<Option<Node>> {
     let ast = input.attribute.ast;
-    update_nested_type_node(input, |type_node| {
-        match type_node {
-        TypeNode::String(_) => Ok(StringTypeNode::new(directive.encoding).into()),
-        node => {
-            Err(ast
-                .error(format!(
-                    "Cannot apply attribute `#[codama(encoding)]` on a node of kind `NestedTypeNode<{}>`",
-                    node.kind()
-                ))
-                .into())
+    update_type_node(input, |type_node| match type_node {
+        TypeNode::String(mut node) => {
+            node.encoding = directive.encoding;
+            Ok(node.into())
         }
-    }
+        node => Err(ast
+            .error(format!(
+                "Cannot apply attribute `#[codama(encoding)]` on a node of kind `{}`",
+                node.kind()
+            ))
+            .into()),
     })
 }
 
@@ -139,40 +138,29 @@ fn apply_fixed_size_directive(
     directive: &FixedSizeDirective,
     input: ApplyAttributeInput,
 ) -> CodamaResult<Option<Node>> {
-    let size = directive.size;
-    update_type_node(input, |node| match node {
-        TypeNode::FixedSize(node) => Ok(FixedSizeTypeNode::new(*node.r#type, size).into()),
-        TypeNode::SizePrefix(node) => Ok(FixedSizeTypeNode::new(*node.r#type, size).into()),
-        node => Ok(FixedSizeTypeNode::new(node, size).into()),
-    })
+    let transform = FixedSizeTransformNode::new(directive.size).into();
+    update_type_node(input, |node| Ok(set_size_transform(node, transform)))
 }
 
 fn apply_size_prefix_directive(
     directive: &SizePrefixDirective,
     input: ApplyAttributeInput,
 ) -> CodamaResult<Option<Node>> {
-    let prefix = directive.prefix.clone();
-    update_type_node(input, |node| match node {
-        TypeNode::FixedSize(node) => Ok(SizePrefixTypeNode::new(*node.r#type, prefix).into()),
-        TypeNode::SizePrefix(node) => Ok(SizePrefixTypeNode::new(*node.r#type, prefix).into()),
-        node => Ok(SizePrefixTypeNode::new(node, prefix).into()),
-    })
+    let transform = SizePrefixTransformNode::new(directive.prefix.clone()).into();
+    update_type_node(input, |node| Ok(set_size_transform(node, transform)))
 }
 
-fn update_nested_type_node(
-    input: ApplyAttributeInput,
-    update: impl FnOnce(TypeNode) -> CodamaResult<TypeNode>,
-) -> CodamaResult<Option<Node>> {
-    update_type_node(input, |type_node| {
-        match NestedTypeNode::<NestedTypeLeaf>::try_from(type_node.clone()) {
-            Ok(nested) => Ok(nested
-                // Note that here we end up with a `NestedTypeLeaf` value...
-                .try_map_nested_type_node(|leaf| Ok(NestedTypeLeaf(update(leaf.0)?)))?
-                // ...but here the `NestedTypeNode` value is unwrapped into a `TypeNode`.
-                .into()),
-            _ => unreachable!("NestedTypeLeaf can always be created from a TypeNode"),
+/// Replaces the last transform when it sets the size, else appends the new one.
+/// So a directive overrides the size that the Rust type implies, such as the `u32` prefix of a `String`.
+fn set_size_transform(mut node: TypeNode, new_transform: TransformNode) -> TypeNode {
+    let transforms = node.transforms_mut();
+    match transforms.last_mut() {
+        Some(last @ (TransformNode::FixedSize(_) | TransformNode::SizePrefix(_))) => {
+            *last = new_transform
         }
-    })
+        _ => transforms.push(new_transform),
+    }
+    node
 }
 
 /// Updates the type node within a given `Node` using the provided function.

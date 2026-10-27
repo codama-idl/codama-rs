@@ -1,12 +1,12 @@
 use crate::KorokVisitor;
 use codama_attributes::{
-    Attributes, EnumDiscriminatorDirective, FieldDirective, ReprAttribute, TryFromFilter,
+    Attributes, CodamaAttribute, CodamaDirective, EnumDiscriminatorDirective, FieldDirective,
+    ReprAttribute, TryFromFilter,
 };
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
-    DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, Node, NumberFormat::U8, NumberTypeNode,
+    DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode, Node,
     RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
@@ -146,8 +146,21 @@ impl CombineTypesVisitor {
     fn parse_unnamed_fields(
         &self,
         fields: &[FieldKorok],
+        attributes: &Attributes,
         parent: &str,
     ) -> CodamaResult<Vec<TypeNode>> {
+        // A tuple has no field identifiers, so a `field(...)` directive has no place in it.
+        let field_directive = attributes
+            .iter()
+            .filter_map(CodamaAttribute::filter)
+            .find(|attribute| matches!(attribute.directive.as_ref(), CodamaDirective::Field(_)));
+        if let Some(attribute) = field_directive {
+            return Err(attribute
+                .ast
+                .error("`field(...)` needs named fields, it cannot add a field to a tuple")
+                .into());
+        }
+
         let items = fields
             .iter()
             .enumerate()
@@ -173,7 +186,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
-                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
+                let items = self.parse_unnamed_fields(&korok.fields, &korok.attributes, &parent)?;
                 if items.len() == 1 {
                     items.first().unwrap().clone()
                 } else {
