@@ -25,7 +25,9 @@ impl FromMeta for RemainderOptionTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::{IntegerTypeNode, U8};
+    use codama_nodes::{
+        HasTransforms, IntegerTypeNode, SizePrefixTransformNode, StringTypeNode, U8,
+    };
 
     #[test]
     fn implicit() {
@@ -40,6 +42,18 @@ mod tests {
         assert_type!(
             { remainder_option(item = integer(u8)) },
             RemainderOptionTypeNode::new(IntegerTypeNode::le(U8)).into()
+        );
+    }
+
+    #[test]
+    fn nested() {
+        assert_type!(
+            { remainder_option(size_prefix(string, integer(u8))) },
+            RemainderOptionTypeNode::new(
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+            )
+            .into()
         );
     }
 
