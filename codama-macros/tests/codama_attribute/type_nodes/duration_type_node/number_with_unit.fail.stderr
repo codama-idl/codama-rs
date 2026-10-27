@@ -1,0 +1,5 @@
+error: number must not have a unit or a display
+ --> tests/codama_attribute/type_nodes/duration_type_node/number_with_unit.fail.rs:3:26
+  |
+3 | #[codama(type = duration(integer(u64, unit = "ms")))]
+  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^

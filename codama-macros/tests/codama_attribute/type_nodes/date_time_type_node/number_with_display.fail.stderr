@@ -1,0 +1,5 @@
+error: number must not have a unit or a display
+ --> tests/codama_attribute/type_nodes/date_time_type_node/number_with_display.fail.rs:3:27
+  |
+3 | #[codama(type = date_time(integer(i64, display = amount(decimals = 3))))]
+  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
