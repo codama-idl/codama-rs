@@ -1,0 +1,5 @@
+error: base must be 2 or 10
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/invalid_base.fail.rs:3:61
+  |
+3 | #[codama(type = fixed_point(integer(u64), scale = 6, base = 16))]
+  |                                                             ^^

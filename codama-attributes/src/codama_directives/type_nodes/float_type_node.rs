@@ -7,6 +7,7 @@ impl FromMeta for FloatTypeNode {
         let pl = meta.assert_directive("float")?.as_path_list()?;
         let mut format = SetOnce::<FloatFormat>::new("format");
         let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
+        let mut unit = SetOnce::<String>::new("unit");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "format" => {
@@ -23,6 +24,7 @@ impl FromMeta for FloatTypeNode {
                     _ => Err(path.error("invalid endian")),
                 }
             }
+            "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             _ => {
                 if let Ok(path) = meta.as_path() {
                     if let Ok(value) = FloatFormat::try_from(path.to_string().as_str()) {
@@ -36,7 +38,10 @@ impl FromMeta for FloatTypeNode {
             }
         })?;
 
-        Ok(FloatTypeNode::new(format.take(meta)?, endian.take(meta)?))
+        Ok(FloatTypeNode {
+            unit: unit.option(),
+            ..FloatTypeNode::new(format.take(meta)?, endian.take(meta)?)
+        })
     }
 }
 
@@ -55,6 +60,20 @@ mod tests {
                 syn::parse_quote! { float(format = f64, endian = be) },
                 FloatTypeNode::be(F64),
             ),
+            (
+                syn::parse_quote! { float(f64, unit = "USD") },
+                FloatTypeNode {
+                    unit: Some("USD".to_string()),
+                    ..FloatTypeNode::le(F64)
+                },
+            ),
+            (
+                syn::parse_quote! { float(unit = "%", format = f32, endian = be) },
+                FloatTypeNode {
+                    unit: Some("%".to_string()),
+                    ..FloatTypeNode::be(F32)
+                },
+            ),
         ] {
             assert_eq!(FloatTypeNode::from_meta(&meta).unwrap(), expected);
         }
@@ -65,6 +84,14 @@ mod tests {
         for (meta, expected) in [
             (syn::parse_quote! { float(le) }, "format is missing"),
             (syn::parse_quote! { float(u64) }, "unrecognized attribute"),
+            (
+                syn::parse_quote! { float(f64, unit = "USD", unit = "EUR") },
+                "unit is already set",
+            ),
+            (
+                syn::parse_quote! { float(f64, unit = USD) },
+                "expected a string",
+            ),
         ] {
             let error = FloatTypeNode::from_meta(&meta).unwrap_err();
             assert_eq!(error.to_string(), expected);

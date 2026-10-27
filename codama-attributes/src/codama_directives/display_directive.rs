@@ -222,12 +222,24 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unsupported_display_nodes() {
+    fn rejects_removed_display_nodes() {
         for (tokens, expected) in [
             (
-                quote::quote! { display(duration) },
-                "duration display is not supported yet",
+                quote::quote! { display(date_time) },
+                "date_time display is removed in v2, use the date_time(...) type",
             ),
+            (
+                quote::quote! { display(duration(ticks_per_second = 1000)) },
+                "duration display is removed in v2, use the duration(...) type",
+            ),
+        ] {
+            assert_eq!(parse_display(tokens).unwrap_err().to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn rejects_unsupported_display_nodes() {
+        for (tokens, expected) in [
             (
                 quote::quote! { display(string) },
                 "string display is not supported yet",

@@ -1,0 +1,11 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/unrecognized_attribute.fail.rs:3:54
+  |
+3 | #[codama(type = fixed_point(integer(u64), scale = 6, foo = 42))]
+  |                                                      ^^^^^^^^
+
+error: unrecognized attribute
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/unrecognized_attribute.fail.rs:6:43
+  |
+6 | #[codama(type = fixed_point(integer(u64), 6, "USDC"))]
+  |                                           ^

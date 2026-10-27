@@ -9,4 +9,7 @@ pub struct ExplicitTest;
 #[codama(type = date_time(fixed_size(integer(u64), 8)))]
 pub struct NestedNumberTest;
 
+#[codama(type = date_time(integer(i64), ticks_per_second = 1000))]
+pub struct TicksPerSecondTest;
+
 fn main() {}
