@@ -1,0 +1,5 @@
+error: Invalid enum discriminator name: 1st
+ --> tests/codama_attribute/enum_discriminator_directive/invalid_name.fail.rs:3:36
+  |
+3 | #[codama(enum_discriminator(name = "1st"))]
+  |                                    ^^^^^
