@@ -1,10 +1,10 @@
-error: prefix must be a NumberTypeNode
+error: prefix must be an IntegerTypeNode
  --> tests/codama_attribute/type_nodes/size_prefix_type_node/invalid_prefix.fail.rs:3:37
   |
 3 | #[codama(type = size_prefix(string, public_key))]
   |                                     ^^^^^^^^^^
 
-error: prefix must be a NumberTypeNode
+error: prefix must be an IntegerTypeNode
  --> tests/codama_attribute/type_nodes/size_prefix_type_node/invalid_prefix.fail.rs:6:53
   |
 6 | #[codama(type = size_prefix(type = string, prefix = public_key))]
