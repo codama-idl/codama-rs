@@ -1,3 +1,4 @@
+use crate::Integer;
 use serde::{de, Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
@@ -52,6 +53,12 @@ impl From<f64> for Decimal {
             .to_string();
         let (mantissa, exponent) = split_exponent(&shortest).expect("ryu writes an i32 exponent");
         Decimal(format!("{sign}{}", plain_digits(mantissa, exponent)))
+    }
+}
+
+impl From<Integer> for Decimal {
+    fn from(value: Integer) -> Self {
+        Decimal(value.to_string())
     }
 }
 
@@ -269,6 +276,27 @@ mod tests {
         let min = Decimal::from(5e-324);
         assert_eq!(min.as_str(), format!("0.{}5", "0".repeat(323)));
         assert_eq!(min.to_f64(), 5e-324);
+    }
+
+    #[test]
+    fn from_integer() {
+        for (value, expected) in [
+            (Integer::from(0u8), "0"),
+            (Integer::from(42u64), "42"),
+            (Integer::from(-5i64), "-5"),
+            (
+                Integer::from(u128::MAX),
+                "340282366920938463463374607431768211455",
+            ),
+            (
+                Integer::from(i128::MIN),
+                "-170141183460469231731687303715884105728",
+            ),
+        ] {
+            let decimal = Decimal::from(value);
+            assert_eq!(decimal.as_str(), expected);
+            assert_eq!(Decimal::try_from(expected), Ok(decimal));
+        }
     }
 
     #[test]
