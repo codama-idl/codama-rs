@@ -1,9 +1,10 @@
+use crate::helpers::get_data_fields;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    ArgumentValueNode, InstructionRemainingAccountsNode, IsSigner, NumberFormat::U64,
-    NumberTypeNode, PublicKeyTypeNode,
+    InstructionRemainingAccountsNode, IntegerFormat::U64, IntegerTypeNode, IsSigner,
+    PublicKeyTypeNode,
 };
 
 #[test]
@@ -12,7 +13,7 @@ fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
         #[derive(CodamaInstruction)]
         #[codama(account(name = "source", writable))]
         #[codama(remaining_accounts(
-            argument("signers"),
+            "signers",
             signer,
             optional,
             docs = "Additional multisig signers."
@@ -32,10 +33,10 @@ fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
     };
     assert_eq!(instruction.accounts.len(), 1);
     assert_eq!(
-        instruction.arguments,
-        vec![codama_nodes::InstructionArgumentNode::new(
+        get_data_fields(instruction),
+        [codama_nodes::StructFieldTypeNode::new(
             "amount",
-            NumberTypeNode::le(U64)
+            IntegerTypeNode::le(U64)
         )]
     );
     assert_eq!(
@@ -45,8 +46,9 @@ fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
             is_signer: Some(IsSigner::True),
             is_writable: None,
             docs: vec!["Additional multisig signers.".to_string()].into(),
-            value: Box::new(ArgumentValueNode::new("signers").into()),
+            identifier: "signers".into(),
             display: None,
+            plugins: vec![],
         }]
     );
     Ok(())
@@ -57,7 +59,7 @@ fn from_enum_variant_with_remaining_accounts_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(remaining_accounts(argument("signers"), signer = "either"))]
+            #[codama(remaining_accounts("signers", signer = "either"))]
             Initialize { authority: Pubkey },
             Close,
         }
@@ -78,13 +80,14 @@ fn from_enum_variant_with_remaining_accounts_directive() -> CodamaResult<()> {
             is_signer: Some(IsSigner::Either),
             is_writable: None,
             docs: vec![].into(),
-            value: Box::new(ArgumentValueNode::new("signers").into()),
+            identifier: "signers".into(),
             display: None,
+            plugins: vec![],
         }]
     );
-    // The argument itself is untouched by the directive.
+    // The data field itself is untouched by the directive.
     assert_eq!(
-        *program.instructions[0].arguments[1].r#type,
+        *get_data_fields(&program.instructions[0])[1].r#type,
         PublicKeyTypeNode::new().into()
     );
     // Variants without the directive are unaffected.
@@ -96,8 +99,8 @@ fn from_enum_variant_with_remaining_accounts_directive() -> CodamaResult<()> {
 fn multiple_remaining_accounts_directives() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(remaining_accounts(argument("signers"), signer))]
-        #[codama(remaining_accounts(argument("extra_accounts"), writable))]
+        #[codama(remaining_accounts("signers", signer))]
+        #[codama(remaining_accounts("extra_accounts", writable))]
         struct Execute;
     };
     let mut korok = StructKorok::parse(&item)?;
@@ -117,16 +120,18 @@ fn multiple_remaining_accounts_directives() -> CodamaResult<()> {
                 is_signer: Some(IsSigner::True),
                 is_writable: None,
                 docs: vec![].into(),
-                value: Box::new(ArgumentValueNode::new("signers").into()),
+                identifier: "signers".into(),
                 display: None,
+                plugins: vec![],
             },
             InstructionRemainingAccountsNode {
                 is_optional: None,
                 is_signer: None,
                 is_writable: Some(true),
                 docs: vec![].into(),
-                value: Box::new(ArgumentValueNode::new("extraAccounts").into()),
+                identifier: "extraAccounts".into(),
                 display: None,
+                plugins: vec![],
             }
         ]
     );
