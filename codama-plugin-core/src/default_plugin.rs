@@ -5,6 +5,7 @@ use codama_korok_visitors::{
     CombineModulesVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor,
     SetDefaultValuesVisitor, SetDefinedTypesVisitor, SetErrorsVisitor, SetEventsVisitor,
     SetInstructionsVisitor, SetPdasVisitor, SetProgramMetadataVisitor,
+    TransformIntegersToFloatsVisitor,
 };
 
 pub struct DefaultPlugin;
@@ -31,6 +32,7 @@ impl KorokPlugin for DefaultPlugin {
     fn on_root_node_set(&self, visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         visitable.accept(&mut SetProgramMetadataVisitor::new())?;
         visitable.accept(&mut CombineModulesVisitor::new())?;
+        visitable.accept(&mut TransformIntegersToFloatsVisitor::new())?;
         Ok(())
     }
 }

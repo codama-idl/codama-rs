@@ -11,3 +11,4 @@ mod set_errors_visitor;
 mod set_events_visitor;
 mod set_instructions_visitor;
 mod set_program_metadata_visitor;
+mod transform_integers_to_floats_visitor;
