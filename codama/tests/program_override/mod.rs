@@ -15,40 +15,43 @@ fn it_renames_the_primary_program_from_a_codama_program_macro() {
         r#"{
   "kind": "rootNode",
   "standard": "codama",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "program": {
     "kind": "programNode",
-    "name": "myOverriddenProgramName",
+    "identifier": "myOverriddenProgramName",
     "publicKey": "MyProgramAddress1111111111111111111111111",
     "version": "1.2.3",
     "instructions": [
       {
         "kind": "instructionNode",
-        "name": "create",
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u8",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 0
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+        "identifier": "create",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "0"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]

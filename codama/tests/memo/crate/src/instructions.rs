@@ -2,7 +2,7 @@ use codama::CodamaInstruction;
 
 #[derive(CodamaInstruction)]
 #[codama(remaining_accounts(
-    argument("signers"),
+    "signers",
     signer,
     optional,
     docs = "Expected signers of the memo."
