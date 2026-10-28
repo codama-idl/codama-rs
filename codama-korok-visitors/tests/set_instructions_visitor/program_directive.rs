@@ -2,7 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    InstructionArgumentNode, InstructionNode, NumberFormat::U64, NumberTypeNode, ProgramNode,
+    InstructionNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, StructFieldTypeNode,
+    StructTypeNode,
 };
 
 #[test]
@@ -26,10 +27,13 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 instructions: vec![InstructionNode {
                     identifier: "transfer".into(),
-                    arguments: vec![InstructionArgumentNode::new(
-                        "amount",
-                        NumberTypeNode::le(U64)
-                    )],
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![StructFieldTypeNode::new(
+                            "amount",
+                            IntegerTypeNode::le(U64)
+                        )])
+                        .into()
+                    )),
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()

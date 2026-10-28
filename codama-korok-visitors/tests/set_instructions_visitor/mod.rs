@@ -1,3 +1,4 @@
+mod default_value_directive;
 mod display_directive;
 mod from_codama_instruction;
 mod from_codama_instructions;

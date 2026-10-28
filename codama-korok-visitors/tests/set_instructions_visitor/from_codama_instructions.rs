@@ -1,12 +1,14 @@
+use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{CrateKorok, EnumKorok, StructKorok};
 use codama_nodes::{
     BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantValueNode,
     DefaultValueStrategy, DefinedTypeLinkNode, DisplaySkip, Docs, FieldDiscriminatorNode,
-    InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NumberFormat::{U32, U64, U8},
-    NumberTypeNode, NumberValueNode, ProgramNode, SizeDiscriminatorNode, StructFieldDisplayNode,
+    InstructionAccountNode, InstructionNode,
+    IntegerFormat::{U32, U64, U8},
+    IntegerTypeNode, IntegerValueNode, ProgramNode, SizeDiscriminatorNode, StructFieldDisplayNode,
+    StructFieldTypeNode, StructTypeNode,
 };
 use codama_stores::CrateStore;
 use quote::quote;
@@ -46,35 +48,55 @@ fn from_enum() -> CodamaResult<()> {
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
                         ],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -87,7 +109,7 @@ fn from_enum() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_enum_with_arguments_only() -> CodamaResult<()> {
+fn from_enum_with_data_only() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
@@ -111,34 +133,54 @@ fn from_enum_with_arguments_only() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "initialize".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -183,33 +225,41 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
                         ],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -241,32 +291,40 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "initialize".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -310,35 +368,55 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                             InstructionAccountNode::new("authority", false, false),
                             InstructionAccountNode::new("payer", true, true),
                         ],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
                         accounts: vec![InstructionAccountNode::new("authority", false, true)],
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("amount", NumberTypeNode::le(U64))
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -371,32 +449,40 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "initialize".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U32).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u32).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U32).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u32).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
+                                plugins: vec![],
+                            },])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U32).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u32).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U32).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u32).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
+                                plugins: vec![],
+                            },])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -430,62 +516,78 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "initialize".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "update".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "write".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(43u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(43u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "close".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(100u8).into())),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(100u8).into())),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            }
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     }
                 ],
@@ -552,15 +654,21 @@ fn with_name_directives() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![InstructionArgumentNode {
-                        name: "discriminator".into(),
-                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        docs: Docs::default(),
-                        r#type: Box::new(NumberTypeNode::le(U8).into()),
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                    }],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![StructFieldTypeNode {
+                            identifier: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                            plugins: vec![],
+                        }])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                    ],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -591,16 +699,20 @@ fn with_discriminator_directives() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![InstructionArgumentNode {
-                        name: "discriminator".into(),
-                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        docs: Docs::default(),
-                        r#type: Box::new(NumberTypeNode::le(U8).into()),
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                    }],
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![StructFieldTypeNode {
+                            identifier: "discriminator".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                            default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                            plugins: vec![],
+                        }])
+                        .into()
+                    )),
                     discriminators: vec![
-                        FieldDiscriminatorNode::new("discriminator", 0).into(),
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                         SizeDiscriminatorNode::new(100).into(),
                         ConstantDiscriminatorNode::new(
                             ConstantValueNode::bytes(BytesEncoding::Base16, "01020304"),
@@ -622,7 +734,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
 fn with_enum_discriminator_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
-        #[codama(enum_discriminator(name = "banana", size = number(u64)))]
+        #[codama(enum_discriminator(name = "banana", size = integer(u64)))]
         enum MyProgramInstructions {
             Initialize,
         }
@@ -637,15 +749,19 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![InstructionArgumentNode {
-                        name: "banana".into(),
-                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        docs: Docs::default(),
-                        r#type: Box::new(NumberTypeNode::le(U64).into()),
-                        default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                        display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                    }],
-                    discriminators: vec![FieldDiscriminatorNode::new("banana", 0).into()],
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![StructFieldTypeNode {
+                            identifier: "banana".into(),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            docs: Docs::default(),
+                            r#type: Box::new(IntegerTypeNode::le(U64).into()),
+                            default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
+                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                            plugins: vec![],
+                        }])
+                        .into()
+                    )),
+                    discriminators: vec![FieldDiscriminatorNode::new(path("banana"), 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -657,12 +773,12 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_argument_attributes_only() -> CodamaResult<()> {
+fn with_field_attributes_only() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(argument("space", number(u64)))]
-            #[codama(argument("lamports", number(u64)))]
+            #[codama(field("space", integer(u64)))]
+            #[codama(field("lamports", integer(u64)))]
             Initialize,
         }
     };
@@ -676,17 +792,22 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![
-                        InstructionArgumentNode {
-                            default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
-                        },
-                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
-                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64))
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                            },
+                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64))
+                        ])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -698,11 +819,11 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_prepended_argument_attributes() -> CodamaResult<()> {
+fn with_prepended_field_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(argument("space", number(u64)))]
+            #[codama(field("space", integer(u64)))]
             Initialize { lamports: u64 },
         }
     };
@@ -717,17 +838,22 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![
-                        InstructionArgumentNode {
-                            default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
-                        },
-                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
-                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64))
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                            },
+                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64))
+                        ])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -739,11 +865,11 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_appended_argument_attributes() -> CodamaResult<()> {
+fn with_appended_field_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(argument(after, "space", number(u64)))]
+            #[codama(field(after, "space", integer(u64)))]
             Initialize { lamports: u64 },
         }
     };
@@ -758,17 +884,22 @@ fn with_appended_argument_attributes() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![InstructionNode {
                     identifier: "initialize".into(),
-                    arguments: vec![
-                        InstructionArgumentNode {
-                            default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
-                        },
-                        InstructionArgumentNode::new("lamports", NumberTypeNode::le(U64)),
-                        InstructionArgumentNode::new("space", NumberTypeNode::le(U64)),
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                            },
+                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
+                        ])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -809,22 +940,28 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                 instructions: vec![InstructionNode {
                     identifier: "charge".into(),
                     accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
-                    arguments: vec![
-                        InstructionArgumentNode {
-                            name: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        },
-                        InstructionArgumentNode::new(
-                            "arg0",
-                            DefinedTypeLinkNode::new("percentage")
-                        ),
-                        InstructionArgumentNode::new("arg1", BooleanTypeNode::default()),
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            },
+                            StructFieldTypeNode::new(
+                                "arg0",
+                                DefinedTypeLinkNode::new("percentage")
+                            ),
+                            StructFieldTypeNode::new("arg1", BooleanTypeNode::default()),
+                        ])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()
@@ -872,47 +1009,76 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "warp".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("factor", NumberTypeNode::le(U64)),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new("factor", IntegerTypeNode::le(U64)),
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "fireTorpedoes".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                name: "discriminator".into(),
-                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                                docs: Docs::default(),
-                                r#type: Box::new(NumberTypeNode::le(U8).into()),
-                                default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                            },
-                            InstructionArgumentNode::new("arg0", DefinedTypeLinkNode::new("direction")),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    identifier: "discriminator".into(),
+                                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                    docs: Docs::default(),
+                                    r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u8).into()
+                                    )),
+                                    display: Some(StructFieldDisplayNode::skipped(
+                                        DisplaySkip::Always
+                                    )),
+                                    plugins: vec![],
+                                },
+                                StructFieldTypeNode::new(
+                                    "arg0",
+                                    DefinedTypeLinkNode::new("direction")
+                                ),
+                            ])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "cheat".into(),
-                        arguments: vec![InstructionArgumentNode {
-                            name: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        }],
-                        discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(2u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            }])
+                            .into()
+                        )),
+                        discriminators: vec![
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                        ],
                         ..InstructionNode::default()
                     },
                 ],
@@ -959,22 +1125,28 @@ fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
                 instructions: vec![InstructionNode {
                     identifier: "charge".into(),
                     accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
-                    arguments: vec![
-                        InstructionArgumentNode {
-                            name: "discriminator".into(),
-                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            docs: Docs::default(),
-                            r#type: Box::new(NumberTypeNode::le(U8).into()),
-                            default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                            display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                        },
-                        InstructionArgumentNode::new(
-                            "percentage",
-                            DefinedTypeLinkNode::new("percentage")
-                        ),
-                        InstructionArgumentNode::new("isValid", BooleanTypeNode::default()),
+                    data: Box::new(Some(
+                        StructTypeNode::new(vec![
+                            StructFieldTypeNode {
+                                identifier: "discriminator".into(),
+                                default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                                docs: Docs::default(),
+                                r#type: Box::new(IntegerTypeNode::le(U8).into()),
+                                default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                                display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
+                                plugins: vec![],
+                            },
+                            StructFieldTypeNode::new(
+                                "percentage",
+                                DefinedTypeLinkNode::new("percentage")
+                            ),
+                            StructFieldTypeNode::new("isValid", BooleanTypeNode::default()),
+                        ])
+                        .into()
+                    )),
+                    discriminators: vec![
+                        FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
-                    discriminators: vec![FieldDiscriminatorNode::new("discriminator", 0).into()],
                     ..InstructionNode::default()
                 }],
                 ..ProgramNode::default()

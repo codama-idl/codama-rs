@@ -2,8 +2,8 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetDefaultValuesVisitor};
 use codama_koroks::{FieldKorok, StructKorok};
 use codama_nodes::{
-    InstructionArgumentNode, NumberFormat::U8, NumberTypeNode, NumberValueNode, PayerValueNode,
-    PublicKeyTypeNode, StructFieldTypeNode, StructTypeNode,
+    IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode, StructFieldTypeNode,
+    StructTypeNode,
 };
 
 #[test]
@@ -21,8 +21,8 @@ fn it_sets_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
-                ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
+                default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
             }
             .into()
         )
@@ -45,9 +45,9 @@ fn it_sets_omitted_default_values_to_struct_field_type_nodes() -> CodamaResult<(
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Box::new(Some(NumberValueNode::new(42u8).into())),
+                default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
                 default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
             }
             .into()
         )
@@ -63,8 +63,8 @@ fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
     };
     let mut korok = FieldKorok::parse(&item)?;
     let original_field = StructFieldTypeNode {
-        default_value: Box::new(Some(NumberValueNode::new(1u8).into())),
-        ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U8))
+        default_value: Box::new(Some(IntegerValueNode::new(1u8).into())),
+        ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
     };
     korok.node = Some(original_field.clone().into());
 
@@ -73,55 +73,8 @@ fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode {
-                default_value: Box::new(Some(NumberValueNode::new(2u8).into())),
+                default_value: Box::new(Some(IntegerValueNode::new(2u8).into())),
                 ..original_field
-            }
-            .into()
-        )
-    );
-    Ok(())
-}
-
-#[test]
-fn it_sets_default_values_to_instruction_argument_nodes() -> CodamaResult<()> {
-    let item: syn::Field = syn::parse_quote! {
-        #[codama(default_value = payer)]
-        pub authority: Pubkey
-    };
-    let mut korok = FieldKorok::parse(&item)?;
-    korok.node = Some(InstructionArgumentNode::new("authority", PublicKeyTypeNode::new()).into());
-
-    korok.accept(&mut SetDefaultValuesVisitor::new())?;
-    assert_eq!(
-        korok.node,
-        Some(
-            InstructionArgumentNode {
-                default_value: Box::new(Some(PayerValueNode::new().into())),
-                ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
-            }
-            .into()
-        )
-    );
-    Ok(())
-}
-
-#[test]
-fn it_sets_omitted_default_values_to_instruction_argument_nodes() -> CodamaResult<()> {
-    let item: syn::Field = syn::parse_quote! {
-        #[codama(value = payer)]
-        pub authority: Pubkey
-    };
-    let mut korok = FieldKorok::parse(&item)?;
-    korok.node = Some(InstructionArgumentNode::new("authority", PublicKeyTypeNode::new()).into());
-
-    korok.accept(&mut SetDefaultValuesVisitor::new())?;
-    assert_eq!(
-        korok.node,
-        Some(
-            InstructionArgumentNode {
-                default_value: Box::new(Some(PayerValueNode::new().into())),
-                default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
-                ..InstructionArgumentNode::new("authority", PublicKeyTypeNode::new())
             }
             .into()
         )
