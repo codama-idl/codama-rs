@@ -31,7 +31,7 @@ pub enum SystemInstruction {
     #[codama(account(name = "base_account", signer))]
     CreateAccountWithSeed {
         base: Pubkey,
-        #[codama(size_prefix = number(u64))]
+        #[codama(size_prefix = integer(u64))]
         seed: String,
         amount: u64,
         space: u64,
@@ -66,7 +66,7 @@ pub enum SystemInstruction {
     #[codama(account(name = "base_account", signer))]
     AllocateWithSeed {
         base: Pubkey,
-        #[codama(size_prefix = number(u64))]
+        #[codama(size_prefix = integer(u64))]
         seed: String,
         space: u64,
         program_address: Pubkey,
@@ -76,7 +76,7 @@ pub enum SystemInstruction {
     #[codama(account(name = "base_account", signer))]
     AssignWithSeed {
         base: Pubkey,
-        #[codama(size_prefix = number(u64))]
+        #[codama(size_prefix = integer(u64))]
         seed: String,
         program_address: Pubkey,
     },
@@ -86,7 +86,7 @@ pub enum SystemInstruction {
     #[codama(account(name = "destination", writable))]
     TransferSolWithSeed {
         amount: u64,
-        #[codama(size_prefix = number(u64))]
+        #[codama(size_prefix = integer(u64))]
         from_seed: String,
         from_owner: Pubkey,
     },

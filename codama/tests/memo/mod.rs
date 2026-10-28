@@ -11,38 +11,36 @@ fn get_idl() {
         r#"{
   "kind": "rootNode",
   "standard": "codama",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "program": {
     "kind": "programNode",
-    "name": "memo",
+    "identifier": "memo",
     "publicKey": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
     "version": "1.0.0",
     "instructions": [
       {
         "kind": "instructionNode",
-        "name": "addMemo",
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "memo",
-            "type": {
-              "kind": "stringTypeNode",
-              "encoding": "utf8"
+        "identifier": "addMemo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "memo",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              }
             }
-          }
-        ],
+          ]
+        },
         "remainingAccounts": [
           {
             "kind": "instructionRemainingAccountsNode",
+            "identifier": "signers",
             "isOptional": true,
             "isSigner": true,
-            "docs": [
-              "Expected signers of the memo."
-            ],
-            "value": {
-              "kind": "argumentValueNode",
-              "name": "signers"
-            }
+            "docs": "Expected signers of the memo."
           }
         ]
       }
