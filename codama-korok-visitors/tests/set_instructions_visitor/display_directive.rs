@@ -1,12 +1,13 @@
+use crate::helpers::{get_data_fields, path};
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyDisplayVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
 };
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AmountNumberDisplayNode, DisplaySkip, FieldDiscriminatorNode, InstructionArgumentNode,
-    InstructionDisplayNode, InstructionNode, NumberDisplayNode, NumberFormat::U8, NumberTypeNode,
-    NumberValueNode, ProgramNode, StringValueNode, StructFieldDisplayNode,
+    AmountNumberDisplayNode, DisplaySkip, FieldDiscriminatorNode, InstructionDisplayNode,
+    InstructionNode, IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, NumberDisplayNode,
+    ProgramNode, StringValueNode, StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -37,25 +38,29 @@ fn it_applies_displays_to_instruction_structs() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "transfer".into(),
-                arguments: vec![InstructionArgumentNode {
-                    display: Some(StructFieldDisplayNode::new("Amount")),
-                    r#type: Box::new(
-                        NumberTypeNode {
-                            display: Box::new(Some(NumberDisplayNode::Amount(
-                                AmountNumberDisplayNode::new(
-                                    NumberValueNode::new(9u64),
-                                    StringValueNode::new("SOL"),
-                                ),
-                            ))),
-                            ..NumberTypeNode::le(codama_nodes::U64)
-                        }
-                        .into()
-                    ),
-                    ..InstructionArgumentNode::new("amount", NumberTypeNode::le(codama_nodes::U64))
-                }],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![StructFieldTypeNode {
+                        display: Some(StructFieldDisplayNode::new("Amount")),
+                        r#type: Box::new(
+                            IntegerTypeNode {
+                                display: Box::new(Some(NumberDisplayNode::Amount(
+                                    AmountNumberDisplayNode::new(
+                                        IntegerValueNode::new(9u64),
+                                        StringValueNode::new("SOL"),
+                                    ),
+                                ))),
+                                ..IntegerTypeNode::le(codama_nodes::U64)
+                            }
+                            .into()
+                        ),
+                        ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(codama_nodes::U64))
+                    }])
+                    .into()
+                )),
                 display: Some(InstructionDisplayNode {
-                    intent: Some("Transfer SOL".to_string()),
-                    interpolated_intent: Some("Transfer ${data.amount} SOL".to_string()),
+                    intent: Some("Transfer SOL".into()),
+                    interpolated_intent: Some("Transfer ${data.amount} SOL".into()),
+                    plugins: vec![],
                 }),
                 ..InstructionNode::default()
             }
@@ -91,44 +96,60 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
                 instructions: vec![
                     InstructionNode {
                         identifier: "withdraw".into(),
-                        arguments: vec![
-                            InstructionArgumentNode {
-                                default_value_strategy: Some(
-                                    codama_nodes::DefaultValueStrategy::Omitted,
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![
+                                StructFieldTypeNode {
+                                    default_value_strategy: Some(
+                                        codama_nodes::DefaultValueStrategy::Omitted,
+                                    ),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(0u64).into()
+                                    )),
+                                    display: skipped.clone(),
+                                    ..StructFieldTypeNode::new(
+                                        "discriminator",
+                                        IntegerTypeNode::le(U8),
+                                    )
+                                },
+                                StructFieldTypeNode::new(
+                                    "amount",
+                                    IntegerTypeNode::le(codama_nodes::U64),
                                 ),
-                                default_value: Box::new(Some(NumberValueNode::new(0u64).into())),
-                                display: skipped.clone(),
-                                ..InstructionArgumentNode::new(
-                                    "discriminator",
-                                    NumberTypeNode::le(U8),
-                                )
-                            },
-                            InstructionArgumentNode::new(
-                                "amount",
-                                NumberTypeNode::le(codama_nodes::U64),
-                            ),
-                        ],
+                            ])
+                            .into()
+                        )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into(),
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                         ],
                         display: Some(InstructionDisplayNode {
-                            intent: Some("Withdraw stake".to_string()),
-                            interpolated_intent: Some("Withdraw ${data.amount}".to_string()),
+                            intent: Some("Withdraw stake".into()),
+                            interpolated_intent: Some("Withdraw ${data.amount}".into()),
+                            plugins: vec![],
                         }),
                         ..InstructionNode::default()
                     },
                     InstructionNode {
                         identifier: "deposit".into(),
-                        arguments: vec![InstructionArgumentNode {
-                            default_value_strategy: Some(
-                                codama_nodes::DefaultValueStrategy::Omitted,
-                            ),
-                            default_value: Box::new(Some(NumberValueNode::new(1u64).into())),
-                            display: skipped,
-                            ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8),)
-                        }],
+                        data: Box::new(
+                            Some(
+                                StructTypeNode::new(vec![StructFieldTypeNode {
+                                    default_value_strategy: Some(
+                                        codama_nodes::DefaultValueStrategy::Omitted,
+                                    ),
+                                    default_value: Box::new(Some(
+                                        IntegerValueNode::new(1u64).into()
+                                    )),
+                                    display: skipped,
+                                    ..StructFieldTypeNode::new(
+                                        "discriminator",
+                                        IntegerTypeNode::le(U8),
+                                    )
+                                }])
+                                .into()
+                            )
+                        ),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new("discriminator", 0).into(),
+                            FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                         ],
                         ..InstructionNode::default()
                     },
@@ -142,7 +163,7 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_preserves_tuple_argument_displays() -> CodamaResult<()> {
+fn it_preserves_tuple_field_displays() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum Instructions {
@@ -164,12 +185,14 @@ fn it_preserves_tuple_argument_displays() -> CodamaResult<()> {
         panic!("Expected a program node");
     };
     assert_eq!(
-        program.instructions[0].arguments[1].display,
+        get_data_fields(&program.instructions[0])[1].display,
         Some(StructFieldDisplayNode {
-            label: Some("Amount".to_string()),
+            label: Some("Amount".into()),
             skip: Some(DisplaySkip::WhenInjected),
             flatten: Some(true),
             flatten_prefix: None,
+            value_labels: vec![],
+            plugins: vec![],
         })
     );
     Ok(())
