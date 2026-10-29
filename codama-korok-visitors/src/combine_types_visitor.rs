@@ -1,4 +1,4 @@
-use crate::KorokVisitor;
+use crate::{assert_unique_field_identifiers, KorokVisitor};
 use codama_attributes::{
     Attributes, CodamaAttribute, CodamaDirective, EnumDiscriminatorDirective, FieldDirective,
     ReprAttribute, TryFromFilter,
@@ -6,13 +6,17 @@ use codama_attributes::{
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
-    DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode, Node,
-    RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
+    DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, HasKind, IntegerFormat::U8,
+    IntegerTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+    TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::*;
+use syn::spanned::Spanned;
 
 pub struct CombineTypesVisitor {
     pub r#override: bool,
+    /// Whether fields can default to contextual values such as `payer`, which only an instruction provides.
+    pub allow_contextual_default_values: bool,
     pub get_enum_variant:
         fn(korok: &EnumVariantKorok, parent: &str) -> Option<CodamaResult<EnumVariantTypeNode>>,
     pub get_nammed_field:
@@ -26,6 +30,7 @@ impl Default for CombineTypesVisitor {
     fn default() -> Self {
         Self {
             r#override: false,
+            allow_contextual_default_values: false,
             get_enum_variant: |x, _| Self::get_default_enum_variant(x),
             get_nammed_field: |x, _| Self::get_default_named_field(x),
             get_unnammed_field: |x, _, _| Self::get_default_unnamed_field(x),
@@ -121,7 +126,12 @@ impl CombineTypesVisitor {
         fields: &[FieldKorok],
         attributes: &Attributes,
         parent: &str,
+        ast: &impl Spanned,
     ) -> CodamaResult<Vec<StructFieldTypeNode>> {
+        if !self.allow_contextual_default_values {
+            reject_contextual_default_values(fields, attributes)?;
+        }
+
         let fields = fields
             .iter()
             .filter_map(|field| (self.get_nammed_field)(field, parent))
@@ -140,7 +150,13 @@ impl CombineTypesVisitor {
             .map(|attr| attr.to_struct_field_type_node())
             .collect::<CodamaResult<Vec<_>>>()?;
 
-        Ok(before.into_iter().chain(fields).chain(after).collect())
+        let fields = before
+            .into_iter()
+            .chain(fields)
+            .chain(after)
+            .collect::<Vec<_>>();
+        assert_unique_field_identifiers(&fields, parent, ast)?;
+        Ok(fields)
     }
 
     fn parse_unnamed_fields(
@@ -160,6 +176,9 @@ impl CombineTypesVisitor {
                 .error("`field(...)` needs named fields, it cannot add a field to a tuple")
                 .into());
         }
+        if !self.allow_contextual_default_values {
+            reject_contextual_default_values(fields, attributes)?;
+        }
 
         let items = fields
             .iter()
@@ -169,6 +188,47 @@ impl CombineTypesVisitor {
 
         Ok(items)
     }
+}
+
+/// Contextual values such as `payer` resolve against the `provides` list of an instruction.
+/// Outside an instruction nothing provides them, so a field cannot default to one.
+fn reject_contextual_default_values(
+    fields: &[FieldKorok],
+    attributes: &Attributes,
+) -> CodamaResult<()> {
+    let from_field_directives = attributes
+        .iter()
+        .filter_map(CodamaAttribute::filter)
+        .filter_map(|attribute| match attribute.directive.as_ref() {
+            CodamaDirective::Field(FieldDirective {
+                default_value: Some(node),
+                ..
+            }) => Some((attribute, node)),
+            _ => None,
+        });
+    let from_fields = fields.iter().filter_map(|field| {
+        field
+            .attributes
+            .iter()
+            .rev()
+            .filter_map(CodamaAttribute::filter)
+            .find_map(|attribute| match attribute.directive.as_ref() {
+                CodamaDirective::DefaultValue(directive) => Some((attribute, &directive.node)),
+                _ => None,
+            })
+    });
+
+    for (attribute, node) in from_field_directives.chain(from_fields) {
+        let node = node.try_resolved()?;
+        if ValueNode::try_from(node.clone()).is_err() {
+            let message = format!(
+                "`{}` is a contextual value, only instruction fields can default to it",
+                node.kind()
+            );
+            return Err(attribute.ast.error(message).into());
+        }
+    }
+    Ok(())
 }
 
 impl KorokVisitor for CombineTypesVisitor {
@@ -182,7 +242,8 @@ impl KorokVisitor for CombineTypesVisitor {
         let parent = format!("struct `{}`", korok.ast.ident);
         let type_node: TypeNode = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                let fields =
+                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
@@ -194,7 +255,8 @@ impl KorokVisitor for CombineTypesVisitor {
                 }
             }
             _ => {
-                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                let fields =
+                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
                 StructTypeNode::new(fields).into()
             }
         };
@@ -259,7 +321,8 @@ impl KorokVisitor for CombineTypesVisitor {
 
         let variant = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                let fields =
+                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
                 EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
             }
             syn::Fields::Unnamed(_) => {
@@ -267,7 +330,8 @@ impl KorokVisitor for CombineTypesVisitor {
                 EnumVariantTypeNode::with_data(korok.name(), TupleTypeNode::new(items))
             }
             _ => {
-                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
+                let fields =
+                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
                 if !fields.is_empty() {
                     EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
                 } else {

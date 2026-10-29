@@ -1,8 +1,11 @@
-use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
+use crate::{
+    assert_unique_field_identifiers, parse_field_display, CombineTypesVisitor, KorokVisitor,
+};
 use codama_attributes::{
-    AccountDirective, Attributes, DefaultValueDirective, DiscriminatorDirective, DisplayDirective,
-    EnumDiscriminatorDirective, OptionalAccountStrategyDirective, ProgramDirective,
-    RemainingAccountsDirective, TryFromFilter,
+    AccountDirective, Attributes, CodamaAttribute, CodamaDirective, DefaultValueDirective,
+    DiscriminatorDirective, DisplayDirective, EnumDiscriminatorDirective, FieldDirective,
+    OptionalAccountStrategyDirective, ProgramDirective, RemainingAccountsDirective, Resolvable,
+    TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -13,6 +16,7 @@ use codama_nodes::{
     StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
+use std::collections::HashMap;
 
 pub struct SetInstructionsVisitor {
     combine_types: CombineTypesVisitor,
@@ -26,12 +30,27 @@ impl Default for SetInstructionsVisitor {
     fn default() -> Self {
         Self {
             combine_types: CombineTypesVisitor {
-                // Skip fields with the `account` codama directive.
+                // An instruction provides the contextual default values of its data fields.
+                allow_contextual_default_values: true,
+                // Skip fields with the `account` codama directive, but reject a default value on them.
                 get_nammed_field: |korok, parent| {
-                    if korok.attributes.has_codama_attribute("account") {
-                        return None;
+                    if !korok.attributes.has_codama_attribute("account") {
+                        return CombineTypesVisitor::get_strict_named_field(korok, parent);
                     }
-                    CombineTypesVisitor::get_strict_named_field(korok, parent)
+                    // An account field is not data, so a default value on it has no field to apply to.
+                    let default_value = korok
+                        .attributes
+                        .iter()
+                        .filter_map(CodamaAttribute::filter)
+                        .find(|attribute| {
+                            matches!(
+                                attribute.directive.as_ref(),
+                                CodamaDirective::DefaultValue(_)
+                            )
+                        })?;
+                    let message = "A default value has no effect on an account field, \
+                        use `account(..., default_value = ...)`";
+                    Some(Err(default_value.ast.error(message).into()))
                 },
                 ..CombineTypesVisitor::strict()
             },
@@ -66,7 +85,7 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         // Transform the defined type into an instruction node.
         let (name, data) = parse_struct(korok)?;
-        let (data, provides) = parse_data(&korok.fields, data, None)?;
+        let (data, provides) = parse_data(&korok.attributes, &korok.fields, data, None)?;
         let instruction = InstructionNode {
             identifier: name,
             optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
@@ -159,10 +178,16 @@ impl KorokVisitor for SetInstructionsVisitor {
             )),
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
+
+        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
+        let fields = std::iter::once(&discriminator).chain(&data.fields);
+        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
+
         let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
         discriminators.insert(0, discriminator_node.into());
-        let (data, provides) = parse_data(&korok.fields, data, Some(discriminator))?;
+        let (data, provides) =
+            parse_data(&korok.attributes, &korok.fields, data, Some(discriminator))?;
 
         korok.node = Some(
             InstructionNode {
@@ -239,6 +264,7 @@ fn parse_accounts(
 }
 
 fn parse_data(
+    attributes: &Attributes,
     fields: &[FieldKorok],
     mut data: StructTypeNode,
     discriminator: Option<StructFieldTypeNode>,
@@ -246,46 +272,14 @@ fn parse_data(
     // Fields are parsed in data order, so the `provides` list follows the same order.
     let mut provides = Vec::new();
 
-    // Here we must reconcile the struct fields combined in the `CombineTypesVisitor`
-    // with their original `FieldKoroks` to check for `default_value` directives
-    // that would have been ignored on fields but are relevant for instruction data.
-    //
-    // For struct fields: match by name (accounts may be filtered, so positions don't align).
-    // For tuple fields: match by index (no filtering, positions align directly).
+    let defaults = get_data_field_defaults(attributes, fields);
     let fields_from_data = std::mem::take(&mut data.fields)
         .into_iter()
-        .enumerate()
-        .map(|(i, data_field)| {
-            if data_field.default_value.is_some() {
-                return Ok(data_field);
+        .map(|data_field| match defaults.get(&data_field.identifier) {
+            Some(default) if data_field.default_value.is_none() => {
+                set_default_value(data_field, default, &mut provides)
             }
-            let field = fields
-                .iter()
-                .enumerate()
-                .find_map(|(fi, field)| match field.name() {
-                    // A named account field is not data, so a data field with its name takes no default from it.
-                    Some(name)
-                        if name == data_field.identifier
-                            && !field.attributes.has_codama_attribute("account") =>
-                    {
-                        Some(field)
-                    }
-                    None if fi == i => Some(field),
-                    _ => None,
-                });
-            let Some(field) = field else {
-                return Ok(data_field);
-            };
-            let Some(directive) = field.attributes.get_last(DefaultValueDirective::filter) else {
-                return Ok(data_field);
-            };
-
-            Ok(set_default_value(
-                data_field,
-                directive.node.try_resolved()?,
-                directive.default_value_strategy,
-                &mut provides,
-            ))
+            _ => Ok(data_field),
         })
         .collect::<CodamaResult<Vec<_>>>()?;
 
@@ -296,32 +290,77 @@ fn parse_data(
     Ok((data, provides))
 }
 
+/// A default value written for an instruction data field.
+struct DataFieldDefault<'a> {
+    node: &'a Resolvable<InstructionInputValueNode>,
+    strategy: Option<DefaultValueStrategy>,
+}
+
+/// Maps each data field identifier to the default written on its `field(...)` directive or Rust field.
+/// Identifiers are unique in the data, so each field finds its own default.
+fn get_data_field_defaults<'a>(
+    attributes: &'a Attributes,
+    fields: &'a [FieldKorok],
+) -> HashMap<CamelCaseString, DataFieldDefault<'a>> {
+    let from_directives = attributes
+        .get_all(FieldDirective::filter)
+        .into_iter()
+        .filter_map(|directive| {
+            let default = DataFieldDefault {
+                node: directive.default_value.as_ref()?,
+                strategy: directive.default_value_strategy,
+            };
+            Some((directive.name.clone(), default))
+        });
+
+    // A named account field is not data, but a tuple account item is both an account and a data item.
+    let from_fields = fields
+        .iter()
+        .enumerate()
+        .filter(|(_, field)| {
+            field.ast.ident.is_none() || !field.attributes.has_codama_attribute("account")
+        })
+        .filter_map(|(index, field)| {
+            let directive = field.attributes.get_last(DefaultValueDirective::filter)?;
+            let default = DataFieldDefault {
+                node: &directive.node,
+                strategy: directive.default_value_strategy,
+            };
+            Some((data_field_identifier(fields, index), default))
+        });
+
+    from_directives.chain(from_fields).collect()
+}
+
+/// The identifier of the data field that the Rust field at `index` gives.
+/// An unnamed tuple item without `name = "..."` gets a synthetic identifier such as `arg0`.
+fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CamelCaseString {
+    fields
+        .get(index)
+        .and_then(|field| field.name())
+        .unwrap_or_else(|| format!("arg{}", index).into())
+}
+
 /// Sets the default value of an instruction field.
 /// A contextual value such as `payer` is not a data value, so the field injects it from the `provides` list.
 fn set_default_value(
     field: StructFieldTypeNode,
-    default_value: &InstructionInputValueNode,
-    default_value_strategy: Option<DefaultValueStrategy>,
+    default: &DataFieldDefault,
     provides: &mut Vec<ProvidedNode>,
-) -> StructFieldTypeNode {
-    let default_value = ValueNode::try_from(default_value.clone()).unwrap_or_else(|_| {
-        // A second field with this identifier injects the same key with the same default, so it adds no entry.
-        if !provides
-            .iter()
-            .any(|provided| provided.identifier == field.identifier)
-        {
-            provides.push(ProvidedNode::new(
-                field.identifier.clone(),
-                default_value.clone(),
-            ));
+) -> CodamaResult<StructFieldTypeNode> {
+    let node = default.node.try_resolved()?;
+    let default_value = match ValueNode::try_from(node.clone()) {
+        Ok(value) => value,
+        Err(_) => {
+            provides.push(ProvidedNode::new(field.identifier.clone(), node.clone()));
+            InjectedValueNode::new(field.identifier.clone()).into()
         }
-        InjectedValueNode::new(field.identifier.clone()).into()
-    });
-    StructFieldTypeNode {
+    };
+    Ok(StructFieldTypeNode {
         default_value: Box::new(Some(default_value)),
-        default_value_strategy,
+        default_value_strategy: default.strategy,
         ..field
-    }
+    })
 }
 
 fn parse_struct(
@@ -356,19 +395,13 @@ fn parse_enum_variant(
                 // Or an empty variant.
                 None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
                 // Or a tuple variant — convert items to struct fields.
-                // Use field.name() which returns #[codama(name = "...")] if provided,
-                // otherwise fall back to synthetic names like "arg0", "arg1".
                 Some(TypeNode::Tuple(tuple)) => {
                     let fields = tuple
                         .items
                         .into_iter()
                         .enumerate()
                         .map(|(i, item)| {
-                            let name = korok
-                                .fields
-                                .get(i)
-                                .and_then(|f| f.name())
-                                .unwrap_or_else(|| format!("arg{}", i).into());
+                            let name = data_field_identifier(&korok.fields, i);
                             let display = korok.fields.get(i).and_then(parse_field_display);
                             StructFieldTypeNode {
                                 display,

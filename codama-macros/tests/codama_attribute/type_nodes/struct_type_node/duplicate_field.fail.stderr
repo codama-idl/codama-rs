@@ -1,0 +1,5 @@
+error: Field `owner` is not unique in `struct(...)`
+ --> tests/codama_attribute/type_nodes/struct_type_node/duplicate_field.fail.rs:3:52
+  |
+3 | #[codama(type = struct(field("owner", public_key), field("owner", integer(u64))))]
+  |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

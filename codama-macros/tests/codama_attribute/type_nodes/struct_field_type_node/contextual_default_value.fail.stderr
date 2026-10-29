@@ -1,0 +1,11 @@
+error: unrecognized value
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/contextual_default_value.fail.rs:3:60
+  |
+3 | #[codama(type = field("owner", public_key, default_value = payer))]
+  |                                                            ^^^^^
+
+error: unrecognized value
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/contextual_default_value.fail.rs:6:52
+  |
+6 | #[codama(type = field("bump", integer(u8), value = account_bump("vault")))]
+  |                                                    ^^^^^^^^^^^^^^^^^^^^^
