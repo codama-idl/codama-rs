@@ -1,5 +1,6 @@
 mod default_value_directive;
 mod display_directive;
+mod field_directive;
 mod from_codama_instruction;
 mod from_codama_instructions;
 mod optional_account_strategy_directive;

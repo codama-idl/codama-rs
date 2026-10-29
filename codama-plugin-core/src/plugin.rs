@@ -448,6 +448,33 @@ mod tests {
     }
 
     #[test]
+    fn e2e_resolves_contextual_field_default_value_on_korok() -> CodamaResult<()> {
+        use codama_attributes::{FieldDirective, Resolvable, TryFromFilter};
+
+        let item: syn::Item = syn::parse_quote! {
+            #[codama(field("owner", public_key, default_value = mock::payer))]
+            struct Transfer;
+        };
+        let mut korok = codama_koroks::StructKorok::parse(&item)?;
+
+        let plugins: Vec<Box<dyn KorokPlugin>> = vec![Box::new(MockValuePlugin)];
+        let run_plugins = resolve_plugins(&plugins);
+        run_plugins(&mut korok)?;
+
+        let directive = korok
+            .attributes
+            .get_last(FieldDirective::filter)
+            .expect("should have a field directive");
+        assert_eq!(
+            directive.default_value,
+            Some(Resolvable::Resolved(
+                codama_nodes::PayerValueNode::new().into()
+            ))
+        );
+        Ok(())
+    }
+
+    #[test]
     fn e2e_unresolved_directive_errors() {
         // Build a korok with a resolvable directive but no plugin to resolve it.
         let item: syn::Item = syn::parse_quote! {
