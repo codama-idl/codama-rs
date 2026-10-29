@@ -20,6 +20,18 @@ pub struct FieldDisplayTest {
 #[codama(display(amount(decimals = 9, unit = "SOL")))]
 pub struct AmountDisplayTest;
 
+#[codama(display(unit("SOL")))]
+pub struct UnitDisplayTest;
+
+#[codama(display(unit(public_key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"))))]
+pub struct AddressUnitDisplayTest;
+
+#[codama(display(amount(
+    decimals = 6,
+    unit = public_key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+)))]
+pub struct AddressAmountDisplayTest;
+
 #[codama(account(
     name = "payer",
     display(label = "Payer", skip = always)

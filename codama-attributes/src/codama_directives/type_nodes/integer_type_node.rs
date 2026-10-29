@@ -54,7 +54,7 @@ mod tests {
     use codama_nodes::{
         AmountNumberDisplayNode,
         IntegerFormat::{U16, U64},
-        IntegerValueNode, StringValueNode,
+        IntegerValueNode, PublicKeyValueNode, StringValueNode, UnitNumberDisplayNode,
     };
 
     #[test]
@@ -155,6 +155,30 @@ mod tests {
     }
 
     #[test]
+    fn unit_display() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { integer(u64, display = unit("lamports")) },
+                UnitNumberDisplayNode::new(StringValueNode::new("lamports")),
+            ),
+            (
+                syn::parse_quote! { integer(u64, display = unit(public_key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"))) },
+                UnitNumberDisplayNode::new(PublicKeyValueNode::new(
+                    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                )),
+            ),
+        ] {
+            assert_eq!(
+                IntegerTypeNode::from_meta(&meta).unwrap(),
+                IntegerTypeNode {
+                    display: Box::new(Some(NumberDisplayNode::Unit(expected))),
+                    ..IntegerTypeNode::le(U64)
+                }
+            );
+        }
+    }
+
+    #[test]
     fn errors() {
         for (meta, expected) in [
             (syn::parse_quote! { integer(le) }, "format is missing"),
@@ -169,6 +193,10 @@ mod tests {
             (
                 syn::parse_quote! { integer(u64, display = amount(decimals = 9), display = amount(decimals = 6)) },
                 "display is already set",
+            ),
+            (
+                syn::parse_quote! { integer(u64, display = amount(unit = "SOL")) },
+                "decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)",
             ),
             (
                 syn::parse_quote! { integer(u16, le, unknown) },

@@ -6,6 +6,7 @@ use codama_errors::CodamaResult;
 use codama_koroks::{FieldKorok, KorokMut, KorokTrait};
 use codama_nodes::{
     HasKind, Node, NumberDisplayNode, RegisteredTypeNode, StructFieldDisplayNode, TypeNode,
+    UnitNumberDisplayNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -150,6 +151,14 @@ fn apply_number_display(
             *integer.display = Some(display.clone());
             Ok(())
         }
+        TypeNode::Float(float) => {
+            float.display = Some(unit_display(display, float.kind(), attribute)?);
+            Ok(())
+        }
+        TypeNode::FixedPoint(fixed_point) => {
+            fixed_point.display = Some(unit_display(display, fixed_point.kind(), attribute)?);
+            Ok(())
+        }
         TypeNode::Option(node) => apply_number_display(&mut node.item, display, attribute),
         TypeNode::RemainderOption(node) => {
             apply_number_display(&mut node.item, display, attribute)
@@ -163,6 +172,23 @@ fn apply_number_display(
             .error(format!(
                 "Cannot apply attribute `#[codama(display)]` as a number display on a node of kind `{}`",
                 node.kind()
+            ))
+            .into()),
+    }
+}
+
+/// Floats and fixed points have a static scale, so the spec allows a unit display only.
+fn unit_display(
+    display: &NumberDisplayNode,
+    kind: &str,
+    attribute: &CodamaAttribute,
+) -> CodamaResult<UnitNumberDisplayNode> {
+    match display {
+        NumberDisplayNode::Unit(display) => Ok(display.clone()),
+        NumberDisplayNode::Amount(_) => Err(attribute
+            .ast
+            .error(format!(
+                "Cannot apply attribute `#[codama(display)]` as an amount display on a node of kind `{kind}`, use unit(...)"
             ))
             .into()),
     }

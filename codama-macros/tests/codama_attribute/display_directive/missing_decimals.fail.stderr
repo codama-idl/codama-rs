@@ -1,0 +1,11 @@
+error: decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)
+ --> tests/codama_attribute/display_directive/missing_decimals.fail.rs:3:18
+  |
+3 | #[codama(display(amount))]
+  |                  ^^^^^^
+
+error: decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)
+ --> tests/codama_attribute/display_directive/missing_decimals.fail.rs:6:18
+  |
+6 | #[codama(display(amount(unit = "SOL")))]
+  |                  ^^^^^^^^^^^^^^^^^^^^

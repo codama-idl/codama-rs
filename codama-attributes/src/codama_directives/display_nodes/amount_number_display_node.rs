@@ -1,7 +1,6 @@
 use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{
     AmountNumberDisplayNode, InjectableIntegerValueNode, InjectableUnitValueNode, IntegerValueNode,
-    StringValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -9,7 +8,7 @@ impl FromMeta for AmountNumberDisplayNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("amount")?;
         if meta.is_path_or_empty_list() {
-            return Err(meta.error("decimals is missing"));
+            return Err(missing_decimals(meta));
         }
         let pl = meta.as_path_list()?;
         let mut decimals: SetOnce<InjectableIntegerValueNode> = SetOnce::new("decimals");
@@ -24,24 +23,25 @@ impl FromMeta for AmountNumberDisplayNode {
                     meta,
                 )
             }
-            "unit" => {
-                let value = meta.as_value()?;
-                reject_injected_value(value)?;
-                unit.set(
-                    StringValueNode::new(value.as_expr()?.as_string()?).into(),
-                    meta,
-                )
-            }
+            "unit" => unit.set(InjectableUnitValueNode::from_meta(meta.as_value()?)?, meta),
             "injected" => Err(meta.error("injected display values are not supported yet")),
             _ => Err(meta.error("unrecognized amount display attribute")),
         })?;
 
+        let Some(decimals) = decimals.option() else {
+            return Err(missing_decimals(meta));
+        };
         Ok(Self {
-            decimals: Box::new(decimals.take(meta)?),
+            decimals: Box::new(decimals),
             unit: Box::new(unit.option()),
             plugins: vec![],
         })
     }
+}
+
+/// The spec requires decimals on an amount display. A number without a contextual scale takes a unit display.
+fn missing_decimals(meta: &Meta) -> syn::Error {
+    meta.error("decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)")
 }
 
 fn reject_injected_value(meta: &Meta) -> syn::Result<()> {
@@ -55,6 +55,7 @@ fn reject_injected_value(meta: &Meta) -> syn::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::{PublicKeyValueNode, StringValueNode};
 
     #[test]
     fn parses_display() {
@@ -89,20 +90,54 @@ mod tests {
                 AmountNumberDisplayNode::from_meta(&meta)
                     .unwrap_err()
                     .to_string(),
-                "decimals is missing"
+                "decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)"
             );
         }
     }
 
     #[test]
-    fn rejects_injected_values() {
-        let meta: Meta = syn::parse_quote! { amount(decimals = injected("mint_decimals")) };
+    fn parses_display_with_address_unit() {
+        let meta: Meta = syn::parse_quote! {
+            amount(decimals = 9, unit = public_key("So11111111111111111111111111111111111111112"))
+        };
         assert_eq!(
-            AmountNumberDisplayNode::from_meta(&meta)
-                .unwrap_err()
-                .to_string(),
-            "injected display values are not supported yet"
+            AmountNumberDisplayNode::from_meta(&meta).unwrap(),
+            AmountNumberDisplayNode::new(
+                IntegerValueNode::new(9u64),
+                PublicKeyValueNode::new("So11111111111111111111111111111111111111112")
+            )
         );
+    }
+
+    #[test]
+    fn rejects_injected_values() {
+        for meta in [
+            syn::parse_quote! { amount(decimals = injected("mint_decimals")) },
+            syn::parse_quote! { amount(decimals = 9, unit = injected("mint")) },
+        ] {
+            assert_eq!(
+                AmountNumberDisplayNode::from_meta(&meta)
+                    .unwrap_err()
+                    .to_string(),
+                "injected display values are not supported yet"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_other_unit_values() {
+        for meta in [
+            syn::parse_quote! { amount(decimals = 9, unit = 42) },
+            syn::parse_quote! { amount(decimals = 9, unit = true) },
+            syn::parse_quote! { amount(decimals = 9, unit = SOL) },
+        ] {
+            assert_eq!(
+                AmountNumberDisplayNode::from_meta(&meta)
+                    .unwrap_err()
+                    .to_string(),
+                "expected a string or a public key"
+            );
+        }
     }
 
     #[test]
