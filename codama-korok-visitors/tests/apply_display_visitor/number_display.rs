@@ -5,13 +5,14 @@ use codama_korok_visitors::{
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
     AmountNumberDisplayNode, ArrayTypeNode, BooleanTypeNode, ConstantValueNode, DateTimeTypeNode,
-    DefinedTypeLinkNode, DurationTypeNode, FixedSizeTransformNode, HasTransforms,
-    HiddenPrefixTransformNode, HiddenSuffixTransformNode,
+    DefinedTypeLinkNode, DurationTypeNode, FixedPointTypeNode, FixedSizeTransformNode,
+    FloatFormat::F64,
+    FloatTypeNode, HasTransforms, HiddenPrefixTransformNode, HiddenSuffixTransformNode,
     IntegerFormat::{U32, U64, U8},
     IntegerTypeNode, IntegerValueNode, MapTypeNode, NumberDisplayNode, OptionTypeNode,
-    PostOffsetTransformNode, PreOffsetTransformNode, RemainderOptionTypeNode,
+    PostOffsetTransformNode, PreOffsetTransformNode, PublicKeyValueNode, RemainderOptionTypeNode,
     SentinelTransformNode, SetTypeNode, SizePrefixTransformNode, StringTypeNode, StringValueNode,
-    StructFieldTypeNode, TupleTypeNode, TypeNode, ZeroableOptionTypeNode,
+    StructFieldTypeNode, TupleTypeNode, TypeNode, UnitNumberDisplayNode, ZeroableOptionTypeNode,
 };
 
 #[test]
@@ -43,6 +44,139 @@ fn it_applies_number_displays_without_creating_field_displays() -> CodamaResult<
             .into(),
         )
     );
+    Ok(())
+}
+
+#[test]
+fn it_applies_unit_displays_to_numbers() -> CodamaResult<()> {
+    let display = || UnitNumberDisplayNode::new(StringValueNode::new("USD"));
+    for (ast, expected) in [
+        (
+            syn::parse_quote! {
+                #[codama(display(unit("USD")))]
+                value: u64
+            },
+            TypeNode::from(IntegerTypeNode {
+                display: Box::new(Some(NumberDisplayNode::Unit(display()))),
+                ..IntegerTypeNode::le(U64)
+            }),
+        ),
+        (
+            syn::parse_quote! {
+                #[codama(display(unit("USD")))]
+                value: f64
+            },
+            FloatTypeNode {
+                display: Some(display()),
+                ..FloatTypeNode::le(F64)
+            }
+            .into(),
+        ),
+        (
+            syn::parse_quote! {
+                #[codama(type = fixed_point(integer(u64), scale = 6))]
+                #[codama(display(unit("USD")))]
+                value: u64
+            },
+            FixedPointTypeNode {
+                display: Some(display()),
+                ..FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
+            }
+            .into(),
+        ),
+    ] {
+        let mut korok = FieldKorok::parse(&ast)?;
+
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        korok.accept(&mut ApplyDisplayVisitor::new())?;
+
+        assert_eq!(
+            korok.node,
+            Some(StructFieldTypeNode::new("value", expected).into())
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn it_applies_address_units() -> CodamaResult<()> {
+    let mint = || PublicKeyValueNode::new("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+    for (ast, expected) in [
+        (
+            syn::parse_quote! {
+                #[codama(type = fixed_point(integer(u64), scale = 6))]
+                #[codama(display(unit(public_key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"))))]
+                value: u64
+            },
+            TypeNode::from(FixedPointTypeNode {
+                display: Some(UnitNumberDisplayNode::new(mint())),
+                ..FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
+            }),
+        ),
+        (
+            syn::parse_quote! {
+                #[codama(display(amount(
+                    decimals = 6,
+                    unit = public_key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+                )))]
+                value: u64
+            },
+            IntegerTypeNode {
+                display: Box::new(Some(NumberDisplayNode::Amount(
+                    AmountNumberDisplayNode::new(IntegerValueNode::new(6u64), mint()),
+                ))),
+                ..IntegerTypeNode::le(U64)
+            }
+            .into(),
+        ),
+    ] {
+        let mut korok = FieldKorok::parse(&ast)?;
+
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        korok.accept(&mut ApplyDisplayVisitor::new())?;
+
+        assert_eq!(
+            korok.node,
+            Some(StructFieldTypeNode::new("value", expected).into())
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn it_fails_to_apply_amount_displays_on_floats_and_fixed_points() -> CodamaResult<()> {
+    for (ast, kind) in [
+        (
+            syn::parse_quote! {
+                #[codama(display(amount(decimals = 2, unit = "USD")))]
+                value: f64
+            },
+            "floatTypeNode",
+        ),
+        (
+            syn::parse_quote! {
+                #[codama(type = fixed_point(integer(u64), scale = 6))]
+                #[codama(display(amount(decimals = 6, unit = "USD")))]
+                value: u64
+            },
+            "fixedPointTypeNode",
+        ),
+    ] {
+        let mut korok = FieldKorok::parse(&ast)?;
+
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        let error = korok.accept(&mut ApplyDisplayVisitor::new()).unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            format!(
+                "Cannot apply attribute `#[codama(display)]` as an amount display on a node of kind `{kind}`, use unit(...)"
+            )
+        );
+    }
     Ok(())
 }
 

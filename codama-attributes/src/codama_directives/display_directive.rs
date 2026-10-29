@@ -37,7 +37,7 @@ impl DisplayDirective {
             "skip" => skip.set(DisplaySkip::from_meta(meta.as_value()?)?, meta),
             "flatten" => flatten.set(bool::from_meta(meta)?, meta),
             "flatten_prefix" => flatten_prefix.set(meta.as_value()?.as_expr()?.as_string()?, meta),
-            "amount" | "date_time" | "duration" | "injected" => {
+            "amount" | "date_time" | "duration" | "injected" | "unit" => {
                 number_display.set(NumberDisplayNode::from_meta(meta)?, meta)
             }
             "string" => Err(meta.error("string display is not supported yet")),
@@ -88,6 +88,7 @@ mod tests {
     use super::*;
     use codama_nodes::{
         AmountNumberDisplayNode, InstructionAccountDisplayNode, IntegerValueNode, StringValueNode,
+        UnitNumberDisplayNode,
     };
 
     fn parse_display(tokens: proc_macro2::TokenStream) -> syn::Result<DisplayDirective> {
@@ -171,6 +172,21 @@ mod tests {
     }
 
     #[test]
+    fn parses_unit_display() {
+        let display = parse_display(quote::quote! {
+            display(label = "Price", unit("USD"))
+        })
+        .unwrap();
+        assert_eq!(display.label, Some("Price".to_string()));
+        assert_eq!(
+            display.number_display,
+            Some(NumberDisplayNode::Unit(UnitNumberDisplayNode::new(
+                StringValueNode::new("USD")
+            )))
+        );
+    }
+
+    #[test]
     fn rejects_amount_display_without_decimals() {
         for tokens in [
             quote::quote! { display(amount) },
@@ -178,7 +194,7 @@ mod tests {
         ] {
             assert_eq!(
                 parse_display(tokens).unwrap_err().to_string(),
-                "decimals is missing"
+                "decimals is missing, use amount(decimals = ..., unit = ...) or unit(...)"
             );
         }
     }
@@ -214,11 +230,15 @@ mod tests {
 
     #[test]
     fn rejects_multiple_number_displays() {
-        let error = parse_display(quote::quote! {
-            display(amount(decimals = 9), amount(decimals = 6))
-        })
-        .unwrap_err();
-        assert_eq!(error.to_string(), "number display is already set");
+        for tokens in [
+            quote::quote! { display(amount(decimals = 9), amount(decimals = 6)) },
+            quote::quote! { display(unit("SOL"), amount(decimals = 9)) },
+        ] {
+            assert_eq!(
+                parse_display(tokens).unwrap_err().to_string(),
+                "number display is already set"
+            );
+        }
     }
 
     #[test]

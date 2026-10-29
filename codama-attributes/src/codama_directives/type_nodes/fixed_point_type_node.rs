@@ -1,5 +1,9 @@
-use crate::utils::{hoist_integer_transforms, parse_encoding_integer, FromMeta, SetOnce};
-use codama_nodes::{Base, FixedPointTypeNode, IntegerFormat, IntegerTypeNode};
+use crate::utils::{
+    hoist_integer_transforms, parse_encoding_integer, parse_unit_display, FromMeta, SetOnce,
+};
+use codama_nodes::{
+    Base, FixedPointTypeNode, IntegerFormat, IntegerTypeNode, UnitNumberDisplayNode,
+};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for FixedPointTypeNode {
@@ -9,6 +13,7 @@ impl FromMeta for FixedPointTypeNode {
         let mut scale: SetOnce<u32> = SetOnce::new("scale");
         let mut base: SetOnce<Base> = SetOnce::new("base");
         let mut unit: SetOnce<String> = SetOnce::new("unit");
+        let mut display: SetOnce<UnitNumberDisplayNode> = SetOnce::new("display");
 
         pl.each(|ref meta| {
             // Lists and paths go to the type parser first, so `number(u64)` gets its hint, not the `number =` field.
@@ -32,6 +37,9 @@ impl FromMeta for FixedPointTypeNode {
                     }
                 }
                 "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+                "display" => {
+                    display.set(parse_unit_display(meta.as_value()?, "fixed points")?, meta)
+                }
                 _ => Err(meta.error("unrecognized attribute")),
             }
         })?;
@@ -41,6 +49,7 @@ impl FromMeta for FixedPointTypeNode {
             FixedPointTypeNode {
                 base: base.option(),
                 unit: unit.option(),
+                display: display.option(),
                 ..FixedPointTypeNode::new(number, scale)
             }
         }))
@@ -63,7 +72,7 @@ mod tests {
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms,
         IntegerFormat::{I64, U128, U64},
-        PreOffsetTransformNode,
+        PreOffsetTransformNode, StringValueNode,
     };
 
     #[test]
@@ -110,6 +119,44 @@ mod tests {
             ),
         ] {
             assert_eq!(FixedPointTypeNode::from_meta(&meta).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn unit_display() {
+        let display = || Some(UnitNumberDisplayNode::new(StringValueNode::new("wSOL")));
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { fixed_point(integer(u64), scale = 9, display = unit("wSOL")) },
+                FixedPointTypeNode {
+                    display: display(),
+                    ..FixedPointTypeNode::new(IntegerTypeNode::le(U64), 9)
+                },
+            ),
+            (
+                syn::parse_quote! { fixed_point(display = unit("wSOL"), unit = "SOL", scale = 9, number = integer(u64)) },
+                FixedPointTypeNode {
+                    unit: Some("SOL".to_string()),
+                    display: display(),
+                    ..FixedPointTypeNode::new(IntegerTypeNode::le(U64), 9)
+                },
+            ),
+        ] {
+            assert_eq!(FixedPointTypeNode::from_meta(&meta).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn amount_display() {
+        for meta in [
+            syn::parse_quote! { fixed_point(integer(u64), scale = 9, display = amount(decimals = 9, unit = "SOL")) },
+            syn::parse_quote! { fixed_point(integer(u64), scale = 9, display = amount(unit = "SOL")) },
+        ] {
+            let error = FixedPointTypeNode::from_meta(&meta).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "fixed points take a unit display, use unit(...)"
+            );
         }
     }
 
@@ -217,6 +264,10 @@ mod tests {
             (
                 syn::parse_quote! { fixed_point(integer(u64), scale = 6, foo = 42) },
                 "unrecognized attribute",
+            ),
+            (
+                syn::parse_quote! { fixed_point(integer(u64), scale = 6, display = unit("A"), display = unit("B")) },
+                "display is already set",
             ),
             (
                 syn::parse_quote! { fixed_point(number(u64), scale = 6) },
