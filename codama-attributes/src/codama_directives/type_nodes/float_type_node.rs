@@ -1,5 +1,5 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{Endianness, FloatFormat, FloatTypeNode};
+use crate::utils::{parse_unit_display, FromMeta, SetOnce};
+use codama_nodes::{Endianness, FloatFormat, FloatTypeNode, UnitNumberDisplayNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for FloatTypeNode {
@@ -8,6 +8,7 @@ impl FromMeta for FloatTypeNode {
         let mut format = SetOnce::<FloatFormat>::new("format");
         let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
         let mut unit = SetOnce::<String>::new("unit");
+        let mut display = SetOnce::<UnitNumberDisplayNode>::new("display");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "format" => {
@@ -25,6 +26,7 @@ impl FromMeta for FloatTypeNode {
                 }
             }
             "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            "display" => display.set(parse_unit_display(meta.as_value()?, "floats")?, meta),
             _ => {
                 if let Ok(path) = meta.as_path() {
                     if let Ok(value) = FloatFormat::try_from(path.to_string().as_str()) {
@@ -40,6 +42,7 @@ impl FromMeta for FloatTypeNode {
 
         Ok(FloatTypeNode {
             unit: unit.option(),
+            display: display.option(),
             ..FloatTypeNode::new(format.take(meta)?, endian.take(meta)?)
         })
     }
@@ -48,7 +51,10 @@ impl FromMeta for FloatTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::FloatFormat::{F32, F64};
+    use codama_nodes::{
+        FloatFormat::{F32, F64},
+        StringValueNode,
+    };
 
     #[test]
     fn parses() {
@@ -80,6 +86,45 @@ mod tests {
     }
 
     #[test]
+    fn unit_display() {
+        let display = || Some(UnitNumberDisplayNode::new(StringValueNode::new("EUR")));
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { float(f64, display = unit("EUR")) },
+                FloatTypeNode {
+                    display: display(),
+                    ..FloatTypeNode::le(F64)
+                },
+            ),
+            (
+                syn::parse_quote! { float(f64, be, unit = "USD", display = unit("EUR")) },
+                FloatTypeNode {
+                    unit: Some("USD".to_string()),
+                    display: display(),
+                    ..FloatTypeNode::be(F64)
+                },
+            ),
+        ] {
+            assert_eq!(FloatTypeNode::from_meta(&meta).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn amount_display() {
+        for meta in [
+            syn::parse_quote! { float(f64, display = amount(decimals = 2, unit = "USD")) },
+            syn::parse_quote! { float(f64, display = amount(unit = "USD")) },
+            syn::parse_quote! { float(f64, display = amount) },
+        ] {
+            let error = FloatTypeNode::from_meta(&meta).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "floats take a unit display, use unit(...)"
+            );
+        }
+    }
+
+    #[test]
     fn errors() {
         for (meta, expected) in [
             (syn::parse_quote! { float(le) }, "format is missing"),
@@ -91,6 +136,22 @@ mod tests {
             (
                 syn::parse_quote! { float(f64, unit = USD) },
                 "expected a string",
+            ),
+            (
+                syn::parse_quote! { float(f64, display = unit("USD"), display = unit("EUR")) },
+                "display is already set",
+            ),
+            (
+                syn::parse_quote! { float(f64, display = unit(USD)) },
+                "expected a string or a public key",
+            ),
+            (
+                syn::parse_quote! { float(f64, display = date_time) },
+                "date_time display is removed in v2, use the date_time(...) type",
+            ),
+            (
+                syn::parse_quote! { float(f64, display = string) },
+                "unrecognized number display",
             ),
         ] {
             let error = FloatTypeNode::from_meta(&meta).unwrap_err();

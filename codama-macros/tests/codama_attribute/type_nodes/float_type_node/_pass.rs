@@ -8,6 +8,8 @@ use codama_macros::codama;
 #[codama(type = float(endian = le, format = f64))]
 #[codama(type = float(f64, unit = "USD"))]
 #[codama(type = float(format = f32, endian = be, unit = "%"))]
+#[codama(type = float(f64, display = unit("USD")))]
+#[codama(type = float(f64, unit = "USD", display = unit("EUR")))]
 pub struct Test;
 
 fn main() {}
