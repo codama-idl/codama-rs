@@ -1,10 +1,12 @@
-use crate::{CamelCaseString, DiscriminatorNode, Docs, HasName, TypeNode};
+use crate::{CamelCaseString, DiscriminatorNode, Docs, HasIdentifier, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct EventNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
 
@@ -14,8 +16,8 @@ pub struct EventNode {
     pub discriminators: Vec<DiscriminatorNode>,
 }
 
-impl HasName for EventNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for EventNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

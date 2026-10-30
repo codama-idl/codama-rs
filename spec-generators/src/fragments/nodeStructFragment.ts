@@ -33,7 +33,7 @@ export function getNodeStructFragment(node: NodeSpec, spec: Spec): Fragment {
     const raw =
         data.length === 0 && children.length === 0
             ? fragment`${header}\npub struct ${structName} {}`
-            : fragment`${header}\npub struct ${structName} {\n${buildBody(data, children)}\n}`;
+            : fragment`${header}\npub struct ${structName} {\n${buildBody(node, data, children)}\n}`;
 
     // Drop the self-import a self-referential field (e.g.
     // `subInstructions: Vec<InstructionNode>`) would otherwise add —
@@ -131,15 +131,16 @@ function partitionAttributes(node: NodeSpec): PartitionedAttributes {
     return { data, children };
 }
 
-function buildBody(data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
+// TODO(spec v2): `node` serves only the TEMP_NAME_NODE_EXCEPTIONS list. Drop it at the spec v2 pin.
+function buildBody(node: NodeSpec, data: readonly AttributeSpec[], children: readonly AttributeSpec[]): Fragment {
     const sections: Fragment[] = [];
-    if (data.length > 0) sections.push(buildSection('// Data.', data));
-    if (children.length > 0) sections.push(buildSection('// Children.', children));
+    if (data.length > 0) sections.push(buildSection(node, '// Data.', data));
+    if (children.length > 0) sections.push(buildSection(node, '// Children.', children));
     return mergeFragments(sections, parts => parts.join('\n\n'));
 }
 
-function buildSection(header: string, attrs: readonly AttributeSpec[]): Fragment {
-    const lines = attrs.map(getAttributeBodyLineFragment);
+function buildSection(node: NodeSpec, header: string, attrs: readonly AttributeSpec[]): Fragment {
+    const lines = attrs.map(attr => getAttributeBodyLineFragment(attr, node));
     const body = mergeFragments(lines, parts => parts.join('\n'));
     return fragment`${header}\n${body}`;
 }

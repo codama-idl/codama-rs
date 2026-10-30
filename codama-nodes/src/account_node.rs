@@ -7,7 +7,7 @@ impl AccountNode {
         U: Into<NestedTypeNode<StructTypeNode>>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             size: None,
             docs: Docs::default(),
             data: data.into(),
@@ -31,7 +31,7 @@ mod tests {
                 StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
             ]),
         );
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert_eq!(node.size, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = AccountNode {
-            name: "myAccount".into(),
+            identifier: "myAccount".into(),
             size: None,
             docs: Docs::default(),
             data: StructTypeNode::new(vec![
@@ -59,7 +59,7 @@ mod tests {
             pda: None,
             discriminators: vec![],
         };
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert_eq!(node.size, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(

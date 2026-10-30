@@ -19,7 +19,7 @@ impl FromMeta for PdaSeedValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         // Account and Argument value node shortcut.
         if let Ok(value) = AccountValueNode::from_meta(meta) {
-            return Ok(PdaSeedValueNode::new(value.name.clone(), value));
+            return Ok(PdaSeedValueNode::new(value.identifier.clone(), value));
         }
         if let Ok(value) = ArgumentValueNode::from_meta(meta) {
             return Ok(PdaSeedValueNode::new(value.name.clone(), value));

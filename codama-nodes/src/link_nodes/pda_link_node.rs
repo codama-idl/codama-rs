@@ -6,7 +6,7 @@ impl PdaLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: None,
         }
     }
@@ -16,7 +16,7 @@ impl PdaLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: Some(program),
         }
     }
@@ -41,27 +41,27 @@ mod tests {
     #[test]
     fn new() {
         let node = PdaLinkNode::new("my_pda");
-        assert_eq!(node.name, CamelCaseString::new("myPda"));
+        assert_eq!(node.identifier, CamelCaseString::new("myPda"));
     }
 
     #[test]
     fn new_from_program() {
         let node = PdaLinkNode::new_from_program("my_pda", ProgramLinkNode::new("my_program"));
-        assert_eq!(node.name, CamelCaseString::new("myPda"));
+        assert_eq!(node.identifier, CamelCaseString::new("myPda"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn from_string() {
         let node: PdaLinkNode = String::from("my_pda").into();
-        assert_eq!(node.name, CamelCaseString::new("myPda"));
+        assert_eq!(node.identifier, CamelCaseString::new("myPda"));
         assert_eq!(node.program, None);
     }
 
     #[test]
     fn from_str() {
         let node: PdaLinkNode = "my_pda".into();
-        assert_eq!(node.name, CamelCaseString::new("myPda"));
+        assert_eq!(node.identifier, CamelCaseString::new("myPda"));
         assert_eq!(node.program, None);
     }
 

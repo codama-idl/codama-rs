@@ -8,6 +8,8 @@ const linkCategory = spec.categories.find(c => c.name === 'link')!;
 const linkUnion = linkCategory.unions.find(u => u.name === 'linkNode')!;
 const pdaSeedCategory = spec.categories.find(c => c.name === 'pdaSeed')!;
 const constantPdaSeedValueUnion = pdaSeedCategory.unions.find(u => u.name === 'constantPdaSeedValue')!;
+const contextualValueCategory = spec.categories.find(c => c.name === 'contextualValue')!;
+const pdaValuePdaUnion = contextualValueCategory.unions.find(u => u.name === 'pdaValuePda')!;
 
 describe('getUnionPageFragment', () => {
     it('emits #[node_union] and a PascalCase enum name', () => {
@@ -33,20 +35,20 @@ describe('getUnionPageFragment', () => {
         ]);
     });
 
-    it('emits an `impl HasName for LinkNode` block dispatching to each variant', () => {
-        const result = getUnionPageFragment(linkUnion, spec);
-        expect(result.content).toContain('impl HasName for LinkNode {');
-        expect(result.content).toContain('LinkNode::Account(node) => node.name(),');
-        expect(result.content).toContain('LinkNode::Program(node) => node.name(),');
+    it('emits an `impl HasIdentifier for PdaValuePda` block dispatching to each variant', () => {
+        const result = getUnionPageFragment(pdaValuePdaUnion, spec);
+        expect(result.content).toContain('impl HasIdentifier for PdaValuePda {');
+        expect(result.content).toContain('PdaValuePda::Pda(node) => node.identifier(),');
+        expect(result.content).toContain('PdaValuePda::PdaLink(node) => node.identifier(),');
     });
 
-    it('carries the codama_nodes_derive::node_union import plus the crate-rooted imports for every member type and the HasName helpers', () => {
-        const result = getUnionPageFragment(linkUnion, spec);
+    it('carries the codama_nodes_derive::node_union import plus the crate-rooted imports for every member type and the HasIdentifier helpers', () => {
+        const result = getUnionPageFragment(pdaValuePdaUnion, spec);
         const imports = [...result.imports.keys()].toSorted();
         expect(imports).toContain('codama_nodes_derive::node_union');
-        expect(imports).toContain('crate::AccountLinkNode');
-        expect(imports).toContain('crate::ProgramLinkNode');
-        expect(imports).toContain('crate::HasName');
+        expect(imports).toContain('crate::PdaNode');
+        expect(imports).toContain('crate::PdaLinkNode');
+        expect(imports).toContain('crate::HasIdentifier');
         expect(imports).toContain('crate::CamelCaseString');
     });
 
@@ -60,7 +62,7 @@ describe('getUnionPageFragment', () => {
         expect(result.content).toContain('ProgramId(ProgramIdValueNode),');
         expect(result.content).toContain('Number(NumberValueNode),');
         expect(result.content).toContain('String(StringValueNode),');
-        // Not every variant has a stringIdentifier name -> no HasName impl.
-        expect(result.content).not.toContain('impl HasName for ConstantPdaSeedValue');
+        // Not every variant has a stringIdentifier name -> no HasIdentifier impl.
+        expect(result.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');
     });
 });

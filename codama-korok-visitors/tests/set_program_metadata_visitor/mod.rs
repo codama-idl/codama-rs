@@ -18,7 +18,7 @@ fn it_gets_program_metadata_from_the_manifest() -> CodamaResult<()> {
         panic!("Expected program node");
     };
 
-    assert_eq!(program.name, "myCrateName".into());
+    assert_eq!(program.identifier, "myCrateName".into());
     assert_eq!(program.version, "1.2.3");
     assert_eq!(
         program.public_key,
@@ -60,7 +60,7 @@ fn it_prioritises_the_program_id_from_the_manifest() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                name: "myCrateName".into(),
+                identifier: "myCrateName".into(),
                 version: "1.2.3".into(),
                 public_key: "MyProgramAddress1111111111111111111111111".into(),
                 ..Default::default()
@@ -127,7 +127,7 @@ fn it_does_not_override_existing_values() -> CodamaResult<()> {
 
     let mut korok = CrateKorok::parse(&store)?;
     let existing_program = ProgramNode {
-        name: "myExistingName".into(),
+        identifier: "myExistingName".into(),
         version: "9.9.9".into(),
         public_key: "MyExistingProgramAddress1111111111111111111111111".into(),
         ..Default::default()
@@ -167,7 +167,7 @@ fn it_overrides_the_program_name_from_a_codama_program_macro() -> CodamaResult<(
     let Some(Node::Program(program)) = korok.node else {
         panic!("Expected program node");
     };
-    assert_eq!(program.name, "myOverriddenProgramName".into());
+    assert_eq!(program.identifier, "myOverriddenProgramName".into());
     assert_eq!(
         program.public_key,
         "MyProgramAddress1111111111111111111111111"
@@ -191,7 +191,7 @@ fn it_overrides_the_program_name_over_the_manifest_default() -> CodamaResult<()>
     };
     // The macro wins the name; the address and version still come from the
     // manifest since the macro omitted the address.
-    assert_eq!(program.name, "myOverriddenProgramName".into());
+    assert_eq!(program.identifier, "myOverriddenProgramName".into());
     assert_eq!(program.version, "1.2.3");
     assert_eq!(
         program.public_key,
@@ -214,7 +214,7 @@ fn it_overrides_the_program_address_from_a_codama_program_macro() -> CodamaResul
         panic!("Expected program node");
     };
     // Both the name and address come from the macro, overriding `declare_id!`.
-    assert_eq!(program.name, "myOverriddenProgramName".into());
+    assert_eq!(program.identifier, "myOverriddenProgramName".into());
     assert_eq!(
         program.public_key,
         "MyOverrideAddress11111111111111111111111111"
@@ -237,7 +237,7 @@ fn it_overrides_only_the_program_address_from_a_codama_program_macro() -> Codama
     let Some(Node::Program(program)) = korok.node else {
         panic!("Expected program node");
     };
-    assert_eq!(program.name, "myCrateName".into());
+    assert_eq!(program.identifier, "myCrateName".into());
     assert_eq!(
         program.public_key,
         "MyOverrideAddress11111111111111111111111111"
@@ -280,7 +280,7 @@ fn it_ignores_codama_program_macros_from_other_crates() -> CodamaResult<()> {
     let Some(Node::Program(program)) = korok.node else {
         panic!("Expected program node");
     };
-    assert_eq!(program.name, "myCrateName".into());
+    assert_eq!(program.identifier, "myCrateName".into());
     Ok(())
 }
 

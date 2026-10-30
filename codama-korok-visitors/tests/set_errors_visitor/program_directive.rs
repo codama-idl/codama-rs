@@ -20,7 +20,7 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                name: "externalProgram".into(),
+                identifier: "externalProgram".into(),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 errors: vec![ErrorNode::new("someError", 0, "Something went wrong")],
                 ..ProgramNode::default()

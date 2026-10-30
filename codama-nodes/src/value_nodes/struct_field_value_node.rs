@@ -7,7 +7,7 @@ impl StructFieldValueNode {
         U: Into<ValueNode>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             value: Box::new(value.into()),
         }
     }
@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn new() {
         let node = StructFieldValueNode::new("answer", NumberValueNode::new(42));
-        assert_eq!(node.name, CamelCaseString::from("answer"));
+        assert_eq!(node.identifier, CamelCaseString::from("answer"));
         assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(42)));
     }
 

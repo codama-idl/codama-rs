@@ -39,13 +39,13 @@ mod tests {
     #[test]
     fn new() {
         let node = RootNode::new(ProgramNode {
-            name: "myProgram".into(),
+            identifier: "myProgram".into(),
             ..ProgramNode::default()
         });
         assert_eq!(
             node.program,
             ProgramNode {
-                name: "myProgram".into(),
+                identifier: "myProgram".into(),
                 ..ProgramNode::default()
             }
         );
@@ -55,14 +55,14 @@ mod tests {
     #[test]
     fn from_program() {
         let node: RootNode = ProgramNode {
-            name: "myProgram".into(),
+            identifier: "myProgram".into(),
             ..ProgramNode::default()
         }
         .into();
         assert_eq!(
             node.program,
             ProgramNode {
-                name: "myProgram".into(),
+                identifier: "myProgram".into(),
                 ..ProgramNode::default()
             }
         );
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = RootNode::new(ProgramNode {
-            name: "myProgram".into(),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
@@ -114,7 +114,7 @@ mod tests {
         assert_eq!(
             node,
             RootNode::new(ProgramNode {
-                name: "myProgram".into(),
+                identifier: "myProgram".into(),
                 public_key: "1234..5678".into(),
                 version: "1.2.3".into(),
                 ..ProgramNode::default()

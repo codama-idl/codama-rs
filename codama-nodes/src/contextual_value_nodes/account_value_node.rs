@@ -5,7 +5,9 @@ impl AccountValueNode {
     where
         T: Into<CamelCaseString>,
     {
-        Self { name: name.into() }
+        Self {
+            identifier: name.into(),
+        }
     }
 }
 
@@ -16,7 +18,7 @@ mod tests {
     #[test]
     fn new() {
         let node = AccountValueNode::new("my_account");
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
     }
 
     #[test]

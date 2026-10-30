@@ -49,7 +49,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         // E.g. `codama_program!(name = "myProgram");`
         if let Some(program_macro) = &self.identified_program {
             if let Some(name) = &program_macro.name {
-                program.name = name.clone();
+                program.identifier = name.clone();
             }
             if let Some(address) = &program_macro.address {
                 program.public_key = address.clone();
@@ -58,9 +58,9 @@ impl KorokVisitor for SetProgramMetadataVisitor {
 
         // Update the program name using the Cargo.toml package name.
         // E.g. `name = "my-program"`
-        if program.name.is_empty() {
+        if program.identifier.is_empty() {
             if let Some(p) = get_package(&korok.store.manifest) {
-                program.name = p.name.clone().into()
+                program.identifier = p.name.clone().into()
             }
         }
 

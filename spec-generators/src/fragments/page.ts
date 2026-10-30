@@ -13,7 +13,7 @@ import { type Fragment, fragment, type ImportMap, importMapToString, mergeFragme
  *
  * This grouping has to happen here because stable `rustfmt` (the
  * codama-rs toolchain) sorts `use` lines but won't merge them —
- * `imports_granularity` is a nightly-only knob.
+ * `imports_granularity` is a nightly-only option.
  */
 export function getPageFragment(body: Fragment): Fragment {
     if (body.imports.size === 0) return body;

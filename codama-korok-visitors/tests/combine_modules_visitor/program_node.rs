@@ -55,7 +55,7 @@ fn it_updates_the_program_data_when_not_set() {
         panic!("Expected a RootNode");
     };
 
-    assert_eq!(program.name, program_b.name);
+    assert_eq!(program.identifier, program_b.identifier);
     assert_eq!(program.public_key, "1234");
     assert_eq!(program.version, program_b.version);
     assert_eq!(program.origin, program_b.origin);
@@ -75,7 +75,7 @@ fn it_does_not_override_the_program_data_when_set() {
         panic!("Expected a RootNode");
     };
 
-    assert_eq!(program.name, program_a.name);
+    assert_eq!(program.identifier, program_a.identifier);
     assert_eq!(program.public_key, program_a.public_key);
     assert_eq!(program.version, program_a.version);
     assert_eq!(program.origin, program_a.origin);
@@ -91,7 +91,7 @@ fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
         ProgramOrigin::Shank
     };
     ProgramNode {
-        name: format!("program_{}", identifier).into(),
+        identifier: format!("program_{}", identifier).into(),
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
         origin: Some(origin),
@@ -101,7 +101,7 @@ fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
             StructTypeNode::default(),
         )],
         instructions: vec![InstructionNode {
-            name: format!("instruction_{}", identifier).into(),
+            identifier: format!("instruction_{}", identifier).into(),
             ..InstructionNode::default()
         }],
         defined_types: vec![DefinedTypeNode::new(

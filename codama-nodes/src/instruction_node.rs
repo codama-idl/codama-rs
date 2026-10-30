@@ -7,10 +7,10 @@ mod tests {
     #[test]
     fn empty_instruction() {
         let node = InstructionNode {
-            name: "myInstruction".into(),
+            identifier: "myInstruction".into(),
             ..InstructionNode::default()
         };
-        assert_eq!(node.name, CamelCaseString::new("myInstruction"));
+        assert_eq!(node.identifier, CamelCaseString::new("myInstruction"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.optional_account_strategy, None);
         assert_eq!(node.accounts, vec![]);
@@ -26,14 +26,14 @@ mod tests {
     #[test]
     fn instruction_with_sub_instructions() {
         let node = InstructionNode {
-            name: "myInstruction".into(),
+            identifier: "myInstruction".into(),
             sub_instructions: vec![
                 InstructionNode {
-                    name: "mySubInstructionA".into(),
+                    identifier: "mySubInstructionA".into(),
                     ..InstructionNode::default()
                 },
                 InstructionNode {
-                    name: "mySubInstructionB".into(),
+                    identifier: "mySubInstructionB".into(),
                     ..InstructionNode::default()
                 },
             ],
@@ -43,11 +43,11 @@ mod tests {
             node.sub_instructions,
             vec![
                 InstructionNode {
-                    name: "mySubInstructionA".into(),
+                    identifier: "mySubInstructionA".into(),
                     ..InstructionNode::default()
                 },
                 InstructionNode {
-                    name: "mySubInstructionB".into(),
+                    identifier: "mySubInstructionB".into(),
                     ..InstructionNode::default()
                 },
             ]
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = InstructionNode {
-            name: "myInstruction".into(),
+            identifier: "myInstruction".into(),
             ..InstructionNode::default()
         };
         let json = serde_json::to_string(&node).unwrap();
@@ -73,7 +73,7 @@ mod tests {
         assert_eq!(
             node,
             InstructionNode {
-                name: "myInstruction".into(),
+                identifier: "myInstruction".into(),
                 ..InstructionNode::default()
             }
         );

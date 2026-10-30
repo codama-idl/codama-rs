@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, Docs, HasName, ResolverDependency};
+use crate::{CamelCaseString, Docs, ResolverDependency};
 use codama_nodes_derive::node;
 
 #[node]
@@ -17,11 +17,5 @@ pub struct ResolverValueNode {
 impl From<ResolverValueNode> for crate::Node {
     fn from(val: ResolverValueNode) -> Self {
         crate::Node::ContextualValue(val.into())
-    }
-}
-
-impl HasName for ResolverValueNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
     }
 }
