@@ -1,7 +1,7 @@
 use super::Membership;
 
 #[codama(export(CodamaType))]
-#[codama(type = struct(field("len", number(u8)), field("value", fixed_size(string, 25))))]
+#[codama(type = struct(field("len", integer(u8)), field("value", fixed_size(string, 25))))]
 pub type BoundedString25 = PodString<25>;
 
 #[derive(CodamaAccount)]

@@ -2,7 +2,7 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{ApplyDisplayVisitor, IdentifyFieldTypesVisitor, KorokVisitable};
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
-    DisplaySkip, NumberFormat::U64, NumberTypeNode, StringValueNode, StructFieldDisplayNode,
+    DisplaySkip, IntegerFormat::U64, IntegerTypeNode, StringValueNode, StructFieldDisplayNode,
     StructFieldTypeNode,
 };
 
@@ -27,12 +27,13 @@ fn it_applies_struct_field_displays() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode {
                 display: Some(StructFieldDisplayNode {
-                    label: Some("Amount".to_string()),
+                    label: Some("Amount".into()),
                     skip: Some(DisplaySkip::WhenInjected),
                     flatten: Some(true),
-                    flatten_prefix: Some("Inner ".to_string()),
+                    flatten_prefix: Some("Inner ".into()),
+                    ..Default::default()
                 }),
-                ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U64))
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
             }
             .into()
         )
@@ -57,12 +58,12 @@ fn it_overlays_multiple_displays_in_source_order() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode {
                 display: Some(StructFieldDisplayNode {
-                    label: Some("Second".to_string()),
+                    label: Some("Second".into()),
                     skip: Some(DisplaySkip::Always),
                     flatten: Some(false),
-                    flatten_prefix: None,
+                    ..Default::default()
                 }),
-                ..StructFieldTypeNode::new("amount", NumberTypeNode::le(U64))
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
             }
             .into()
         )
@@ -81,7 +82,7 @@ fn it_ignores_struct_field_properties_on_unnamed_fields() -> CodamaResult<()> {
     korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
     korok.accept(&mut ApplyDisplayVisitor::new())?;
 
-    assert_eq!(korok.node, Some(NumberTypeNode::le(U64).into()));
+    assert_eq!(korok.node, Some(IntegerTypeNode::le(U64).into()));
     Ok(())
 }
 
@@ -104,7 +105,7 @@ fn it_fails_on_empty_nodes() -> CodamaResult<()> {
 #[test]
 fn it_fails_to_apply_number_displays_on_non_type_nodes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         Invalid
     };
     let mut korok = FieldKorok::parse(&ast)?;

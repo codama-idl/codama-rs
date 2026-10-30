@@ -114,10 +114,12 @@ impl TryFrom<RegisteredTypeNode> for TypeNode {
             RegisteredTypeNode::Struct(node) => Ok(Self::Struct(node)),
             RegisteredTypeNode::Tuple(node) => Ok(Self::Tuple(node)),
             RegisteredTypeNode::ZeroableOption(node) => Ok(Self::ZeroableOption(node)),
-            _ => Err(CodamaError::InvalidNodeConversion {
-                from: node.kind().to_string(),
-                into: "TypeNode".to_string(),
-            }),
+            RegisteredTypeNode::EnumVariant(_) | RegisteredTypeNode::StructField(_) => {
+                Err(CodamaError::InvalidNodeConversion {
+                    from: node.kind().to_string(),
+                    into: "TypeNode".to_string(),
+                })
+            }
         }
     }
 }
@@ -145,7 +147,7 @@ impl TryFrom<TypeNode> for RegisteredTypeNode {
             TypeNode::Struct(node) => Ok(Self::Struct(node)),
             TypeNode::Tuple(node) => Ok(Self::Tuple(node)),
             TypeNode::ZeroableOption(node) => Ok(Self::ZeroableOption(node)),
-            _ => Err(CodamaError::InvalidNodeConversion {
+            TypeNode::Link(_) => Err(CodamaError::InvalidNodeConversion {
                 from: node.kind().to_string(),
                 into: "RegisteredTypeNode".to_string(),
             }),

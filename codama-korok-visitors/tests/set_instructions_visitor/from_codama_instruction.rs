@@ -1,14 +1,15 @@
+use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     IdentifyFieldTypesVisitor, KorokVisitable, SetDefaultValuesVisitor, SetInstructionsVisitor,
 };
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountValueNode, ArgumentValueNode, BooleanTypeNode, BooleanValueNode, DefaultValueStrategy,
-    Docs, FieldDiscriminatorNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode,
-    NumberFormat::{U64, U8},
-    NumberTypeNode, NumberValueNode, PayerValueNode, PublicKeyValueNode, SizeDiscriminatorNode,
-    StringTypeNode,
+    AccountValueNode, BooleanTypeNode, BooleanValueNode, DataValueNode, DefaultValueStrategy, Docs,
+    FieldDiscriminatorNode, InjectedValueNode, InstructionAccountNode, InstructionNode,
+    IntegerFormat::{U64, U8},
+    IntegerTypeNode, IntegerValueNode, PayerValueNode, ProvidedNode, PublicKeyValueNode,
+    SizeDiscriminatorNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -38,10 +39,13 @@ fn from_struct() -> CodamaResult<()> {
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode::new("payer", true, true),
                 ],
-                arguments: vec![
-                    InstructionArgumentNode::new("amount", NumberTypeNode::le(U64)),
-                    InstructionArgumentNode::new("is_canonical", BooleanTypeNode::default(),),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -51,7 +55,7 @@ fn from_struct() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct_with_arguments_only() -> CodamaResult<()> {
+fn from_struct_with_data_only() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
         struct Initialize {
@@ -69,10 +73,13 @@ fn from_struct_with_arguments_only() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "initialize".into(),
-                arguments: vec![
-                    InstructionArgumentNode::new("amount", NumberTypeNode::le(U64)),
-                    InstructionArgumentNode::new("is_canonical", BooleanTypeNode::default(),),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -139,10 +146,13 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode::new("payer", true, true),
                 ],
-                arguments: vec![
-                    InstructionArgumentNode::new("amount", NumberTypeNode::le(U64)),
-                    InstructionArgumentNode::new("is_canonical", BooleanTypeNode::default(),),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -186,6 +196,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         docs: Docs::default(),
                         account_link: None,
                         display: None,
+                        plugins: vec![],
                     },
                     InstructionAccountNode {
                         identifier: "tokenProgram".into(),
@@ -199,6 +210,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         docs: Docs::default(),
                         account_link: None,
                         display: None,
+                        plugins: vec![],
                     },
                     InstructionAccountNode::new("authority", false, false),
                     InstructionAccountNode {
@@ -210,6 +222,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         docs: Docs::default(),
                         account_link: None,
                         display: None,
+                        plugins: vec![],
                     },
                 ],
                 ..InstructionNode::default()
@@ -221,13 +234,13 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
 }
 
 #[test]
-fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
+fn from_struct_with_default_values_in_data() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument("discriminator", number(u8), default_value = 0))]
+        #[codama(field("discriminator", integer(u8), default_value = 0))]
         struct Initialize {
             capacity: u64,
-            #[codama(default_value = argument("capacity"))]
+            #[codama(default_value = data("capacity"))]
             max_capacity: u64,
             #[codama(value = false)]
             with_metadata: bool,
@@ -244,22 +257,31 @@ fn from_struct_with_default_values_in_arguments() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "initialize".into(),
-                arguments: vec![
-                    InstructionArgumentNode {
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
-                    },
-                    InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
-                    InstructionArgumentNode {
-                        default_value: Box::new(Some(ArgumentValueNode::new("capacity").into())),
-                        ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
-                    },
-                    InstructionArgumentNode {
-                        default_value: Box::new(Some(BooleanValueNode::new(false).into())),
-                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        ..InstructionArgumentNode::new("with_metadata", BooleanTypeNode::default())
-                    }
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode {
+                            default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                            ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                        },
+                        StructFieldTypeNode::new("capacity", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode {
+                            default_value: Box::new(Some(
+                                InjectedValueNode::new("maxCapacity").into()
+                            )),
+                            ..StructFieldTypeNode::new("max_capacity", IntegerTypeNode::le(U64))
+                        },
+                        StructFieldTypeNode {
+                            default_value: Box::new(Some(BooleanValueNode::new(false).into())),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            ..StructFieldTypeNode::new("with_metadata", BooleanTypeNode::default())
+                        }
+                    ])
+                    .into()
+                )),
+                provides: vec![ProvidedNode::new(
+                    "maxCapacity",
+                    DataValueNode::new(path("capacity")),
+                )],
                 ..InstructionNode::default()
             }
             .into()
@@ -301,12 +323,12 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
 }
 
 #[test]
-fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<()> {
+fn from_struct_with_default_values_linking_to_other_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
         struct Initialize {
             capacity: u64,
-            #[codama(default_value = argument("capacity"))]
+            #[codama(default_value = data("capacity"))]
             max_capacity: u64,
         }
     };
@@ -320,13 +342,22 @@ fn from_struct_with_default_values_linking_to_other_arguments() -> CodamaResult<
         Some(
             InstructionNode {
                 identifier: "initialize".into(),
-                arguments: vec![
-                    InstructionArgumentNode::new("capacity", NumberTypeNode::le(U64)),
-                    InstructionArgumentNode {
-                        default_value: Box::new(Some(ArgumentValueNode::new("capacity").into())),
-                        ..InstructionArgumentNode::new("max_capacity", NumberTypeNode::le(U64))
-                    },
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("capacity", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode {
+                            default_value: Box::new(Some(
+                                InjectedValueNode::new("maxCapacity").into()
+                            )),
+                            ..StructFieldTypeNode::new("max_capacity", IntegerTypeNode::le(U64))
+                        },
+                    ])
+                    .into()
+                )),
+                provides: vec![ProvidedNode::new(
+                    "maxCapacity",
+                    DataValueNode::new(path("capacity")),
+                )],
                 ..InstructionNode::default()
             }
             .into()
@@ -436,7 +467,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                 identifier: "myInstruction".into(),
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
-                    FieldDiscriminatorNode::new("discriminator", 0).into(),
+                    FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                 ],
                 ..InstructionNode::default()
             }
@@ -447,11 +478,11 @@ fn with_discriminator_directives() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_argument_attributes_only() -> CodamaResult<()> {
+fn with_field_attributes_only() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument("age", number(u8)))]
-        #[codama(argument("name", string(utf8)))]
+        #[codama(field("age", integer(u8)))]
+        #[codama(field("name", string(utf8)))]
         struct MyInstruction;
     };
     let mut korok = StructKorok::parse(&item)?;
@@ -463,10 +494,13 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "myInstruction".into(),
-                arguments: vec![
-                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
-                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -476,11 +510,11 @@ fn with_argument_attributes_only() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_prepended_argument_attributes() -> CodamaResult<()> {
+fn with_prepended_field_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument("discriminator", number(u8), value = 0))]
-        #[codama(argument("name", string(utf8)))]
+        #[codama(field("discriminator", integer(u8), value = 0))]
+        #[codama(field("name", string(utf8)))]
         struct MyInstruction {
             age: u8,
         }
@@ -495,15 +529,18 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "myInstruction".into(),
-                arguments: vec![
-                    InstructionArgumentNode {
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
-                        default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        ..InstructionArgumentNode::new("discriminator", NumberTypeNode::le(U8))
-                    },
-                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
-                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode {
+                            default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
+                            default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                            ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                        },
+                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -513,11 +550,11 @@ fn with_prepended_argument_attributes() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_appended_argument_attributes() -> CodamaResult<()> {
+fn with_appended_field_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(argument(after, "name", string(utf8)))]
-        #[codama(argument(after, "is_member", boolean))]
+        #[codama(field(after, "name", string(utf8)))]
+        #[codama(field(after, "is_member", boolean))]
         struct MyInstruction {
             age: u8,
         }
@@ -532,11 +569,14 @@ fn with_appended_argument_attributes() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "myInstruction".into(),
-                arguments: vec![
-                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
-                    InstructionArgumentNode::new("name", StringTypeNode::utf8()),
-                    InstructionArgumentNode::new("is_member", BooleanTypeNode::default()),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                        StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()
@@ -546,11 +586,11 @@ fn with_appended_argument_attributes() -> CodamaResult<()> {
 }
 
 #[test]
-fn with_prepended_and_appended_argument_attributes() -> CodamaResult<()> {
+fn with_prepended_and_appended_field_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
         #[codama(field(after, "first_name", string(utf8)))]
-        #[codama(field("year_of_birth", number(u8)))]
+        #[codama(field("year_of_birth", integer(u8)))]
         #[codama(field(after, "last_name", string(utf8)))]
         #[codama(field("is_member", boolean))]
         struct MyInstruction {
@@ -567,13 +607,16 @@ fn with_prepended_and_appended_argument_attributes() -> CodamaResult<()> {
         Some(
             InstructionNode {
                 identifier: "myInstruction".into(),
-                arguments: vec![
-                    InstructionArgumentNode::new("year_of_birth", NumberTypeNode::le(U8)),
-                    InstructionArgumentNode::new("is_member", BooleanTypeNode::default()),
-                    InstructionArgumentNode::new("age", NumberTypeNode::le(U8)),
-                    InstructionArgumentNode::new("first_name", StringTypeNode::utf8()),
-                    InstructionArgumentNode::new("last_name", StringTypeNode::utf8()),
-                ],
+                data: Box::new(Some(
+                    StructTypeNode::new(vec![
+                        StructFieldTypeNode::new("year_of_birth", IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new("first_name", StringTypeNode::utf8()),
+                        StructFieldTypeNode::new("last_name", StringTypeNode::utf8()),
+                    ])
+                    .into()
+                )),
                 ..InstructionNode::default()
             }
             .into()

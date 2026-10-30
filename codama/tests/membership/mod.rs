@@ -11,97 +11,99 @@ fn get_idl() {
         r#"{
   "kind": "rootNode",
   "standard": "codama",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "program": {
     "kind": "programNode",
-    "name": "membership",
+    "identifier": "membership",
     "publicKey": "Membership1111111111111111111111111",
     "version": "1.2.3",
     "accounts": [
       {
         "kind": "accountNode",
-        "name": "person",
+        "identifier": "person",
         "data": {
           "kind": "structTypeNode",
           "fields": [
             {
               "kind": "structFieldTypeNode",
-              "name": "name",
+              "identifier": "name",
               "type": {
-                "kind": "sizePrefixTypeNode",
-                "type": {
-                  "kind": "stringTypeNode",
-                  "encoding": "utf8"
-                },
-                "prefix": {
-                  "kind": "numberTypeNode",
-                  "format": "u32",
-                  "endian": "le"
-                }
+                "kind": "stringTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "sizePrefixTransformNode",
+                    "prefix": {
+                      "kind": "integerTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "age",
+              "identifier": "age",
               "type": {
-                "kind": "numberTypeNode",
+                "kind": "integerTypeNode",
                 "format": "u8",
                 "endian": "le"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "membership",
+              "identifier": "membership",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "name": "membership"
+                "identifier": "membership"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "wallet",
+              "identifier": "wallet",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "bio",
+              "identifier": "bio",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "name": "boundedString25"
+                "identifier": "boundedString25"
               }
             }
           ]
         },
         "pda": {
           "kind": "pdaLinkNode",
-          "name": "person"
+          "identifier": "person"
         }
       }
     ],
     "definedTypes": [
       {
         "kind": "definedTypeNode",
-        "name": "membership",
+        "identifier": "membership",
         "type": {
           "kind": "enumTypeNode",
           "variants": [
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "none"
+              "kind": "enumVariantTypeNode",
+              "identifier": "none"
             },
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "basic"
+              "kind": "enumVariantTypeNode",
+              "identifier": "basic"
             },
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "premium"
+              "kind": "enumVariantTypeNode",
+              "identifier": "premium"
             }
           ],
           "size": {
-            "kind": "numberTypeNode",
+            "kind": "integerTypeNode",
             "format": "u8",
             "endian": "le"
           }
@@ -109,29 +111,31 @@ fn get_idl() {
       },
       {
         "kind": "definedTypeNode",
-        "name": "boundedString25",
+        "identifier": "boundedString25",
         "type": {
           "kind": "structTypeNode",
           "fields": [
             {
               "kind": "structFieldTypeNode",
-              "name": "len",
+              "identifier": "len",
               "type": {
-                "kind": "numberTypeNode",
+                "kind": "integerTypeNode",
                 "format": "u8",
                 "endian": "le"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "value",
+              "identifier": "value",
               "type": {
-                "kind": "fixedSizeTypeNode",
-                "size": 25,
-                "type": {
-                  "kind": "stringTypeNode",
-                  "encoding": "utf8"
-                }
+                "kind": "stringTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "fixedSizeTransformNode",
+                    "size": 25
+                  }
+                ]
               }
             }
           ]
@@ -141,7 +145,7 @@ fn get_idl() {
     "pdas": [
       {
         "kind": "pdaNode",
-        "name": "person",
+        "identifier": "person",
         "seeds": [
           {
             "kind": "constantPdaSeedNode",
@@ -156,14 +160,14 @@ fn get_idl() {
           },
           {
             "kind": "variablePdaSeedNode",
-            "name": "wallet",
+            "identifier": "wallet",
             "type": {
               "kind": "publicKeyTypeNode"
             }
           },
           {
             "kind": "variablePdaSeedNode",
-            "name": "name",
+            "identifier": "name",
             "type": {
               "kind": "stringTypeNode",
               "encoding": "utf8"

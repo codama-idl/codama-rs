@@ -4,14 +4,14 @@ use codama_korok_visitors::{
 };
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
-    AmountNumberDisplayNode, AmountTypeNode, ArrayTypeNode, BooleanTypeNode, ConstantValueNode,
-    DateTimeNumberDisplayNode, DateTimeTypeNode, DefinedTypeLinkNode, FixedSizeTypeNode,
-    HiddenPrefixTypeNode, HiddenSuffixTypeNode, MapTypeNode, NestedTypeNode, NumberDisplayNode,
-    NumberFormat::{U32, U64, U8},
-    NumberTypeNode, NumberValueNode, OptionTypeNode, PostOffsetTypeNode, PreOffsetTypeNode,
-    RemainderOptionTypeNode, SentinelTypeNode, SetTypeNode, SizePrefixTypeNode, SolAmountTypeNode,
-    StringTypeNode, StringValueNode, StructFieldTypeNode, TupleTypeNode, TypeNode,
-    ZeroableOptionTypeNode,
+    AmountNumberDisplayNode, ArrayTypeNode, BooleanTypeNode, ConstantValueNode, DateTimeTypeNode,
+    DefinedTypeLinkNode, DurationTypeNode, FixedSizeTransformNode, HasTransforms,
+    HiddenPrefixTransformNode, HiddenSuffixTransformNode,
+    IntegerFormat::{U32, U64, U8},
+    IntegerTypeNode, IntegerValueNode, MapTypeNode, NumberDisplayNode, OptionTypeNode,
+    PostOffsetTransformNode, PreOffsetTransformNode, RemainderOptionTypeNode,
+    SentinelTransformNode, SetTypeNode, SizePrefixTransformNode, StringTypeNode, StringValueNode,
+    StructFieldTypeNode, TupleTypeNode, TypeNode, ZeroableOptionTypeNode,
 };
 
 #[test]
@@ -30,14 +30,14 @@ fn it_applies_number_displays_without_creating_field_displays() -> CodamaResult<
         Some(
             StructFieldTypeNode::new(
                 "amount",
-                NumberTypeNode {
+                IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
-                            NumberValueNode::new(9u64),
+                            IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
                         ),
                     ))),
-                    ..NumberTypeNode::le(U64)
+                    ..IntegerTypeNode::le(U64)
                 },
             )
             .into(),
@@ -49,7 +49,7 @@ fn it_applies_number_displays_without_creating_field_displays() -> CodamaResult<
 #[test]
 fn it_replaces_existing_number_displays() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(type = number(u64, display = date_time))]
+        #[codama(type = integer(u64, display = amount(decimals = 6, unit = "USDC")))]
         #[codama(display(amount(decimals = 9, unit = "SOL")))]
         amount: u64
     };
@@ -63,14 +63,14 @@ fn it_replaces_existing_number_displays() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "amount",
-                NumberTypeNode {
+                IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
-                            NumberValueNode::new(9u64),
+                            IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
                         ),
                     ))),
-                    ..NumberTypeNode::le(U64)
+                    ..IntegerTypeNode::le(U64)
                 },
             )
             .into(),
@@ -82,7 +82,7 @@ fn it_replaces_existing_number_displays() -> CodamaResult<()> {
 #[test]
 fn it_applies_multiple_number_displays_in_source_order() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(date_time))]
+        #[codama(display(amount(decimals = 6, unit = "USDC")))]
         #[codama(display(amount(decimals = 9, unit = "SOL")))]
         amount: u64
     };
@@ -96,14 +96,14 @@ fn it_applies_multiple_number_displays_in_source_order() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "amount",
-                NumberTypeNode {
+                IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
-                            NumberValueNode::new(9u64),
+                            IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
                         ),
                     ))),
-                    ..NumberTypeNode::le(U64)
+                    ..IntegerTypeNode::le(U64)
                 },
             )
             .into(),
@@ -115,27 +115,20 @@ fn it_applies_multiple_number_displays_in_source_order() -> CodamaResult<()> {
 #[test]
 fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(date_time(ticks_per_second = 1_000)))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         values: Vec<Option<u64>>
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    let prefix = NumberTypeNode::le(U32);
-    let expected_prefix = prefix.clone();
-    let display = NumberDisplayNode::DateTime(DateTimeNumberDisplayNode::new(Some(1_000)));
+    let display = NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+        IntegerValueNode::new(9u64),
+        StringValueNode::new("SOL"),
+    ));
     korok.set_node(Some(
         StructFieldTypeNode::new(
             "values",
-            FixedSizeTypeNode::new(
-                SizePrefixTypeNode::new(
-                    OptionTypeNode {
-                        fixed: None,
-                        item: Box::new(ArrayTypeNode::fixed(NumberTypeNode::le(U64), 2).into()),
-                        prefix: NumberTypeNode::le(U8).into(),
-                    },
-                    prefix,
-                ),
-                42,
-            ),
+            OptionTypeNode::new(ArrayTypeNode::fixed(IntegerTypeNode::le(U64), 2))
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                .add_transform(FixedSizeTransformNode::new(42)),
         )
         .into(),
     ));
@@ -147,26 +140,15 @@ fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "values",
-                FixedSizeTypeNode::new(
-                    SizePrefixTypeNode::new(
-                        OptionTypeNode {
-                            fixed: None,
-                            item: Box::new(
-                                ArrayTypeNode::fixed(
-                                    NumberTypeNode {
-                                        display: Box::new(Some(display)),
-                                        ..NumberTypeNode::le(U64)
-                                    },
-                                    2,
-                                )
-                                .into(),
-                            ),
-                            prefix: NumberTypeNode::le(U8).into(),
-                        },
-                        expected_prefix,
-                    ),
-                    42,
-                ),
+                OptionTypeNode::new(ArrayTypeNode::fixed(
+                    IntegerTypeNode {
+                        display: Box::new(Some(display)),
+                        ..IntegerTypeNode::le(U64)
+                    },
+                    2,
+                ))
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                .add_transform(FixedSizeTransformNode::new(42)),
             )
             .into()
         )
@@ -175,34 +157,24 @@ fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_traverses_all_nested_type_modifiers() -> CodamaResult<()> {
+fn it_traverses_nodes_with_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    let hidden_prefix = ConstantValueNode::new(NumberTypeNode::le(U8), NumberValueNode::new(1u8));
-    let hidden_suffix = ConstantValueNode::new(NumberTypeNode::le(U8), NumberValueNode::new(2u8));
-    let sentinel = ConstantValueNode::new(NumberTypeNode::le(U8), NumberValueNode::new(255u8));
+    let hidden_prefix = ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(1u8));
+    let hidden_suffix = ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(2u8));
+    let sentinel = ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(255u8));
     korok.set_node(Some(
         StructFieldTypeNode::new(
             "value",
-            PreOffsetTypeNode::relative(
-                PostOffsetTypeNode::padded(
-                    HiddenPrefixTypeNode::new(
-                        HiddenSuffixTypeNode::new(
-                            SentinelTypeNode::new(
-                                RemainderOptionTypeNode::new(NumberTypeNode::le(U64)),
-                                sentinel.clone(),
-                            ),
-                            vec![hidden_suffix.clone()],
-                        ),
-                        vec![hidden_prefix.clone()],
-                    ),
-                    8,
-                ),
-                4,
-            ),
+            RemainderOptionTypeNode::new(IntegerTypeNode::le(U64))
+                .add_transform(SentinelTransformNode::new(sentinel.clone()))
+                .add_transform(HiddenSuffixTransformNode::new(vec![hidden_suffix.clone()]))
+                .add_transform(HiddenPrefixTransformNode::new(vec![hidden_prefix.clone()]))
+                .add_transform(PostOffsetTransformNode::padded(8))
+                .add_transform(PreOffsetTransformNode::relative(4)),
         )
         .into(),
     ));
@@ -214,27 +186,20 @@ fn it_traverses_all_nested_type_modifiers() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "value",
-                PreOffsetTypeNode::relative(
-                    PostOffsetTypeNode::padded(
-                        HiddenPrefixTypeNode::new(
-                            HiddenSuffixTypeNode::new(
-                                SentinelTypeNode::new(
-                                    RemainderOptionTypeNode::new(NumberTypeNode {
-                                        display: Box::new(Some(NumberDisplayNode::Amount(
-                                            AmountNumberDisplayNode::default(),
-                                        ))),
-                                        ..NumberTypeNode::le(U64)
-                                    }),
-                                    sentinel,
-                                ),
-                                vec![hidden_suffix],
-                            ),
-                            vec![hidden_prefix],
+                RemainderOptionTypeNode::new(IntegerTypeNode {
+                    display: Box::new(Some(NumberDisplayNode::Amount(
+                        AmountNumberDisplayNode::new(
+                            IntegerValueNode::new(9u64),
+                            StringValueNode::new("SOL"),
                         ),
-                        8,
-                    ),
-                    4,
-                ),
+                    ))),
+                    ..IntegerTypeNode::le(U64)
+                })
+                .add_transform(SentinelTransformNode::new(sentinel))
+                .add_transform(HiddenSuffixTransformNode::new(vec![hidden_suffix]))
+                .add_transform(HiddenPrefixTransformNode::new(vec![hidden_prefix]))
+                .add_transform(PostOffsetTransformNode::padded(8))
+                .add_transform(PreOffsetTransformNode::relative(4)),
             )
             .into(),
         )
@@ -244,15 +209,20 @@ fn it_traverses_all_nested_type_modifiers() -> CodamaResult<()> {
 
 #[test]
 fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
-    let remainder_ast: syn::Field = syn::parse_quote! {
-        #[codama(display(date_time))]
+    let ast: syn::Field = syn::parse_quote! {
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
-    let mut remainder_korok = FieldKorok::parse(&remainder_ast)?;
+    let display = NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+        IntegerValueNode::new(9u64),
+        StringValueNode::new("SOL"),
+    ));
+
+    let mut remainder_korok = FieldKorok::parse(&ast)?;
     remainder_korok.set_node(Some(
         StructFieldTypeNode::new(
             "value",
-            RemainderOptionTypeNode::new(NumberTypeNode::le(U64)),
+            RemainderOptionTypeNode::new(IntegerTypeNode::le(U64)),
         )
         .into(),
     ));
@@ -264,27 +234,21 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "value",
-                RemainderOptionTypeNode::new(NumberTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::DateTime(
-                        DateTimeNumberDisplayNode::default(),
-                    ))),
-                    ..NumberTypeNode::le(U64)
+                RemainderOptionTypeNode::new(IntegerTypeNode {
+                    display: Box::new(Some(display.clone())),
+                    ..IntegerTypeNode::le(U64)
                 }),
             )
             .into(),
         )
     );
 
-    let zeroable_ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
-        value: u64
-    };
-    let mut zeroable_korok = FieldKorok::parse(&zeroable_ast)?;
-    let zero_value = ConstantValueNode::new(NumberTypeNode::le(U64), NumberValueNode::new(0u64));
+    let mut zeroable_korok = FieldKorok::parse(&ast)?;
+    let zero_value = ConstantValueNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(0u64));
     zeroable_korok.set_node(Some(
         StructFieldTypeNode::new(
             "value",
-            ZeroableOptionTypeNode::custom(NumberTypeNode::le(U64), zero_value.clone()),
+            ZeroableOptionTypeNode::custom(IntegerTypeNode::le(U64), zero_value.clone()),
         )
         .into(),
     ));
@@ -297,11 +261,9 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "value",
                 ZeroableOptionTypeNode::custom(
-                    NumberTypeNode {
-                        display: Box::new(Some(NumberDisplayNode::Amount(
-                            AmountNumberDisplayNode::default(),
-                        ))),
-                        ..NumberTypeNode::le(U64)
+                    IntegerTypeNode {
+                        display: Box::new(Some(display)),
+                        ..IntegerTypeNode::le(U64)
                     },
                     zero_value,
                 ),
@@ -313,10 +275,10 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_traverses_wrappers_from_type_overrides() -> CodamaResult<()> {
+fn it_keeps_transforms_from_type_overrides() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(type = pre_offset(number(u64), 4, relative))]
-        #[codama(display(amount))]
+        #[codama(type = pre_offset(integer(u64), 4, relative))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let mut korok = FieldKorok::parse(&ast)?;
@@ -329,15 +291,16 @@ fn it_traverses_wrappers_from_type_overrides() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode::new(
                 "value",
-                PreOffsetTypeNode::relative(
-                    NumberTypeNode {
-                        display: Box::new(Some(NumberDisplayNode::Amount(
-                            AmountNumberDisplayNode::default(),
-                        ))),
-                        ..NumberTypeNode::le(U64)
-                    },
-                    4,
-                ),
+                IntegerTypeNode {
+                    display: Box::new(Some(NumberDisplayNode::Amount(
+                        AmountNumberDisplayNode::new(
+                            IntegerValueNode::new(9u64),
+                            StringValueNode::new("SOL"),
+                        ),
+                    ))),
+                    ..IntegerTypeNode::le(U64)
+                }
+                .add_transform(PreOffsetTransformNode::relative(4)),
             )
             .into(),
         )
@@ -348,11 +311,13 @@ fn it_traverses_wrappers_from_type_overrides() -> CodamaResult<()> {
 #[test]
 fn it_reports_errors_at_the_logical_leaf() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let wrapped_types: Vec<TypeNode> = vec![
-        PreOffsetTypeNode::relative(StringTypeNode::utf8(), 4).into(),
+        StringTypeNode::utf8()
+            .add_transform(PreOffsetTransformNode::relative(4))
+            .into(),
         RemainderOptionTypeNode::new(StringTypeNode::utf8()).into(),
     ];
 
@@ -372,11 +337,11 @@ fn it_reports_errors_at_the_logical_leaf() -> CodamaResult<()> {
 #[test]
 fn it_traverses_rust_arrays_and_vectors() -> CodamaResult<()> {
     let array_ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         amounts: [u64; 2]
     };
     let vector_ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         amounts: Vec<u64>
     };
 
@@ -393,12 +358,15 @@ fn it_traverses_rust_arrays_and_vectors() -> CodamaResult<()> {
         let TypeNode::Array(array) = *field.r#type else {
             panic!("Expected an array type node");
         };
-        let TypeNode::Number(number) = *array.item else {
-            panic!("Expected a number type node");
+        let TypeNode::Integer(integer) = *array.item else {
+            panic!("Expected an integer type node");
         };
         assert_eq!(
-            *number.display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::default()))
+            *integer.display,
+            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+                IntegerValueNode::new(9u64),
+                StringValueNode::new("SOL"),
+            )))
         );
     }
     Ok(())
@@ -407,21 +375,21 @@ fn it_traverses_rust_arrays_and_vectors() -> CodamaResult<()> {
 #[test]
 fn it_does_not_traverse_composite_type_nodes() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let unsupported: Vec<(TypeNode, &str)> = vec![
         (BooleanTypeNode::default().into(), "booleanTypeNode"),
         (
-            SetTypeNode::fixed(NumberTypeNode::le(U64), 2).into(),
+            SetTypeNode::fixed(IntegerTypeNode::le(U64), 2).into(),
             "setTypeNode",
         ),
         (
-            MapTypeNode::fixed(NumberTypeNode::le(U64), NumberTypeNode::le(U64), 2).into(),
+            MapTypeNode::fixed(IntegerTypeNode::le(U64), IntegerTypeNode::le(U64), 2).into(),
             "mapTypeNode",
         ),
         (
-            TupleTypeNode::new(vec![NumberTypeNode::le(U64).into()]).into(),
+            TupleTypeNode::new(vec![IntegerTypeNode::le(U64).into()]).into(),
             "tupleTypeNode",
         ),
         (
@@ -448,21 +416,17 @@ fn it_does_not_traverse_composite_type_nodes() -> CodamaResult<()> {
 #[test]
 fn it_does_not_traverse_semantic_number_types() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let unsupported: Vec<(TypeNode, &str)> = vec![
         (
-            AmountTypeNode::new(NumberTypeNode::le(U64), 9, Some("SOL".to_string())).into(),
-            "amountTypeNode",
-        ),
-        (
-            DateTimeTypeNode::new(NumberTypeNode::le(U64)).into(),
+            DateTimeTypeNode::new(IntegerTypeNode::le(U64)).into(),
             "dateTimeTypeNode",
         ),
         (
-            SolAmountTypeNode::new(NumberTypeNode::le(U64)).into(),
-            "solAmountTypeNode",
+            DurationTypeNode::new(IntegerTypeNode::le(U64)).into(),
+            "durationTypeNode",
         ),
     ];
 
@@ -482,38 +446,41 @@ fn it_does_not_traverse_semantic_number_types() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_does_not_update_wrapper_metadata() -> CodamaResult<()> {
+fn it_does_not_update_transform_metadata() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
-        #[codama(display(amount))]
+        #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    let prefix = NumberTypeNode::le(U32);
     korok.set_node(Some(
         StructFieldTypeNode::new(
             "value",
-            SizePrefixTypeNode::new(NumberTypeNode::le(U64), prefix.clone()),
+            IntegerTypeNode::le(U64)
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32))),
         )
         .into(),
     ));
 
     korok.accept(&mut ApplyDisplayVisitor::new())?;
 
-    let Some(codama_nodes::Node::Type(codama_nodes::RegisteredTypeNode::StructField(field))) =
-        korok.node
-    else {
-        panic!("Expected a struct field type node");
-    };
-    let TypeNode::SizePrefix(size_prefix) = *field.r#type else {
-        panic!("Expected a size prefix type node");
-    };
-    assert_eq!(*size_prefix.prefix, NestedTypeNode::Value(prefix));
-    let TypeNode::Number(number) = *size_prefix.r#type else {
-        panic!("Expected a number type node");
-    };
     assert_eq!(
-        *number.display,
-        Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::default()))
+        korok.node,
+        Some(
+            StructFieldTypeNode::new(
+                "value",
+                IntegerTypeNode {
+                    display: Box::new(Some(NumberDisplayNode::Amount(
+                        AmountNumberDisplayNode::new(
+                            IntegerValueNode::new(9u64),
+                            StringValueNode::new("SOL"),
+                        ),
+                    ))),
+                    ..IntegerTypeNode::le(U64)
+                }
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32))),
+            )
+            .into(),
+        )
     );
     Ok(())
 }
