@@ -1,0 +1,11 @@
+error: date_time display is removed in v2, use the date_time(...) type
+ --> tests/codama_attribute/display_directive/removed_display.fail.rs:3:18
+  |
+3 | #[codama(display(date_time))]
+  |                  ^^^^^^^^^
+
+error: duration display is removed in v2, use the duration(...) type
+ --> tests/codama_attribute/display_directive/removed_display.fail.rs:6:18
+  |
+6 | #[codama(display(duration))]
+  |                  ^^^^^^^^

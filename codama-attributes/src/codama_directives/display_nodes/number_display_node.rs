@@ -7,7 +7,7 @@ impl FromMeta for NumberDisplayNode {
         match meta.path_str().as_str() {
             "amount" => AmountNumberDisplayNode::from_meta(meta).map(Self::Amount),
             "date_time" => removed_syntax(meta, "date_time display", "the date_time(...) type"),
-            "duration" => Err(meta.error("duration display is not supported yet")),
+            "duration" => removed_syntax(meta, "duration display", "the duration(...) type"),
             "injected" => Err(meta.error("injected display values are not supported yet")),
             _ => Err(meta.error("unrecognized number display")),
         }
@@ -28,15 +28,31 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unsupported_displays() {
-        let duration: Meta = syn::parse_quote! { duration };
-        assert_eq!(
-            NumberDisplayNode::from_meta(&duration)
-                .unwrap_err()
-                .to_string(),
-            "duration display is not supported yet"
-        );
+    fn removed_displays() {
+        for meta in [
+            syn::parse_quote! { date_time },
+            syn::parse_quote! { date_time(ticks_per_second = 1000) },
+        ] {
+            let error = NumberDisplayNode::from_meta(&meta).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "date_time display is removed in v2, use the date_time(...) type"
+            );
+        }
+        for meta in [
+            syn::parse_quote! { duration },
+            syn::parse_quote! { duration(ticks_per_second = 1000) },
+        ] {
+            let error = NumberDisplayNode::from_meta(&meta).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "duration display is removed in v2, use the duration(...) type"
+            );
+        }
+    }
 
+    #[test]
+    fn rejects_unsupported_displays() {
         let string: Meta = syn::parse_quote! { string };
         assert_eq!(
             NumberDisplayNode::from_meta(&string)

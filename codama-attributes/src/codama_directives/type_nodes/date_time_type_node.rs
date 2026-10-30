@@ -1,40 +1,33 @@
-use crate::utils::{hoist_integer_transforms, FromMeta, SetOnce};
-use codama_nodes::{DateTimeTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
+use crate::utils::{
+    hoist_integer_transforms, parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce,
+};
+use codama_nodes::{DateTimeTypeNode, IntegerTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for DateTimeTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("date_time")?.as_path_list()?;
         let mut number: SetOnce<IntegerTypeNode> = SetOnce::new("number");
+        let mut ticks_per_second: SetOnce<u32> = SetOnce::new("ticks_per_second");
 
         pl.each(|ref meta| {
-            // Lists and bare paths go to the type parser first, so `number(u64)` gets its hint, not the `number =` field.
+            // Lists and paths go to the type parser first, so `number(u64)` gets its hint, not the `number =` field.
             if meta.is_path_or_list() {
-                let node = TypeNode::from_meta(meta)?;
-                let number_node = match IntegerTypeNode::try_from_type_node(node) {
-                    Ok(node) => node,
-                    Err(_) => return Err(meta.error("number must be an IntegerTypeNode")),
-                };
-                return number.set(number_node, meta);
+                return number.set(parse_encoding_integer(meta)?, meta);
             }
             match meta.path_str().as_str() {
-                "number" => {
-                    let value = meta.as_value()?;
-                    let node = TypeNode::from_meta(value)?;
-                    let number_node = match IntegerTypeNode::try_from_type_node(node) {
-                        Ok(node) => node,
-                        Err(_) => return Err(value.error("number must be an IntegerTypeNode")),
-                    };
-                    number.set(number_node, meta)
-                }
+                "number" => number.set(parse_encoding_integer(meta.as_value()?)?, meta),
+                "ticks_per_second" => ticks_per_second.set(parse_ticks_per_second(meta)?, meta),
                 _ => Err(meta.error("unrecognized attribute")),
             }
         })?;
 
-        Ok(hoist_integer_transforms(
-            number.take(meta)?,
-            DateTimeTypeNode::new,
-        ))
+        Ok(hoist_integer_transforms(number.take(meta)?, |number| {
+            DateTimeTypeNode {
+                ticks_per_second: ticks_per_second.option(),
+                ..DateTimeTypeNode::new(number)
+            }
+        }))
     }
 }
 
@@ -43,19 +36,38 @@ mod tests {
     use super::*;
     use crate::assert_type;
     use codama_nodes::{
-        FixedSizeTransformNode, HasTransforms, IntegerFormat::U64, PreOffsetTransformNode,
+        FixedSizeTransformNode, HasTransforms,
+        IntegerFormat::{I64, U64},
+        PreOffsetTransformNode,
     };
 
     #[test]
     fn parses() {
-        for meta in [
-            syn::parse_quote! { date_time(integer(u64)) },
-            syn::parse_quote! { date_time(number = integer(u64)) },
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { date_time(integer(u64)) },
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64)),
+            ),
+            (
+                syn::parse_quote! { date_time(number = integer(u64)) },
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64)),
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), ticks_per_second = 1000) },
+                DateTimeTypeNode {
+                    ticks_per_second: Some(1000),
+                    ..DateTimeTypeNode::new(IntegerTypeNode::le(I64))
+                },
+            ),
+            (
+                syn::parse_quote! { date_time(ticks_per_second = 1_000_000_000, number = integer(i64, be)) },
+                DateTimeTypeNode {
+                    ticks_per_second: Some(1_000_000_000),
+                    ..DateTimeTypeNode::new(IntegerTypeNode::be(I64))
+                },
+            ),
         ] {
-            assert_eq!(
-                DateTimeTypeNode::from_meta(&meta).unwrap(),
-                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
-            );
+            assert_eq!(DateTimeTypeNode::from_meta(&meta).unwrap(), expected);
         }
     }
 
@@ -113,6 +125,34 @@ mod tests {
             (
                 syn::parse_quote! { date_time(number(u64)) },
                 "number(...) is removed in v2, use integer(...) or float(...)",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64, unit = "s")) },
+                "number must not have a unit or a display",
+            ),
+            (
+                syn::parse_quote! { date_time(number = integer(i64, display = amount(decimals = 3))) },
+                "number must not have a unit or a display",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), ticks_per_second = 0) },
+                "ticks_per_second must be greater than zero",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), ticks_per_second = 1000, ticks_per_second = 1) },
+                "ticks_per_second is already set",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), ticks_per_second = "1000") },
+                "expected an unsigned integer",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), ticks_per_second = 4294967296) },
+                "number too large to fit in target type",
+            ),
+            (
+                syn::parse_quote! { date_time(integer(i64), 1000) },
+                "unrecognized attribute",
             ),
         ] {
             let error = DateTimeTypeNode::from_meta(&meta).unwrap_err();

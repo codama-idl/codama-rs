@@ -1,0 +1,5 @@
+error: number must use a fixed-size integer format
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/variable_size_number.fail.rs:3:29
+  |
+3 | #[codama(type = fixed_point(integer(short_u16), scale = 2))]
+  |                             ^^^^^^^^^^^^^^^^^^

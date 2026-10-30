@@ -33,6 +33,9 @@ pub enum CodamaError {
     #[error("Invalid endian: {0}")]
     InvalidEndian(String),
 
+    #[error("Invalid base: {0}")]
+    InvalidBase(u64),
+
     #[error("Invalid attribute, Expected {expected}, got {actual}")]
     InvalidAttribute { expected: String, actual: String },
 

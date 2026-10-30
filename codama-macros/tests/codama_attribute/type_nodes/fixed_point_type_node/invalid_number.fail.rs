@@ -1,6 +1,6 @@
 use codama_macros::codama;
 
-#[codama(display(duration))]
+#[codama(type = fixed_point(string, scale = 6))]
 pub struct Test;
 
 fn main() {}

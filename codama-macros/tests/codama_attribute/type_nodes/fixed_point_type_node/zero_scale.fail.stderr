@@ -1,0 +1,5 @@
+error: scale must be greater than zero
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/zero_scale.fail.rs:3:51
+  |
+3 | #[codama(type = fixed_point(integer(u64), scale = 0, unit = "USDC"))]
+  |                                                   ^

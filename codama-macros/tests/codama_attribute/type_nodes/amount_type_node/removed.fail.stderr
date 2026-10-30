@@ -1,0 +1,17 @@
+error: amount(...) is removed in v2, use fixed_point(...) or integer(..., unit = ...)
+ --> tests/codama_attribute/type_nodes/amount_type_node/removed.fail.rs:3:17
+  |
+3 | #[codama(type = amount(number(u64), 9, "SOL"))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: amount(...) is removed in v2, use fixed_point(...) or integer(..., unit = ...)
+ --> tests/codama_attribute/type_nodes/amount_type_node/removed.fail.rs:6:39
+  |
+6 | #[codama(type = struct(field("price", amount(number(u64), 6, "USDC"))))]
+  |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: amount(...) is removed in v2, use fixed_point(...) or integer(..., unit = ...)
+ --> tests/codama_attribute/type_nodes/amount_type_node/removed.fail.rs:9:24
+  |
+9 | #[codama(field("size", amount(number = number(u64), decimals = 0, unit = "bytes")))]
+  |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

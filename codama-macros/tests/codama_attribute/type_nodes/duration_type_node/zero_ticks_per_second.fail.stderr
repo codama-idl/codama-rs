@@ -1,0 +1,5 @@
+error: ticks_per_second must be greater than zero
+ --> tests/codama_attribute/type_nodes/duration_type_node/zero_ticks_per_second.fail.rs:3:59
+  |
+3 | #[codama(type = duration(integer(u64), ticks_per_second = 0))]
+  |                                                           ^

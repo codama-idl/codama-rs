@@ -1,0 +1,11 @@
+error: date_time display is removed in v2, use the date_time(...) type
+ --> tests/codama_attribute/type_nodes/integer_type_node/removed_display.fail.rs:3:40
+  |
+3 | #[codama(type = integer(i64, display = date_time))]
+  |                                        ^^^^^^^^^
+
+error: duration display is removed in v2, use the duration(...) type
+ --> tests/codama_attribute/type_nodes/integer_type_node/removed_display.fail.rs:6:40
+  |
+6 | #[codama(type = integer(u64, display = duration))]
+  |                                        ^^^^^^^^
