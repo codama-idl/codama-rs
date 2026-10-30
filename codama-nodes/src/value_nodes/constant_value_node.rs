@@ -9,6 +9,7 @@ impl ConstantValueNode {
         Self {
             r#type: Box::new(r#type.into()),
             value: Box::new(value.into()),
+            plugins: vec![],
         }
     }
 
@@ -19,6 +20,7 @@ impl ConstantValueNode {
         Self {
             r#type: Box::new(BytesTypeNode::new().into()),
             value: Box::new(BytesValueNode::new(encoding, data).into()),
+            plugins: vec![],
         }
     }
 }
@@ -26,13 +28,16 @@ impl ConstantValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Base16, NumberTypeNode, NumberValueNode, U64};
+    use crate::{Base16, IntegerTypeNode, IntegerValueNode, U64};
 
     #[test]
     fn new() {
-        let node = ConstantValueNode::new(NumberTypeNode::le(U64), NumberValueNode::new(42u64));
-        assert_eq!(*node.r#type, TypeNode::Number(NumberTypeNode::le(U64)));
-        assert_eq!(*node.value, ValueNode::Number(NumberValueNode::new(42u64)));
+        let node = ConstantValueNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(42u64));
+        assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U64)));
+        assert_eq!(
+            *node.value,
+            ValueNode::Integer(IntegerValueNode::new(42u64))
+        );
     }
 
     #[test]

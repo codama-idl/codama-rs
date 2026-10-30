@@ -1,13 +1,13 @@
 use crate::{CamelCaseString, Docs, StructFieldTypeNode, TypeNode};
 
 impl StructFieldTypeNode {
-    pub fn new<T, U>(name: T, r#type: U) -> Self
+    pub fn new<T, U>(identifier: T, r#type: U) -> Self
     where
         T: Into<CamelCaseString>,
         U: Into<TypeNode>,
     {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             default_value_strategy: None,
             docs: Docs::default(),
             r#type: Box::new(r#type.into()),
@@ -23,13 +23,6 @@ mod tests {
     use super::*;
     use crate::{DefaultValueStrategy, StringTypeNode, StringValueNode};
 
-    fn hello_value() -> StringValueNode {
-        StringValueNode {
-            string: "Hello".to_string(),
-            plugins: vec![],
-        }
-    }
-
     #[test]
     fn new() {
         let node = StructFieldTypeNode::new("my_field", StringTypeNode::utf8());
@@ -44,7 +37,7 @@ mod tests {
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(StringTypeNode::utf8().into()),
-            default_value: Box::new(Some(hello_value().into())),
+            default_value: Box::new(Some(StringValueNode::new("Hello").into())),
             display: None,
             plugins: vec![],
         };
@@ -56,7 +49,10 @@ mod tests {
         );
         assert_eq!(node.docs, vec!["Hello".to_string()].into());
         assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(*node.default_value, Some(hello_value().into()));
+        assert_eq!(
+            *node.default_value,
+            Some(StringValueNode::new("Hello").into())
+        );
     }
 
     #[test]
@@ -86,7 +82,7 @@ mod tests {
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(StringTypeNode::utf8().into()),
-            default_value: Box::new(Some(hello_value().into())),
+            default_value: Box::new(Some(StringValueNode::new("Hello").into())),
             display: None,
             plugins: vec![],
         };
@@ -108,7 +104,7 @@ mod tests {
                 default_value_strategy: Some(DefaultValueStrategy::Optional),
                 docs: vec!["Hello".to_string()].into(),
                 r#type: Box::new(StringTypeNode::utf8().into()),
-                default_value: Box::new(Some(hello_value().into())),
+                default_value: Box::new(Some(StringValueNode::new("Hello").into())),
                 display: None,
                 plugins: vec![],
             }

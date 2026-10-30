@@ -8,6 +8,7 @@ mod instruction_lifecycle;
 mod integer;
 mod is_signer;
 mod optional_account_strategy;
+mod path;
 mod text;
 
 pub use bytes_encoding::*;
@@ -15,4 +16,5 @@ pub use camel_case_string::*;
 pub use decimal::*;
 pub use docs::*;
 pub use integer::*;
+pub use path::*;
 pub use text::*;

@@ -305,9 +305,11 @@ describe('getRenderMap', () => {
             expect(size.content).toContain('pub size: u64,');
         });
 
-        it('renders FieldDiscriminatorNode.path as `String` and emits no HasIdentifier impl', () => {
+        it('renders FieldDiscriminatorNode.path as `Path` without Default and emits no HasIdentifier impl', () => {
             const field = getFromRenderMap(map, 'discriminator_nodes/field_discriminator_node.rs');
-            expect(field.content).toContain('pub path: String,');
+            expect(field.content).toContain('use crate::{Path, PluginNode};');
+            expect(field.content).toContain('pub path: Path,');
+            expect(field.content).not.toContain('Default');
             expect(field.content).not.toContain('impl HasIdentifier');
             const constant = getFromRenderMap(map, 'discriminator_nodes/constant_discriminator_node.rs');
             expect(constant.content).not.toContain('impl HasIdentifier');
@@ -457,6 +459,15 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('Data(DataValueNode),');
             // `#[registered]`-only: `pdaSeedValueNode`.
             expect(entry.content).toContain('#[registered]\nPdaSeed(PdaSeedValueNode),');
+        });
+
+        it('renders dataValueNode.path as `Path` and accountDataValueNode.path as `Option<Path>`', () => {
+            const data = getFromRenderMap(map, 'contextual_value_nodes/data_value_node.rs');
+            expect(data.content).toContain('pub path: Path,');
+            expect(data.content).not.toContain('Default');
+            const accountData = getFromRenderMap(map, 'contextual_value_nodes/account_data_value_node.rs');
+            expect(accountData.content).toContain('pub path: Option<Path>,');
+            expect(accountData.content).toContain('#[derive(Default)]');
         });
 
         it('emits the PdaValuePda inline-union with derived variant names (PdaLink, Pda)', () => {

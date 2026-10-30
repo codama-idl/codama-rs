@@ -159,11 +159,7 @@ mod tests {
 
     #[test]
     fn value_node_to_json() {
-        let node: Node = IntegerValueNode {
-            value: 42.into(),
-            plugins: vec![],
-        }
-        .into();
+        let node: Node = IntegerValueNode::new(42).into();
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"integerValueNode","value":"42"}"#);
     }
@@ -174,10 +170,7 @@ mod tests {
         let node: Node = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            Node::Value(RegisteredValueNode::Integer(IntegerValueNode {
-                value: 42.into(),
-                plugins: vec![],
-            }))
+            Node::Value(RegisteredValueNode::Integer(IntegerValueNode::new(42)))
         );
     }
 
