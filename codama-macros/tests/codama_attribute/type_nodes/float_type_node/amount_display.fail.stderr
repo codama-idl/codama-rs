@@ -1,0 +1,5 @@
+error: floats take a unit display, use unit(...)
+ --> tests/codama_attribute/type_nodes/float_type_node/amount_display.fail.rs:3:38
+  |
+3 | #[codama(type = float(f64, display = amount(decimals = 2, unit = "USD")))]
+  |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
