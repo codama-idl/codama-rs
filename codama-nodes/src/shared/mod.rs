@@ -7,8 +7,10 @@ mod instruction_input_value_node;
 mod instruction_lifecycle;
 mod integer;
 mod is_signer;
+mod namespace;
 mod optional_account_strategy;
 mod path;
+mod string;
 mod text;
 
 pub use bytes_encoding::*;
@@ -16,5 +18,6 @@ pub use camel_case_string::*;
 pub use decimal::*;
 pub use docs::*;
 pub use integer::*;
+pub use namespace::*;
 pub use path::*;
 pub use text::*;

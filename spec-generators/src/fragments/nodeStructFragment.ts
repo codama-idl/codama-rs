@@ -53,16 +53,19 @@ function buildDeriveFragment(node: NodeSpec): Fragment | undefined {
  *
  * Sound shapes: any `optional` attribute, `array`, `docs`, scalar
  * primitives, the `String`-rendering kinds (`address`, `codamaVersion`,
- * `literal`), and `string` except the `integer`, `decimal` and `path`
- * constraints. Required `union`/`enumeration`/`node`/`literalUnion`/`text`,
- * `string:integer`, `string:decimal` and `string:path` reference opaque
- * types (`Text`, `Integer`, `Decimal`, `Path`) and disqualify the struct.
+ * `literal`), and `string` except the `integer`, `decimal`, `path` and
+ * `namespace` constraints. Required `union`/`enumeration`/`node`/
+ * `literalUnion`/`text`, `string:integer`, `string:decimal`, `string:path`
+ * and `string:namespace` reference opaque types (`Text`, `Integer`,
+ * `Decimal`, `Path`, `Namespace`) and disqualify the struct.
  */
 function isUnconditionallyDefaultable(attr: AttributeSpec): boolean {
     if (attr.optional === true) return true;
     if (attr.type.kind === 'string') {
         const { constraint } = attr.type;
-        return constraint !== 'integer' && constraint !== 'decimal' && constraint !== 'path';
+        return (
+            constraint !== 'integer' && constraint !== 'decimal' && constraint !== 'path' && constraint !== 'namespace'
+        );
     }
     const k = attr.type.kind;
     return (

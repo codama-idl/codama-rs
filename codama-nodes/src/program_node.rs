@@ -4,9 +4,9 @@ use crate::{
 };
 
 impl ProgramNode {
-    pub fn new<T: Into<CamelCaseString>, U: Into<String>>(name: T, public_key: U) -> Self {
+    pub fn new<T: Into<CamelCaseString>, U: Into<String>>(identifier: T, public_key: U) -> Self {
         Self {
-            identifier: name.into(),
+            identifier: identifier.into(),
             public_key: public_key.into(),
             version: "0.0.0".into(),
             ..Default::default()
@@ -66,7 +66,6 @@ mod tests {
         assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "0.0.0".to_string());
-        assert_eq!(node.origin, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.accounts, vec![]);
         assert_eq!(node.instructions, vec![]);
@@ -83,7 +82,6 @@ mod tests {
         assert_eq!(node.identifier, CamelCaseString::new(""));
         assert_eq!(node.public_key, "".to_string());
         assert_eq!(node.version, "".to_string());
-        assert_eq!(node.origin, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.accounts, vec![]);
         assert_eq!(node.instructions, vec![]);
@@ -105,7 +103,6 @@ mod tests {
         assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "1.2.3".to_string());
-        assert_eq!(node.origin, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.accounts, vec![]);
         assert_eq!(node.instructions, vec![]);
@@ -125,17 +122,15 @@ mod tests {
             ..ProgramNode::default()
         };
         let json = serde_json::to_string(&node).unwrap();
-        // Empty arrays are omitted on write (skip-when-empty convention).
         assert_eq!(
             json,
-            r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#
+            r#"{"kind":"programNode","identifier":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#
         );
     }
 
     #[test]
     fn from_json() {
-        // Absent arrays default to empty on read (skip-when-empty convention).
-        let json = r#"{"kind":"programNode","name":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#;
+        let json = r#"{"kind":"programNode","identifier":"myProgram","publicKey":"1234..5678","version":"1.2.3"}"#;
         let node: ProgramNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
