@@ -1,4 +1,4 @@
-use crate::{PluginNode, TransformNode, TypeNode};
+use crate::{HasTransforms, PluginNode, TransformNode, TypeNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -14,5 +14,14 @@ pub struct RemainderOptionTypeNode {
 impl From<RemainderOptionTypeNode> for crate::Node {
     fn from(val: RemainderOptionTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for RemainderOptionTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }

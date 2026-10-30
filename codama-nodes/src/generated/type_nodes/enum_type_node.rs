@@ -1,4 +1,4 @@
-use crate::{EnumVariantTypeNode, IntegerTypeNode, PluginNode, TransformNode};
+use crate::{EnumVariantTypeNode, HasTransforms, IntegerTypeNode, PluginNode, TransformNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -16,5 +16,14 @@ pub struct EnumTypeNode {
 impl From<EnumTypeNode> for crate::Node {
     fn from(val: EnumTypeNode) -> Self {
         crate::Node::Type(val.into())
+    }
+}
+
+impl HasTransforms for EnumTypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        &self.transforms
+    }
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        &mut self.transforms
     }
 }
