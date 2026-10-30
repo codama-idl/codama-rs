@@ -1,0 +1,17 @@
+error: argument(...) is removed in v2, use data(...)
+ --> tests/codama_attribute/values_nodes/argument_value_node/removed.fail.rs:3:26
+  |
+3 | #[codama(default_value = argument("amount"))]
+  |                          ^^^^^^^^^^^^^^^^^^
+
+error: argument(...) is removed in v2, use data(...)
+ --> tests/codama_attribute/values_nodes/argument_value_node/removed.fail.rs:6:40
+  |
+6 | #[codama(default_value = pda("token", [argument("amount")]))]
+  |                                        ^^^^^^^^^^^^^^^^^^
+
+error: argument(...) is removed in v2, use data(...)
+ --> tests/codama_attribute/values_nodes/argument_value_node/removed.fail.rs:9:55
+  |
+9 | #[codama(default_value = pda("token", [seed("amount", argument("amount"))]))]
+  |                                                       ^^^^^^^^^^^^^^^^^^

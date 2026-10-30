@@ -1,17 +1,17 @@
 use crate::{
-    utils::{FromMeta, SetOnce},
+    utils::{removed_syntax, FromMeta, SetOnce},
     Attribute, Attributes, CodamaAttribute, CodamaDirective, TryFromFilter,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    ArgumentValueNode, Docs, InstructionAccountDisplayNode, InstructionRemainingAccountsNode,
-    InstructionRemainingAccountsValue, IsSigner,
+    CamelCaseString, Docs, InstructionAccountDisplayNode, InstructionRemainingAccountsNode,
+    IsSigner,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct RemainingAccountsDirective {
-    pub value: InstructionRemainingAccountsValue,
+    pub identifier: CamelCaseString,
     pub is_signer: Option<IsSigner>,
     pub is_writable: Option<bool>,
     pub is_optional: Option<bool>,
@@ -24,25 +24,27 @@ impl RemainingAccountsDirective {
         let pl = meta
             .assert_directive("remaining_accounts")?
             .as_path_list()?;
-        let mut value = SetOnce::<InstructionRemainingAccountsValue>::new("value");
+        let mut identifier = SetOnce::<CamelCaseString>::new("name");
         let mut is_signer = SetOnce::<IsSigner>::new("signer");
         let mut is_writable = SetOnce::<bool>::new("writable");
         let mut is_optional = SetOnce::<bool>::new("optional");
         let mut docs = SetOnce::<Docs>::new("docs");
         let mut display = SetOnce::<InstructionAccountDisplayNode>::new("display");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "argument" => value.set(ArgumentValueNode::from_meta(meta)?.into(), meta),
+            "argument" => removed_syntax(meta, "argument(...)", "remaining_accounts(\"x\", ...)"),
+            "name" => identifier.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
             "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),
             "writable" => is_writable.set(bool::from_meta(meta)?, meta),
             "optional" => is_optional.set(bool::from_meta(meta)?, meta),
             "docs" => docs.set(Docs::from_meta(meta)?, meta),
             "display" => display.set(InstructionAccountDisplayNode::from_meta(meta)?, meta),
-            _ => Err(meta.error("unrecognized attribute")),
+            _ => match meta.as_expr().and_then(|expr| expr.as_string()) {
+                Ok(value) => identifier.set(value.into(), meta),
+                Err(_) => Err(meta.error("unrecognized attribute")),
+            },
         })?;
         Ok(RemainingAccountsDirective {
-            value: value
-                .option()
-                .ok_or_else(|| meta.error("remaining_accounts must specify one of: argument"))?,
+            identifier: identifier.take(meta)?,
             is_signer: is_signer.option(),
             is_writable: is_writable.option(),
             is_optional: is_optional.option(),
@@ -54,12 +56,13 @@ impl RemainingAccountsDirective {
     /// Construct an `InstructionRemainingAccountsNode` from this directive.
     pub fn to_instruction_remaining_accounts_node(&self) -> InstructionRemainingAccountsNode {
         InstructionRemainingAccountsNode {
+            identifier: self.identifier.clone(),
             is_optional: self.is_optional,
             is_signer: self.is_signer,
             is_writable: self.is_writable,
             docs: self.docs.clone(),
-            value: Box::new(self.value.clone()),
             display: self.display.clone(),
+            plugins: vec![],
         }
     }
 }
@@ -102,13 +105,13 @@ mod tests {
     use codama_nodes::DisplaySkip;
 
     #[test]
-    fn argument_value_only() {
-        let meta: Meta = syn::parse_quote! { remaining_accounts(argument("signers")) };
+    fn name_only() {
+        let meta: Meta = syn::parse_quote! { remaining_accounts("signers") };
         let directive = RemainingAccountsDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                value: ArgumentValueNode::new("signers").into(),
+                identifier: "signers".into(),
                 is_signer: None,
                 is_writable: None,
                 is_optional: None,
@@ -121,7 +124,7 @@ mod tests {
     #[test]
     fn fully_set() {
         let meta: Meta = syn::parse_quote! { remaining_accounts(
-            argument("signers"),
+            "signers",
             signer,
             writable,
             optional,
@@ -131,7 +134,7 @@ mod tests {
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                value: ArgumentValueNode::new("signers").into(),
+                identifier: "signers".into(),
                 is_signer: Some(IsSigner::True),
                 is_writable: Some(true),
                 is_optional: Some(true),
@@ -144,7 +147,7 @@ mod tests {
     #[test]
     fn fully_set_with_explicit_values() {
         let meta: Meta = syn::parse_quote! { remaining_accounts(
-            argument(name = "signers"),
+            name = "signers",
             signer = "either",
             writable = false,
             optional = true,
@@ -154,7 +157,7 @@ mod tests {
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                value: ArgumentValueNode::new("signers").into(),
+                identifier: "signers".into(),
                 is_signer: Some(IsSigner::Either),
                 is_writable: Some(false),
                 is_optional: Some(true),
@@ -167,13 +170,14 @@ mod tests {
     #[test]
     fn with_display() {
         let meta: Meta = syn::parse_quote! { remaining_accounts(
-            argument("signers"),
+            "signers",
             display(label = "Signers", skip = never)
         ) };
         let directive = RemainingAccountsDirective::parse(&meta).unwrap();
         let expected_display = InstructionAccountDisplayNode {
-            label: Some("Signers".to_string()),
+            label: Some("Signers".into()),
             skip: Some(DisplaySkip::Never),
+            plugins: vec![],
         };
         assert_eq!(directive.display, Some(expected_display.clone()));
         assert_eq!(
@@ -183,33 +187,39 @@ mod tests {
     }
 
     #[test]
-    fn missing_value() {
+    fn missing_name() {
         let meta: Meta = syn::parse_quote! { remaining_accounts(signer, optional) };
+        let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
+        assert_eq!(error.to_string(), "name is missing");
+    }
+
+    #[test]
+    fn name_already_set() {
+        let meta: Meta = syn::parse_quote! { remaining_accounts("a", name = "b") };
+        let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
+        assert_eq!(error.to_string(), "name is already set");
+    }
+
+    #[test]
+    fn argument_is_removed() {
+        let meta: Meta = syn::parse_quote! { remaining_accounts(argument("signers"), signer) };
         let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),
-            "remaining_accounts must specify one of: argument"
+            "argument(...) is removed in v2, use remaining_accounts(\"x\", ...)"
         );
     }
 
     #[test]
-    fn duplicated_value() {
-        let meta: Meta = syn::parse_quote! { remaining_accounts(argument("a"), argument("b")) };
-        let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
-        assert_eq!(error.to_string(), "value is already set");
-    }
-
-    #[test]
     fn invalid_signer() {
-        let meta: Meta =
-            syn::parse_quote! { remaining_accounts(argument("signers"), signer = "maybe") };
+        let meta: Meta = syn::parse_quote! { remaining_accounts("signers", signer = "maybe") };
         let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
         assert_eq!(error.to_string(), "expected boolean or `\"either\"`");
     }
 
     #[test]
     fn unrecognized_attribute() {
-        let meta: Meta = syn::parse_quote! { remaining_accounts(argument("signers"), banana) };
+        let meta: Meta = syn::parse_quote! { remaining_accounts("signers", banana) };
         let error = RemainingAccountsDirective::parse(&meta).unwrap_err();
         assert_eq!(error.to_string(), "unrecognized attribute");
     }
@@ -217,7 +227,7 @@ mod tests {
     #[test]
     fn to_node() {
         let meta: Meta = syn::parse_quote! { remaining_accounts(
-            argument("signers"),
+            "signers",
             signer = "either",
             optional,
             docs = "Additional multisig signers."
@@ -226,12 +236,13 @@ mod tests {
         assert_eq!(
             directive.to_instruction_remaining_accounts_node(),
             InstructionRemainingAccountsNode {
+                identifier: "signers".into(),
                 is_optional: Some(true),
                 is_signer: Some(IsSigner::Either),
                 is_writable: None,
                 docs: vec!["Additional multisig signers.".to_string()].into(),
-                value: Box::new(ArgumentValueNode::new("signers").into()),
                 display: None,
+                plugins: vec![],
             }
         );
     }

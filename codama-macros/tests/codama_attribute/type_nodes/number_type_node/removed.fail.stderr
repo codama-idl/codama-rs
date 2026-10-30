@@ -1,0 +1,17 @@
+error: number(...) is removed in v2, use integer(...) or float(...)
+ --> tests/codama_attribute/type_nodes/number_type_node/removed.fail.rs:3:17
+  |
+3 | #[codama(type = number(u64))]
+  |                 ^^^^^^^^^^^
+
+error: number(...) is removed in v2, use integer(...) or float(...)
+ --> tests/codama_attribute/type_nodes/number_type_node/removed.fail.rs:6:37
+  |
+6 | #[codama(type = struct(field("len", number(u8))))]
+  |                                     ^^^^^^^^^^
+
+error: number(...) is removed in v2, use integer(...) or float(...)
+ --> tests/codama_attribute/type_nodes/number_type_node/removed.fail.rs:9:23
+  |
+9 | #[codama(field("len", number(u8)))]
+  |                       ^^^^^^^^^^

@@ -7,5 +7,5 @@ error: item is missing
 error: item is missing
  --> tests/codama_attribute/type_nodes/option_type_node/item_missing.fail.rs:6:17
   |
-6 | #[codama(type = option(prefix = number(u16)))]
-  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6 | #[codama(type = option(prefix = integer(u16)))]
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

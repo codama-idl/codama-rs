@@ -4,15 +4,15 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    CamelCaseString, DisplaySkip, InstructionArgumentNode, NestedTypeNode, Node, NumberFormat::U8,
-    NumberTypeNode, StructFieldDisplayNode, StructFieldTypeNode, TypeNode,
+    CamelCaseString, DisplaySkip, IntegerFormat::U8, IntegerTypeNode, Node, StructFieldDisplayNode,
+    StructFieldTypeNode, TypeNode, TypeNodeTrait,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct EnumDiscriminatorDirective {
     pub name: Option<CamelCaseString>,
-    pub size: Option<NestedTypeNode<NumberTypeNode>>,
+    pub size: Option<IntegerTypeNode>,
 }
 
 impl EnumDiscriminatorDirective {
@@ -22,15 +22,14 @@ impl EnumDiscriminatorDirective {
             .as_path_list()?;
 
         let mut name = SetOnce::<CamelCaseString>::new("name");
-        let mut size: SetOnce<NestedTypeNode<NumberTypeNode>> =
-            SetOnce::<NestedTypeNode<NumberTypeNode>>::new("size");
+        let mut size: SetOnce<IntegerTypeNode> = SetOnce::<IntegerTypeNode>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
             "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
             "size" => {
                 let node = TypeNode::from_meta(meta.as_value()?)?;
-                match NestedTypeNode::<NumberTypeNode>::try_from(node) {
+                match IntegerTypeNode::try_from_type_node(node) {
                     Ok(node) => size.set(node, meta),
-                    _ => Err(meta.error("size must be a NumberTypeNode")),
+                    _ => Err(meta.error("size must be an IntegerTypeNode")),
                 }
             }
             _ => Err(meta.error("unrecognized attribute")),
@@ -93,25 +92,16 @@ impl From<&EnumDiscriminatorDirective> for StructFieldTypeNode {
             display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
             ..StructFieldTypeNode::new(
                 directive.name.clone().unwrap_or("discriminator".into()),
-                directive
-                    .size
-                    .clone()
-                    .unwrap_or(NumberTypeNode::le(U8).into()),
+                directive.size.clone().unwrap_or(IntegerTypeNode::le(U8)),
             )
         }
-    }
-}
-
-impl From<&EnumDiscriminatorDirective> for InstructionArgumentNode {
-    fn from(directive: &EnumDiscriminatorDirective) -> Self {
-        StructFieldTypeNode::from(directive).into()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::NumberFormat::{U16, U32};
+    use codama_nodes::IntegerFormat::{U16, U32};
 
     #[test]
     fn enum_discriminator_with_name() {
@@ -128,13 +118,13 @@ mod tests {
 
     #[test]
     fn enum_discriminator_with_size() {
-        let meta: Meta = syn::parse_quote! { enum_discriminator(size = number(u32)) };
+        let meta: Meta = syn::parse_quote! { enum_discriminator(size = integer(u32)) };
         let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
                 name: None,
-                size: Some(NumberTypeNode::le(U32).into()),
+                size: Some(IntegerTypeNode::le(U32)),
             }
         );
     }
@@ -142,13 +132,13 @@ mod tests {
     #[test]
     fn enum_discriminator_with_name_and_size() {
         let meta: Meta =
-            syn::parse_quote! { enum_discriminator(name = "banana", size = number(u16)) };
+            syn::parse_quote! { enum_discriminator(name = "banana", size = integer(u16)) };
         let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
                 name: Some("banana".into()),
-                size: Some(NumberTypeNode::le(U16).into()),
+                size: Some(IntegerTypeNode::le(U16)),
             }
         );
     }
@@ -170,17 +160,6 @@ mod tests {
 
         assert_eq!(
             field.display,
-            Some(StructFieldDisplayNode::skipped(DisplaySkip::Always))
-        );
-    }
-
-    #[test]
-    fn creates_hidden_instruction_arguments() {
-        let directive = EnumDiscriminatorDirective::default();
-        let argument = InstructionArgumentNode::from(&directive);
-
-        assert_eq!(
-            argument.display,
             Some(StructFieldDisplayNode::skipped(DisplaySkip::Always))
         );
     }

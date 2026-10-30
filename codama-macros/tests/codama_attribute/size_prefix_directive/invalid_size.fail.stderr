@@ -1,4 +1,4 @@
-error: prefix must be a NumberTypeNode
+error: prefix must be an IntegerTypeNode
  --> tests/codama_attribute/size_prefix_directive/invalid_size.fail.rs:3:24
   |
 3 | #[codama(size_prefix = string)]

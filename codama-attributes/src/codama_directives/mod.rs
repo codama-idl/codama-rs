@@ -5,7 +5,6 @@ mod type_nodes;
 mod value_nodes;
 
 mod account_directive;
-mod argument_directive;
 mod codama_directive;
 mod default_value_directive;
 mod discriminator_directive;
@@ -28,7 +27,6 @@ mod skip_directive;
 mod type_directive;
 
 pub use account_directive::*;
-pub use argument_directive::*;
 pub use codama_directive::*;
 pub use default_value_directive::*;
 pub use discriminator_directive::*;

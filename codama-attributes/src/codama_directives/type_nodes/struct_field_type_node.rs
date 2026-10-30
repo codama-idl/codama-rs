@@ -19,7 +19,7 @@ impl FromMeta for StructFieldTypeNode {
             .map(|r| r.try_into_resolved().map_err(|e| meta.error(e.to_string())))
             .transpose()?;
 
-        // When used as a type node (e.g., `type = field("age", number(u8))`),
+        // When used as a type node (e.g., `type = field("age", integer(u8))`),
         // unresolved directives must already be resolved.
         let r#type = consumer
             .r#type
@@ -34,6 +34,7 @@ impl FromMeta for StructFieldTypeNode {
             default_value_strategy,
             docs: Docs::default(),
             display: None,
+            plugins: vec![],
         })
     }
 }
@@ -42,31 +43,33 @@ impl FromMeta for StructFieldTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::{DefaultValueStrategy, NumberFormat::U32, NumberTypeNode, NumberValueNode};
+    use codama_nodes::{
+        DefaultValueStrategy, IntegerFormat::U32, IntegerTypeNode, IntegerValueNode,
+    };
 
     #[test]
     fn implicit_minimum() {
         assert_type!(
-            { field("age", number(u32)) },
-            StructFieldTypeNode::new("age", NumberTypeNode::le(U32)).into()
+            { field("age", integer(u32)) },
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
         );
     }
 
     #[test]
     fn explicit_minimum() {
         assert_type!(
-            { field(name = "age", type = number(u32)) },
-            StructFieldTypeNode::new("age", NumberTypeNode::le(U32)).into()
+            { field(name = "age", type = integer(u32)) },
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
         );
     }
 
     #[test]
     fn with_default_value() {
         assert_type!(
-            { field("age", number(u32), default_value = 42) },
+            { field("age", integer(u32), default_value = 42) },
             StructFieldTypeNode {
-                default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
-                ..StructFieldTypeNode::new("age", NumberTypeNode::le(U32))
+                default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
+                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             }
             .into()
         );
@@ -75,11 +78,11 @@ mod tests {
     #[test]
     fn with_omitted_value() {
         assert_type!(
-            { field("age", number(u32), value = 42) },
+            { field("age", integer(u32), value = 42) },
             StructFieldTypeNode {
-                default_value: Box::new(Some(NumberValueNode::new(42u32).into())),
+                default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new("age", NumberTypeNode::le(U32))
+                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             }
             .into()
         );
@@ -87,7 +90,7 @@ mod tests {
 
     #[test]
     fn missing_name() {
-        assert_type_err!({ field(type = number(u8)) }, "name is missing");
+        assert_type_err!({ field(type = integer(u8)) }, "name is missing");
     }
 
     #[test]
@@ -103,11 +106,15 @@ mod tests {
     #[test]
     fn invalid_type() {
         assert_type_err!({ field(type = unrecognized) }, "unrecognized type");
+        assert_type_err!({ field("age", unrecognized) }, "unrecognized type");
+        assert_type_err!(
+            { field("len", number(u8)) },
+            "number(...) is removed in v2, use integer(...) or float(...)"
+        );
     }
 
     #[test]
     fn unrecognized_attribute() {
-        assert_type_err!({ field(unrecognized) }, "unrecognized attribute");
         assert_type_err!({ field(foo = 42) }, "unrecognized attribute");
     }
 }

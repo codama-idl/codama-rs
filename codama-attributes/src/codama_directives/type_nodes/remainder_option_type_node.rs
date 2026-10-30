@@ -25,33 +25,21 @@ impl FromMeta for RemainderOptionTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::{NumberTypeNode, StringTypeNode, U8};
+    use codama_nodes::{IntegerTypeNode, U8};
 
     #[test]
     fn implicit() {
         assert_type!(
-            { remainder_option(number(u8)) },
-            RemainderOptionTypeNode::new(NumberTypeNode::le(U8)).into()
+            { remainder_option(integer(u8)) },
+            RemainderOptionTypeNode::new(IntegerTypeNode::le(U8)).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { remainder_option(item = number(u8)) },
-            RemainderOptionTypeNode::new(NumberTypeNode::le(U8)).into()
-        );
-    }
-
-    #[test]
-    fn nested() {
-        assert_type!(
-            { remainder_option(size_prefix(string, number(u8))) },
-            RemainderOptionTypeNode::new(codama_nodes::SizePrefixTypeNode::new(
-                StringTypeNode::utf8(),
-                NumberTypeNode::le(U8)
-            ))
-            .into()
+            { remainder_option(item = integer(u8)) },
+            RemainderOptionTypeNode::new(IntegerTypeNode::le(U8)).into()
         );
     }
 
@@ -63,7 +51,7 @@ mod tests {
     #[test]
     fn already_set() {
         assert_type_err!(
-            { remainder_option(number(u8), string) },
+            { remainder_option(integer(u8), string) },
             "item is already set"
         );
     }

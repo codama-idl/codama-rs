@@ -7,8 +7,8 @@ error: name is missing
 error: name is missing
  --> tests/codama_attribute/field_directive/invalid_field.fail.rs:6:10
   |
-6 | #[codama(field(number(u8)))]
-  |          ^^^^^^^^^^^^^^^^^
+6 | #[codama(field(integer(u8)))]
+  |          ^^^^^^^^^^^^^^^^^^
 
 error: type is missing
  --> tests/codama_attribute/field_directive/invalid_field.fail.rs:9:10

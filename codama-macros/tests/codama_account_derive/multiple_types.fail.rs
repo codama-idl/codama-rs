@@ -5,7 +5,7 @@ use codama_macros::CodamaAccount;
 #[derive(PartialEq)]
 #[codama(type = public_key)]
 #[derive(Debug)]
-#[codama(type = number(u32))]
+#[codama(type = integer(u32))]
 pub struct StructTest {
     #[codama(type = boolean)]
     #[codama(type = public_key)]

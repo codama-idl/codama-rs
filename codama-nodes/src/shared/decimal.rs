@@ -16,6 +16,22 @@ impl Decimal {
     pub fn to_f64(&self) -> f64 {
         self.0.parse().expect("a decimal parses as f64")
     }
+
+    /// Builds a decimal from number text in plain or exponent notation, such as `1.50`, `007.5` or `-2.5e-3`.
+    /// Every digit stays: the zeros are trimmed and the exponent is expanded, with no `f64` rounding.
+    /// The value must be within the `f64` range, which no float format exceeds.
+    pub fn from_literal(literal: &str) -> Result<Self, ParseDecimalError> {
+        let invalid = || ParseDecimalError(literal.to_string());
+        let (sign, unsigned) = split_sign(literal);
+        let (mantissa, exponent) = split_exponent(unsigned).ok_or_else(invalid)?;
+        if !is_plain_number(mantissa) || !fits_f64(mantissa, exponent) {
+            return Err(invalid());
+        }
+        Ok(Decimal(format!(
+            "{sign}{}",
+            plain_digits(mantissa, exponent)
+        )))
+    }
 }
 
 impl From<f64> for Decimal {
@@ -34,19 +50,66 @@ impl From<f64> for Decimal {
         let shortest = serde_json::Number::from_f64(value.abs())
             .expect("the value is finite")
             .to_string();
-        let plain = match shortest.split_once('e') {
-            Some((mantissa, exponent)) => {
-                expand_exponent(mantissa, exponent.parse().expect("an i32 exponent"))
-            }
-            None => shortest.clone(),
-        };
-        let trimmed = if plain.contains('.') {
-            plain.trim_end_matches('0').trim_end_matches('.')
-        } else {
-            plain.as_str()
-        };
-        Decimal(format!("{sign}{trimmed}"))
+        let (mantissa, exponent) = split_exponent(&shortest).expect("ryu writes an i32 exponent");
+        Decimal(format!("{sign}{}", plain_digits(mantissa, exponent)))
     }
+}
+
+/// Splits a leading minus sign off number text, so `-1.5` gives `("-", "1.5")`.
+fn split_sign(text: &str) -> (&str, &str) {
+    match text.strip_prefix('-') {
+        Some(unsigned) => ("-", unsigned),
+        None => ("", text),
+    }
+}
+
+/// Splits an exponent off number text, so `2.5e-3` gives `("2.5", -3)` and `2.5` gives `("2.5", 0)`.
+/// Gives `None` when the exponent is not an `i32`, as in `1e` or `1e3.5`.
+fn split_exponent(text: &str) -> Option<(&str, i32)> {
+    match text.split_once(['e', 'E']) {
+        Some((mantissa, exponent)) => Some((mantissa, exponent.parse().ok()?)),
+        None => Some((text, 0)),
+    }
+}
+
+/// Digits with at most one `.` and a digit before it: `1.5`, `1.` and `007` pass, `.5` and `1.5.2` fail.
+fn is_plain_number(text: &str) -> bool {
+    let (integer, fraction) = text.split_once('.').unwrap_or((text, ""));
+    !integer.is_empty() && is_digits(integer) && is_digits(fraction)
+}
+
+/// A finite `f64` that does not underflow to zero, so the exponent stays small enough to expand.
+fn fits_f64(mantissa: &str, exponent: i32) -> bool {
+    match format!("{mantissa}e{exponent}").parse::<f64>() {
+        Ok(value) => value.is_finite() && (value != 0.0 || is_zero(mantissa)),
+        Err(_) => false,
+    }
+}
+
+/// Writes `mantissa` times ten to the power `exponent` as canonical digits, with no leading or trailing zeros.
+/// A zero mantissa gives `0` without expanding the exponent.
+fn plain_digits(mantissa: &str, exponent: i32) -> String {
+    if is_zero(mantissa) {
+        return "0".to_string();
+    }
+    let plain = expand_exponent(mantissa, exponent);
+    let (integer, fraction) = plain.split_once('.').unwrap_or((&plain, ""));
+    let integer = match integer.trim_start_matches('0') {
+        "" => "0",
+        integer => integer,
+    };
+    match fraction.trim_end_matches('0') {
+        "" => integer.to_string(),
+        fraction => format!("{integer}.{fraction}"),
+    }
+}
+
+fn is_zero(mantissa: &str) -> bool {
+    mantissa.bytes().all(|byte| matches!(byte, b'0' | b'.'))
+}
+
+fn is_digits(text: &str) -> bool {
+    text.bytes().all(|byte| byte.is_ascii_digit())
 }
 
 /// Writes `mantissa` times ten to the power `exponent` in plain decimal notation.
@@ -120,15 +183,14 @@ fn is_canonical_decimal(value: &str) -> bool {
     if matches!(value, "NaN" | "Infinity" | "-Infinity") {
         return true;
     }
-    let is_digits = |part: &str| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit());
-    let unsigned: &str = value.strip_prefix('-').unwrap_or(value);
+    let is_part = |part: &str| !part.is_empty() && is_digits(part);
+    let (_, unsigned) = split_sign(value);
     let (integer, fraction) = match unsigned.split_once('.') {
         Some((integer, fraction)) => (integer, Some(fraction)),
         None => (unsigned, None),
     };
-    let integer_ok = is_digits(integer) && (integer == "0" || !integer.starts_with('0'));
-    let fraction_ok =
-        fraction.is_none_or(|fraction| is_digits(fraction) && !fraction.ends_with('0'));
+    let integer_ok = is_part(integer) && (integer == "0" || !integer.starts_with('0'));
+    let fraction_ok = fraction.is_none_or(|fraction| is_part(fraction) && !fraction.ends_with('0'));
     integer_ok && fraction_ok
 }
 
@@ -207,6 +269,48 @@ mod tests {
         let min = Decimal::from(5e-324);
         assert_eq!(min.as_str(), format!("0.{}5", "0".repeat(323)));
         assert_eq!(min.to_f64(), 5e-324);
+    }
+
+    #[test]
+    fn from_literal() {
+        for (literal, expected) in [
+            ("1.5", "1.5"),
+            ("-2.50", "-2.5"),
+            ("007.50", "7.5"),
+            ("1.", "1"),
+            ("42", "42"),
+            ("0.0", "0"),
+            ("-0.0", "-0"),
+            ("1e3", "1000"),
+            ("1E3", "1000"),
+            ("2.5e+2", "250"),
+            ("1.5e-3", "0.0015"),
+            ("0.5e3", "500"),
+            ("123e-5", "0.00123"),
+            ("0.12345678901234567890", "0.1234567890123456789"),
+            ("0e999999999", "0"),
+            ("-0.0e-999999999", "-0"),
+        ] {
+            assert_eq!(Decimal::from_literal(literal).unwrap().as_str(), expected);
+        }
+    }
+
+    #[test]
+    fn from_literal_rejects_values_outside_the_f64_range() {
+        for literal in ["1e400", "-1e400", "1e-400", "1e2147483647", "1e-2147483648"] {
+            let error = Decimal::from_literal(literal).unwrap_err();
+            assert_eq!(error.to_string(), format!("Invalid decimal: {literal}"));
+        }
+    }
+
+    #[test]
+    fn from_literal_rejects_non_numbers() {
+        for literal in [
+            "", "-", "+1", ".5", "1e", "1e+", "1.5.2", "1e3.5", "1_000", "0x10", "NaN", " 1",
+        ] {
+            let error = Decimal::from_literal(literal).unwrap_err();
+            assert_eq!(error.to_string(), format!("Invalid decimal: {literal}"));
+        }
     }
 
     #[test]

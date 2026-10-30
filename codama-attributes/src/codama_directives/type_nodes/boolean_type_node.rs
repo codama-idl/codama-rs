@@ -1,5 +1,5 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{BooleanTypeNode, NestedTypeNode, NumberTypeNode, TypeNode};
+use codama_nodes::{BooleanTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for BooleanTypeNode {
@@ -21,9 +21,9 @@ impl FromMeta for BooleanTypeNode {
                 }
             })?;
 
-        let size = match NestedTypeNode::<NumberTypeNode>::try_from(size.take(meta)?) {
+        let size = match IntegerTypeNode::try_from_type_node(size.take(meta)?) {
             Ok(node) => node,
-            Err(_) => return Err(meta.error("size must be a NumberTypeNode")),
+            Err(_) => return Err(meta.error("size must be an IntegerTypeNode")),
         };
         Ok(BooleanTypeNode::new(size))
     }
@@ -33,7 +33,7 @@ impl FromMeta for BooleanTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::NumberFormat::U32;
+    use codama_nodes::IntegerFormat::U32;
 
     #[test]
     fn default() {
@@ -44,16 +44,16 @@ mod tests {
     #[test]
     fn implicit() {
         assert_type!(
-            { boolean(number(u32)) },
-            BooleanTypeNode::new(NumberTypeNode::le(U32)).into()
+            { boolean(integer(u32)) },
+            BooleanTypeNode::new(IntegerTypeNode::le(U32)).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { boolean(size = number(u32)) },
-            BooleanTypeNode::new(NumberTypeNode::le(U32)).into()
+            { boolean(size = integer(u32)) },
+            BooleanTypeNode::new(IntegerTypeNode::le(U32)).into()
         );
     }
 

@@ -81,8 +81,8 @@ impl KorokTrait for FieldKorok<'_> {
 mod tests {
     use super::*;
     use codama_nodes::{
-        NumberFormat::{U32, U64},
-        NumberTypeNode,
+        IntegerFormat::{U32, U64},
+        IntegerTypeNode,
     };
 
     #[test]
@@ -93,8 +93,8 @@ mod tests {
             node: None,
         };
         assert_eq!(
-            korok.get_updated_type_node(NumberTypeNode::le(U32).into()),
-            Some(StructFieldTypeNode::new("my_field", NumberTypeNode::le(U32)).into())
+            korok.get_updated_type_node(IntegerTypeNode::le(U32).into()),
+            Some(StructFieldTypeNode::new("my_field", IntegerTypeNode::le(U32)).into())
         );
     }
 
@@ -106,8 +106,8 @@ mod tests {
             node: None,
         };
         assert_eq!(
-            korok.get_updated_type_node(NumberTypeNode::le(U32).into()),
-            Some(NumberTypeNode::le(U32).into())
+            korok.get_updated_type_node(IntegerTypeNode::le(U32).into()),
+            Some(IntegerTypeNode::le(U32).into())
         );
     }
 
@@ -116,11 +116,11 @@ mod tests {
         let korok = FieldKorok {
             ast: &syn::parse_quote! { pub my_field: u32 },
             attributes: Attributes(vec![]),
-            node: Some(StructFieldTypeNode::new("my_node_name", NumberTypeNode::le(U32)).into()),
+            node: Some(StructFieldTypeNode::new("my_node_name", IntegerTypeNode::le(U32)).into()),
         };
         assert_eq!(
-            korok.get_updated_type_node(NumberTypeNode::le(U64).into()),
-            Some(StructFieldTypeNode::new("my_node_name", NumberTypeNode::le(U64)).into())
+            korok.get_updated_type_node(IntegerTypeNode::le(U64).into()),
+            Some(StructFieldTypeNode::new("my_node_name", IntegerTypeNode::le(U64)).into())
         );
     }
 }

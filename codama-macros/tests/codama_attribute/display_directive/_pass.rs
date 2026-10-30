@@ -20,9 +20,6 @@ pub struct FieldDisplayTest {
 #[codama(display(amount(decimals = 9, unit = "SOL")))]
 pub struct AmountDisplayTest;
 
-#[codama(display(date_time))]
-pub struct DateTimeDisplayTest;
-
 #[codama(account(
     name = "payer",
     display(label = "Payer", skip = always)

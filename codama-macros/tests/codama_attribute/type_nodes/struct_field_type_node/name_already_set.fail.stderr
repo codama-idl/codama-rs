@@ -1,11 +1,11 @@
 error: name is already set
- --> tests/codama_attribute/type_nodes/struct_field_type_node/name_already_set.fail.rs:3:42
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/name_already_set.fail.rs:3:43
   |
-3 | #[codama(type = field("age", number(u8), "years"))]
-  |                                          ^^^^^^^
+3 | #[codama(type = field("age", integer(u8), "years"))]
+  |                                           ^^^^^^^
 
 error: name is already set
- --> tests/codama_attribute/type_nodes/struct_field_type_node/name_already_set.fail.rs:6:56
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/name_already_set.fail.rs:6:57
   |
-6 | #[codama(type = field(name = "age", type = number(u8), name = "years"))]
-  |                                                        ^^^^^^^^^^^^^^
+6 | #[codama(type = field(name = "age", type = integer(u8), name = "years"))]
+  |                                                         ^^^^^^^^^^^^^^
