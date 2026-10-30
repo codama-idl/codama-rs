@@ -1,5 +1,6 @@
 #![warn(missing_copy_implementations)]
 
+mod contextual_value_nodes;
 mod count_nodes;
 mod discriminator_nodes;
 mod display_nodes;
@@ -16,7 +17,6 @@ mod value_nodes;
 // Kept off until this node family is ported to spec v2, so the crate compiles in the meantime.
 // mod account_node;
 // mod constant_node;
-// mod contextual_value_nodes;
 // mod defined_type_node;
 // mod error_node;
 // mod event_node;

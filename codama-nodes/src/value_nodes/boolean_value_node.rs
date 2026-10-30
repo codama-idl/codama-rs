@@ -2,7 +2,10 @@ use crate::BooleanValueNode;
 
 impl BooleanValueNode {
     pub fn new(boolean: bool) -> Self {
-        Self { boolean }
+        Self {
+            boolean,
+            plugins: vec![],
+        }
     }
 }
 

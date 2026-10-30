@@ -8,6 +8,8 @@ impl ZeroableOptionTypeNode {
         Self {
             item: Box::new(item.into()),
             zero_value: None,
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 
@@ -18,6 +20,8 @@ impl ZeroableOptionTypeNode {
         Self {
             item: Box::new(item.into()),
             zero_value: Some(zero_value),
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 }
@@ -25,22 +29,22 @@ impl ZeroableOptionTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Base16, NumberTypeNode, U64};
+    use crate::{Base16, IntegerTypeNode, U64};
 
     #[test]
     fn new() {
-        let node = ZeroableOptionTypeNode::new(NumberTypeNode::le(U64));
-        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        let node = ZeroableOptionTypeNode::new(IntegerTypeNode::le(U64));
+        assert_eq!(*node.item, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(node.zero_value, None);
     }
 
     #[test]
     fn custom() {
         let node = ZeroableOptionTypeNode::custom(
-            NumberTypeNode::le(U64),
+            IntegerTypeNode::le(U64),
             ConstantValueNode::bytes(Base16, "ffffffffffffffff"),
         );
-        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        assert_eq!(*node.item, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(
             node.zero_value,
             Some(ConstantValueNode::bytes(Base16, "ffffffffffffffff"))
@@ -49,18 +53,18 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = ZeroableOptionTypeNode::new(NumberTypeNode::le(U64));
+        let node = ZeroableOptionTypeNode::new(IntegerTypeNode::le(U64));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+            r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let json = r#"{"kind":"zeroableOptionTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"}}"#;
         let node: ZeroableOptionTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, ZeroableOptionTypeNode::new(NumberTypeNode::le(U64)));
+        assert_eq!(node, ZeroableOptionTypeNode::new(IntegerTypeNode::le(U64)));
     }
 }

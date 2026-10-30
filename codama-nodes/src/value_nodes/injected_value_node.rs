@@ -8,6 +8,7 @@ impl InjectedValueNode {
         Self {
             key: key.into(),
             fallback: Box::new(None),
+            plugins: vec![],
         }
     }
 
@@ -19,6 +20,7 @@ impl InjectedValueNode {
         Self {
             key: key.into(),
             fallback: Box::new(Some(fallback.into())),
+            plugins: vec![],
         }
     }
 }
@@ -26,7 +28,7 @@ impl InjectedValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::NumberValueNode;
+    use crate::IntegerValueNode;
 
     #[test]
     fn new() {
@@ -37,11 +39,11 @@ mod tests {
 
     #[test]
     fn with_fallback() {
-        let node = InjectedValueNode::with_fallback("my_key", NumberValueNode::new(42));
+        let node = InjectedValueNode::with_fallback("my_key", IntegerValueNode::new(42));
         assert_eq!(node.key, CamelCaseString::new("myKey"));
         assert_eq!(
             *node.fallback,
-            Some(ValueNode::Number(NumberValueNode::new(42)))
+            Some(ValueNode::Integer(IntegerValueNode::new(42)))
         );
     }
 
@@ -61,21 +63,21 @@ mod tests {
 
     #[test]
     fn to_json_with_fallback() {
-        let node = InjectedValueNode::with_fallback("myKey", NumberValueNode::new(42));
+        let node = InjectedValueNode::with_fallback("myKey", IntegerValueNode::new(42));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"injectedValueNode","key":"myKey","fallback":{"kind":"numberValueNode","number":42}}"#
+            r#"{"kind":"injectedValueNode","key":"myKey","fallback":{"kind":"integerValueNode","value":"42"}}"#
         );
     }
 
     #[test]
     fn from_json_with_fallback() {
-        let json = r#"{"kind":"injectedValueNode","key":"myKey","fallback":{"kind":"numberValueNode","number":42}}"#;
+        let json = r#"{"kind":"injectedValueNode","key":"myKey","fallback":{"kind":"integerValueNode","value":"42"}}"#;
         let node: InjectedValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            InjectedValueNode::with_fallback("myKey", NumberValueNode::new(42u32))
+            InjectedValueNode::with_fallback("myKey", IntegerValueNode::new(42u32))
         );
     }
 }

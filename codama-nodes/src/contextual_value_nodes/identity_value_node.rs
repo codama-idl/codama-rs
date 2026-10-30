@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn new() {
         let node = IdentityValueNode::new();
-        assert_eq!(node, IdentityValueNode {});
+        assert_eq!(node, IdentityValueNode { plugins: vec![] });
     }
 
     #[test]

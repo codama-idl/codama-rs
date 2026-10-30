@@ -44,7 +44,7 @@ impl From<ValueNode> for ConstantPdaSeedValue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{IntegerTypeNode, IntegerValueNode, U64};
+    use crate::{FloatValueNode, IntegerTypeNode, IntegerValueNode, U64};
 
     #[test]
     fn new() {
@@ -53,6 +53,15 @@ mod tests {
         assert_eq!(
             *node.value,
             ConstantPdaSeedValue::Integer(IntegerValueNode::new(42u64))
+        );
+    }
+
+    #[test]
+    fn from_value_node() {
+        let value: ValueNode = FloatValueNode::new(1.5).into();
+        assert_eq!(
+            ConstantPdaSeedValue::from(value),
+            ConstantPdaSeedValue::Float(FloatValueNode::new(1.5))
         );
     }
 
