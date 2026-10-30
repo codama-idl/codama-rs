@@ -1,8 +1,7 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
-    AccountNode, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode, InstructionNode, Node,
-    NumberTypeNode, NumberValueNode, PdaNode, ProgramNode, ProgramOrigin, RootNode, StructTypeNode,
-    U8,
+    AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, InstructionNode,
+    IntegerTypeNode, IntegerValueNode, Node, PdaNode, ProgramNode, RootNode, StructTypeNode, U8,
 };
 
 #[test]
@@ -58,7 +57,6 @@ fn it_updates_the_program_data_when_not_set() {
     assert_eq!(program.identifier, program_b.identifier);
     assert_eq!(program.public_key, "1234");
     assert_eq!(program.version, program_b.version);
-    assert_eq!(program.origin, program_b.origin);
     assert_eq!(program.docs, program_b.docs);
 }
 
@@ -78,24 +76,17 @@ fn it_does_not_override_the_program_data_when_set() {
     assert_eq!(program.identifier, program_a.identifier);
     assert_eq!(program.public_key, program_a.public_key);
     assert_eq!(program.version, program_a.version);
-    assert_eq!(program.origin, program_a.origin);
     assert_eq!(program.docs, program_a.docs);
 }
 
 /// Returns a ProgramNode with the given public key
 /// whilst using an identifier to tag all fields with unique values.
 fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
-    let origin = if identifier == "a" {
-        ProgramOrigin::Anchor
-    } else {
-        ProgramOrigin::Shank
-    };
     ProgramNode {
         identifier: format!("program_{}", identifier).into(),
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
-        origin: Some(origin),
-        docs: Docs::new().add_doc(format!("docs_{}", identifier)),
+        docs: vec![format!("docs_{}", identifier)].into(),
         accounts: vec![AccountNode::new(
             format!("account_{}", identifier),
             StructTypeNode::default(),
@@ -120,9 +111,10 @@ fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
         )],
         constants: vec![ConstantNode::new(
             format!("constant_{}", identifier),
-            NumberTypeNode::le(U8),
-            NumberValueNode::new(42u8),
+            IntegerTypeNode::le(U8),
+            IntegerValueNode::new(42u8),
         )],
+        plugins: vec![],
     }
 }
 

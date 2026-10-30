@@ -2,7 +2,7 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    AccountNode, NumberFormat::U64, NumberTypeNode, ProgramNode, PublicKeyTypeNode,
+    AccountNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, PublicKeyTypeNode,
     StructFieldTypeNode, StructTypeNode,
 };
 
@@ -30,7 +30,7 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
                     "token",
                     StructTypeNode::new(vec![
                         StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
-                        StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
+                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                     ])
                 )],
                 ..ProgramNode::default()

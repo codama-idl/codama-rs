@@ -1,10 +1,11 @@
+use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, ConstantPdaSeedNode, FieldDiscriminatorNode,
-    NumberFormat::{U64, U8},
-    NumberTypeNode, PdaLinkNode, PdaNode, ProgramNode, PublicKeyTypeNode, SizeDiscriminatorNode,
+    IntegerFormat::{U64, U8},
+    IntegerTypeNode, PdaLinkNode, PdaNode, ProgramNode, PublicKeyTypeNode, SizeDiscriminatorNode,
     StringTypeNode, StringValueNode, StructFieldTypeNode, StructTypeNode, VariablePdaSeedNode,
 };
 
@@ -31,7 +32,7 @@ fn from_struct() -> CodamaResult<()> {
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
                     StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
+                    StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                 ])
             )
             .into()
@@ -127,7 +128,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
             AccountNode {
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
-                    FieldDiscriminatorNode::new("discriminator", 0).into(),
+                    FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                 ],
                 ..AccountNode::new("myAccount", StructTypeNode::new(vec![]))
             }
@@ -143,7 +144,7 @@ fn with_seed_directives() -> CodamaResult<()> {
         #[derive(CodamaAccount)]
         #[codama(seed(type = string(utf8), value = "counter_pda"))]
         #[codama(seed(name = "authority"))]
-        #[codama(seed(name = "identifier", type = number(u8)))]
+        #[codama(seed(name = "identifier", type = integer(u8)))]
         struct Counter {
             authority: Pubkey,
         }
@@ -176,7 +177,7 @@ fn with_seed_directives() -> CodamaResult<()> {
                         )
                         .into(),
                         VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
-                        VariablePdaSeedNode::new("identifier", NumberTypeNode::le(U8)).into(),
+                        VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                     ]
                 )],
                 ..ProgramNode::default()

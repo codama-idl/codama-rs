@@ -1,16 +1,19 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
-    BooleanTypeNode, InstructionAccountNode, InstructionArgumentNode, InstructionNode, ProgramNode,
-    RootNode,
+    BooleanTypeNode, InstructionAccountNode, InstructionNode, ProgramNode, RootNode,
+    StructFieldTypeNode, StructTypeNode,
 };
 
-fn create_instruction_with_single_arg(name: &str, arg_name: &str) -> InstructionNode {
+fn create_instruction_with_single_field(name: &str, field_name: &str) -> InstructionNode {
     InstructionNode {
         identifier: name.into(),
-        arguments: vec![InstructionArgumentNode::new(
-            arg_name,
-            BooleanTypeNode::default(),
-        )],
+        data: Box::new(Some(
+            StructTypeNode::new(vec![StructFieldTypeNode::new(
+                field_name,
+                BooleanTypeNode::default(),
+            )])
+            .into(),
+        )),
         ..InstructionNode::default()
     }
 }
@@ -49,8 +52,8 @@ fn it_merges_instructions_into_root_nodes() {
 
 #[test]
 fn it_merges_instructions_inside_programs_into_root_nodes() {
-    let foo_instruction = create_instruction_with_single_arg("foo", "arg");
-    let bar_instruction = create_instruction_with_single_arg("bar", "arg");
+    let foo_instruction = create_instruction_with_single_field("foo", "arg");
+    let bar_instruction = create_instruction_with_single_field("bar", "arg");
     let program_a = ProgramNode::default().add_instruction(foo_instruction.clone());
     let program_b = ProgramNode::default().add_instruction(bar_instruction.clone());
     assert_eq!(
@@ -72,9 +75,9 @@ fn it_merges_instructions_inside_programs_into_root_nodes() {
 
 #[test]
 fn it_deduplicates_instructions_with_identical_names_by_using_the_last_one() {
-    let first_instruction = create_instruction_with_single_arg("create", "first");
-    let second_instruction = create_instruction_with_single_arg("create", "second");
-    let third_instruction = create_instruction_with_single_arg("create", "third");
+    let first_instruction = create_instruction_with_single_field("create", "first");
+    let second_instruction = create_instruction_with_single_field("create", "second");
+    let third_instruction = create_instruction_with_single_field("create", "third");
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -88,8 +91,8 @@ fn it_deduplicates_instructions_with_identical_names_by_using_the_last_one() {
 
 #[test]
 fn it_deduplicates_instructions_with_identical_names_inside_programs() {
-    let first_instruction = create_instruction_with_single_arg("create", "first");
-    let second_instruction = create_instruction_with_single_arg("create", "second");
+    let first_instruction = create_instruction_with_single_field("create", "first");
+    let second_instruction = create_instruction_with_single_field("create", "second");
     let program_a = ProgramNode::default().add_instruction(first_instruction);
     let program_b = ProgramNode::default().add_instruction(second_instruction.clone());
     assert_eq!(
@@ -104,8 +107,8 @@ fn it_deduplicates_instructions_with_identical_names_inside_programs() {
 
 #[test]
 fn it_deduplicates_instructions_with_identical_names_with_an_initial_program_node() {
-    let first_instruction = create_instruction_with_single_arg("create", "first");
-    let second_instruction = create_instruction_with_single_arg("create", "second");
+    let first_instruction = create_instruction_with_single_field("create", "first");
+    let second_instruction = create_instruction_with_single_field("create", "second");
     let program_a = ProgramNode::default().add_instruction(first_instruction.clone());
     let program_b = ProgramNode::default().add_instruction(second_instruction.clone());
     assert_eq!(

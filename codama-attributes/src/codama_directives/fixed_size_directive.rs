@@ -4,7 +4,7 @@ use codama_syn_helpers::{extensions::ExprExtension, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct FixedSizeDirective {
-    pub size: usize,
+    pub size: u64,
 }
 
 impl FixedSizeDirective {

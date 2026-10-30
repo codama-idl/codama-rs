@@ -1,8 +1,8 @@
 use super::utils::{combine_modules, CombineModulesInput};
 use codama_nodes::{
     EventNode,
-    NumberFormat::{U32, U64},
-    NumberTypeNode, ProgramNode, RootNode, StructFieldTypeNode, StructTypeNode,
+    IntegerFormat::{U32, U64},
+    IntegerTypeNode, ProgramNode, RootNode, StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -42,14 +42,14 @@ fn it_deduplicates_events_with_identical_names_by_using_the_last_one() {
         "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            NumberTypeNode::le(U64),
+            IntegerTypeNode::le(U64),
         )]),
     );
     let third = EventNode::new(
         "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
             "value",
-            NumberTypeNode::le(U32),
+            IntegerTypeNode::le(U32),
         )]),
     );
     assert_eq!(
@@ -70,7 +70,7 @@ fn it_deduplicates_events_with_identical_names_inside_programs() {
         "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            NumberTypeNode::le(U64),
+            IntegerTypeNode::le(U64),
         )]),
     );
     let program_a = ProgramNode::default().add_event(first);
@@ -92,7 +92,7 @@ fn it_deduplicates_events_with_identical_names_with_an_initial_program_node() {
         "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
             "amount",
-            NumberTypeNode::le(U64),
+            IntegerTypeNode::le(U64),
         )]),
     );
     let program_a = ProgramNode::default().add_event(first);

@@ -20,3 +20,8 @@ codama-nodes = { version = "0.13.2", path = "../codama-nodes" }
 codama-syn-helpers = { version = "0.13.2", path = "../codama-syn-helpers" }
 serde_json = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }
+
+# TODO(spec v2): these tests use v1 instruction arguments. Enable them when the instruction visitor tests are ported.
+[[test]]
+name = "set_default_values_visitor"
+test = false

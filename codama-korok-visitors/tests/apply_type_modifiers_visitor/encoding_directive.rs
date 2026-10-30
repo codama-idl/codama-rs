@@ -4,8 +4,8 @@ use codama_korok_visitors::{
 };
 use codama_koroks::{FieldKorok, KorokTrait};
 use codama_nodes::{
-    BooleanTypeNode, FixedSizeTypeNode, NumberFormat::U32, NumberTypeNode, SizePrefixTypeNode,
-    StringTypeNode, StringValueNode, StructFieldTypeNode,
+    BooleanTypeNode, FixedSizeTransformNode, HasTransforms, IntegerFormat::U32, IntegerTypeNode,
+    SizePrefixTransformNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
 };
 
 #[test]
@@ -25,7 +25,7 @@ fn it_updates_the_encoding_of_string_type_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_updates_the_encoding_of_nested_string_type_nodes() -> CodamaResult<()> {
+fn it_updates_the_encoding_of_string_type_nodes_with_transforms() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(encoding = base16)]
         String
@@ -35,12 +35,20 @@ fn it_updates_the_encoding_of_nested_string_type_nodes() -> CodamaResult<()> {
 
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into())
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                .into()
+        )
     );
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(SizePrefixTypeNode::new(StringTypeNode::base16(), NumberTypeNode::le(U32)).into())
+        Some(
+            StringTypeNode::base16()
+                .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                .into()
+        )
     );
     Ok(())
 }
@@ -65,7 +73,7 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
+fn it_keeps_the_type_with_transforms_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(encoding = base16)]
         field: String
@@ -78,7 +86,8 @@ fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResul
         Some(
             StructFieldTypeNode::new(
                 "field",
-                SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
             )
             .into()
         )
@@ -89,7 +98,8 @@ fn it_keeps_the_nested_type_wrapped_in_a_struct_field_type_node() -> CodamaResul
         Some(
             StructFieldTypeNode::new(
                 "field",
-                SizePrefixTypeNode::new(StringTypeNode::base16(), NumberTypeNode::le(U32))
+                StringTypeNode::base16()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
             )
             .into()
         )
@@ -136,14 +146,16 @@ fn it_fails_on_non_type_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_on_nested_type_nodes_that_are_not_string_types() -> CodamaResult<()> {
+fn it_fails_on_type_nodes_that_are_not_string_types() -> CodamaResult<()> {
     let ast: syn::Field = syn::parse_quote! {
         #[codama(encoding = base16)]
-        NestedValueNode
+        FixedSizeBoolean
     };
     let mut korok = FieldKorok::parse(&ast)?;
     korok.set_node(Some(
-        FixedSizeTypeNode::new(BooleanTypeNode::default(), 42).into(),
+        BooleanTypeNode::default()
+            .add_transform(FixedSizeTransformNode::new(42))
+            .into(),
     ));
 
     let error = korok
@@ -151,7 +163,7 @@ fn it_fails_on_nested_type_nodes_that_are_not_string_types() -> CodamaResult<()>
         .unwrap_err();
     assert_eq!(
         error.to_string(),
-        "Cannot apply attribute `#[codama(encoding)]` on a node of kind `NestedTypeNode<booleanTypeNode>`"
+        "Cannot apply attribute `#[codama(encoding)]` on a node of kind `booleanTypeNode`"
     );
     Ok(())
 }

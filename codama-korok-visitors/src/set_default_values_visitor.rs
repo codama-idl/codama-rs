@@ -2,9 +2,7 @@ use crate::KorokVisitor;
 use codama_attributes::{Attributes, DefaultValueDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
-use codama_nodes::{
-    InstructionArgumentNode, Node, RegisteredTypeNode, StructFieldTypeNode, ValueNode,
-};
+use codama_nodes::{Node, RegisteredTypeNode, StructFieldTypeNode, ValueNode};
 
 #[derive(Default)]
 pub struct SetDefaultValuesVisitor;
@@ -108,15 +106,6 @@ fn get_node_with_default_value(
                 .into()
             }))
         }
-        // Handle instruction arguments.
-        Some(Node::InstructionArgument(argument)) => Ok(Some(
-            InstructionArgumentNode {
-                default_value: Box::new(Some(resolved_node.clone())),
-                default_value_strategy: directive.default_value_strategy,
-                ..argument.clone()
-            }
-            .into(),
-        )),
         _ => Ok(None),
     }
 }

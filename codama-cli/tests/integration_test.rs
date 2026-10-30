@@ -28,7 +28,9 @@ fn test_generate_idl_simple_account() {
         .assert()
         .success()
         .stdout(predicate::str::contains(r#""kind":"rootNode""#))
-        .stdout(predicate::str::contains(r#""name":"testSimpleAccount""#));
+        .stdout(predicate::str::contains(
+            r#""identifier":"testSimpleAccount""#,
+        ));
 }
 
 #[test]
