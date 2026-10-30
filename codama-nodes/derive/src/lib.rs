@@ -2,7 +2,6 @@ use codama_errors::CodamaError;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
-mod nestable_type_node;
 mod node;
 mod node_union;
 mod registered_nodes;
@@ -43,22 +42,6 @@ pub fn derive_type_node(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn nestable_type_node(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    nestable_type_node::expand_attribute_nestable_type_node(&input)
-        .unwrap_or_else(CodamaError::into_compile_error)
-        .into()
-}
-
-#[proc_macro_derive(NestableTypeNode)]
-pub fn derive_nestable_type_node(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    nestable_type_node::expand_derive_nestable_type_node(&input)
-        .unwrap_or_else(CodamaError::into_compile_error)
-        .into()
-}
-
-#[proc_macro_attribute]
 pub fn node_union(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     node_union::expand_attribute_node_union(&input)
@@ -66,7 +49,7 @@ pub fn node_union(_attr: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
-#[proc_macro_derive(NodeUnion, attributes(fallback))]
+#[proc_macro_derive(NodeUnion)]
 pub fn derive_node_union(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     node_union::expand_derive_node_union(&input)

@@ -17,21 +17,6 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
     let data = input.as_enum()?;
     let variants = &data.variants;
     let item_name = &input.ident;
-    let (pre_generics, post_generics) = input.generics.block_wrappers();
-    let mut item_generics_with_de = input.generics.clone();
-    item_generics_with_de
-        .params
-        .insert(0, syn::parse_quote!('de));
-    let (pre_generics_with_de, _) = item_generics_with_de.block_wrappers();
-
-    let fallback_variant = variants.iter().find(|variant| {
-        variant.attrs.iter().any(|attr| {
-            let syn::Meta::Path(path) = &attr.meta else {
-                return false;
-            };
-            path.is_ident("fallback")
-        })
-    });
 
     let kind_patterns = variants.iter().map(|variant| {
         let variant_name = &variant.ident;
@@ -49,10 +34,6 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
 
     let deserialize_patterns = variants
         .iter()
-        .filter(|variant| match fallback_variant {
-            Some(fallback_variant) => *variant != fallback_variant,
-            None => true,
-        })
         .map(|variant| -> CodamaResult<TokenStream> {
             let variant_name = &variant.ident;
             let variant_type = &variant.fields.single_unnamed_field()?.ty;
@@ -69,24 +50,10 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         })
         .collect_and_combine_errors()?;
 
-    let fallback_deserialize_pattern = match fallback_variant {
-        Some(fallback_variant) => {
-            let fallback_variant_name = &fallback_variant.ident;
-            quote! {
-                _ => Ok(#item_name::#fallback_variant_name(
-                    serde_json::from_value(value).map_err(to_serde_error)?,
-                )),
-            }
-        }
-        None => {
-            quote! { _ => Err(serde::de::Error::custom(format!(concat!("unknown kind {} for ", stringify!(#item_name)), kind))), }
-        }
-    };
-
     Ok(quote! {
-        impl #pre_generics crate::NodeUnionTrait for #item_name #post_generics {}
+        impl crate::NodeUnionTrait for #item_name {}
 
-        impl #pre_generics crate::HasKind for #item_name #post_generics {
+        impl crate::HasKind for #item_name {
             fn kind(&self) -> &'static str {
                 match self {
                     #(#kind_patterns)*
@@ -94,7 +61,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             }
         }
 
-        impl #pre_generics serde::Serialize for #item_name #post_generics {
+        impl serde::Serialize for #item_name {
             fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
@@ -105,7 +72,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             }
         }
 
-        impl #pre_generics_with_de serde::Deserialize<'de> for #item_name #post_generics {
+        impl<'de> serde::Deserialize<'de> for #item_name {
             fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
             where
                 D: serde::Deserializer<'de>,
@@ -117,7 +84,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
                 };
                 match kind {
                     #(#deserialize_patterns)*
-                    #fallback_deserialize_pattern
+                    _ => Err(serde::de::Error::custom(format!(concat!("unknown kind {} for ", stringify!(#item_name)), kind))),
                 }
             }
         }
