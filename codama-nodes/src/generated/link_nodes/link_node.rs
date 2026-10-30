@@ -1,6 +1,6 @@
 use crate::{
-    AccountLinkNode, DefinedTypeLinkNode, InstructionAccountLinkNode, InstructionArgumentLinkNode,
-    InstructionLinkNode, PdaLinkNode, ProgramLinkNode,
+    AccountLinkNode, CamelCaseString, DefinedTypeLinkNode, HasIdentifier,
+    InstructionAccountLinkNode, InstructionLinkNode, PdaLinkNode, ProgramLinkNode,
 };
 use codama_nodes_derive::node_union;
 
@@ -10,7 +10,19 @@ pub enum LinkNode {
     DefinedType(DefinedTypeLinkNode),
     Instruction(InstructionLinkNode),
     InstructionAccount(InstructionAccountLinkNode),
-    InstructionArgument(InstructionArgumentLinkNode),
     Pda(PdaLinkNode),
     Program(ProgramLinkNode),
+}
+
+impl HasIdentifier for LinkNode {
+    fn identifier(&self) -> &CamelCaseString {
+        match self {
+            LinkNode::Account(node) => node.identifier(),
+            LinkNode::DefinedType(node) => node.identifier(),
+            LinkNode::Instruction(node) => node.identifier(),
+            LinkNode::InstructionAccount(node) => node.identifier(),
+            LinkNode::Pda(node) => node.identifier(),
+            LinkNode::Program(node) => node.identifier(),
+        }
+    }
 }

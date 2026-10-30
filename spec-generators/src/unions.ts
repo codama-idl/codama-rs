@@ -88,7 +88,7 @@ function hasRegisteredTwin(unionName: string, allUnionNames: ReadonlySet<string>
 
 /**
  * Every spec union name reachable from at least one node attribute
- * (recursively through `array(of)` / `tuple(items)` / etc.). Used by
+ * (recursively through `array(of)`). Used by
  * {@link isInlineUnion} so we only emit unions that something
  * actually references.
  */
@@ -113,8 +113,8 @@ export function getReferencedUnionNames(spec: Spec): ReadonlySet<string> {
  * deriving variant names for an inline union. See
  * {@link longestCommonPascalCaseSuffix}.
  *
- *   - `constantPdaSeedValue` (15 leaves)  → `'ValueNode'`
- *   - `enumValuePayload`     (2 leaves)   → `'ValueNode'`
+ *   - `constantPdaSeedValue` (17 leaves)  → `'ValueNode'`
+ *   - `transformNode`        (7 leaves)   → `'TransformNode'`
  *   - `pdaValuePda`          (2 leaves)   → `'Node'`
  */
 export function getInlineUnionStripSuffix(union: UnionSpec, spec: Spec): string {
@@ -164,9 +164,8 @@ export function longestCommonPascalCaseSuffix(leaves: readonly string[]): string
  * references down to their leaf nodes. Returns the flat list of
  * concrete node specs in spec declaration order.
  *
- * `nestedUnion` members are not followed (they're name-aliased and
- * break the cycle Rust-side). Unknown member references are skipped
- * silently — the spec validator catches those upstream.
+ * Unknown member references are skipped silently. The spec
+ * validator catches those upstream.
  *
  * `@codama/spec` doesn't expose a flatten helper of its own, so the
  * traversal is implemented here against the explicit `spec` arg.

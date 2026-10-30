@@ -26,6 +26,11 @@ describe('getLiteralUnionPageFragment', () => {
         expect(variants).toEqual(['True', 'False', 'Either']);
     });
 
+    it('emits numeric variants as the type name plus the number', () => {
+        const result = getLiteralUnionPageFragment({ typeName: 'Base', values: [2, 10] });
+        expect(result.content).toContain('pub enum Base {\nBase2,\nBase10,\n}');
+    });
+
     it('emits NO imports — the standard derives are in the Rust prelude', () => {
         const result = getLiteralUnionPageFragment({
             typeName: 'IsSigner',

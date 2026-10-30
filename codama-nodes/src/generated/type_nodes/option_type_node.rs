@@ -1,4 +1,4 @@
-use crate::{NestedTypeNode, NumberTypeNode, TypeNode};
+use crate::{IntegerTypeNode, PluginNode, TransformNode, TypeNode};
 use codama_nodes_derive::type_node;
 
 #[type_node]
@@ -9,7 +9,11 @@ pub struct OptionTypeNode {
 
     // Children.
     pub item: Box<TypeNode>,
-    pub prefix: NestedTypeNode<NumberTypeNode>,
+    pub prefix: IntegerTypeNode,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub transforms: Vec<TransformNode>,
+    #[serde(default, skip_serializing_if = "crate::is_default")]
+    pub plugins: Vec<PluginNode>,
 }
 
 impl From<OptionTypeNode> for crate::Node {

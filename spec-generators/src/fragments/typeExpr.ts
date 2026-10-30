@@ -1,5 +1,5 @@
 import { pascalCase } from '@codama/fragments';
-import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
+import { type Fragment, fragment } from '@codama/fragments/rust';
 import type { TypeExpr } from '@codama/spec';
 
 import { use } from './helpers';
@@ -23,32 +23,27 @@ const NUMBER_FORMAT_TO_RUST: ReadonlyMap<string, string> = new Map([
  * `Option<ProgramLinkNode>`) and its import map carries the
  * `crate::<name>` paths the surrounding file needs.
  *
- * v1 mapping:
+ * Mapping:
  *
  *   - `address`                   → `String`
- *   - `string` (no constraint)    → `String`
- *   - `string` (`identifier`)     → `CamelCaseString`
- *   - `string` (`version`)        → `String`
+ *   - `string`                    → see {@link getStringExprFragment}
  *   - `boolean`                   → `bool`
  *   - `integer`                   → `uN` / `iN` by width
- *   - `float`                     → `crate::Number` (bespoke u64|i64|f64 enum)
  *   - `json`                      → `serde_json::Value` (opaque, arbitrary JSON)
  *   - `docs`                      → `Docs`
+ *   - `text`                      → `Text` (`string | textNode`)
  *   - `enumeration('foo')`        → `Foo`
  *   - `node('fooBar')`            → `FooBar`
  *   - `anyNode`                   → `crate::Node` (the top-level registry)
  *   - `union('fooBar')`           → `FooBar`
- *   - `nestedUnion('alias','k')`  → `Alias<Kind>` (only `nestedTypeNode` in v1)
  *   - `array(of)`                 → `Vec<Of>`
- *   - `tuple(items)`              → `(A, B, …)`
  */
 export function getTypeExprFragment(expr: TypeExpr): Fragment {
     switch (expr.kind) {
         case 'address':
             return fragment`String`;
         case 'string':
-            if (expr.constraint === 'identifier') return use('crate::CamelCaseString');
-            return fragment`String`;
+            return getStringExprFragment(expr);
         case 'boolean':
             return fragment`bool`;
         case 'integer': {
@@ -56,12 +51,6 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             if (!rust) throw new Error(`unknown integer width "${expr.width}"`);
             return fragment`${rust}`;
         }
-        case 'float':
-            // v1's only float (`numberValueNode.number`) is `f64`; Rust uses
-            // the bespoke `Number` enum (`u64|i64|f64` with custom serde +
-            // `From<uN/iN/fN>` impls). Mirrors the JS generator, which maps
-            // `float → number` (TS's polymorphic number type).
-            return use('crate::Number');
         case 'json':
             // An opaque, arbitrary JSON value. The spec deliberately leaves
             // its shape undescribed, so it maps to `serde_json::Value`.
@@ -73,15 +62,15 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             // `literalUnion` at the top level of an attribute is resolved by
             // `attributeBodyLine.ts` (the attribute name supplies the type name).
             // Reaching this case means a literalUnion is nested inside another
-            // type expression (e.g. `array(literalUnion(...))`) — that doesn't
-            // occur in v1, and the nested position gives us no name source.
-            // Fail loudly so a future spec regression surfaces here.
+            // type expression (e.g. `array(literalUnion(...))`), and the nested
+            // position gives us no name source.
             throw new Error('literalUnion TypeExpr is only supported at the top level of a node attribute');
         case 'codamaVersion':
-            // No Rust analogue in v1; render as `String`.
             return fragment`String`;
         case 'docs':
             return use('crate::Docs');
+        case 'text':
+            return use('crate::Text');
         case 'enumeration':
             return use(`crate::${pascalCase(expr.name)}`);
         case 'node':
@@ -92,19 +81,33 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             return use('crate::Node');
         case 'union':
             return use(`crate::${pascalCase(expr.name)}`);
-        case 'nestedUnion': {
-            // v1 only has one nested-union alias: `nestedTypeNode`. The
-            // Rust type alias is `NestedTypeNode<Kind>`.
-            return fragment`${use(`crate::${pascalCase(expr.alias)}`)}<${use(`crate::${pascalCase(expr.name)}`)}>`;
-        }
         case 'array': {
             const inner = getTypeExprFragment(expr.of);
             return fragment`Vec<${inner}>`;
         }
-        case 'tuple': {
-            const items = expr.items.map(getTypeExprFragment);
-            const joined = mergeFragments(items, contents => contents.join(', '));
-            return fragment`(${joined})`;
-        }
+    }
+}
+
+/**
+ * The Rust type for a `string` type expression, by constraint:
+ *
+ *   - none, `namespace`, `path`, `version` -> `String`
+ *   - `identifier`                         -> `CamelCaseString`
+ *   - `integer`                            -> `Integer` (unsigned or signed, up to 128 bits)
+ *   - `decimal`                            -> `Decimal` (a decimal number written as a string)
+ */
+function getStringExprFragment(expr: Extract<TypeExpr, { kind: 'string' }>): Fragment {
+    switch (expr.constraint) {
+        case 'identifier':
+            return use('crate::CamelCaseString');
+        case 'integer':
+            return use('crate::Integer');
+        case 'decimal':
+            return use('crate::Decimal');
+        case 'namespace':
+        case 'path':
+        case 'version':
+        case undefined:
+            return fragment`String`;
     }
 }

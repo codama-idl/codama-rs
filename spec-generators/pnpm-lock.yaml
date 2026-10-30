@@ -12,8 +12,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       '@codama/spec':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 2.0.0-rc.3
+        version: 2.0.0-rc.3
     devDependencies:
       '@solana-config/oxc':
         specifier: ^0.1.1
@@ -55,8 +55,8 @@ packages:
   '@codama/node-types@1.7.0':
     resolution: {integrity: sha512-VDytcSgN6jOGEh4aJ1LgSnqCe1drSEUSdAeKOV92aU0MOYiDi2s2B18+Gx7dx40mex2GfVc3zamu7KGzTlxegA==}
 
-  '@codama/spec@1.8.0':
-    resolution: {integrity: sha512-vHuEs0KzCWfpgjALrVywb3WgMfc08PWwIx6yUaB6g5pckv8shcrDBQJA2vyNKfc8BRYdX6fwogLhytpDgyyJ0Q==}
+  '@codama/spec@2.0.0-rc.3':
+    resolution: {integrity: sha512-6nOqA1oZMh4FiN1bMF1lkymsMuEQFjMY3TQs7WeVa6Wa86SLIZyrclqChNi8a5GaO8FNMWC8bnn43w7B5V1KOQ==}
     engines: {node: '>=22.12.0'}
 
   '@emnapi/core@1.10.0':
@@ -1497,7 +1497,7 @@ snapshots:
 
   '@codama/node-types@1.7.0': {}
 
-  '@codama/spec@1.8.0': {}
+  '@codama/spec@2.0.0-rc.3': {}
 
   '@emnapi/core@1.10.0':
     dependencies:

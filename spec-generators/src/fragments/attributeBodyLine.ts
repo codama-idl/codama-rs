@@ -1,21 +1,13 @@
 import { pascalCase, snakeCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
-import type { AttributeSpec, NodeSpec, TypeExpr } from '@codama/spec';
+import type { AttributeSpec, TypeExpr } from '@codama/spec';
 
-import { isIdentifierAttribute } from './hasNameImpl';
 import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
 
 /** Spec attribute names that collide with Rust keywords and need `r#` escaping. */
 const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
 
-// TODO(spec v2): temporary rename lines that keep the v1 JSON key. Delete them at the spec v2 pin.
-const IDENTIFIER_RENAME_LINES = [
-    '// TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.',
-    '#[serde(rename = "name")]',
-].join('\n');
-
-// TODO(spec v2): `node` serves only the TEMP_NAME_NODE_EXCEPTIONS list. Drop it at the spec v2 pin.
 /**
  * Render one spec attribute as a Rust struct field plus any preceding
  * `#[serde(…)]` attribute. The fragment carries the crate-rooted
@@ -32,7 +24,6 @@ const IDENTIFIER_RENAME_LINES = [
  *   - Required non-Vec, non-union  -> no `#[serde]` attr (required unions are boxed below).
  *   - Optional single              -> `Option<T>` + `#[serde(skip_serializing_if = "crate::is_default")]`.
  *   - `docs` field                 -> `Docs` + `#[serde(default, skip_serializing_if = "crate::is_default")]`.
- *   - `isIdentifierAttribute`      -> field `identifier` + `#[serde(rename = "name")]`, before any other serde attr.
  *
  * Box rule (box-all-union): every direct (non-`Vec`) field whose type
  * is a `union` or `anyNode` is wrapped in `Box<…>`. Required →
@@ -41,10 +32,10 @@ const IDENTIFIER_RENAME_LINES = [
  * fields, which is what `clippy::large_enum_variant` actually cares
  * about. `anyNode` renders to `crate::Node`, the registry over every
  * node — boxing it also breaks the size recursion a direct `Node`
- * variant would otherwise introduce. `array(…)`, `nestedUnion`,
- * `node`, and scalar fields are never boxed.
+ * variant would otherwise introduce. `array(…)`, `node`, and scalar
+ * fields are never boxed.
  */
-export function getAttributeBodyLineFragment(attr: AttributeSpec, node: NodeSpec): Fragment {
+export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
     // `literalUnion` is anonymous in the spec; the generator emits a
     // Rust enum shell named `pascalCase(attr.name)` (see
     // `literalUnions.ts`). The type-expression renderer can't produce
@@ -60,10 +51,9 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec, node: NodeSpec
     let serdeAttr: string;
     if (isDocsType(attr.type)) {
         // `docs` attributes are kept as a bare `Docs` regardless of
-        // `optional`. `Docs` already wraps a `Vec<String>` with a
-        // sensible `Default`/`is_default`, so wrapping it in
-        // `Option<…>` would be redundant and divergent from the
-        // hand-written convention.
+        // `optional`. `Docs` has its own sensible `Default`/`is_default`,
+        // so wrapping it in `Option<…>` would be redundant and divergent
+        // from the hand-written convention.
         typeFragment = inner;
         serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
     } else if (isVecLike) {
@@ -92,12 +82,10 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec, node: NodeSpec
         serdeAttr = '';
     }
 
-    const isIdentifier = isIdentifierAttribute(node, attr);
-    const fieldName = isIdentifier ? 'identifier' : rustFieldName(attr.name);
+    const fieldName = rustFieldName(attr.name);
     const fieldLine = fragment`pub ${fieldName}: ${typeFragment},`;
-    const attrLines = [isIdentifier ? IDENTIFIER_RENAME_LINES : '', serdeAttr].filter(line => line !== '');
-    if (attrLines.length === 0) return fieldLine;
-    return mergeFragments([fragment`${attrLines.join('\n')}`, fieldLine], parts => parts.join('\n'));
+    if (serdeAttr === '') return fieldLine;
+    return mergeFragments([fragment`${serdeAttr}`, fieldLine], parts => parts.join('\n'));
 }
 
 function isVecLikeType(type: TypeExpr): boolean {

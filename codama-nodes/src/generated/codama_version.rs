@@ -1,1 +1,1 @@
-pub const CODAMA_VERSION: &str = "1.8.0";
+pub const CODAMA_VERSION: &str = "2.0.0";

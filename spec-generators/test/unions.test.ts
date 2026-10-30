@@ -82,23 +82,20 @@ describe('getInlineUnionStripSuffix', () => {
         expect(getInlineUnionStripSuffix(constantPdaSeedValue, spec)).toBe('ValueNode');
     });
 
-    it('handles a small inline union (enumValuePayload: structValueNode | tupleValueNode)', () => {
-        const enumValuePayload = valueCategory.unions.find(u => u.name === 'enumValuePayload')!;
-        expect(getInlineUnionStripSuffix(enumValuePayload, spec)).toBe('ValueNode');
+    it('handles a small inline union (injectableIntegerValueNode: injectedValueNode | integerValueNode)', () => {
+        const injectableInteger = valueCategory.unions.find(u => u.name === 'injectableIntegerValueNode')!;
+        expect(getInlineUnionStripSuffix(injectableInteger, spec)).toBe('ValueNode');
     });
 });
 
 describe('flattenNodeUnion', () => {
     it('walks nested union members to leaf nodes', () => {
-        // `linkNode` references `union(\'registeredLinkNode\')` which
-        // lists 7 concrete link nodes.
         const linkNode = linkCategory.unions.find(u => u.name === 'linkNode')!;
         const kinds = flattenNodeUnion(linkNode, spec).map(n => n.kind);
         expect(kinds.toSorted()).toEqual([
             'accountLinkNode',
             'definedTypeLinkNode',
             'instructionAccountLinkNode',
-            'instructionArgumentLinkNode',
             'instructionLinkNode',
             'pdaLinkNode',
             'programLinkNode',
@@ -112,7 +109,6 @@ describe('flattenNodeUnion', () => {
             'accountLinkNode',
             'definedTypeLinkNode',
             'instructionAccountLinkNode',
-            'instructionArgumentLinkNode',
             'instructionLinkNode',
             'pdaLinkNode',
             'programLinkNode',
