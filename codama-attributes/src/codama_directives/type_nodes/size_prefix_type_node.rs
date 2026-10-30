@@ -1,103 +1,96 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{NestedTypeNode, NumberTypeNode, SizePrefixTypeNode, TypeNode};
+use codama_nodes::{
+    HasTransforms, IntegerTypeNode, SizePrefixTransformNode, TypeNode, TypeNodeTrait,
+};
 use codama_syn_helpers::{extensions::*, Meta};
 
-impl FromMeta for SizePrefixTypeNode<TypeNode> {
-    fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("size_prefix")?.as_path_list()?;
-        let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
-        let mut prefix: SetOnce<NestedTypeNode<NumberTypeNode>> = SetOnce::new("prefix");
+/// Parses `size_prefix(type, prefix)` into the type with a trailing `sizePrefixTransformNode`.
+pub(crate) fn size_prefix_type_node_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
+    let pl = meta.assert_directive("size_prefix")?.as_path_list()?;
+    let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
+    let mut prefix: SetOnce<IntegerTypeNode> = SetOnce::new("prefix");
 
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            "prefix" => prefix.set(parse_prefix(meta.as_value()?)?, meta),
-            _ => {
-                // Both are type nodes, so positional args fill `type` then `prefix`.
-                if meta.is_path_or_list() {
-                    return match r#type.is_set() {
-                        false => r#type.set(TypeNode::from_meta(meta)?, meta),
-                        true => prefix.set(parse_prefix(meta)?, meta),
-                    };
-                }
-                Err(meta.error("unrecognized attribute"))
+    pl.each(|ref meta| match meta.path_str().as_str() {
+        "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
+        "prefix" => prefix.set(parse_prefix(meta.as_value()?)?, meta),
+        _ => {
+            // Both are type nodes, so positional args fill `type` then `prefix`.
+            if meta.is_path_or_list() {
+                return match r#type.is_set() {
+                    false => r#type.set(TypeNode::from_meta(meta)?, meta),
+                    true => prefix.set(parse_prefix(meta)?, meta),
+                };
             }
-        })?;
+            Err(meta.error("unrecognized attribute"))
+        }
+    })?;
 
-        Ok(Self::new(r#type.take(meta)?, prefix.take(meta)?))
-    }
+    let r#type = r#type.take(meta)?;
+    Ok(r#type.add_transform(SizePrefixTransformNode::new(prefix.take(meta)?)))
 }
 
-fn parse_prefix(meta: &Meta) -> syn::Result<NestedTypeNode<NumberTypeNode>> {
-    let node = TypeNode::from_meta(meta)?;
-    NestedTypeNode::<NumberTypeNode>::try_from(node)
-        .map_err(|_| meta.error("prefix must be a NumberTypeNode"))
+fn parse_prefix(meta: &Meta) -> syn::Result<IntegerTypeNode> {
+    IntegerTypeNode::try_from_type_node(TypeNode::from_meta(meta)?)
+        .map_err(|_| meta.error("prefix must be an IntegerTypeNode"))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::assert_type;
     use codama_nodes::{
-        BytesTypeNode, FixedSizeTypeNode,
-        NumberFormat::{U16, U32, U8},
+        BytesTypeNode, FixedSizeTransformNode,
+        IntegerFormat::{U16, U32, U8},
         OptionTypeNode, StringTypeNode,
     };
 
-    fn parse_node(meta: Meta) -> SizePrefixTypeNode<TypeNode> {
-        SizePrefixTypeNode::<TypeNode>::from_meta(&meta).unwrap()
-    }
-
     #[test]
     fn parsed_fields() {
-        let node = parse_node(syn::parse_quote! { size_prefix(string, integer(u32)) });
-        assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
-        assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::le(U32)));
-
-        let node = parse_node(syn::parse_quote! { size_prefix(bytes, integer(u16, be)) });
-        assert_eq!(*node.r#type, TypeNode::Bytes(BytesTypeNode::new()));
-        assert_eq!(*node.prefix, NestedTypeNode::Value(NumberTypeNode::be(U16)));
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { size_prefix(string, integer(u32)) },
+                TypeNode::from(
+                    StringTypeNode::utf8()
+                        .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32))),
+                ),
+            ),
+            (
+                syn::parse_quote! { size_prefix(bytes, integer(u16, be)) },
+                BytesTypeNode::new()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::be(U16)))
+                    .into(),
+            ),
+        ] {
+            assert_eq!(size_prefix_type_node_from_meta(&meta).unwrap(), expected);
+        }
     }
 
     #[test]
     fn equivalent_syntaxes() {
-        let expected = SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32));
-        let positional = parse_node(syn::parse_quote! { size_prefix(string, integer(u32)) });
-        let named_prefix =
-            parse_node(syn::parse_quote! { size_prefix(string, prefix = integer(u32)) });
-        let fully_explicit =
-            parse_node(syn::parse_quote! { size_prefix(type = string, prefix = integer(u32)) });
-
-        assert_eq!(positional, expected);
-        assert_eq!(named_prefix, expected);
-        assert_eq!(fully_explicit, expected);
-        assert_eq!(positional, named_prefix);
-        assert_eq!(named_prefix, fully_explicit);
-    }
-
-    #[test]
-    fn explicit() {
-        assert_type!(
-            { size_prefix(type = string, prefix = integer(u32)) },
-            SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
-        );
-        assert_type!(
-            { size_prefix(prefix = integer(u32), type = string) },
-            SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
-        );
-        assert_type!(
-            { size_prefix(prefix = integer(u32), string) },
-            SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into()
-        );
+        for meta in [
+            syn::parse_quote! { size_prefix(string, integer(u32)) },
+            syn::parse_quote! { size_prefix(string, prefix = integer(u32)) },
+            syn::parse_quote! { size_prefix(type = string, prefix = integer(u32)) },
+            syn::parse_quote! { size_prefix(prefix = integer(u32), type = string) },
+            syn::parse_quote! { size_prefix(prefix = integer(u32), string) },
+        ] {
+            assert_eq!(
+                size_prefix_type_node_from_meta(&meta).unwrap(),
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                    .into()
+            );
+        }
     }
 
     #[test]
     fn nested() {
         assert_type!(
             { option(size_prefix(string, integer(u8))) },
-            OptionTypeNode::new(SizePrefixTypeNode::new(
-                StringTypeNode::utf8(),
-                NumberTypeNode::le(U8)
-            ))
+            OptionTypeNode::new(
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+            )
             .into()
         );
 
@@ -105,10 +98,10 @@ mod tests {
         let node = OptionTypeNode::from_meta(&meta).unwrap();
         assert_eq!(
             *node.item,
-            TypeNode::SizePrefix(SizePrefixTypeNode::new(
-                StringTypeNode::utf8(),
-                NumberTypeNode::le(U8)
-            ))
+            TypeNode::String(
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
+            )
         );
     }
 
@@ -116,70 +109,60 @@ mod tests {
     fn nested_prefix() {
         assert_type!(
             { size_prefix(string, fixed_size(integer(u32), 4)) },
-            SizePrefixTypeNode::new(
-                StringTypeNode::utf8(),
-                FixedSizeTypeNode::<NestedTypeNode<NumberTypeNode>>::new(
-                    NumberTypeNode::le(U32),
-                    4
-                )
-            )
-            .into()
+            StringTypeNode::utf8()
+                .add_transform(SizePrefixTransformNode::new(
+                    IntegerTypeNode::le(U32).add_transform(FixedSizeTransformNode::new(4))
+                ))
+                .into()
         );
     }
 
     #[test]
-    fn invalid_prefix() {
-        assert_type_err!(
-            { size_prefix(string, public_key) },
-            "prefix must be a NumberTypeNode"
-        );
-        assert_type_err!(
-            { size_prefix(type = string, prefix = public_key) },
-            "prefix must be a NumberTypeNode"
-        );
-    }
-
-    #[test]
-    fn positional_order() {
-        // Positional args fill `type` then `prefix` and are never swapped.
-        assert_type_err!(
-            { size_prefix(integer(u32), string) },
-            "prefix must be a NumberTypeNode"
-        );
-    }
-
-    #[test]
-    fn type_missing() {
-        assert_type_err!({ size_prefix(prefix = integer(u32)) }, "type is missing");
-    }
-
-    #[test]
-    fn prefix_missing() {
-        assert_type_err!({ size_prefix(string) }, "prefix is missing");
-    }
-
-    #[test]
-    fn already_set() {
-        assert_type_err!(
-            { size_prefix(type = string, type = bytes) },
-            "type is already set"
-        );
-        assert_type_err!(
-            { size_prefix(string, integer(u32), integer(u8)) },
-            "prefix is already set"
-        );
-    }
-
-    #[test]
-    fn unrecognized_type() {
-        assert_type_err!(
-            { size_prefix(unrecognized, integer(u32)) },
-            "unrecognized type"
-        );
-    }
-
-    #[test]
-    fn unrecognized_attribute() {
-        assert_type_err!({ size_prefix(string, foo = 42) }, "unrecognized attribute");
+    fn errors() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { size_prefix(string, public_key) },
+                "prefix must be an IntegerTypeNode",
+            ),
+            (
+                syn::parse_quote! { size_prefix(type = string, prefix = public_key) },
+                "prefix must be an IntegerTypeNode",
+            ),
+            (
+                syn::parse_quote! { size_prefix(string, float(f32)) },
+                "prefix must be an IntegerTypeNode",
+            ),
+            (
+                syn::parse_quote! { size_prefix(integer(u32), string) },
+                "prefix must be an IntegerTypeNode",
+            ),
+            (
+                syn::parse_quote! { size_prefix(prefix = integer(u32)) },
+                "type is missing",
+            ),
+            (
+                syn::parse_quote! { size_prefix(string) },
+                "prefix is missing",
+            ),
+            (
+                syn::parse_quote! { size_prefix(type = string, type = bytes) },
+                "type is already set",
+            ),
+            (
+                syn::parse_quote! { size_prefix(string, integer(u32), integer(u8)) },
+                "prefix is already set",
+            ),
+            (
+                syn::parse_quote! { size_prefix(unrecognized, integer(u32)) },
+                "unrecognized type",
+            ),
+            (
+                syn::parse_quote! { size_prefix(string, foo = 42) },
+                "unrecognized attribute",
+            ),
+        ] {
+            let error = size_prefix_type_node_from_meta(&meta).unwrap_err();
+            assert_eq!(error.to_string(), expected);
+        }
     }
 }

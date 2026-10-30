@@ -1,4 +1,4 @@
-use crate::utils::{FromMeta, SetOnce};
+use crate::utils::{hoist_integer_transforms, FromMeta, SetOnce};
 use codama_nodes::{DateTimeTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -31,14 +31,20 @@ impl FromMeta for DateTimeTypeNode {
             }
         })?;
 
-        Ok(DateTimeTypeNode::new(number.take(meta)?))
+        Ok(hoist_integer_transforms(
+            number.take(meta)?,
+            DateTimeTypeNode::new,
+        ))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::IntegerFormat::U64;
+    use crate::assert_type;
+    use codama_nodes::{
+        FixedSizeTransformNode, HasTransforms, IntegerFormat::U64, PreOffsetTransformNode,
+    };
 
     #[test]
     fn parses() {
@@ -54,10 +60,49 @@ mod tests {
     }
 
     #[test]
+    fn nested_number() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { date_time(fixed_size(integer(u64), 8)) },
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
+                    .add_transform(FixedSizeTransformNode::new(8)),
+            ),
+            (
+                syn::parse_quote! { date_time(number = fixed_size(integer(u64), 8)) },
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
+                    .add_transform(FixedSizeTransformNode::new(8)),
+            ),
+            (
+                syn::parse_quote! { date_time(pre_offset(fixed_size(integer(u64), 8), 4, relative)) },
+                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
+                    .add_transform(FixedSizeTransformNode::new(8))
+                    .add_transform(PreOffsetTransformNode::relative(4)),
+            ),
+        ] {
+            assert_eq!(DateTimeTypeNode::from_meta(&meta).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn wrapped() {
+        assert_type!(
+            { fixed_size(date_time(fixed_size(integer(u64), 8)), 16) },
+            DateTimeTypeNode::new(IntegerTypeNode::le(U64))
+                .add_transform(FixedSizeTransformNode::new(8))
+                .add_transform(FixedSizeTransformNode::new(16))
+                .into()
+        );
+    }
+
+    #[test]
     fn errors() {
         for (meta, expected) in [
             (
                 syn::parse_quote! { date_time(string) },
+                "number must be an IntegerTypeNode",
+            ),
+            (
+                syn::parse_quote! { date_time(fixed_size(string, 4)) },
                 "number must be an IntegerTypeNode",
             ),
             (syn::parse_quote! { date_time() }, "number is missing"),

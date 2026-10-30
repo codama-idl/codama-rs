@@ -12,4 +12,7 @@ pub struct NestedTest;
 #[codama(type = option(link("customString"), fixed))]
 pub struct NestedFixedTest;
 
+#[codama(type = fixed_size(link("customString"), 32))]
+pub struct WrappedTest;
+
 fn main() {}
