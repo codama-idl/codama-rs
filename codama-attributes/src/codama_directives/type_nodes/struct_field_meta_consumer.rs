@@ -68,11 +68,13 @@ impl StructFieldMetaConsumer {
         })
     }
 
-    pub fn consume_default_value(self) -> syn::Result<Self> {
+    pub fn consume_default_value(
+        self,
+        parse: fn(&Meta) -> syn::Result<DefaultValueDirective>,
+    ) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "default_value" | "value" => {
-                let directive = DefaultValueDirective::parse_value_nodes_only(&meta)?;
-                this.default_value.set(directive, meta)?;
+                this.default_value.set(parse(&meta)?, meta)?;
                 Ok(None)
             }
             _ => Ok(Some(meta)),

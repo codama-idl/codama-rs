@@ -50,7 +50,7 @@ impl<'a> ResolveDirectivesVisitor<'a> {
             CodamaDirective::Field(d) => {
                 self.resolve_type_node(&mut d.r#type)?;
                 if let Some(ref mut dv) = d.default_value {
-                    self.resolve_value_node(dv)?;
+                    self.resolve_instruction_input_value(dv)?;
                 }
             }
             CodamaDirective::Seed(d) => match &mut d.seed {

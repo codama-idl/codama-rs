@@ -1,6 +1,8 @@
 use crate::helpers::get_data_fields;
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
+use codama_korok_visitors::{
+    ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
+};
 use codama_koroks::{ItemKorok, KorokTrait, StructKorok};
 use codama_nodes::{
     AccountBumpValueNode, AccountValueNode, DefaultValueStrategy, InjectedValueNode,
@@ -91,6 +93,23 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
             },
             ProvidedNode::new("arg0", PayerValueNode::new()),
         ),
+        (
+            syn::parse_quote! {
+                #[derive(CodamaInstructions)]
+                enum Instructions {
+                    V(
+                        #[codama(account(name = "auth", signer))]
+                        #[codama(default_value = payer)]
+                        Pubkey,
+                    ),
+                }
+            },
+            StructFieldTypeNode {
+                default_value: Box::new(Some(InjectedValueNode::new("arg0").into())),
+                ..StructFieldTypeNode::new("arg0", PublicKeyTypeNode::new())
+            },
+            ProvidedNode::new("arg0", PayerValueNode::new()),
+        ),
     ] {
         let mut korok = ItemKorok::parse(&item, &[], &mut 0)?;
         korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
@@ -107,13 +126,106 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_takes_no_data_default_from_account_fields() -> CodamaResult<()> {
+fn it_matches_default_values_by_identifier() -> CodamaResult<()> {
+    for (item, expected_fields, expected_provides) in [
+        (
+            syn::parse_quote! {
+                #[derive(CodamaInstructions)]
+                enum Instructions {
+                    #[codama(type = variant("transfer", struct(field("amount", integer(u64)))))]
+                    Transfer {
+                        #[codama(default_value = payer)]
+                        owner: Pubkey,
+                    },
+                }
+            },
+            vec![StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))],
+            vec![],
+        ),
+        (
+            syn::parse_quote! {
+                #[derive(CodamaInstructions)]
+                enum Instructions {
+                    #[codama(type = variant("transfer", struct(
+                        field("owner", public_key),
+                        field("amount", integer(u64)),
+                    )))]
+                    Transfer {
+                        amount: u64,
+                        #[codama(default_value = payer)]
+                        owner: Pubkey,
+                    },
+                }
+            },
+            vec![
+                StructFieldTypeNode {
+                    default_value: Box::new(Some(InjectedValueNode::new("owner").into())),
+                    ..StructFieldTypeNode::new("owner", PublicKeyTypeNode::new())
+                },
+                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+            ],
+            vec![ProvidedNode::new("owner", PayerValueNode::new())],
+        ),
+    ] {
+        let mut korok = ItemKorok::parse(&item, &[], &mut 0)?;
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        korok.accept(&mut SetInstructionsVisitor::new())?;
+        let Some(Node::Program(program)) = korok.node() else {
+            panic!("Expected a program node");
+        };
+        let instruction = &program.instructions[0];
+        assert_eq!(
+            &get_data_fields(instruction)[1..],
+            expected_fields.as_slice()
+        );
+        assert_eq!(instruction.provides, expected_provides);
+    }
+    Ok(())
+}
+
+#[test]
+fn it_rejects_default_values_on_account_fields() -> CodamaResult<()> {
+    for item in [
+        syn::parse_quote! {
+            #[derive(CodamaInstruction)]
+            #[codama(field(after, "authority", public_key))]
+            struct SetAuthority {
+                #[codama(account(signer))]
+                #[codama(default_value = payer)]
+                authority: AccountMeta,
+                amount: u64,
+            }
+        },
+        syn::parse_quote! {
+            #[derive(CodamaInstruction)]
+            struct Deposit {
+                #[codama(account(writable))]
+                #[codama(value = 42)]
+                vault: AccountMeta,
+            }
+        },
+    ] {
+        let mut korok = StructKorok::parse(&item)?;
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        let error = korok
+            .accept(&mut SetInstructionsVisitor::new())
+            .unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "A default value has no effect on an account field, use `account(..., default_value = ...)`"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn it_separates_account_and_data_fields_with_one_name() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
         #[codama(field(after, "authority", public_key))]
         struct SetAuthority {
             #[codama(account(signer))]
-            #[codama(default_value = payer)]
             authority: AccountMeta,
             amount: u64,
         }
@@ -136,43 +248,6 @@ fn it_takes_no_data_default_from_account_fields() -> CodamaResult<()> {
                     ])
                     .into()
                 )),
-                ..InstructionNode::default()
-            }
-            .into()
-        )
-    );
-    Ok(())
-}
-
-#[test]
-fn it_provides_one_value_per_identifier() -> CodamaResult<()> {
-    let item: syn::Item = syn::parse_quote! {
-        #[derive(CodamaInstruction)]
-        struct Transfer {
-            #[codama(name = "owner")]
-            #[codama(default_value = payer)]
-            source_owner: Pubkey,
-            #[codama(name = "owner")]
-            #[codama(default_value = payer)]
-            destination_owner: Pubkey,
-        }
-    };
-    let mut korok = StructKorok::parse(&item)?;
-
-    assert_eq!(korok.node, None);
-    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
-    korok.accept(&mut SetInstructionsVisitor::new())?;
-    let owner = StructFieldTypeNode {
-        default_value: Box::new(Some(InjectedValueNode::new("owner").into())),
-        ..StructFieldTypeNode::new("owner", PublicKeyTypeNode::new())
-    };
-    assert_eq!(
-        korok.node,
-        Some(
-            InstructionNode {
-                identifier: "transfer".into(),
-                data: Box::new(Some(StructTypeNode::new(vec![owner.clone(), owner]).into())),
-                provides: vec![ProvidedNode::new("owner", PayerValueNode::new())],
                 ..InstructionNode::default()
             }
             .into()
