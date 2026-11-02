@@ -2,7 +2,7 @@ use crate::KorokVisitor;
 use codama_attributes::ProgramDirective;
 use codama_errors::CodamaResult;
 use codama_koroks::KorokTrait;
-use codama_nodes::{HasIdentifier, Node, ProgramNode, RootNode};
+use codama_nodes::{HasIdentifier, Node, PluginNode, ProgramNode, RootNode};
 
 #[derive(Default)]
 pub struct CombineModulesVisitor {
@@ -164,6 +164,8 @@ fn merge_root_nodes(this: &mut Option<RootNode>, that: RootNode, from_parent: bo
         return;
     };
 
+    merge_plugins(&mut this.plugins, that.plugins);
+
     // Get an array of all programs to merge.
     let mut those_programs = Vec::new();
     those_programs.push(that.program);
@@ -219,6 +221,18 @@ fn merge_program_nodes(this: &mut ProgramNode, that: ProgramNode) {
     merge_nodes_with_identifier(&mut this.events, that.events);
     merge_nodes_with_identifier(&mut this.errors, that.errors);
     merge_nodes_with_identifier(&mut this.constants, that.constants);
+    merge_plugins(&mut this.plugins, that.plugins);
+}
+
+/// Merge `that` plugins into `this` plugins.
+/// A namespace identifies a plugin, so a plugin already in `this` keeps its payload.
+fn merge_plugins(this: &mut Vec<PluginNode>, that: Vec<PluginNode>) {
+    for plugin in that {
+        let is_known = this.iter().any(|known| known.namespace == plugin.namespace);
+        if !is_known {
+            this.push(plugin);
+        }
+    }
 }
 
 fn merge_nodes_with_identifier<T>(nodes: &mut Vec<T>, new_nodes: Vec<T>)

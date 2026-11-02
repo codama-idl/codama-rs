@@ -1,8 +1,65 @@
-use super::utils::{combine_modules, CombineModulesInput};
+use super::utils::{combine_modules, get_plugin, CombineModulesInput};
 use codama_nodes::{
     AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, InstructionNode,
-    IntegerTypeNode, IntegerValueNode, Node, PdaNode, ProgramNode, RootNode, StructTypeNode, U8,
+    IntegerTypeNode, IntegerValueNode, Node, PdaNode, PluginNode, ProgramNode, RootNode,
+    StructTypeNode, U8,
 };
+use serde_json::json;
+
+#[test]
+fn it_merges_plugins_together() {
+    let program_a = ProgramNode {
+        plugins: vec![get_plugin("namespace.a")],
+        ..get_mock_program("a", "1234")
+    };
+    let program_b = ProgramNode {
+        plugins: vec![get_plugin("namespace.b")],
+        ..get_mock_program("b", "1234")
+    };
+    let result = combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    );
+    let Some(Node::Root(RootNode { program, .. })) = result else {
+        panic!("Expected a RootNode");
+    };
+
+    assert_eq!(
+        program.plugins,
+        vec![get_plugin("namespace.a"), get_plugin("namespace.b")]
+    );
+}
+
+#[test]
+fn it_does_not_override_a_plugin_with_the_same_namespace() {
+    let plugin_a = PluginNode {
+        payload: Some(json!({ "from": "a" })),
+        ..get_plugin("namespace.shared")
+    };
+    let plugin_b = PluginNode {
+        payload: Some(json!({ "from": "b" })),
+        ..get_plugin("namespace.shared")
+    };
+    let program_a = ProgramNode {
+        plugins: vec![plugin_a.clone()],
+        ..get_mock_program("a", "1234")
+    };
+    let program_b = ProgramNode {
+        plugins: vec![plugin_b, get_plugin("namespace.b")],
+        ..get_mock_program("b", "1234")
+    };
+    let result = combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    );
+    let Some(Node::Root(RootNode { program, .. })) = result else {
+        panic!("Expected a RootNode");
+    };
+
+    assert_eq!(program.plugins, vec![plugin_a, get_plugin("namespace.b")]);
+}
 
 #[test]
 fn it_merges_node_arrays_together() {
