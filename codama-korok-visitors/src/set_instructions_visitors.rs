@@ -13,7 +13,7 @@ use codama_nodes::{
     CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
     InjectedValueNode, InstructionAccountNode, InstructionDisplayNode, InstructionInputValueNode,
     InstructionNode, IntegerValueNode, Node, OptionalAccountStrategy, ProgramNode, ProvidedNode,
-    StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
+    RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 use std::collections::HashMap;
@@ -333,12 +333,16 @@ fn get_data_field_defaults<'a>(
 }
 
 /// The identifier of the data field that the Rust field at `index` gives.
+/// A named field takes the identifier of its node, which `type = field("x", ...)` can rename.
 /// An unnamed tuple item without `name = "..."` gets a synthetic identifier such as `arg0`.
 fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CamelCaseString {
-    fields
-        .get(index)
-        .and_then(|field| field.name())
-        .unwrap_or_else(|| format!("arg{}", index).into())
+    let field = fields.get(index);
+    match field.and_then(|field| field.node.as_ref()) {
+        Some(Node::Type(RegisteredTypeNode::StructField(node))) => node.identifier.clone(),
+        _ => field
+            .and_then(|field| field.name())
+            .unwrap_or_else(|| format!("arg{}", index).into()),
+    }
 }
 
 /// Sets the default value of an instruction field.

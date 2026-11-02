@@ -126,6 +126,48 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_injects_contextual_default_values_of_renamed_fields() -> CodamaResult<()> {
+    let expected_field = StructFieldTypeNode {
+        default_value: Box::new(Some(InjectedValueNode::new("authority").into())),
+        ..StructFieldTypeNode::new("authority", PublicKeyTypeNode::new())
+    };
+    let expected_provided = ProvidedNode::new("authority", PayerValueNode::new());
+    for item in [
+        syn::parse_quote! {
+            #[derive(CodamaInstruction)]
+            struct Initialize {
+                #[codama(type = field("authority", public_key))]
+                #[codama(default_value = payer)]
+                owner: Pubkey,
+            }
+        },
+        syn::parse_quote! {
+            #[derive(CodamaInstructions)]
+            enum Instructions {
+                Initialize {
+                    #[codama(type = field("authority", public_key))]
+                    #[codama(default_value = payer)]
+                    owner: Pubkey,
+                },
+            }
+        },
+    ] {
+        let mut korok = ItemKorok::parse(&item, &[], &mut 0)?;
+        korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+        korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
+        korok.accept(&mut SetInstructionsVisitor::new())?;
+        let instruction = match korok.node() {
+            Some(Node::Instruction(instruction)) => instruction,
+            Some(Node::Program(program)) => &program.instructions[0],
+            _ => panic!("Expected an instruction node"),
+        };
+        assert_eq!(get_data_fields(instruction).last(), Some(&expected_field));
+        assert_eq!(instruction.provides, vec![expected_provided.clone()]);
+    }
+    Ok(())
+}
+
+#[test]
 fn it_matches_default_values_by_identifier() -> CodamaResult<()> {
     for (item, expected_fields, expected_provides) in [
         (
