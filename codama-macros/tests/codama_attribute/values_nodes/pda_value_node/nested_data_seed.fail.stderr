@@ -1,0 +1,5 @@
+error: a nested path needs a seed name, use seed("name", data("config.fees[0]"))
+ --> tests/codama_attribute/values_nodes/pda_value_node/nested_data_seed.fail.rs:3:38
+  |
+3 | #[codama(default_value = pda("fee", [data("config.fees[0]")]))]
+  |                                      ^^^^^^^^^^^^^^^^^^^^^^

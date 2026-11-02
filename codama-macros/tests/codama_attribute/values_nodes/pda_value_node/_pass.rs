@@ -33,4 +33,10 @@ pub struct TestWithImplicitSeed;
 #[codama(default_value = pda("token", [seed("name", "usdc")]))]
 pub struct TestWithImplicitStringSeed;
 
+#[codama(default_value = pda("token", [data("mint")]))]
+pub struct TestWithDataShortcutSeed;
+
+#[codama(default_value = pda("fee", [seed("fee", data("config.fees[0]"))]))]
+pub struct TestWithNestedDataSeed;
+
 fn main() {}
