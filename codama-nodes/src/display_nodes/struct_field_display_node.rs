@@ -69,7 +69,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"structFieldDisplayNode","skip":"never","flatten":true,"label":"Amount","flattenPrefix":"inner","valueLabels":[{"kind":"valueLabelDisplayNode","value":{"kind":"integerValueNode","value":"0"},"label":"Zero"}]}"#
+            r#"{"kind":"structFieldDisplayNode","label":"Amount","skip":"never","flatten":true,"flattenPrefix":"inner","valueLabels":[{"kind":"valueLabelDisplayNode","label":"Zero","value":{"kind":"integerValueNode","value":"0"}}]}"#
         );
     }
 

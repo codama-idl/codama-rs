@@ -40,7 +40,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"enumVariantDisplayNode","skipInnerData":true,"label":"Buy"}"#
+            r#"{"kind":"enumVariantDisplayNode","label":"Buy","skipInnerData":true}"#
         );
     }
 

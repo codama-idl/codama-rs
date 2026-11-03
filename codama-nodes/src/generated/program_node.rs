@@ -7,12 +7,9 @@ use codama_nodes_derive::node;
 #[node]
 #[derive(Default)]
 pub struct ProgramNode {
-    // Data.
     pub identifier: CamelCaseString,
     pub public_key: String,
     pub version: String,
-
-    // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     #[serde(default, skip_serializing_if = "crate::is_default")]

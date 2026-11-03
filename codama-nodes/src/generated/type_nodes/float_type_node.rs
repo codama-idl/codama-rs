@@ -5,14 +5,11 @@ use codama_nodes_derive::type_node;
 
 #[type_node]
 pub struct FloatTypeNode {
-    // Data.
     pub format: FloatFormat,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub endian: Option<Endianness>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub unit: Option<String>,
-
-    // Children.
     #[serde(skip_serializing_if = "crate::is_default")]
     pub display: Option<UnitNumberDisplayNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]

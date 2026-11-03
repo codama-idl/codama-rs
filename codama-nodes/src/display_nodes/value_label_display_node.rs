@@ -32,13 +32,13 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"valueLabelDisplayNode","value":{"kind":"integerValueNode","value":"1"},"label":"Active"}"#
+            r#"{"kind":"valueLabelDisplayNode","label":"Active","value":{"kind":"integerValueNode","value":"1"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"valueLabelDisplayNode","value":{"kind":"integerValueNode","value":"1"},"label":"Active"}"#;
+        let json = r#"{"kind":"valueLabelDisplayNode","label":"Active","value":{"kind":"integerValueNode","value":"1"}}"#;
         let node: ValueLabelDisplayNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,

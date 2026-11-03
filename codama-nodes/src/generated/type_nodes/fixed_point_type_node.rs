@@ -5,14 +5,11 @@ use codama_nodes_derive::type_node;
 
 #[type_node]
 pub struct FixedPointTypeNode {
-    // Data.
     pub scale: u32,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub base: Option<Base>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub unit: Option<String>,
-
-    // Children.
     pub number: IntegerTypeNode,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub display: Option<UnitNumberDisplayNode>,

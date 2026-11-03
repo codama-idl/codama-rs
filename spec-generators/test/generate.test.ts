@@ -203,7 +203,7 @@ describe('getRenderMap', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
         expect(entry.content).toContain('#[node]');
         expect(entry.content).toContain('pub struct AccountLinkNode {');
-        expect(entry.content).toContain('// Data.\npub identifier: CamelCaseString,');
+        expect(entry.content).toContain('{\npub identifier: CamelCaseString,');
         expect(entry.content).toContain('impl From<AccountLinkNode> for crate::Node {');
         expect(entry.content).toContain('impl HasIdentifier for AccountLinkNode {');
     });
@@ -250,8 +250,8 @@ describe('getRenderMap', () => {
         const pages = [...map.values()].filter(f => /^#\[(node|type_node)\]$/m.test(f.content));
         expect(pages).toHaveLength(94);
         for (const page of pages) {
-            expect(page.content).toMatch(
-                /\/\/ Children\.\n[^}]*#\[serde\(default, skip_serializing_if = "crate::is_default"\)\]\npub plugins: Vec<PluginNode>,\n}/,
+            expect(page.content).toContain(
+                '#[serde(default, skip_serializing_if = "crate::is_default")]\npub plugins: Vec<PluginNode>,\n}',
             );
         }
     });
@@ -299,8 +299,9 @@ describe('getRenderMap', () => {
         it('emits RemainderCountNode with the base `plugins` field only and #[derive(Default)]', () => {
             const entry = getFromRenderMap(map, 'count_nodes/remainder_count_node.rs');
             expect(entry.content).toContain('#[derive(Default)]');
-            expect(entry.content).toContain('pub struct RemainderCountNode {\n// Children.\n');
-            expect(entry.content).not.toContain('// Data.');
+            expect(entry.content).toContain(
+                'pub struct RemainderCountNode {\n#[serde(default, skip_serializing_if = "crate::is_default")]\npub plugins: Vec<PluginNode>,\n}',
+            );
         });
 
         it('emits the CountNode union with Fixed/Prefixed/Remainder/Sentinel variants and no HasIdentifier impl', () => {
@@ -451,7 +452,9 @@ describe('getRenderMap', () => {
         it('emits Default for noneValueNode (base attributes only)', () => {
             const entry = getFromRenderMap(map, 'value_nodes/none_value_node.rs');
             expect(entry.content).toContain('#[derive(Default)]');
-            expect(entry.content).toContain('pub struct NoneValueNode {\n// Children.\n');
+            expect(entry.content).toContain(
+                'pub struct NoneValueNode {\n#[serde(default, skip_serializing_if = "crate::is_default")]\npub plugins: Vec<PluginNode>,\n}',
+            );
         });
 
         it('emits the InjectableIntegerValueNode inline-union enum with Injected/Integer variants', () => {
