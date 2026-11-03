@@ -8,7 +8,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
+fn it_creates_a_defined_type_struct_from_named_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         struct Person {
             age: u8,
@@ -38,7 +38,7 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
+fn it_creates_a_defined_type_tuple_from_unnamed_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         struct Coordinates(u32, u32);
     };
@@ -65,7 +65,7 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
+fn it_creates_a_defined_type_from_single_unnamed_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         struct Slot(u64);
     };
