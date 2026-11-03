@@ -4,7 +4,6 @@ use codama_nodes_derive::node;
 #[node]
 #[derive(Default)]
 pub struct HiddenSuffixTransformNode {
-    // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub suffix: Vec<ConstantValueNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]

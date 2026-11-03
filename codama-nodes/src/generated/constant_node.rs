@@ -3,10 +3,7 @@ use codama_nodes_derive::node;
 
 #[node]
 pub struct ConstantNode {
-    // Data.
     pub identifier: CamelCaseString,
-
-    // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     pub r#type: Box<TypeNode>,

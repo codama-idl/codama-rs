@@ -6,6 +6,7 @@ import {
     docs,
     node,
     optionalAttribute,
+    string,
     stringIdentifier,
     text,
 } from '@codama/spec/api';
@@ -28,35 +29,23 @@ describe('getNodeStructFragment', () => {
         expect([...result.imports.keys()]).toContain('codama_nodes_derive::node');
     });
 
-    it('partitions data attributes before child attributes with section comments', () => {
-        const out = getNodeStructFragment(nodeOf('accountLinkNode'), spec).content;
-        const dataIdx = out.indexOf('// Data.');
-        const childrenIdx = out.indexOf('// Children.');
-        expect(dataIdx).toBeGreaterThan(-1);
-        expect(childrenIdx).toBeGreaterThan(-1);
-        expect(dataIdx).toBeLessThan(childrenIdx);
+    it('emits fields in declaration order without regrouping data and children', () => {
+        // `docs` is a child declared between the `identifier` and `programId` data attributes.
+        const exampleNode = defineNode('exampleNode', {
+            attributes: [
+                attribute('identifier', stringIdentifier()),
+                optionalAttribute('docs', docs()),
+                optionalAttribute('programId', string()),
+            ],
+        });
+        const out = getNodeStructFragment(exampleNode, spec).content;
+        const positions = ['pub identifier:', 'pub docs:', 'pub program_id:'].map(field => out.indexOf(field));
+        expect(positions).not.toContain(-1);
+        expect(positions).toEqual([...positions].sort((x, y) => x - y));
         // No leading indentation on field lines — rustfmt restores it.
-        expect(out).toContain('// Data.\npub identifier: CamelCaseString,');
-        expect(out).toContain(
-            [
-                '// Children.',
-                '#[serde(skip_serializing_if = "crate::is_default")]',
-                'pub program: Option<ProgramLinkNode>,',
-            ].join('\n'),
-        );
-    });
-
-    it('omits the Children. section when the node has no child attributes', () => {
-        const dataOnly = defineNode('exampleNode', { attributes: [attribute('identifier', stringIdentifier())] });
-        const out = getNodeStructFragment(dataOnly, spec).content;
-        expect(out).toContain('// Data.');
-        expect(out).not.toContain('// Children.');
-    });
-
-    it('omits the Data. section when the node has no data attributes', () => {
-        const out = getNodeStructFragment(nodeOf('someValueNode'), spec).content;
+        expect(out).toContain('{\npub identifier: CamelCaseString,');
         expect(out).not.toContain('// Data.');
-        expect(out).toContain('// Children.');
+        expect(out).not.toContain('// Children.');
     });
 
     it('emits an empty `{}` struct body with #[derive(Default)] for an attribute-less node', () => {
