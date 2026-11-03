@@ -19,9 +19,9 @@ pub struct CombineTypesVisitor {
     pub allow_contextual_default_values: bool,
     pub get_enum_variant:
         fn(korok: &EnumVariantKorok, parent: &str) -> Option<CodamaResult<EnumVariantTypeNode>>,
-    pub get_nammed_field:
+    pub get_named_field:
         fn(korok: &FieldKorok, parent: &str) -> Option<CodamaResult<StructFieldTypeNode>>,
-    pub get_unnammed_field:
+    pub get_unnamed_field:
         fn(korok: &FieldKorok, parent: &str, index: usize) -> Option<CodamaResult<TypeNode>>,
     pub parent_enum: String,
 }
@@ -32,8 +32,8 @@ impl Default for CombineTypesVisitor {
             r#override: false,
             allow_contextual_default_values: false,
             get_enum_variant: |x, _| Self::get_default_enum_variant(x),
-            get_nammed_field: |x, _| Self::get_default_named_field(x),
-            get_unnammed_field: |x, _, _| Self::get_default_unnamed_field(x),
+            get_named_field: |x, _| Self::get_default_named_field(x),
+            get_unnamed_field: |x, _, _| Self::get_default_unnamed_field(x),
             parent_enum: String::new(),
         }
     }
@@ -46,8 +46,8 @@ impl CombineTypesVisitor {
     pub fn strict() -> Self {
         Self {
             get_enum_variant: Self::get_strict_enum_variant,
-            get_nammed_field: Self::get_strict_named_field,
-            get_unnammed_field: Self::get_strict_unnamed_field,
+            get_named_field: Self::get_strict_named_field,
+            get_unnamed_field: Self::get_strict_unnamed_field,
             ..Self::default()
         }
     }
@@ -134,7 +134,7 @@ impl CombineTypesVisitor {
 
         let fields = fields
             .iter()
-            .filter_map(|field| (self.get_nammed_field)(field, parent))
+            .filter_map(|field| (self.get_named_field)(field, parent))
             .collect_and_combine_errors()?;
 
         let (before, after): (Vec<_>, Vec<_>) = attributes
@@ -183,7 +183,7 @@ impl CombineTypesVisitor {
         let items = fields
             .iter()
             .enumerate()
-            .filter_map(|(index, field)| (self.get_unnammed_field)(field, parent, index))
+            .filter_map(|(index, field)| (self.get_unnamed_field)(field, parent, index))
             .collect_and_combine_errors()?;
 
         Ok(items)

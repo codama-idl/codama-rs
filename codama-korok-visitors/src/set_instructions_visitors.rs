@@ -33,7 +33,7 @@ impl Default for SetInstructionsVisitor {
                 // An instruction provides the contextual default values of its data fields.
                 allow_contextual_default_values: true,
                 // Skip fields with the `account` codama directive, but reject a default value on them.
-                get_nammed_field: |korok, parent| {
+                get_named_field: |korok, parent| {
                     if !korok.attributes.has_codama_attribute("account") {
                         return CombineTypesVisitor::get_strict_named_field(korok, parent);
                     }
