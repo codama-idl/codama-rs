@@ -1,9 +1,9 @@
-use crate::helpers::{get_data_fields, path};
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyDisplayVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
 };
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::{get_data_fields, path};
 use codama_nodes::{
     AmountNumberDisplayNode, DisplaySkip, FieldDiscriminatorNode, InstructionDisplayNode,
     InstructionNode, IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, NumberDisplayNode,

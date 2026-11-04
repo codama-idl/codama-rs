@@ -2,7 +2,7 @@ use super::utils::{
     constant_with_defined_type_link, float, instruction_with_account_default, integer,
     pda_link_with_program, root_with_programs, transform_integers_to_floats,
 };
-use crate::helpers::path;
+use codama_nodes::test_utils::path;
 use codama_nodes::{
     AccountValueNode, ConstantPdaSeedNode, DataValueNode, DefinedTypeLinkNode, DefinedTypeNode,
     FloatFormat::{F32, F64},

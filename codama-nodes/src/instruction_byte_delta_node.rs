@@ -28,14 +28,11 @@ impl InstructionByteDeltaNode {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_utils::path;
     use crate::{
         AccountLinkNode, DataValueNode, InstructionByteDeltaNode, InstructionByteDeltaValue,
-        IntegerValueNode, Path,
+        IntegerValueNode,
     };
-
-    fn path(value: &str) -> Path {
-        value.parse().unwrap()
-    }
 
     #[test]
     fn new() {

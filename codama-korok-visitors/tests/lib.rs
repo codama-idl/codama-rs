@@ -4,7 +4,6 @@ mod apply_type_overrides_visitor;
 mod combine_modules_visitor;
 mod combine_types_visitor;
 mod debug_visitor;
-mod helpers;
 mod identify_field_types_visitor;
 mod set_accounts_visitor;
 mod set_errors_visitor;

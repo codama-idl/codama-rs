@@ -1,7 +1,7 @@
-use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{CrateKorok, EnumKorok, StructKorok};
+use codama_nodes::test_utils::path;
 use codama_nodes::{
     BooleanTypeNode, DefaultValueStrategy, DefinedTypeLinkNode, DisplaySkip, Docs, EventNode,
     FieldDiscriminatorNode,
