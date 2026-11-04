@@ -53,6 +53,16 @@ pub enum CodamaError {
 
     #[error("Unresolved directive: {namespace}::{name}")]
     UnresolvedDirective { namespace: String, name: String },
+
+    #[error("Two different `{kind}` share the identifier `{identifier}` in {location}")]
+    NodeMergeConflict {
+        kind: String,
+        identifier: String,
+        location: String,
+    },
+
+    #[error("Two different plugins share the namespace `{namespace}` in {location}")]
+    PluginMergeConflict { namespace: String, location: String },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

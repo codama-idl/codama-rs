@@ -1,7 +1,7 @@
-use super::utils::{combine_modules, CombineModulesInput};
+use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
 use codama_nodes::{
     DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode,
-    IntegerFormat::{U16, U32, U64},
+    IntegerFormat::{U32, U64},
     IntegerTypeNode, ProgramNode, RootNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
 };
 
@@ -62,49 +62,69 @@ fn it_merges_defined_types_inside_programs_into_root_nodes() {
 }
 
 #[test]
-fn it_deduplicates_defined_types_with_identical_names_by_using_the_last_one() {
-    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U16));
-    let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
-    let third_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
+fn it_fails_on_defined_types_with_identical_names() {
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
+    let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(first_counter)
+            .add_node(second_counter),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(first_counter)
-                .add_node(second_counter)
-                .add_node(third_counter.clone())
-        ),
-        Some(RootNode::new(ProgramNode::default().add_defined_type(third_counter)).into())
+        error.to_string(),
+        "Two different `definedTypeNode` share the identifier `counter` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_defined_types_with_identical_names_inside_programs() {
+fn it_fails_on_defined_types_with_identical_names_inside_programs() {
     let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
     let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
     let program_a = ProgramNode::default().add_defined_type(first_counter);
-    let program_b = ProgramNode::default().add_defined_type(second_counter.clone());
+    let program_b = ProgramNode::default().add_defined_type(second_counter);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(program_a)
-                .add_node(program_b)
-        ),
-        Some(RootNode::new(ProgramNode::default().add_defined_type(second_counter)).into())
+        error.to_string(),
+        "Two different `definedTypeNode` share the identifier `counter` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_defined_types_with_identical_names_with_an_initial_program_node() {
+fn it_fails_on_defined_types_with_identical_names_with_an_initial_program_node() {
     let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
     let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
     let program_a = ProgramNode::default().add_defined_type(first_counter);
-    let program_b = ProgramNode::default().add_defined_type(second_counter.clone());
+    let program_b = ProgramNode::default().add_defined_type(second_counter);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .set_initial_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `definedTypeNode` share the identifier `counter` in module `my_module`"
+    );
+}
+
+#[test]
+fn it_keeps_a_single_defined_type_when_identical_names_have_equal_content() {
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
+    let program = ProgramNode::default().add_defined_type(first_counter.clone());
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .set_initial_node(program_a)
-                .add_node(program_b)
+                .set_initial_node(program.clone())
+                .add_node(first_counter.clone())
+                .add_node(first_counter.clone())
+                .add_node(program.clone())
         ),
-        Some(RootNode::new(ProgramNode::default().add_defined_type(second_counter)).into())
+        Some(RootNode::new(program).into())
     );
 }

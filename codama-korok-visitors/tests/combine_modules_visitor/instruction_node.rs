@@ -1,4 +1,4 @@
-use super::utils::{combine_modules, CombineModulesInput};
+use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
 use codama_nodes::{
     BooleanTypeNode, InstructionAccountNode, InstructionNode, ProgramNode, RootNode,
     StructFieldTypeNode, StructTypeNode,
@@ -74,49 +74,69 @@ fn it_merges_instructions_inside_programs_into_root_nodes() {
 }
 
 #[test]
-fn it_deduplicates_instructions_with_identical_names_by_using_the_last_one() {
+fn it_fails_on_instructions_with_identical_names() {
     let first_instruction = create_instruction_with_single_field("create", "first");
     let second_instruction = create_instruction_with_single_field("create", "second");
-    let third_instruction = create_instruction_with_single_field("create", "third");
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(first_instruction)
+            .add_node(second_instruction),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(first_instruction)
-                .add_node(second_instruction)
-                .add_node(third_instruction.clone())
-        ),
-        Some(RootNode::new(ProgramNode::default().add_instruction(third_instruction)).into())
+        error.to_string(),
+        "Two different `instructionNode` share the identifier `create` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_instructions_with_identical_names_inside_programs() {
+fn it_fails_on_instructions_with_identical_names_inside_programs() {
     let first_instruction = create_instruction_with_single_field("create", "first");
     let second_instruction = create_instruction_with_single_field("create", "second");
     let program_a = ProgramNode::default().add_instruction(first_instruction);
-    let program_b = ProgramNode::default().add_instruction(second_instruction.clone());
+    let program_b = ProgramNode::default().add_instruction(second_instruction);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(program_a)
-                .add_node(program_b)
-        ),
-        Some(RootNode::new(ProgramNode::default().add_instruction(second_instruction)).into())
+        error.to_string(),
+        "Two different `instructionNode` share the identifier `create` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_instructions_with_identical_names_with_an_initial_program_node() {
+fn it_fails_on_instructions_with_identical_names_with_an_initial_program_node() {
     let first_instruction = create_instruction_with_single_field("create", "first");
     let second_instruction = create_instruction_with_single_field("create", "second");
-    let program_a = ProgramNode::default().add_instruction(first_instruction.clone());
-    let program_b = ProgramNode::default().add_instruction(second_instruction.clone());
+    let program_a = ProgramNode::default().add_instruction(first_instruction);
+    let program_b = ProgramNode::default().add_instruction(second_instruction);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .set_initial_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `instructionNode` share the identifier `create` in module `my_module`"
+    );
+}
+
+#[test]
+fn it_keeps_a_single_instruction_when_identical_names_have_equal_content() {
+    let first_instruction = create_instruction_with_single_field("create", "first");
+    let program = ProgramNode::default().add_instruction(first_instruction.clone());
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .set_initial_node(program_a)
-                .add_node(program_b)
+                .set_initial_node(program.clone())
+                .add_node(first_instruction.clone())
+                .add_node(first_instruction.clone())
+                .add_node(program.clone())
         ),
-        Some(RootNode::new(ProgramNode::default().add_instruction(second_instruction)).into())
+        Some(RootNode::new(program).into())
     );
 }

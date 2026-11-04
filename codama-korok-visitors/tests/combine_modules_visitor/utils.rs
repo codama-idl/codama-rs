@@ -1,4 +1,5 @@
 use codama_attributes::Attributes;
+use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, ModuleKorok, UnsupportedItemKorok};
 use codama_nodes::{DefinedTypeNode, Namespace, Node, PluginNode, PublicKeyTypeNode};
@@ -39,6 +40,10 @@ impl CombineModulesInput {
 }
 
 pub fn combine_modules(input: CombineModulesInput) -> Option<Node> {
+    try_combine_modules(input).unwrap()
+}
+
+pub fn try_combine_modules(input: CombineModulesInput) -> CodamaResult<Option<Node>> {
     let name = format_ident!("{}", input.name);
     let crate_store = CrateStore::hydrate(quote! {
         mod #name {
@@ -77,10 +82,8 @@ pub fn combine_modules(input: CombineModulesInput) -> Option<Node> {
     };
 
     module_korok.node = input.initial_node;
-    module_korok
-        .accept(&mut CombineModulesVisitor::new())
-        .unwrap();
-    module_korok.node
+    module_korok.accept(&mut CombineModulesVisitor::new())?;
+    Ok(module_korok.node)
 }
 
 pub fn get_type(name: &str) -> DefinedTypeNode {

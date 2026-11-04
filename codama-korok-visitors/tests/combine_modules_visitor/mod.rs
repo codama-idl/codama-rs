@@ -4,6 +4,7 @@ mod defined_type_node;
 mod error_node;
 mod event_node;
 mod instruction_node;
+mod module_conflicts;
 mod pda_node;
 mod program_directive;
 mod program_node;

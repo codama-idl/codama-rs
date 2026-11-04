@@ -1,4 +1,4 @@
-use super::utils::{combine_modules, CombineModulesInput};
+use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
 use codama_nodes::{ErrorNode, ProgramNode, RootNode};
 
 #[test]
@@ -39,49 +39,69 @@ fn it_merges_errors_inside_programs_into_root_nodes() {
 }
 
 #[test]
-fn it_deduplicates_errors_with_identical_names_by_using_the_last_one() {
+fn it_fails_on_errors_with_identical_names() {
     let first_error = ErrorNode::new("duplicated", 1, "first");
     let second_error = ErrorNode::new("duplicated", 2, "second");
-    let third_error = ErrorNode::new("duplicated", 3, "third");
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(first_error)
+            .add_node(second_error),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(first_error)
-                .add_node(second_error)
-                .add_node(third_error.clone())
-        ),
-        Some(RootNode::new(ProgramNode::default().add_error(third_error)).into())
+        error.to_string(),
+        "Two different `errorNode` share the identifier `duplicated` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_errors_with_identical_names_inside_programs() {
+fn it_fails_on_errors_with_identical_names_inside_programs() {
     let first_error = ErrorNode::new("duplicated", 1, "first");
     let second_error = ErrorNode::new("duplicated", 2, "second");
     let program_a = ProgramNode::default().add_error(first_error);
-    let program_b = ProgramNode::default().add_error(second_error.clone());
+    let program_b = ProgramNode::default().add_error(second_error);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(program_a)
-                .add_node(program_b)
-        ),
-        Some(RootNode::new(ProgramNode::default().add_error(second_error)).into())
+        error.to_string(),
+        "Two different `errorNode` share the identifier `duplicated` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_errors_with_identical_names_with_an_initial_program_node() {
+fn it_fails_on_errors_with_identical_names_with_an_initial_program_node() {
     let first_error = ErrorNode::new("duplicated", 1, "first");
     let second_error = ErrorNode::new("duplicated", 2, "second");
     let program_a = ProgramNode::default().add_error(first_error);
-    let program_b = ProgramNode::default().add_error(second_error.clone());
+    let program_b = ProgramNode::default().add_error(second_error);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .set_initial_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `errorNode` share the identifier `duplicated` in module `my_module`"
+    );
+}
+
+#[test]
+fn it_keeps_a_single_error_when_identical_names_have_equal_content() {
+    let first_error = ErrorNode::new("duplicated", 1, "first");
+    let program = ProgramNode::default().add_error(first_error.clone());
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .set_initial_node(program_a)
-                .add_node(program_b)
+                .set_initial_node(program.clone())
+                .add_node(first_error.clone())
+                .add_node(first_error.clone())
+                .add_node(program.clone())
         ),
-        Some(RootNode::new(ProgramNode::default().add_error(second_error)).into())
+        Some(RootNode::new(program).into())
     );
 }
