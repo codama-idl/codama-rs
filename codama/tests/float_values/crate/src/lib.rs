@@ -62,15 +62,15 @@ pub struct Config {
 }
 
 #[derive(CodamaPda)]
-#[codama(seed(name = "rate", type = float(f64)))]
+#[codama(seed(identifier = "rate", type = float(f64)))]
 pub struct RatePda;
 
 #[derive(CodamaPda)]
-#[codama(seed(name = "rate", type = link("rate")))]
+#[codama(seed(identifier = "rate", type = link("rate")))]
 pub struct LinkedRatePda;
 
 #[derive(CodamaPda)]
-#[codama(seed(name = "rate"))]
+#[codama(seed(identifier = "rate"))]
 pub struct FieldRatePda {
     pub rate: Rate,
 }
@@ -81,7 +81,7 @@ pub struct FieldRatePda {
 pub struct ConstRatePda;
 
 #[codama(program(
-    name = "oracle",
+    identifier = "oracle",
     address = "Price111111111111111111111111111111111111111"
 ))]
 pub mod oracle {
@@ -89,34 +89,34 @@ pub mod oracle {
     pub struct Price(f64);
 
     #[derive(CodamaPda)]
-    #[codama(seed(name = "price", type = float(f64)))]
+    #[codama(seed(identifier = "price", type = float(f64)))]
     pub struct PricePda;
 
     #[derive(CodamaPda)]
-    #[codama(seed(name = "price", type = link("price")))]
+    #[codama(seed(identifier = "price", type = link("price")))]
     pub struct LinkedPricePda;
 }
 
 #[derive(CodamaInstruction)]
 #[codama(field("bonus", link("rate"), default_value = 1))]
 pub struct UpdateRate {
-    #[codama(account(writable, default_value = pda("ratePda", [seed("rate", 1)])))]
+    #[codama(account(writable, default_value = pda("rate_pda", [seed("rate", 1)])))]
     pub rate_account: AccountMeta,
-    #[codama(account(writable, default_value = pda("linkedRatePda", [seed("rate", 1)])))]
+    #[codama(account(writable, default_value = pda("linked_rate_pda", [seed("rate", 1)])))]
     pub linked_rate_account: AccountMeta,
-    #[codama(account(writable, default_value = pda("fieldRatePda", [seed("rate", 1)])))]
+    #[codama(account(writable, default_value = pda("field_rate_pda", [seed("rate", 1)])))]
     pub field_rate_account: AccountMeta,
-    #[codama(account(default_value = pda("ratePda", program = "exchange", [seed("rate", 1)])))]
+    #[codama(account(default_value = pda("rate_pda", program = "exchange", [seed("rate", 1)])))]
     pub own_rate_account: AccountMeta,
-    #[codama(account(default_value = pda("pricePda", program = "oracle", [seed("price", 1)])))]
+    #[codama(account(default_value = pda("price_pda", program = "oracle", [seed("price", 1)])))]
     pub price_account: AccountMeta,
-    #[codama(account(default_value = pda("linkedPricePda", program = "oracle", [seed("price", 1)])))]
+    #[codama(account(default_value = pda("linked_price_pda", program = "oracle", [seed("price", 1)])))]
     pub linked_price_account: AccountMeta,
     #[codama(default_value = 1)]
     pub scale: f64,
     #[codama(default_value = 1)]
     pub amount: Rate,
-    #[codama(default_value = pda("ratePda", [seed("rate", 1)]))]
+    #[codama(default_value = pda("rate_pda", [seed("rate", 1)]))]
     pub derived: Pubkey,
 }
 

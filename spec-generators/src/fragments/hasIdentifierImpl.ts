@@ -5,8 +5,8 @@ import type { AttributeSpec, NodeSpec } from '@codama/spec';
 import { use } from './helpers';
 
 /**
- * `true` for a required `identifier: stringIdentifier()` attribute, which renders as `identifier: CamelCaseString`.
- * An optional one renders as `Option<CamelCaseString>`, which `HasIdentifier::identifier()` cannot return.
+ * `true` for a required `identifier: stringIdentifier()` attribute, which renders as `identifier: Identifier`.
+ * An optional one renders as `Option<Identifier>`, which `HasIdentifier::identifier()` cannot return.
  */
 export function isIdentifierAttribute(attr: AttributeSpec): boolean {
     return (
@@ -34,7 +34,7 @@ export function getStructHasIdentifierImplFragment(node: NodeSpec): Fragment | u
     if (!nodeHasIdentifier(node)) return undefined;
     const structName = pascalCase(node.kind);
     return fragment`impl ${use('crate::HasIdentifier')} for ${structName} {\nfn identifier(&self) -> &${use(
-        'crate::CamelCaseString',
+        'crate::Identifier',
     )} {\n&self.identifier\n}\n}`;
 }
 
@@ -54,6 +54,6 @@ export function getUnionHasIdentifierImplFragment(
         parts => parts.join('\n'),
     );
     return fragment`impl ${use('crate::HasIdentifier')} for ${unionName} {\nfn identifier(&self) -> &${use(
-        'crate::CamelCaseString',
+        'crate::Identifier',
     )} {\nmatch self {\n${arms}\n}\n}\n}`;
 }

@@ -1,11 +1,11 @@
 use codama_macros::codama_program;
 
-codama_program!(name = "associatedToken");
+codama_program!(identifier = "associatedToken");
 
 codama_program!(address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
 codama_program!(
-    name = "associatedToken",
+    identifier = "associatedToken",
     address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 );
 

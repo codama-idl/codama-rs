@@ -5,7 +5,7 @@ error: type is already set
   |                                           ^^^^^^^^^^^^
 
 error: type is already set
- --> tests/codama_attribute/type_nodes/struct_field_type_node/type_already_set.fail.rs:6:57
+ --> tests/codama_attribute/type_nodes/struct_field_type_node/type_already_set.fail.rs:6:63
   |
-6 | #[codama(type = field(type = integer(u8), name = "age", type = integer(u32)))]
-  |                                                         ^^^^^^^^^^^^^^^^^^^
+6 | #[codama(type = field(type = integer(u8), identifier = "age", type = integer(u32)))]
+  |                                                               ^^^^^^^^^^^^^^^^^^^

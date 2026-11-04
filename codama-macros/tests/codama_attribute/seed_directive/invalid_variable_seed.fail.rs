@@ -1,12 +1,12 @@
 use codama_macros::codama;
 
-#[codama(seed(name = "amount", value = 42))]
+#[codama(seed(identifier = "amount", value = 42))]
 pub struct TestWithValue;
 
-#[codama(seed(name = 42, type = integer(u8)))]
+#[codama(seed(identifier = 42, type = integer(u8)))]
 pub struct TestWithInvalidName;
 
-#[codama(seed(name = "authority", type = invalid_type))]
+#[codama(seed(identifier = "authority", type = invalid_type))]
 pub struct TestWithInvalidType;
 
 fn main() {}

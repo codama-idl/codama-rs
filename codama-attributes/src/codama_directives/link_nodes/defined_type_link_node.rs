@@ -1,14 +1,15 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::DefinedTypeLinkNode;
+use crate::utils::{removed_name_key, FromMeta, SetOnce};
+use codama_nodes::{DefinedTypeLinkNode, Identifier};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for DefinedTypeLinkNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("link")?.as_path_list()?;
-        let mut name: SetOnce<String> = SetOnce::new("name");
+        let mut name: SetOnce<String> = SetOnce::new("identifier");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            "identifier" => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            "name" => removed_name_key(meta),
             _ => {
                 if let Ok(expr) = meta.as_expr() {
                     return name.set(expr.as_string()?, meta);
@@ -17,7 +18,10 @@ impl FromMeta for DefinedTypeLinkNode {
             }
         })?;
 
-        Ok(Self::new(name.take(meta)?))
+        let name = name.take(meta)?;
+        Ok(Self::new(
+            Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?,
+        ))
     }
 }
 
@@ -25,21 +29,22 @@ impl FromMeta for DefinedTypeLinkNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
+    use codama_nodes::test_utils::id;
     use codama_nodes::OptionTypeNode;
 
     #[test]
     fn implicit() {
         assert_type!(
             { link("customString") },
-            DefinedTypeLinkNode::new("customString").into()
+            DefinedTypeLinkNode::new(id("customString")).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { link(name = "customString") },
-            DefinedTypeLinkNode::new("customString").into()
+            { link(identifier = "customString") },
+            DefinedTypeLinkNode::new(id("customString")).into()
         );
     }
 
@@ -47,22 +52,30 @@ mod tests {
     fn as_option_item() {
         assert_type!(
             { option(link("customString")) },
-            OptionTypeNode::new(DefinedTypeLinkNode::new("customString")).into()
+            OptionTypeNode::new(DefinedTypeLinkNode::new(id("customString"))).into()
         );
         assert_type!(
             { option(link("customString"), fixed) },
-            OptionTypeNode::fixed(DefinedTypeLinkNode::new("customString")).into()
+            OptionTypeNode::fixed(DefinedTypeLinkNode::new(id("customString"))).into()
         );
     }
 
     #[test]
     fn expected_string() {
         assert_type_err!({ link(42) }, "expected a string");
-        assert_type_err!({ link(name = 42) }, "expected a string");
+        assert_type_err!({ link(identifier = 42) }, "expected a string");
     }
 
     #[test]
     fn unrecognized_attribute() {
         assert_type_err!({ link(foo = 42) }, "unrecognized attribute");
+    }
+
+    #[test]
+    fn name_is_removed() {
+        assert_type_err!(
+            { link(name = "my_type") },
+            "name = ... is removed in v2, use identifier = ..."
+        );
     }
 }

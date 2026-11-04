@@ -1,4 +1,3 @@
-mod camel_case_path;
 mod from_meta;
 mod integer;
 mod macros;
@@ -7,7 +6,6 @@ mod removed_syntax;
 mod set_once;
 mod unit_display;
 
-pub use camel_case_path::*;
 pub use from_meta::*;
 pub(crate) use integer::*;
 pub use meta_consumer::*;

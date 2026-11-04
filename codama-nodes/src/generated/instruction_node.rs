@@ -1,5 +1,5 @@
 use crate::{
-    CamelCaseString, DiscriminatorNode, Docs, HasIdentifier, InstructionAccountNode,
+    DiscriminatorNode, Docs, HasIdentifier, Identifier, InstructionAccountNode,
     InstructionByteDeltaNode, InstructionDisplayNode, InstructionRemainingAccountsNode,
     InstructionStatusNode, OptionalAccountStrategy, PluginNode, ProvidedNode, TypeNode,
 };
@@ -8,7 +8,7 @@ use codama_nodes_derive::node;
 #[node]
 #[derive(Default)]
 pub struct InstructionNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -38,7 +38,7 @@ pub struct InstructionNode {
 }
 
 impl HasIdentifier for InstructionNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

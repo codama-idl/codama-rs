@@ -1,6 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetErrorsVisitor};
 use codama_koroks::EnumKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::{ErrorNode, ProgramNode};
 
 #[test]
@@ -25,8 +26,12 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 2, "Insufficient funds"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        0,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 2, "Insufficient funds"),
                 ],
                 ..ProgramNode::default()
             }
@@ -58,8 +63,8 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("errorA", 0, "Error A"),
-                    ErrorNode::new("errorB", 10, "Error B"),
+                    ErrorNode::new(id("error_a"), 0, "Error A"),
+                    ErrorNode::new(id("error_b"), 10, "Error B"),
                 ],
                 ..ProgramNode::default()
             }
@@ -94,8 +99,8 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("first", 0, "First"),
-                    ErrorNode::new("third", 2, "Third"),
+                    ErrorNode::new(id("first"), 0, "First"),
+                    ErrorNode::new(id("third"), 2, "Third"),
                 ],
                 ..ProgramNode::default()
             }

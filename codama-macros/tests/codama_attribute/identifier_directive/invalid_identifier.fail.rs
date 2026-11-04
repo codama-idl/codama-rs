@@ -1,12 +1,12 @@
 use codama_macros::codama;
 
-#[codama(name = 42)]
+#[codama(identifier = 42)]
 pub struct Test;
 
-#[codama(name = invalid)]
+#[codama(identifier = invalid)]
 pub struct TestWithPath;
 
-#[codama(name = invalid(1, 2, 3))]
+#[codama(identifier = invalid(1, 2, 3))]
 pub struct TestWithList;
 
 fn main() {}

@@ -5,7 +5,7 @@ error: expected a string
   |                      ^^
 
 error: expected a string
- --> tests/codama_attribute/link_nodes/defined_type_link_node/expected_string.fail.rs:6:29
+ --> tests/codama_attribute/link_nodes/defined_type_link_node/expected_string.fail.rs:6:35
   |
-6 | #[codama(type = link(name = 42))]
-  |                             ^^
+6 | #[codama(type = link(identifier = 42))]
+  |                                   ^^

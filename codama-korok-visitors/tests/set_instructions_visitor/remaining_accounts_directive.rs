@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::get_data_fields;
+use codama_nodes::test_utils::{get_data_fields, id};
 use codama_nodes::{
     InstructionRemainingAccountsNode, IntegerFormat::U64, IntegerTypeNode, IsSigner,
     PublicKeyTypeNode,
@@ -11,7 +11,7 @@ use codama_nodes::{
 fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(account(name = "source", writable))]
+        #[codama(account(identifier = "source", writable))]
         #[codama(remaining_accounts(
             "signers",
             signer,
@@ -35,7 +35,7 @@ fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
     assert_eq!(
         get_data_fields(instruction),
         [codama_nodes::StructFieldTypeNode::new(
-            "amount",
+            id("amount"),
             IntegerTypeNode::le(U64)
         )]
     );
@@ -46,7 +46,7 @@ fn from_struct_with_remaining_accounts_directive() -> CodamaResult<()> {
             is_signer: Some(IsSigner::True),
             is_writable: None,
             docs: vec!["Additional multisig signers.".to_string()].into(),
-            identifier: "signers".into(),
+            identifier: id("signers"),
             display: None,
             plugins: vec![],
         }]
@@ -80,7 +80,7 @@ fn from_enum_variant_with_remaining_accounts_directive() -> CodamaResult<()> {
             is_signer: Some(IsSigner::Either),
             is_writable: None,
             docs: vec![].into(),
-            identifier: "signers".into(),
+            identifier: id("signers"),
             display: None,
             plugins: vec![],
         }]
@@ -120,7 +120,7 @@ fn multiple_remaining_accounts_directives() -> CodamaResult<()> {
                 is_signer: Some(IsSigner::True),
                 is_writable: None,
                 docs: vec![].into(),
-                identifier: "signers".into(),
+                identifier: id("signers"),
                 display: None,
                 plugins: vec![],
             },
@@ -129,7 +129,7 @@ fn multiple_remaining_accounts_directives() -> CodamaResult<()> {
                 is_signer: None,
                 is_writable: Some(true),
                 docs: vec![].into(),
-                identifier: "extraAccounts".into(),
+                identifier: id("extra_accounts"),
                 display: None,
                 plugins: vec![],
             }

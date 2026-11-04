@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::EnumKorok;
-use codama_nodes::test_utils::path;
+use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     DefaultValueStrategy, DisplaySkip, Docs, EventNode, FieldDiscriminatorNode,
     IntegerFormat::{U64, U8},
@@ -34,12 +34,12 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
             ProgramNode {
                 events: vec![
                     EventNode {
-                        identifier: "transfer".into(),
+                        identifier: id("transfer"),
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -51,7 +51,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
@@ -61,12 +61,12 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     EventNode {
-                        identifier: "burn".into(),
+                        identifier: id("burn"),
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -78,7 +78,7 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
@@ -119,11 +119,11 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
             ProgramNode {
                 events: vec![
                     EventNode {
-                        identifier: "first".into(),
+                        identifier: id("first"),
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -139,11 +139,11 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     EventNode {
-                        identifier: "third".into(),
+                        identifier: id("third"),
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),

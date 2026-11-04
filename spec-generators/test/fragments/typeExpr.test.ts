@@ -59,10 +59,10 @@ describe('getTypeExprFragment', () => {
         expect(() => getTypeExprFragment(literalUnion(1, 2))).toThrow(/literalUnion/);
     });
 
-    it('routes stringIdentifier to CamelCaseString via a crate-rooted import', () => {
+    it('routes stringIdentifier to Identifier via a crate-rooted import', () => {
         const result = getTypeExprFragment(stringIdentifier());
-        expect(result.content).toBe('CamelCaseString');
-        expect([...result.imports.keys()]).toEqual(['crate::CamelCaseString']);
+        expect(result.content).toBe('Identifier');
+        expect([...result.imports.keys()]).toEqual(['crate::Identifier']);
     });
 
     it('routes stringVersion to plain String (no brand on the Rust side)', () => {

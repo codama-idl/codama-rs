@@ -36,6 +36,6 @@ describe('getNodePageFragment', () => {
         // `crate::Node` is written absolutely inside the From impl, so
         // no import is emitted for it. The struct's own name is not
         // imported either — it's defined in the same file.
-        expect(imports).toEqual(['codama_nodes_derive::node', 'crate::CamelCaseString', 'crate::HasIdentifier']);
+        expect(imports).toEqual(['codama_nodes_derive::node', 'crate::HasIdentifier', 'crate::Identifier']);
     });
 });

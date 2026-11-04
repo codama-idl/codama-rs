@@ -3,7 +3,7 @@ use codama_korok_visitors::{
     ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
 };
 use codama_koroks::{ItemKorok, KorokTrait, StructKorok};
-use codama_nodes::test_utils::get_data_fields;
+use codama_nodes::test_utils::{get_data_fields, id};
 use codama_nodes::{
     AccountBumpValueNode, AccountValueNode, DefaultValueStrategy, InjectedValueNode,
     InstructionAccountNode, InstructionNode,
@@ -24,10 +24,10 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("authority").into())),
-                ..StructFieldTypeNode::new("authority", PublicKeyTypeNode::new())
+                default_value: Box::new(Some(InjectedValueNode::new(id("authority")).into())),
+                ..StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new())
             },
-            ProvidedNode::new("authority", PayerValueNode::new()),
+            ProvidedNode::new(id("authority"), PayerValueNode::new()),
         ),
         (
             syn::parse_quote! {
@@ -38,11 +38,11 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("authority").into())),
+                default_value: Box::new(Some(InjectedValueNode::new(id("authority")).into())),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new("authority", PublicKeyTypeNode::new())
+                ..StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new())
             },
-            ProvidedNode::new("authority", PayerValueNode::new()),
+            ProvidedNode::new(id("authority"), PayerValueNode::new()),
         ),
         (
             syn::parse_quote! {
@@ -55,10 +55,10 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("bump").into())),
-                ..StructFieldTypeNode::new("bump", IntegerTypeNode::le(U8))
+                default_value: Box::new(Some(InjectedValueNode::new(id("bump")).into())),
+                ..StructFieldTypeNode::new(id("bump"), IntegerTypeNode::le(U8))
             },
-            ProvidedNode::new("bump", AccountBumpValueNode::new("vault")),
+            ProvidedNode::new(id("bump"), AccountBumpValueNode::new(id("vault"))),
         ),
         (
             syn::parse_quote! {
@@ -69,14 +69,17 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("config").into())),
-                ..StructFieldTypeNode::new("config", PublicKeyTypeNode::new())
+                default_value: Box::new(Some(InjectedValueNode::new(id("config")).into())),
+                ..StructFieldTypeNode::new(id("config"), PublicKeyTypeNode::new())
             },
             ProvidedNode::new(
-                "config",
+                id("config"),
                 PdaValueNode::new(
-                    PdaLinkNode::new("config"),
-                    vec![PdaSeedValueNode::new("auth", AccountValueNode::new("auth"))],
+                    PdaLinkNode::new(id("config")),
+                    vec![PdaSeedValueNode::new(
+                        id("auth"),
+                        AccountValueNode::new(id("auth")),
+                    )],
                 ),
             ),
         ),
@@ -88,27 +91,27 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("arg0").into())),
-                ..StructFieldTypeNode::new("arg0", PublicKeyTypeNode::new())
+                default_value: Box::new(Some(InjectedValueNode::new(id("arg0")).into())),
+                ..StructFieldTypeNode::new(id("arg0"), PublicKeyTypeNode::new())
             },
-            ProvidedNode::new("arg0", PayerValueNode::new()),
+            ProvidedNode::new(id("arg0"), PayerValueNode::new()),
         ),
         (
             syn::parse_quote! {
                 #[derive(CodamaInstructions)]
                 enum Instructions {
                     V(
-                        #[codama(account(name = "auth", signer))]
+                        #[codama(account(identifier = "auth", signer))]
                         #[codama(default_value = payer)]
                         Pubkey,
                     ),
                 }
             },
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("arg0").into())),
-                ..StructFieldTypeNode::new("arg0", PublicKeyTypeNode::new())
+                default_value: Box::new(Some(InjectedValueNode::new(id("arg0")).into())),
+                ..StructFieldTypeNode::new(id("arg0"), PublicKeyTypeNode::new())
             },
-            ProvidedNode::new("arg0", PayerValueNode::new()),
+            ProvidedNode::new(id("arg0"), PayerValueNode::new()),
         ),
     ] {
         let mut korok = ItemKorok::parse(&item, &[], &mut 0)?;
@@ -128,10 +131,10 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
 #[test]
 fn it_injects_contextual_default_values_of_renamed_fields() -> CodamaResult<()> {
     let expected_field = StructFieldTypeNode {
-        default_value: Box::new(Some(InjectedValueNode::new("authority").into())),
-        ..StructFieldTypeNode::new("authority", PublicKeyTypeNode::new())
+        default_value: Box::new(Some(InjectedValueNode::new(id("authority")).into())),
+        ..StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new())
     };
-    let expected_provided = ProvidedNode::new("authority", PayerValueNode::new());
+    let expected_provided = ProvidedNode::new(id("authority"), PayerValueNode::new());
     for item in [
         syn::parse_quote! {
             #[derive(CodamaInstruction)]
@@ -181,7 +184,10 @@ fn it_matches_default_values_by_identifier() -> CodamaResult<()> {
                     },
                 }
             },
-            vec![StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))],
+            vec![StructFieldTypeNode::new(
+                id("amount"),
+                IntegerTypeNode::le(U64),
+            )],
             vec![],
         ),
         (
@@ -201,12 +207,12 @@ fn it_matches_default_values_by_identifier() -> CodamaResult<()> {
             },
             vec![
                 StructFieldTypeNode {
-                    default_value: Box::new(Some(InjectedValueNode::new("owner").into())),
-                    ..StructFieldTypeNode::new("owner", PublicKeyTypeNode::new())
+                    default_value: Box::new(Some(InjectedValueNode::new(id("owner")).into())),
+                    ..StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new())
                 },
-                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
             ],
-            vec![ProvidedNode::new("owner", PayerValueNode::new())],
+            vec![ProvidedNode::new(id("owner"), PayerValueNode::new())],
         ),
     ] {
         let mut korok = ItemKorok::parse(&item, &[], &mut 0)?;
@@ -281,12 +287,12 @@ fn it_separates_account_and_data_fields_with_one_name() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "setAuthority".into(),
-                accounts: vec![InstructionAccountNode::new("authority", false, true)],
+                identifier: id("set_authority"),
+                accounts: vec![InstructionAccountNode::new(id("authority"), false, true)],
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
-                        StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
                     ])
                     .into()
                 )),

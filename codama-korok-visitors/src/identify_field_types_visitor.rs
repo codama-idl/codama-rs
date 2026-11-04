@@ -2,9 +2,9 @@ use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, FloatFormat::*,
-    FloatTypeNode, HasTransforms, IntegerFormat::*, IntegerTypeNode, MapTypeNode, OptionTypeNode,
-    PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTransformNode, StringTypeNode,
-    TypeNode,
+    FloatTypeNode, HasTransforms, Identifier, IntegerFormat::*, IntegerTypeNode, MapTypeNode,
+    OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTransformNode,
+    StringTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -22,8 +22,8 @@ impl KorokVisitor for IdentifyFieldTypesVisitor {
         if korok.node.is_some() {
             return Ok(());
         }
-        if let Some(node) = get_type_node(&korok.ast.ty) {
-            korok.set_type_node(node);
+        if let Some(node) = get_type_node(&korok.ast.ty)? {
+            korok.set_type_node(node)?;
         }
         Ok(())
     }
@@ -32,18 +32,18 @@ impl KorokVisitor for IdentifyFieldTypesVisitor {
         if korok.node.is_some() {
             return Ok(());
         }
-        if let Some(node) = get_type_node(&korok.ast.ty) {
+        if let Some(node) = get_type_node(&korok.ast.ty)? {
             korok.node = Some(node.into());
         }
         Ok(())
     }
 }
 
-pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
-    match ty {
+pub fn get_type_node(ty: &syn::Type) -> CodamaResult<Option<TypeNode>> {
+    Ok(match ty {
         syn::Type::Path(syn::TypePath { path, .. }) => {
             if path.leading_colon.is_some() {
-                return None;
+                return Ok(None);
             }
             match (
                 // a::b<B>::c::HashMap<K, V> -> a::b::c
@@ -87,20 +87,20 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                         .into(),
                 ),
                 ("" | "std::option", "Option", [t]) => {
-                    get_type_node(t).map(|item| OptionTypeNode::new(item).into())
+                    get_type_node(t)?.map(|item| OptionTypeNode::new(item).into())
                 }
-                ("" | "std::vec", "Vec", [t]) => get_type_node(t).map(|item| {
+                ("" | "std::vec", "Vec", [t]) => get_type_node(t)?.map(|item| {
                     ArrayTypeNode::new(item, PrefixedCountNode::new(IntegerTypeNode::le(U32)))
                         .into()
                 }),
                 ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
-                    get_type_node(t).map(|item| {
+                    get_type_node(t)?.map(|item| {
                         SetTypeNode::new(item, PrefixedCountNode::new(IntegerTypeNode::le(U32)))
                             .into()
                     })
                 }
                 ("" | "std::collections", "HashMap" | "BTreeMap", [k, v]) => {
-                    match (get_type_node(k), get_type_node(v)) {
+                    match (get_type_node(k)?, get_type_node(v)?) {
                         (Some(key), Some(value)) => Some(
                             MapTypeNode::new(
                                 key,
@@ -112,18 +112,21 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                         _ => None,
                     }
                 }
-                (_, name, []) => Some(DefinedTypeLinkNode::new(name).into()),
+                (_, name, []) => {
+                    let identifier = Identifier::from_rust_name(name).map_err(|e| path.error(e))?;
+                    Some(DefinedTypeLinkNode::new(identifier).into())
+                }
                 _ => None,
             }
         }
         syn::Type::Array(syn::TypeArray { elem, len, .. }) => {
             let Ok(size) = len.as_unsigned_integer::<u64>() else {
-                return None;
+                return Ok(None);
             };
-            get_type_node(elem)
+            get_type_node(elem)?
                 .map(|item| ArrayTypeNode::new(item, FixedCountNode::new(size)).into())
         }
-        syn::Type::Reference(syn::TypeReference { elem, .. }) => get_type_node(elem),
+        syn::Type::Reference(syn::TypeReference { elem, .. }) => get_type_node(elem)?,
         _ => None,
-    }
+    })
 }

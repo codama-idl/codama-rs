@@ -12,9 +12,9 @@ import { addFragmentImports, type Fragment, fragment } from '@codama/fragments/r
  *
  * @example
  * ```ts
- * use('crate::CamelCaseString');
- * // content: `CamelCaseString`
- * // imports: { 'crate::CamelCaseString' }
+ * use('crate::Identifier');
+ * // content: `Identifier`
+ * // imports: { 'crate::Identifier' }
  *
  * use('codama_nodes_derive::node');
  * // content: `node`

@@ -1,10 +1,10 @@
-use crate::{CamelCaseString, Docs, EnumVariantDisplayNode, HasIdentifier, PluginNode, TypeNode};
+use crate::{Docs, EnumVariantDisplayNode, HasIdentifier, Identifier, PluginNode, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct EnumVariantTypeNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub discriminator: Option<u32>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -24,7 +24,7 @@ impl From<EnumVariantTypeNode> for crate::Node {
 }
 
 impl HasIdentifier for EnumVariantTypeNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

@@ -2,7 +2,7 @@ use cargo_toml::{Inheritable, Manifest, Package, Value};
 use codama_attributes::CodamaProgramMacro;
 use codama_errors::CodamaResult;
 use codama_koroks::{CrateKorok, UnsupportedItemKorok};
-use codama_nodes::{Node, ProgramNode};
+use codama_nodes::{Identifier, Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
 
 use crate::KorokVisitor;
@@ -46,7 +46,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
 
         // Apply an explicit `codama_program!` override before the crate-derived
         // defaults below, which only fill fields the override left empty.
-        // E.g. `codama_program!(name = "myProgram");`
+        // E.g. `codama_program!(identifier = "myProgram");`
         if let Some(program_macro) = &self.identified_program {
             if let Some(name) = &program_macro.name {
                 program.identifier = name.clone();
@@ -60,7 +60,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         // E.g. `name = "my-program"`
         if program.identifier.is_empty() {
             if let Some(p) = get_package(&korok.store.manifest) {
-                program.identifier = p.name.clone().into()
+                program.identifier = Identifier::from_rust_name(&p.name)?
             }
         }
 
@@ -109,7 +109,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         };
 
         // Read the primary program override from a `codama_program!` macro.
-        // E.g. `codama_program!(name = "myProgram");`
+        // E.g. `codama_program!(identifier = "myProgram");`
         if let ("" | "codama" | "codama_macros", "codama_program") =
             (mac.path.prefix().as_str(), mac.path.last_str().as_str())
         {

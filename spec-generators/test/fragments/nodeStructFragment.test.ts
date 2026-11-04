@@ -43,7 +43,7 @@ describe('getNodeStructFragment', () => {
         expect(positions).not.toContain(-1);
         expect(positions).toEqual([...positions].sort((x, y) => x - y));
         // No leading indentation on field lines — rustfmt restores it.
-        expect(out).toContain('{\npub identifier: CamelCaseString,');
+        expect(out).toContain('{\npub identifier: Identifier,');
         expect(out).not.toContain('// Data.');
         expect(out).not.toContain('// Children.');
     });

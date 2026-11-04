@@ -10,7 +10,7 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode,
+    DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode, Identifier,
     InjectedValueNode, InstructionAccountNode, InstructionDisplayNode, InstructionInputValueNode,
     InstructionNode, IntegerValueNode, Node, OptionalAccountStrategy, ProgramNode, ProvidedNode,
     RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
@@ -272,7 +272,7 @@ fn parse_data(
     // Fields are parsed in data order, so the `provides` list follows the same order.
     let mut provides = Vec::new();
 
-    let defaults = get_data_field_defaults(attributes, fields);
+    let defaults = get_data_field_defaults(attributes, fields)?;
     let fields_from_data = std::mem::take(&mut data.fields)
         .into_iter()
         .map(|data_field| match defaults.get(&data_field.identifier) {
@@ -301,7 +301,7 @@ struct DataFieldDefault<'a> {
 fn get_data_field_defaults<'a>(
     attributes: &'a Attributes,
     fields: &'a [FieldKorok],
-) -> HashMap<CamelCaseString, DataFieldDefault<'a>> {
+) -> CodamaResult<HashMap<Identifier, DataFieldDefault<'a>>> {
     let from_directives = attributes
         .get_all(FieldDirective::filter)
         .into_iter()
@@ -310,7 +310,7 @@ fn get_data_field_defaults<'a>(
                 node: directive.default_value.as_ref()?,
                 strategy: directive.default_value_strategy,
             };
-            Some((directive.name.clone(), default))
+            Some(Ok((directive.name.clone(), default)))
         });
 
     // A named account field is not data, but a tuple account item is both an account and a data item.
@@ -326,7 +326,7 @@ fn get_data_field_defaults<'a>(
                 node: &directive.node,
                 strategy: directive.default_value_strategy,
             };
-            Some((data_field_identifier(fields, index), default))
+            Some(data_field_identifier(fields, index).map(|identifier| (identifier, default)))
         });
 
     from_directives.chain(from_fields).collect()
@@ -334,14 +334,15 @@ fn get_data_field_defaults<'a>(
 
 /// The identifier of the data field that the Rust field at `index` gives.
 /// A named field takes the identifier of its node, which `type = field("x", ...)` can rename.
-/// An unnamed tuple item without `name = "..."` gets a synthetic identifier such as `arg0`.
-fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CamelCaseString {
+/// An unnamed tuple item without `identifier = "..."` gets a synthetic identifier such as `arg0`.
+fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CodamaResult<Identifier> {
     let field = fields.get(index);
     match field.and_then(|field| field.node.as_ref()) {
-        Some(Node::Type(RegisteredTypeNode::StructField(node))) => node.identifier.clone(),
-        _ => field
-            .and_then(|field| field.name())
-            .unwrap_or_else(|| format!("arg{}", index).into()),
+        Some(Node::Type(RegisteredTypeNode::StructField(node))) => Ok(node.identifier.clone()),
+        _ => match field.map(|field| field.name()).transpose()? {
+            Some(Some(name)) => Ok(name),
+            _ => Identifier::from_rust_name(&format!("arg{}", index)),
+        },
     }
 }
 
@@ -367,9 +368,7 @@ fn set_default_value(
     })
 }
 
-fn parse_struct(
-    korok: &codama_koroks::StructKorok,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+fn parse_struct(korok: &codama_koroks::StructKorok) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
@@ -389,7 +388,7 @@ fn parse_struct(
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &str,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
@@ -405,14 +404,14 @@ fn parse_enum_variant(
                         .into_iter()
                         .enumerate()
                         .map(|(i, item)| {
-                            let name = data_field_identifier(&korok.fields, i);
+                            let name = data_field_identifier(&korok.fields, i)?;
                             let display = korok.fields.get(i).and_then(parse_field_display);
-                            StructFieldTypeNode {
+                            Ok(StructFieldTypeNode {
                                 display,
                                 ..StructFieldTypeNode::new(name, item)
-                            }
+                            })
                         })
-                        .collect();
+                        .collect::<CodamaResult<Vec<_>>>()?;
                     return Ok((node.identifier, StructTypeNode::new(fields)));
                 }
                 _ => {}

@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, Docs, HasIdentifier, PluginNode, Text};
+use crate::{Docs, HasIdentifier, Identifier, PluginNode, Text};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct ErrorNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     pub code: u32,
     pub message: Text,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -13,7 +13,7 @@ pub struct ErrorNode {
 }
 
 impl HasIdentifier for ErrorNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

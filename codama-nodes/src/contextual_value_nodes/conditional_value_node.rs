@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::path;
+    use crate::test_utils::{id, path};
     use crate::{
         AccountValueNode, ConditionalValueCondition, ConditionalValueNode, DataValueNode,
         InstructionInputValueNode, IntegerValueNode, ValueNode,
@@ -11,7 +11,7 @@ mod tests {
         let node = ConditionalValueNode {
             condition: Box::new(DataValueNode::new(path("myField")).into()),
             value: Box::new(Some(IntegerValueNode::new(42).into())),
-            if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+            if_true: Box::new(Some(AccountValueNode::new(id("myOtherAccount")).into())),
             if_false: Box::new(None),
             plugins: vec![],
         };
@@ -26,7 +26,7 @@ mod tests {
         assert_eq!(
             *node.if_true,
             Some(InstructionInputValueNode::AccountValue(
-                AccountValueNode::new("myOtherAccount")
+                AccountValueNode::new(id("myOtherAccount"))
             ))
         );
         assert_eq!(*node.if_false, None);
@@ -37,7 +37,7 @@ mod tests {
         let node = ConditionalValueNode {
             condition: Box::new(DataValueNode::new(path("myField")).into()),
             value: Box::new(Some(IntegerValueNode::new(42).into())),
-            if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+            if_true: Box::new(Some(AccountValueNode::new(id("myOtherAccount")).into())),
             if_false: Box::new(None),
             plugins: vec![],
         };
@@ -57,7 +57,7 @@ mod tests {
             ConditionalValueNode {
                 condition: Box::new(DataValueNode::new(path("myField")).into()),
                 value: Box::new(Some(IntegerValueNode::new(42u32).into())),
-                if_true: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
+                if_true: Box::new(Some(AccountValueNode::new(id("myOtherAccount")).into())),
                 if_false: Box::new(None),
                 plugins: vec![],
             }

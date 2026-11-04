@@ -30,6 +30,7 @@ impl PdaValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{
         AccountValueNode, IntegerTypeNode, IntegerValueNode, PdaLinkNode, PdaNode,
         PublicKeyValueNode, VariablePdaSeedNode, U32,
@@ -38,27 +39,27 @@ mod tests {
     #[test]
     fn new_linked() {
         let node = PdaValueNode::new(
-            PdaLinkNode::new("masterEdition"),
+            PdaLinkNode::new(id("masterEdition")),
             vec![
                 PdaSeedValueNode::new(
-                    "mint",
+                    id("mint"),
                     PublicKeyValueNode::new("33QJ9VtGKRS7wstQiwuigk1cBVYEPp3XBCC1g9WkDFEE"),
                 ),
-                PdaSeedValueNode::new("edition", IntegerValueNode::new(42)),
+                PdaSeedValueNode::new(id("edition"), IntegerValueNode::new(42)),
             ],
         );
         assert_eq!(
             *node.pda,
-            PdaValuePda::PdaLink(PdaLinkNode::new("masterEdition"))
+            PdaValuePda::PdaLink(PdaLinkNode::new(id("masterEdition")))
         );
         assert_eq!(
             node.seeds,
             vec![
                 PdaSeedValueNode::new(
-                    "mint",
+                    id("mint"),
                     PublicKeyValueNode::new("33QJ9VtGKRS7wstQiwuigk1cBVYEPp3XBCC1g9WkDFEE")
                 ),
-                PdaSeedValueNode::new("edition", IntegerValueNode::new(42)),
+                PdaSeedValueNode::new(id("edition"), IntegerValueNode::new(42)),
             ]
         );
     }
@@ -66,23 +67,29 @@ mod tests {
     #[test]
     fn new_nested() {
         let pda = PdaNode::new(
-            "counter",
-            vec![VariablePdaSeedNode::new("value", IntegerTypeNode::le(U32)).into()],
+            id("counter"),
+            vec![VariablePdaSeedNode::new(id("value"), IntegerTypeNode::le(U32)).into()],
         );
         let node = PdaValueNode::new(
             pda.clone(),
-            vec![PdaSeedValueNode::new("value", IntegerValueNode::new(42))],
+            vec![PdaSeedValueNode::new(
+                id("value"),
+                IntegerValueNode::new(42),
+            )],
         );
         assert_eq!(*node.pda, PdaValuePda::Pda(pda));
         assert_eq!(
             node.seeds,
-            vec![PdaSeedValueNode::new("value", IntegerValueNode::new(42))]
+            vec![PdaSeedValueNode::new(
+                id("value"),
+                IntegerValueNode::new(42)
+            )]
         );
     }
 
     #[test]
     fn to_json() {
-        let node = PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]);
+        let node = PdaValueNode::new(PdaLinkNode::new(id("myPda")), vec![]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -95,15 +102,18 @@ mod tests {
         let json: &str =
             r#"{"kind":"pdaValueNode","pda":{"kind":"pdaLinkNode","identifier":"myPda"}}"#;
         let node: PdaValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, PdaValueNode::new(PdaLinkNode::new("myPda"), vec![]));
+        assert_eq!(
+            node,
+            PdaValueNode::new(PdaLinkNode::new(id("myPda")), vec![])
+        );
     }
 
     #[test]
     fn to_json_with_program_id() {
         let node = PdaValueNode::new_with_program_id(
-            PdaValuePda::PdaLink(PdaLinkNode::new("myPda")),
+            PdaValuePda::PdaLink(PdaLinkNode::new(id("myPda"))),
             vec![],
-            AccountValueNode::new("myProgramAccount"),
+            AccountValueNode::new(id("myProgramAccount")),
         );
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(

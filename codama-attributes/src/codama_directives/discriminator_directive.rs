@@ -1,5 +1,5 @@
 use crate::{
-    utils::{camel_case_path, FromMeta, SetOnce},
+    utils::{FromMeta, SetOnce},
     Attribute, Attributes, CodamaAttribute, CodamaDirective, TryFromFilter,
 };
 use codama_errors::CodamaError;
@@ -67,7 +67,10 @@ impl DiscriminatorDirective {
                     return Err(meta.error(format!("field cannot be used when {kind} is set")));
                 }
                 let expr = meta.as_value()?.as_expr()?;
-                field.set(camel_case_path(&expr.as_string()?, expr)?, meta)
+                field.set(
+                    Path::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
+                    meta,
+                )
             }
             "offset" => {
                 if kind == DiscriminatorKind::Size {
@@ -322,7 +325,7 @@ mod tests {
             directive,
             DiscriminatorDirective {
                 discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("accountType").unwrap(),
+                    Path::try_from("account_type").unwrap(),
                     0
                 )
                 .into(),
@@ -338,7 +341,7 @@ mod tests {
             directive,
             DiscriminatorDirective {
                 discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("accountType").unwrap(),
+                    Path::try_from("account_type").unwrap(),
                     42
                 )
                 .into(),
@@ -354,7 +357,7 @@ mod tests {
             directive,
             DiscriminatorDirective {
                 discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("header.accountType").unwrap(),
+                    Path::try_from("header.account_type").unwrap(),
                     0
                 )
                 .into(),

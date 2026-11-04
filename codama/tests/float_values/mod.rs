@@ -106,7 +106,7 @@ fn get_idl() {
               "identifier": "fee",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "identifier": "feeRate"
+                "identifier": "fee_rate"
               },
               "defaultValue": {
                 "kind": "floatValueNode",
@@ -115,7 +115,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "maxOrders",
+              "identifier": "max_orders",
               "type": {
                 "kind": "definedTypeLinkNode",
                 "identifier": "count"
@@ -241,7 +241,7 @@ fn get_idl() {
     "instructions": [
       {
         "kind": "instructionNode",
-        "identifier": "setScale",
+        "identifier": "set_scale",
         "data": {
           "kind": "structTypeNode",
           "fields": [
@@ -288,7 +288,7 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "setFee",
+        "identifier": "set_fee",
         "data": {
           "kind": "structTypeNode",
           "fields": [
@@ -334,18 +334,18 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "updateRate",
+        "identifier": "update_rate",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "rateAccount",
+            "identifier": "rate_account",
             "isWritable": true,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "ratePda"
+                "identifier": "rate_pda"
               },
               "seeds": [
                 {
@@ -361,14 +361,14 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "linkedRateAccount",
+            "identifier": "linked_rate_account",
             "isWritable": true,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "linkedRatePda"
+                "identifier": "linked_rate_pda"
               },
               "seeds": [
                 {
@@ -384,14 +384,14 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "fieldRateAccount",
+            "identifier": "field_rate_account",
             "isWritable": true,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "fieldRatePda"
+                "identifier": "field_rate_pda"
               },
               "seeds": [
                 {
@@ -407,14 +407,14 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "ownRateAccount",
+            "identifier": "own_rate_account",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "ratePda",
+                "identifier": "rate_pda",
                 "program": {
                   "kind": "programLinkNode",
                   "identifier": "exchange"
@@ -434,14 +434,14 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "priceAccount",
+            "identifier": "price_account",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "pricePda",
+                "identifier": "price_pda",
                 "program": {
                   "kind": "programLinkNode",
                   "identifier": "oracle"
@@ -461,14 +461,14 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "linkedPriceAccount",
+            "identifier": "linked_price_account",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "linkedPricePda",
+                "identifier": "linked_price_pda",
                 "program": {
                   "kind": "programLinkNode",
                   "identifier": "oracle"
@@ -548,7 +548,7 @@ fn get_idl() {
               "kind": "pdaValueNode",
               "pda": {
                 "kind": "pdaLinkNode",
-                "identifier": "ratePda"
+                "identifier": "rate_pda"
               },
               "seeds": [
                 {
@@ -577,7 +577,7 @@ fn get_idl() {
       },
       {
         "kind": "definedTypeNode",
-        "identifier": "feeRate",
+        "identifier": "fee_rate",
         "type": {
           "kind": "definedTypeLinkNode",
           "identifier": "rate"
@@ -635,7 +635,7 @@ fn get_idl() {
     "pdas": [
       {
         "kind": "pdaNode",
-        "identifier": "ratePda",
+        "identifier": "rate_pda",
         "seeds": [
           {
             "kind": "variablePdaSeedNode",
@@ -650,7 +650,7 @@ fn get_idl() {
       },
       {
         "kind": "pdaNode",
-        "identifier": "linkedRatePda",
+        "identifier": "linked_rate_pda",
         "seeds": [
           {
             "kind": "variablePdaSeedNode",
@@ -664,7 +664,7 @@ fn get_idl() {
       },
       {
         "kind": "pdaNode",
-        "identifier": "fieldRatePda",
+        "identifier": "field_rate_pda",
         "seeds": [
           {
             "kind": "variablePdaSeedNode",
@@ -678,7 +678,7 @@ fn get_idl() {
       },
       {
         "kind": "pdaNode",
-        "identifier": "constRatePda",
+        "identifier": "const_rate_pda",
         "seeds": [
           {
             "kind": "constantPdaSeedNode",
@@ -727,7 +727,7 @@ fn get_idl() {
       "pdas": [
         {
           "kind": "pdaNode",
-          "identifier": "pricePda",
+          "identifier": "price_pda",
           "seeds": [
             {
               "kind": "variablePdaSeedNode",
@@ -742,7 +742,7 @@ fn get_idl() {
         },
         {
           "kind": "pdaNode",
-          "identifier": "linkedPricePda",
+          "identifier": "linked_price_pda",
           "seeds": [
             {
               "kind": "variablePdaSeedNode",

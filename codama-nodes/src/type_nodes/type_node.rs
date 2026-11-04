@@ -208,6 +208,7 @@ impl HasTransforms for TypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{FixedSizeTransformNode, SizePrefixTransformNode, U32};
 
     #[test]
@@ -231,7 +232,7 @@ mod tests {
 
     #[test]
     fn try_from_node_err() {
-        let node: Node = StructFieldTypeNode::new("foo", StringTypeNode::utf8()).into();
+        let node: Node = StructFieldTypeNode::new(id("foo"), StringTypeNode::utf8()).into();
         let result = TypeNode::try_from(node);
         assert!(matches!(
             result,
@@ -278,7 +279,7 @@ mod tests {
 
     #[test]
     fn link_with_transform() {
-        let node = TypeNode::from(DefinedTypeLinkNode::new("myType"))
+        let node = TypeNode::from(DefinedTypeLinkNode::new(id("myType")))
             .add_transform(FixedSizeTransformNode::new(32));
         assert_eq!(
             serde_json::to_string(&node).unwrap(),

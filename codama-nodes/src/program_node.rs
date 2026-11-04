@@ -1,10 +1,10 @@
 use crate::{
-    AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, ErrorNode, EventNode,
-    InstructionNode, PdaNode, ProgramNode,
+    AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, Identifier, InstructionNode,
+    PdaNode, ProgramNode,
 };
 
 impl ProgramNode {
-    pub fn new<T: Into<CamelCaseString>, U: Into<String>>(identifier: T, public_key: U) -> Self {
+    pub fn new<T: Into<Identifier>, U: Into<String>>(identifier: T, public_key: U) -> Self {
         Self {
             identifier: identifier.into(),
             public_key: public_key.into(),
@@ -57,13 +57,14 @@ impl ProgramNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::Docs;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
-        let node = ProgramNode::new("my_program", "1234..5678");
-        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
+        let node = ProgramNode::new(id("myProgram"), "1234..5678");
+        assert_eq!(node.identifier, id("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "0.0.0".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -79,7 +80,7 @@ mod tests {
     #[test]
     fn default_program() {
         let node = ProgramNode::default();
-        assert_eq!(node.identifier, CamelCaseString::new(""));
+        assert_eq!(node.identifier, Identifier::default());
         assert_eq!(node.public_key, "".to_string());
         assert_eq!(node.version, "".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -95,12 +96,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ProgramNode {
-            identifier: "myProgram".into(),
+            identifier: id("myProgram"),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
         };
-        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, id("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "1.2.3".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -116,7 +117,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ProgramNode {
-            identifier: "myProgram".into(),
+            identifier: id("myProgram"),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
@@ -135,7 +136,7 @@ mod tests {
         assert_eq!(
             node,
             ProgramNode {
-                identifier: "myProgram".into(),
+                identifier: id("myProgram"),
                 public_key: "1234..5678".into(),
                 version: "1.2.3".into(),
                 ..ProgramNode::default()

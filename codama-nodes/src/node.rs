@@ -108,7 +108,8 @@ impl HasKind for Option<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{CamelCaseString, FixedSizeTransformNode, IntegerValueNode, StringTypeNode};
+    use crate::test_utils::id;
+    use crate::{FixedSizeTransformNode, IntegerValueNode, StringTypeNode};
 
     #[test]
     fn kind() {
@@ -201,7 +202,7 @@ mod tests {
     #[test]
     fn defined_type_to_json() {
         let node: Node = DefinedTypeNode {
-            identifier: CamelCaseString::new("myType"),
+            identifier: id("myType"),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(StringTypeNode::utf8().into()),
             plugins: vec![],
@@ -221,7 +222,7 @@ mod tests {
         assert_eq!(
             node,
             Node::DefinedType(DefinedTypeNode {
-                identifier: CamelCaseString::new("myType"),
+                identifier: id("myType"),
                 docs: vec!["Hello".to_string()].into(),
                 r#type: Box::new(StringTypeNode::utf8().into()),
                 plugins: vec![],

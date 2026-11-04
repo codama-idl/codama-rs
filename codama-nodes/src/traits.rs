@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, TransformNode};
+use crate::{Identifier, TransformNode};
 use codama_errors::CodamaResult;
 use std::fmt::Debug;
 
@@ -30,7 +30,7 @@ pub trait HasKind {
 }
 
 pub trait HasIdentifier {
-    fn identifier(&self) -> &CamelCaseString;
+    fn identifier(&self) -> &Identifier;
 }
 
 /// Type nodes that carry transforms. Transforms apply in list order, the first is the innermost.

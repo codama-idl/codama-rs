@@ -1,4 +1,4 @@
-use crate::utils::{camel_case_path, FromMeta, SetOnce};
+use crate::utils::{FromMeta, SetOnce};
 use codama_nodes::{DataValueNode, Path};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -7,7 +7,10 @@ impl FromMeta for DataValueNode {
         let pl = meta.assert_directive("data")?.as_path_list()?;
         let mut path = SetOnce::<Path>::new("path");
         pl.each(|ref meta| match meta {
-            Meta::Expr(expr) => path.set(camel_case_path(&expr.as_string()?, expr)?, meta),
+            Meta::Expr(expr) => path.set(
+                Path::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
+                meta,
+            ),
             _ => Err(meta.error("expected a string")),
         })?;
         Ok(DataValueNode::new(path.take(meta)?))
@@ -28,22 +31,26 @@ mod tests {
     }
 
     #[test]
-    fn camel_cased_path() {
+    fn path_as_written() {
         assert_value!(
             { data("max_amount") },
+            DataValueNode::new(Path::try_from("max_amount").unwrap()).into()
+        );
+        assert_value!(
+            { data("maxAmount") },
             DataValueNode::new(Path::try_from("maxAmount").unwrap()).into()
         );
     }
 
     #[test]
-    fn camel_cased_path_segments() {
+    fn path_segments_as_written() {
         assert_value!(
             { data("config.fees[0]") },
             DataValueNode::new(Path::try_from("config.fees[0]").unwrap()).into()
         );
         assert_value!(
             { data("[0].my_field") },
-            DataValueNode::new(Path::try_from("[0].myField").unwrap()).into()
+            DataValueNode::new(Path::try_from("[0].my_field").unwrap()).into()
         );
     }
 
@@ -57,7 +64,7 @@ mod tests {
     fn expected_a_string() {
         assert_value_err!({ data(amount) }, "expected a string");
         assert_value_err!({ data(42) }, "expected a string");
-        assert_value_err!({ data(name = "amount") }, "expected a string");
+        assert_value_err!({ data(identifier = "amount") }, "expected a string");
     }
 
     #[test]

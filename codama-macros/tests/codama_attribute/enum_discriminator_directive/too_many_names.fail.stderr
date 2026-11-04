@@ -1,5 +1,5 @@
-error: name is already set
- --> tests/codama_attribute/enum_discriminator_directive/too_many_names.fail.rs:3:45
+error: identifier is already set
+ --> tests/codama_attribute/enum_discriminator_directive/too_many_names.fail.rs:3:51
   |
-3 | #[codama(enum_discriminator(name = "apple", name = "banana"))]
-  |                                             ^^^^^^^^^^^^^^^
+3 | #[codama(enum_discriminator(identifier = "apple", identifier = "banana"))]
+  |                                                   ^^^^^^^^^^^^^^^^^^^^^

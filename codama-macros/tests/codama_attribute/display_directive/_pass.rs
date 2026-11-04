@@ -33,7 +33,7 @@ pub struct AddressUnitDisplayTest;
 pub struct AddressAmountDisplayTest;
 
 #[codama(account(
-    name = "payer",
+    identifier = "payer",
     display(label = "Payer", skip = always)
 ))]
 pub struct AccountDisplayTest;

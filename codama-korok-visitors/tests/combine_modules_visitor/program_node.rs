@@ -1,4 +1,5 @@
 use super::utils::{combine_modules, get_plugin, try_combine_modules, CombineModulesInput};
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, InstructionNode,
     IntegerTypeNode, IntegerValueNode, Node, PdaNode, PluginNode, ProgramNode, RootNode,
@@ -57,7 +58,7 @@ fn it_fails_on_plugins_with_the_same_namespace_and_different_payloads() {
     .unwrap_err();
     assert_eq!(
         error.to_string(),
-        "Two different plugins share the namespace `namespace.shared` in program `programA`"
+        "Two different plugins share the namespace `namespace.shared` in program `program_a`"
     );
 }
 
@@ -92,7 +93,7 @@ fn it_names_the_program_of_conflicting_nodes_by_identifier() {
     let program_a = get_mock_program("a", "1234");
     let program_b = ProgramNode {
         defined_types: vec![DefinedTypeNode::new(
-            "defined_type_a",
+            id("defined_type_a"),
             IntegerTypeNode::le(U8),
         )],
         ..get_mock_program("b", "1234")
@@ -105,7 +106,7 @@ fn it_names_the_program_of_conflicting_nodes_by_identifier() {
     .unwrap_err();
     assert_eq!(
         error.to_string(),
-        "Two different `definedTypeNode` share the identifier `definedTypeA` in program `programA`"
+        "Two different `definedTypeNode` share the identifier `defined_type_a` in program `program_a`"
     );
 }
 
@@ -115,12 +116,12 @@ fn it_names_the_program_of_conflicting_nodes_by_public_key() {
         public_key: "1234".into(),
         ..ProgramNode::default()
     }
-    .add_error(ErrorNode::new("duplicated", 1, "first"));
+    .add_error(ErrorNode::new(id("duplicated"), 1, "first"));
     let program_b = ProgramNode {
         public_key: "1234".into(),
         ..ProgramNode::default()
     }
-    .add_error(ErrorNode::new("duplicated", 2, "second"));
+    .add_error(ErrorNode::new(id("duplicated"), 2, "second"));
     let error = try_combine_modules(
         CombineModulesInput::new()
             .add_node(program_a)
@@ -212,34 +213,34 @@ fn it_does_not_override_the_program_data_when_set() {
 /// whilst using an identifier to tag all fields with unique values.
 fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
     ProgramNode {
-        identifier: format!("program_{}", identifier).into(),
+        identifier: id(&format!("program_{}", identifier)),
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
         docs: vec![format!("docs_{}", identifier)].into(),
         accounts: vec![AccountNode::new(
-            format!("account_{}", identifier),
+            id(&format!("account_{}", identifier)),
             StructTypeNode::default(),
         )],
         instructions: vec![InstructionNode {
-            identifier: format!("instruction_{}", identifier).into(),
+            identifier: id(&format!("instruction_{}", identifier)),
             ..InstructionNode::default()
         }],
         defined_types: vec![DefinedTypeNode::new(
-            format!("defined_type_{}", identifier),
+            id(&format!("defined_type_{}", identifier)),
             StructTypeNode::default(),
         )],
-        pdas: vec![PdaNode::new(format!("pda_{}", identifier), vec![])],
+        pdas: vec![PdaNode::new(id(&format!("pda_{}", identifier)), vec![])],
         events: vec![EventNode::new(
-            format!("event_{}", identifier),
+            id(&format!("event_{}", identifier)),
             StructTypeNode::default(),
         )],
         errors: vec![ErrorNode::new(
-            format!("error_{}", identifier),
+            id(&format!("error_{}", identifier)),
             42,
             format!("message_{}", identifier),
         )],
         constants: vec![ConstantNode::new(
-            format!("constant_{}", identifier),
+            id(&format!("constant_{}", identifier)),
             IntegerTypeNode::le(U8),
             IntegerValueNode::new(42u8),
         )],

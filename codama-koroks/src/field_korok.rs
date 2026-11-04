@@ -1,7 +1,8 @@
 use crate::KorokTrait;
-use codama_attributes::{Attributes, NameDirective, TryFromFilter};
+use codama_attributes::{Attributes, IdentifierDirective, TryFromFilter};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
-use codama_nodes::{CamelCaseString, Node, RegisteredTypeNode, StructFieldTypeNode, TypeNode};
+use codama_nodes::{Identifier, Node, RegisteredTypeNode, StructFieldTypeNode, TypeNode};
+use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldKorok<'a> {
@@ -32,15 +33,21 @@ impl<'a> FieldKorok<'a> {
         }
     }
 
-    pub fn name(&self) -> Option<CamelCaseString> {
-        self.attributes
-            .get_last(NameDirective::filter)
-            .map(|n| n.name.clone())
-            .or_else(|| self.ast.ident.as_ref().map(|i| i.to_string().into()))
+    pub fn name(&self) -> CodamaResult<Option<Identifier>> {
+        if let Some(directive) = self.attributes.get_last(IdentifierDirective::filter) {
+            return Ok(Some(directive.identifier.clone()));
+        }
+        self.ast
+            .ident
+            .as_ref()
+            .map(|ident| {
+                Identifier::from_rust_name(&ident.to_string()).map_err(|e| ident.error(e).into())
+            })
+            .transpose()
     }
 
-    pub fn get_updated_type_node(&self, node: TypeNode) -> Option<Node> {
-        match &self.node {
+    pub fn get_updated_type_node(&self, node: TypeNode) -> CodamaResult<Option<Node>> {
+        Ok(match &self.node {
             Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(
                 StructFieldTypeNode {
                     r#type: Box::new(node),
@@ -50,16 +57,19 @@ impl<'a> FieldKorok<'a> {
             ),
             // Only wrap in StructFieldTypeNode for named fields (those with an AST ident).
             // Tuple fields store the raw TypeNode; callers use field.name() to get custom
-            // names from #[codama(name = "...")] when needed.
-            _ => match self.ast.ident.as_ref() {
-                Some(_) => Some(StructFieldTypeNode::new(self.name().unwrap(), node).into()),
-                None => Some(node.into()),
+            // names from #[codama(identifier = "...")] when needed.
+            _ => match self.name()? {
+                Some(name) if self.ast.ident.is_some() => {
+                    Some(StructFieldTypeNode::new(name, node).into())
+                }
+                _ => Some(node.into()),
             },
-        }
+        })
     }
 
-    pub fn set_type_node(&mut self, node: TypeNode) {
-        self.node = self.get_updated_type_node(node);
+    pub fn set_type_node(&mut self, node: TypeNode) -> CodamaResult<()> {
+        self.node = self.get_updated_type_node(node)?;
+        Ok(())
     }
 }
 
@@ -80,6 +90,7 @@ impl KorokTrait for FieldKorok<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
     use codama_nodes::{
         IntegerFormat::{U32, U64},
         IntegerTypeNode,
@@ -93,8 +104,10 @@ mod tests {
             node: None,
         };
         assert_eq!(
-            korok.get_updated_type_node(IntegerTypeNode::le(U32).into()),
-            Some(StructFieldTypeNode::new("my_field", IntegerTypeNode::le(U32)).into())
+            korok
+                .get_updated_type_node(IntegerTypeNode::le(U32).into())
+                .unwrap(),
+            Some(StructFieldTypeNode::new(id("my_field"), IntegerTypeNode::le(U32)).into())
         );
     }
 
@@ -106,7 +119,9 @@ mod tests {
             node: None,
         };
         assert_eq!(
-            korok.get_updated_type_node(IntegerTypeNode::le(U32).into()),
+            korok
+                .get_updated_type_node(IntegerTypeNode::le(U32).into())
+                .unwrap(),
             Some(IntegerTypeNode::le(U32).into())
         );
     }
@@ -116,11 +131,64 @@ mod tests {
         let korok = FieldKorok {
             ast: &syn::parse_quote! { pub my_field: u32 },
             attributes: Attributes(vec![]),
-            node: Some(StructFieldTypeNode::new("my_node_name", IntegerTypeNode::le(U32)).into()),
+            node: Some(StructFieldTypeNode::new(id("myNodeName"), IntegerTypeNode::le(U32)).into()),
         };
         assert_eq!(
-            korok.get_updated_type_node(IntegerTypeNode::le(U64).into()),
-            Some(StructFieldTypeNode::new("my_node_name", IntegerTypeNode::le(U64)).into())
+            korok
+                .get_updated_type_node(IntegerTypeNode::le(U64).into())
+                .unwrap(),
+            Some(StructFieldTypeNode::new(id("myNodeName"), IntegerTypeNode::le(U64)).into())
         );
+    }
+
+    #[test]
+    fn name_from_the_rust_ident() {
+        let korok = FieldKorok {
+            ast: &syn::parse_quote! { pub my_field: u32 },
+            attributes: Attributes(vec![]),
+            node: None,
+        };
+        assert_eq!(korok.name().unwrap(), Some(id("my_field")));
+    }
+
+    #[test]
+    fn name_rejects_an_invalid_rust_ident() {
+        let korok = FieldKorok {
+            ast: &syn::parse_quote! { pub __: u32 },
+            attributes: Attributes(vec![]),
+            node: None,
+        };
+        let error = korok.name().unwrap_err();
+        assert_eq!(error.to_string(), "Invalid identifier: __");
+    }
+
+    #[test]
+    fn name_snake_cases_the_rust_ident() {
+        let cases: [(syn::Field, &str); 5] = [
+            (syn::parse_quote! { pub max_supply: u32 }, "max_supply"),
+            (syn::parse_quote! { pub HTTPServer: u32 }, "http_server"),
+            (syn::parse_quote! { pub foo1Bar: u32 }, "foo1_bar"),
+            (syn::parse_quote! { pub _reserved: u32 }, "reserved"),
+            (syn::parse_quote! { pub r#type: u32 }, "type"),
+        ];
+        for (ast, expected) in cases {
+            let korok = FieldKorok {
+                ast: &ast,
+                attributes: Attributes(vec![]),
+                node: None,
+            };
+            assert_eq!(korok.name().unwrap(), Some(id(expected)));
+        }
+    }
+
+    #[test]
+    fn name_rejects_a_non_ascii_rust_ident() {
+        let korok = FieldKorok {
+            ast: &syn::parse_quote! { pub été: u32 },
+            attributes: Attributes(vec![]),
+            node: None,
+        };
+        let error = korok.name().unwrap_err();
+        assert_eq!(error.to_string(), "Invalid identifier: \u{e9}t\u{e9}");
     }
 }

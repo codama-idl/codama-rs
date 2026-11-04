@@ -1,4 +1,5 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, InstructionAccountNode, InstructionNode, ProgramNode, RootNode,
     StructFieldTypeNode, StructTypeNode,
@@ -6,10 +7,10 @@ use codama_nodes::{
 
 fn create_instruction_with_single_field(name: &str, field_name: &str) -> InstructionNode {
     InstructionNode {
-        identifier: name.into(),
+        identifier: id(name),
         data: Box::new(Some(
             StructTypeNode::new(vec![StructFieldTypeNode::new(
-                field_name,
+                id(field_name),
                 BooleanTypeNode::default(),
             )])
             .into(),
@@ -21,16 +22,16 @@ fn create_instruction_with_single_field(name: &str, field_name: &str) -> Instruc
 #[test]
 fn it_merges_instructions_into_root_nodes() {
     let create_instruction = InstructionNode {
-        identifier: "create".into(),
+        identifier: id("create"),
         accounts: vec![
-            InstructionAccountNode::new("payer", true, true),
-            InstructionAccountNode::new("authority", false, false),
+            InstructionAccountNode::new(id("payer"), true, true),
+            InstructionAccountNode::new(id("authority"), false, false),
         ],
         ..InstructionNode::default()
     };
     let update_instruction = InstructionNode {
-        identifier: "update".into(),
-        accounts: vec![InstructionAccountNode::new("authority", false, true)],
+        identifier: id("update"),
+        accounts: vec![InstructionAccountNode::new(id("authority"), false, true)],
         ..InstructionNode::default()
     };
     assert_eq!(

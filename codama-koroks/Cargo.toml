@@ -7,6 +7,7 @@ edition = { workspace = true }
 license = { workspace = true }
 
 [dev-dependencies]
+codama-nodes = { path = "../codama-nodes", features = ["dev-context-only-utils"] }
 quote = "1.0"
 
 [dependencies]

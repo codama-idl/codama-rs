@@ -6,7 +6,7 @@ use codama_attributes::{
 };
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode, EventNode, FieldDiscriminatorNode,
+    DefaultValueStrategy, EnumVariantTypeNode, EventNode, FieldDiscriminatorNode, Identifier,
     IntegerValueNode, Node, ProgramNode, StructFieldTypeNode, StructTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
@@ -162,9 +162,7 @@ impl KorokVisitor for SetEventsVisitor {
     }
 }
 
-fn parse_struct(
-    korok: &codama_koroks::StructKorok,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+fn parse_struct(korok: &codama_koroks::StructKorok) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
@@ -185,7 +183,7 @@ fn parse_struct(
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &str,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.
@@ -195,7 +193,7 @@ fn parse_enum_variant(
                 // Or an empty variant.
                 None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
                 // Or a tuple variant — convert items to struct fields.
-                // Use field.name() which returns #[codama(name = "...")] if provided,
+                // Use field.name() which returns #[codama(identifier = "...")] if provided,
                 // otherwise fall back to synthetic names like "arg0", "arg1".
                 Some(TypeNode::Tuple(tuple)) => {
                     let fields = tuple
@@ -203,18 +201,17 @@ fn parse_enum_variant(
                         .into_iter()
                         .enumerate()
                         .map(|(i, item)| {
-                            let name = korok
-                                .fields
-                                .get(i)
-                                .and_then(|f| f.name())
-                                .unwrap_or_else(|| format!("arg{}", i).into());
+                            let name = match korok.fields.get(i).map(|f| f.name()).transpose()? {
+                                Some(Some(name)) => name,
+                                _ => Identifier::from_rust_name(&format!("arg{}", i))?,
+                            };
                             let display = korok.fields.get(i).and_then(parse_field_display);
-                            StructFieldTypeNode {
+                            Ok(StructFieldTypeNode {
                                 display,
                                 ..StructFieldTypeNode::new(name, item)
-                            }
+                            })
                         })
-                        .collect();
+                        .collect::<CodamaResult<Vec<_>>>()?;
 
                     return Ok((node.identifier, StructTypeNode::new(fields)));
                 }
