@@ -1,7 +1,7 @@
-use crate::helpers::get_data_fields;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::get_data_fields;
 use codama_nodes::{
     InstructionRemainingAccountsNode, IntegerFormat::U64, IntegerTypeNode, IsSigner,
     PublicKeyTypeNode,

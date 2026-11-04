@@ -28,10 +28,7 @@ impl AccountDataValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn path(value: &str) -> Path {
-        value.parse().unwrap()
-    }
+    use crate::test_utils::path;
 
     #[test]
     fn new() {

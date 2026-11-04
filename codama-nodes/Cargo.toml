@@ -6,6 +6,11 @@ repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
 
+[features]
+# Works like `cfg(test)` across crates: https://github.com/rust-lang/cargo/issues/8379
+# Enable it only in `[dev-dependencies]`, never as a normal dependency.
+dev-context-only-utils = []
+
 [dependencies]
 codama-errors = { workspace = true }
 codama-nodes-derive = { workspace = true }
@@ -14,4 +19,5 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 [dev-dependencies]
+codama-nodes = { path = ".", features = ["dev-context-only-utils"] }
 pretty_assertions = "1.4.1"

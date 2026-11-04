@@ -244,6 +244,7 @@ name = "codama-nodes"
 version = "1.0.0"
 dependencies = [
  "codama-errors",
+ "codama-nodes",
  "codama-nodes-derive",
  "derive_more",
  "pretty_assertions",

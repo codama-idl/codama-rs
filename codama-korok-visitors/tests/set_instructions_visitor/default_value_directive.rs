@@ -1,9 +1,9 @@
-use crate::helpers::get_data_fields;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
 };
 use codama_koroks::{ItemKorok, KorokTrait, StructKorok};
+use codama_nodes::test_utils::get_data_fields;
 use codama_nodes::{
     AccountBumpValueNode, AccountValueNode, DefaultValueStrategy, InjectedValueNode,
     InstructionAccountNode, InstructionNode,

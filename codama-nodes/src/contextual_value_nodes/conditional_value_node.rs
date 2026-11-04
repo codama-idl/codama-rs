@@ -1,13 +1,10 @@
 #[cfg(test)]
 mod tests {
+    use crate::test_utils::path;
     use crate::{
         AccountValueNode, ConditionalValueCondition, ConditionalValueNode, DataValueNode,
-        InstructionInputValueNode, IntegerValueNode, Path, ValueNode,
+        InstructionInputValueNode, IntegerValueNode, ValueNode,
     };
-
-    fn path(value: &str) -> Path {
-        value.parse().unwrap()
-    }
 
     #[test]
     fn direct_instantiation() {
