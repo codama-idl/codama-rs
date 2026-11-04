@@ -264,9 +264,7 @@ mod tests {
             ),
             (
                 parse_quote! { date_time(fixed_size(integer(u32), 4)) },
-                DateTimeTypeNode::new(IntegerTypeNode::le(U32))
-                    .add_transform(FixedSizeTransformNode::new(4))
-                    .into(),
+                DateTimeTypeNode::new(integer()).into(),
             ),
             (
                 parse_quote! { fixed_size(link("foo"), 4) },

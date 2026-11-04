@@ -1,6 +1,4 @@
-use crate::utils::{
-    hoist_integer_transforms, parse_encoding_integer, parse_unit_display, FromMeta, SetOnce,
-};
+use crate::utils::{parse_encoding_integer, parse_unit_display, FromMeta, SetOnce};
 use codama_nodes::{
     Base, FixedPointTypeNode, IntegerFormat, IntegerTypeNode, UnitNumberDisplayNode,
 };
@@ -45,14 +43,12 @@ impl FromMeta for FixedPointTypeNode {
         })?;
 
         let (number, scale) = (number.take(meta)?, scale.take(meta)?);
-        Ok(hoist_integer_transforms(number, |number| {
-            FixedPointTypeNode {
-                base: base.option(),
-                unit: unit.option(),
-                display: display.option(),
-                ..FixedPointTypeNode::new(number, scale)
-            }
-        }))
+        Ok(FixedPointTypeNode {
+            base: base.option(),
+            unit: unit.option(),
+            display: display.option(),
+            ..FixedPointTypeNode::new(number, scale)
+        })
     }
 }
 
@@ -162,25 +158,25 @@ mod tests {
 
     #[test]
     fn nested_number() {
+        let integer = || IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8));
         for (meta, expected) in [
             (
                 syn::parse_quote! { fixed_point(fixed_size(integer(u64), 8), scale = 6) },
-                FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
-                    .add_transform(FixedSizeTransformNode::new(8)),
+                FixedPointTypeNode::new(integer(), 6),
             ),
             (
                 syn::parse_quote! { fixed_point(number = fixed_size(integer(u64), 8), scale = 6, unit = "USDC") },
                 FixedPointTypeNode {
                     unit: Some("USDC".to_string()),
-                    ..FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
-                }
-                .add_transform(FixedSizeTransformNode::new(8)),
+                    ..FixedPointTypeNode::new(integer(), 6)
+                },
             ),
             (
                 syn::parse_quote! { fixed_point(pre_offset(fixed_size(integer(u64), 8), 4, relative), scale = 6) },
-                FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
-                    .add_transform(FixedSizeTransformNode::new(8))
-                    .add_transform(PreOffsetTransformNode::relative(4)),
+                FixedPointTypeNode::new(
+                    integer().add_transform(PreOffsetTransformNode::relative(4)),
+                    6,
+                ),
             ),
         ] {
             assert_eq!(FixedPointTypeNode::from_meta(&meta).unwrap(), expected);
@@ -191,10 +187,12 @@ mod tests {
     fn wrapped() {
         assert_type!(
             { fixed_size(fixed_point(fixed_size(integer(u64), 8), scale = 6), 16) },
-            FixedPointTypeNode::new(IntegerTypeNode::le(U64), 6)
-                .add_transform(FixedSizeTransformNode::new(8))
-                .add_transform(FixedSizeTransformNode::new(16))
-                .into()
+            FixedPointTypeNode::new(
+                IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8)),
+                6
+            )
+            .add_transform(FixedSizeTransformNode::new(16))
+            .into()
         );
     }
 
