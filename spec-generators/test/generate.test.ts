@@ -97,6 +97,7 @@ describe('getRenderMap', () => {
             'link_nodes/pda_link_node.rs',
             'link_nodes/program_link_node.rs',
             'mod.rs',
+            'node_visitor.rs',
             'pda_node.rs',
             'pda_seed_nodes/constant_pda_seed_node.rs',
             'pda_seed_nodes/constant_pda_seed_value.rs',
