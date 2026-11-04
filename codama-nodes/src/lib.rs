@@ -31,12 +31,14 @@ mod traits;
 mod transform_nodes;
 mod type_nodes;
 mod value_nodes;
+mod visitors_core;
 
 pub use generated::*;
 pub use node::*;
 pub use shared::*;
 pub use traits::*;
 pub use type_nodes::*;
+pub use visitors_core::*;
 
 // Serde helper function to use with `#[serde(some_thing = "crate::is_default")]`.
 fn is_default<T: Default + PartialEq>(t: &T) -> bool {
