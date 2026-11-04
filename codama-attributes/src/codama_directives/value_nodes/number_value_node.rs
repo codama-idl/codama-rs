@@ -26,4 +26,16 @@ mod tests {
         assert_value!({ 1.5 }, NumberValueNode::new(1.5f64).into());
         assert_value!({ -1.5 }, NumberValueNode::new(-1.5f64).into());
     }
+
+    #[test]
+    fn ok_with_bounds() {
+        assert_value!(
+            { 18446744073709551615 },
+            NumberValueNode::new(u64::MAX).into()
+        );
+        assert_value!(
+            { -9223372036854775808 },
+            NumberValueNode::new(i64::MIN).into()
+        );
+    }
 }
