@@ -9,14 +9,14 @@ license = { workspace = true }
 [dev-dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-codama-stores = { path = "../codama-stores", version = "0.13.2" }
+codama-stores = { workspace = true }
 
 [dependencies]
 cargo_toml = "0.20"
-codama-attributes = { version = "0.13.2", path = "../codama-attributes" }
-codama-errors = { version = "0.13.2", path = "../codama-errors" }
-codama-koroks = { version = "0.13.2", path = "../codama-koroks" }
-codama-nodes = { version = "0.13.2", path = "../codama-nodes" }
-codama-syn-helpers = { version = "0.13.2", path = "../codama-syn-helpers" }
+codama-attributes = { workspace = true }
+codama-errors = { workspace = true }
+codama-koroks = { workspace = true }
+codama-nodes = { workspace = true }
+codama-syn-helpers = { workspace = true }
 serde_json = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }

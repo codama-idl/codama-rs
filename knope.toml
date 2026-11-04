@@ -1,0 +1,107 @@
+# Release configuration for Knope (https://knope.tech).
+#
+# Every published crate of the workspace shares one version, so the workspace is
+# a single Knope package: a change file bumps all crates together, and each
+# release gets one changelog entry and one `vX.Y.Z` tag. The two test-only crates
+# (`publish = false`) are not versioned.
+
+[changes]
+# Change files alone decide the version and the changelog: commit messages are not parsed.
+ignore_conventional_commits = true
+
+[package]
+changelog = "CHANGELOG.md"
+versioned_files = [
+    # The version of each published crate.
+    "codama/Cargo.toml",
+    "codama-attributes/Cargo.toml",
+    "codama-cli/Cargo.toml",
+    "codama-errors/Cargo.toml",
+    "codama-korok-visitors/Cargo.toml",
+    "codama-koroks/Cargo.toml",
+    "codama-macros/Cargo.toml",
+    "codama-nodes/Cargo.toml",
+    "codama-nodes/derive/Cargo.toml",
+    "codama-plugin-core/Cargo.toml",
+    "codama-stores/Cargo.toml",
+    "codama-syn-helpers/Cargo.toml",
+    # The versions the crates depend on each other at, inherited from the workspace.
+    { path = "Cargo.toml", dependency = "codama" },
+    { path = "Cargo.toml", dependency = "codama-attributes" },
+    { path = "Cargo.toml", dependency = "codama-cli" },
+    { path = "Cargo.toml", dependency = "codama-errors" },
+    { path = "Cargo.toml", dependency = "codama-korok-visitors" },
+    { path = "Cargo.toml", dependency = "codama-koroks" },
+    { path = "Cargo.toml", dependency = "codama-macros" },
+    { path = "Cargo.toml", dependency = "codama-nodes" },
+    { path = "Cargo.toml", dependency = "codama-nodes-derive" },
+    { path = "Cargo.toml", dependency = "codama-plugin-core" },
+    { path = "Cargo.toml", dependency = "codama-stores" },
+    { path = "Cargo.toml", dependency = "codama-syn-helpers" },
+    { path = "Cargo.lock", dependency = "codama" },
+    { path = "Cargo.lock", dependency = "codama-attributes" },
+    { path = "Cargo.lock", dependency = "codama-cli" },
+    { path = "Cargo.lock", dependency = "codama-errors" },
+    { path = "Cargo.lock", dependency = "codama-korok-visitors" },
+    { path = "Cargo.lock", dependency = "codama-koroks" },
+    { path = "Cargo.lock", dependency = "codama-macros" },
+    { path = "Cargo.lock", dependency = "codama-nodes" },
+    { path = "Cargo.lock", dependency = "codama-nodes-derive" },
+    { path = "Cargo.lock", dependency = "codama-plugin-core" },
+    { path = "Cargo.lock", dependency = "codama-stores" },
+    { path = "Cargo.lock", dependency = "codama-syn-helpers" },
+]
+
+[github]
+owner = "codama-idl"
+repo = "codama-rs"
+
+[bot.checks]
+# Pull requests that do not warrant a release note (e.g. CI or documentation) carry this label.
+skip_labels = ["no changelog"]
+
+# `knope document-change`: write a change file for the current branch.
+[[workflows]]
+name = "document-change"
+
+[[workflows.steps]]
+type = "CreateChangeFile"
+
+# `knope prepare-release`: consume the change files, bump every crate, write the changelog, and
+# open or refresh the release pull request. The release workflow runs it from the `knope/release`
+# branch, which it rebuilds on every run. The base of a pull request cannot be a variable, so a
+# maintenance branch gets its own copy of this workflow when it is cut.
+[[workflows]]
+name = "prepare-release"
+
+[[workflows.steps]]
+type = "PrepareRelease"
+
+[[workflows.steps]]
+type = "Command"
+command = "git commit --all --message \"Release package $version\""
+
+[[workflows.steps]]
+type = "Command"
+command = "git push --force origin knope/release"
+
+[[workflows.steps]]
+type = "CreatePullRequest"
+base = "main"
+
+[workflows.steps.title]
+template = "Release package $version"
+
+[workflows.steps.body]
+template = """
+This PR was opened by the release workflow. Merging it publishes every crate of the workspace as `$version` and creates the matching GitHub release.
+
+$changelog
+"""
+
+# `knope release`: tag the merged release commit and create the GitHub release from its changelog entry.
+[[workflows]]
+name = "release"
+
+[[workflows.steps]]
+type = "Release"

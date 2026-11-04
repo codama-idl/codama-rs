@@ -1,0 +1,118 @@
+name: Release
+
+# Opens or refreshes the release pull request while change files are pending,
+# and publishes the workspace to crates.io once that pull request is merged.
+#
+# The versions and the changelog come from Knope (https://knope.tech): every
+# published crate shares one version, bumped by the change files in
+# `.changeset/`. Publishing runs `cargo publish --workspace`, which orders the
+# crates by dependency and skips the versions already on crates.io, so a failed
+# publish is resumed by re-running the job.
+
+on:
+  push:
+    branches: [main, '[0-9]+.x']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Prepare the release without pushing, and package the crates without uploading them'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  KNOPE_VERSION: '0.23.2'
+  RUST_TOOLCHAIN: '1.92.0'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    # Pushes of the release commit itself, and of other branches, are handled below; this job
+    # never runs for the `knope/release` branch that holds the release pull request.
+    if: github.ref_name == 'main' || endsWith(github.ref_name, '.x')
+    steps:
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Install Knope
+        uses: knope-dev/action@v2.1.2
+        with:
+          version: ${{ env.KNOPE_VERSION }}
+
+      - name: Decide what to do
+        id: plan
+        # The version in the manifests is the current release once the release pull request is
+        # merged, so a missing `v<version>` tag means it still has to be published.
+        run: |
+          version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "codama") | .version')"
+          pending="$(find .changeset -name '*.md' 2> /dev/null | wc -l | tr -d ' ')"
+          if [ "$pending" != "0" ]; then
+            echo "action=prepare" >> "$GITHUB_OUTPUT"
+          elif ! git rev-parse -q --verify "refs/tags/v$version" > /dev/null; then
+            echo "action=publish" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=none" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version $version, $pending pending change file(s): ${action:-see output}"
+
+      - name: Set the git identity of the release app
+        if: steps.plan.outputs.action != 'none'
+        run: |
+          slug="${{ steps.app-token.outputs.app-slug }}[bot]"
+          id="$(gh api "/users/$slug" --jq .id)"
+          git config user.name "$slug"
+          git config user.email "$id+$slug@users.noreply.github.com"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      # --- Change files pending: open or refresh the release pull request. ---------------------
+
+      - name: Prepare the release pull request
+        if: steps.plan.outputs.action == 'prepare'
+        # The release branch is rebuilt from the current commit on every run, so the pull request
+        # always reflects every pending change file.
+        run: |
+          git checkout -B knope/release
+          knope prepare-release --verbose ${{ inputs.dry-run && '--dry-run' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          KNOPE_PRERELEASE_LABEL: ${{ vars.KNOPE_PRERELEASE_LABEL }}
+          RELEASE_BASE: ${{ github.ref_name }}
+
+      # --- Release pull request merged: publish, then tag and create the GitHub release. --------
+
+      - name: Install the Rust toolchain
+        if: steps.plan.outputs.action == 'publish'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
+      - name: Cache dependencies
+        if: steps.plan.outputs.action == 'publish'
+        uses: Swatinem/rust-cache@v2
+
+      - name: Publish the workspace to crates.io
+        if: steps.plan.outputs.action == 'publish'
+        run: cargo +${{ env.RUST_TOOLCHAIN }} publish --workspace --locked ${{ inputs.dry-run && '--dry-run' || '' }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Tag and create the GitHub release
+        if: steps.plan.outputs.action == 'publish' && !inputs.dry-run
+        run: knope release --verbose
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
