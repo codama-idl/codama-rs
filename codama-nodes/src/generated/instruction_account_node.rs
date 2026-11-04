@@ -1,12 +1,12 @@
 use crate::{
-    AccountLinkNode, CamelCaseString, Docs, HasIdentifier, InstructionAccountDisplayNode,
+    AccountLinkNode, Docs, HasIdentifier, Identifier, InstructionAccountDisplayNode,
     InstructionInputValueNode, IsSigner, PluginNode,
 };
 use codama_nodes_derive::node;
 
 #[node]
 pub struct InstructionAccountNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     pub is_writable: bool,
     pub is_signer: IsSigner,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -24,7 +24,7 @@ pub struct InstructionAccountNode {
 }
 
 impl HasIdentifier for InstructionAccountNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

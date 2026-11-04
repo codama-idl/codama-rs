@@ -100,7 +100,7 @@ impl KorokVisitor for SetErrorsVisitor {
 
         korok.node = Some(
             ErrorNode {
-                identifier: korok.name(),
+                identifier: korok.name()?,
                 code,
                 message: message.into(),
                 docs: Docs::default(),

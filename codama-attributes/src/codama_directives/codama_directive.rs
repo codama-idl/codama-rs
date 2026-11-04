@@ -1,7 +1,8 @@
 use crate::{
-    utils::removed_syntax, AccountDirective, AttributeContext, DefaultValueDirective,
-    DiscriminatorDirective, DisplayDirective, EncodingDirective, EnumDiscriminatorDirective,
-    ErrorDirective, ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
+    utils::{removed_name_key, removed_syntax},
+    AccountDirective, AttributeContext, DefaultValueDirective, DiscriminatorDirective,
+    DisplayDirective, EncodingDirective, EnumDiscriminatorDirective, ErrorDirective,
+    ExportDirective, FieldDirective, FixedSizeDirective, IdentifierDirective,
     OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, RemainingAccountsDirective,
     SeedDirective, SizePrefixDirective, SkipDirective, TypeDirective,
 };
@@ -25,7 +26,7 @@ pub enum CodamaDirective {
     Display(DisplayDirective),
     EnumDiscriminator(EnumDiscriminatorDirective),
     Export(ExportDirective),
-    Name(NameDirective),
+    Identifier(IdentifierDirective),
     OptionalAccountStrategy(OptionalAccountStrategyDirective),
     Program(ProgramDirective),
     Seed(SeedDirective),
@@ -62,7 +63,8 @@ impl CodamaDirective {
             "display" => Ok(DisplayDirective::parse(meta)?.into()),
             "enum_discriminator" => Ok(EnumDiscriminatorDirective::parse(meta)?.into()),
             "export" => Ok(ExportDirective::parse(meta)?.into()),
-            "name" => Ok(NameDirective::parse(meta)?.into()),
+            "identifier" => Ok(IdentifierDirective::parse(meta)?.into()),
+            "name" => removed_name_key(path),
             "optional_account_strategy" => {
                 Ok(OptionalAccountStrategyDirective::parse(meta)?.into())
             }
@@ -103,7 +105,7 @@ impl CodamaDirective {
             Self::Display(_) => "display",
             Self::EnumDiscriminator(_) => "enum_discriminator",
             Self::Export(_) => "export",
-            Self::Name(_) => "name",
+            Self::Identifier(_) => "identifier",
             Self::OptionalAccountStrategy(_) => "optional_account_strategy",
             Self::Program(_) => "program",
             Self::Seed(_) => "seed",
@@ -134,6 +136,17 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "argument(...) is removed in v2, use field(...)"
+        );
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let meta: Meta = syn::parse_quote! { name = "banana" };
+        let item: syn::Item = syn::parse_quote! { struct Foo; };
+        let error = CodamaDirective::parse(&meta, &AttributeContext::Item(&item)).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "name = ... is removed in v2, use identifier = ..."
         );
     }
 }

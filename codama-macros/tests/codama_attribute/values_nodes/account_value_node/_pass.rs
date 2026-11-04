@@ -1,6 +1,6 @@
 use codama_macros::codama;
 
-#[codama(default_value = account(name = "authority"))]
+#[codama(default_value = account(identifier = "authority"))]
 pub struct TestExplicit;
 
 #[codama(default_value = account("authority"))]

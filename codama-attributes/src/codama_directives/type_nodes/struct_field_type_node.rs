@@ -44,6 +44,7 @@ impl FromMeta for StructFieldTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
+    use codama_nodes::test_utils::id;
     use codama_nodes::{
         DefaultValueStrategy, IntegerFormat::U32, IntegerTypeNode, IntegerValueNode,
     };
@@ -52,15 +53,15 @@ mod tests {
     fn implicit_minimum() {
         assert_type!(
             { field("age", integer(u32)) },
-            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
+            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)).into()
         );
     }
 
     #[test]
     fn explicit_minimum() {
         assert_type!(
-            { field(name = "age", type = integer(u32)) },
-            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
+            { field(identifier = "age", type = integer(u32)) },
+            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)).into()
         );
     }
 
@@ -70,7 +71,7 @@ mod tests {
             { field("age", integer(u32), default_value = 42) },
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
-                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
+                ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
             }
             .into()
         );
@@ -83,7 +84,7 @@ mod tests {
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
+                ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
             }
             .into()
         );
@@ -99,17 +100,17 @@ mod tests {
 
     #[test]
     fn missing_name() {
-        assert_type_err!({ field(type = integer(u8)) }, "name is missing");
+        assert_type_err!({ field(type = integer(u8)) }, "identifier is missing");
     }
 
     #[test]
     fn missing_type() {
-        assert_type_err!({ field(name = "age") }, "type is missing");
+        assert_type_err!({ field(identifier = "age") }, "type is missing");
     }
 
     #[test]
     fn invalid_name() {
-        assert_type_err!({ field(name = unrecognized) }, "expected a string");
+        assert_type_err!({ field(identifier = unrecognized) }, "expected a string");
     }
 
     #[test]
@@ -125,5 +126,13 @@ mod tests {
     #[test]
     fn unrecognized_attribute() {
         assert_type_err!({ field(foo = 42) }, "unrecognized attribute");
+    }
+
+    #[test]
+    fn name_is_removed() {
+        assert_type_err!(
+            { field(name = "age", integer(u8)) },
+            "name = ... is removed in v2, use identifier = ..."
+        );
     }
 }

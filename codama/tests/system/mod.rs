@@ -29,7 +29,7 @@ fn get_idl() {
               "identifier": "version",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "identifier": "nonceVersion"
+                "identifier": "nonce_version"
               }
             },
             {
@@ -37,7 +37,7 @@ fn get_idl() {
               "identifier": "state",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "identifier": "nonceState"
+                "identifier": "nonce_state"
               }
             },
             {
@@ -56,7 +56,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "lamportsPerSignature",
+              "identifier": "lamports_per_signature",
               "type": {
                 "kind": "integerTypeNode",
                 "format": "u64",
@@ -70,7 +70,7 @@ fn get_idl() {
     "instructions": [
       {
         "kind": "instructionNode",
-        "identifier": "createAccount",
+        "identifier": "create_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
@@ -83,7 +83,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "newAccount",
+            "identifier": "new_account",
             "isWritable": true,
             "isSigner": true
           }
@@ -129,7 +129,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "programAddress",
+              "identifier": "program_address",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -178,7 +178,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "programAddress",
+              "identifier": "program_address",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -195,7 +195,7 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "transferSol",
+        "identifier": "transfer_sol",
         "accounts": [
           {
             "kind": "instructionAccountNode",
@@ -280,7 +280,7 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "createAccountWithSeed",
+        "identifier": "create_account_with_seed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
@@ -290,13 +290,13 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "newAccount",
+            "identifier": "new_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "baseAccount",
+            "identifier": "base_account",
             "isWritable": false,
             "isSigner": true
           }
@@ -367,7 +367,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "programAddress",
+              "identifier": "program_address",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -384,17 +384,17 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "advanceNonceAccount",
+        "identifier": "advance_nonce_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAccount",
+            "identifier": "nonce_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "recentBlockhashesSysvar",
+            "identifier": "recent_blockhashes_sysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -404,7 +404,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAuthority",
+            "identifier": "nonce_authority",
             "isWritable": false,
             "isSigner": true
           }
@@ -442,23 +442,23 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "withdrawNonceAccount",
+        "identifier": "withdraw_nonce_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAccount",
+            "identifier": "nonce_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "recipientAccount",
+            "identifier": "recipient_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "recentBlockhashesSysvar",
+            "identifier": "recent_blockhashes_sysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -468,7 +468,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "rentSysvar",
+            "identifier": "rent_sysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -478,7 +478,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAuthority",
+            "identifier": "nonce_authority",
             "isWritable": false,
             "isSigner": true
           }
@@ -506,7 +506,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "withdrawAmount",
+              "identifier": "withdraw_amount",
               "type": {
                 "kind": "integerTypeNode",
                 "format": "u64",
@@ -525,17 +525,17 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "initializeNonceAccount",
+        "identifier": "initialize_nonce_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAccount",
+            "identifier": "nonce_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "recentBlockhashesSysvar",
+            "identifier": "recent_blockhashes_sysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -545,7 +545,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "rentSysvar",
+            "identifier": "rent_sysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -577,7 +577,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "nonceAuthority",
+              "identifier": "nonce_authority",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -594,17 +594,17 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "authorizeNonceAccount",
+        "identifier": "authorize_nonce_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAccount",
+            "identifier": "nonce_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAuthority",
+            "identifier": "nonce_authority",
             "isWritable": false,
             "isSigner": true
           }
@@ -632,7 +632,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "newNonceAuthority",
+              "identifier": "new_nonce_authority",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -653,7 +653,7 @@ fn get_idl() {
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "newAccount",
+            "identifier": "new_account",
             "isWritable": true,
             "isSigner": true
           }
@@ -700,17 +700,17 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "allocateWithSeed",
+        "identifier": "allocate_with_seed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "newAccount",
+            "identifier": "new_account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "baseAccount",
+            "identifier": "base_account",
             "isWritable": false,
             "isSigner": true
           }
@@ -772,7 +772,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "programAddress",
+              "identifier": "program_address",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -789,7 +789,7 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "assignWithSeed",
+        "identifier": "assign_with_seed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
@@ -799,7 +799,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "baseAccount",
+            "identifier": "base_account",
             "isWritable": false,
             "isSigner": true
           }
@@ -852,7 +852,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "programAddress",
+              "identifier": "program_address",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -869,7 +869,7 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "transferSolWithSeed",
+        "identifier": "transfer_sol_with_seed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
@@ -879,7 +879,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "identifier": "baseAccount",
+            "identifier": "base_account",
             "isWritable": false,
             "isSigner": true
           },
@@ -922,7 +922,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "fromSeed",
+              "identifier": "from_seed",
               "type": {
                 "kind": "stringTypeNode",
                 "encoding": "utf8",
@@ -940,7 +940,7 @@ fn get_idl() {
             },
             {
               "kind": "structFieldTypeNode",
-              "identifier": "fromOwner",
+              "identifier": "from_owner",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
@@ -957,11 +957,11 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "identifier": "upgradeNonceAccount",
+        "identifier": "upgrade_nonce_account",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "identifier": "nonceAccount",
+            "identifier": "nonce_account",
             "isWritable": true,
             "isSigner": false
           }
@@ -1001,7 +1001,7 @@ fn get_idl() {
     "definedTypes": [
       {
         "kind": "definedTypeNode",
-        "identifier": "nonceVersion",
+        "identifier": "nonce_version",
         "type": {
           "kind": "enumTypeNode",
           "variants": [
@@ -1023,7 +1023,7 @@ fn get_idl() {
       },
       {
         "kind": "definedTypeNode",
-        "identifier": "nonceState",
+        "identifier": "nonce_state",
         "type": {
           "kind": "enumTypeNode",
           "variants": [
@@ -1047,55 +1047,55 @@ fn get_idl() {
     "errors": [
       {
         "kind": "errorNode",
-        "identifier": "accountAlreadyInUse",
+        "identifier": "account_already_in_use",
         "code": 0,
         "message": "an account with the same address already exists"
       },
       {
         "kind": "errorNode",
-        "identifier": "resultWithNegativeLamports",
+        "identifier": "result_with_negative_lamports",
         "code": 1,
         "message": "account does not have enough SOL to perform the operation"
       },
       {
         "kind": "errorNode",
-        "identifier": "invalidProgramId",
+        "identifier": "invalid_program_id",
         "code": 2,
         "message": "cannot assign account to this program id"
       },
       {
         "kind": "errorNode",
-        "identifier": "invalidAccountDataLength",
+        "identifier": "invalid_account_data_length",
         "code": 3,
         "message": "cannot allocate account data of this length"
       },
       {
         "kind": "errorNode",
-        "identifier": "maxSeedLengthExceeded",
+        "identifier": "max_seed_length_exceeded",
         "code": 4,
         "message": "length of requested seed is too long"
       },
       {
         "kind": "errorNode",
-        "identifier": "addressWithSeedMismatch",
+        "identifier": "address_with_seed_mismatch",
         "code": 5,
         "message": "provided address does not match addressed derived from seed"
       },
       {
         "kind": "errorNode",
-        "identifier": "nonceNoRecentBlockhashes",
+        "identifier": "nonce_no_recent_blockhashes",
         "code": 6,
         "message": "advancing stored nonce requires a populated RecentBlockhashes sysvar"
       },
       {
         "kind": "errorNode",
-        "identifier": "nonceBlockhashNotExpired",
+        "identifier": "nonce_blockhash_not_expired",
         "code": 7,
         "message": "stored nonce is still in recent_blockhashes"
       },
       {
         "kind": "errorNode",
-        "identifier": "nonceUnexpectedBlockhashValue",
+        "identifier": "nonce_unexpected_blockhash_value",
         "code": 8,
         "message": "specified nonce does not match stored nonce"
       }

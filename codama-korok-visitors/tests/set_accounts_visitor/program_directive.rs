@@ -1,6 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     AccountNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, PublicKeyTypeNode,
     StructFieldTypeNode, StructTypeNode,
@@ -10,7 +11,7 @@ use codama_nodes::{
 fn from_struct_with_program_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccount)]
-        #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+        #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
         struct Token {
             owner: Pubkey,
             amount: u64,
@@ -24,13 +25,13 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: "externalProgram".into(),
+                identifier: id("externalProgram"),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 accounts: vec![AccountNode::new(
-                    "token",
+                    id("token"),
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new()),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                     ])
                 )],
                 ..ProgramNode::default()
@@ -45,7 +46,7 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
 fn from_enum_with_program_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccounts)]
-        #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+        #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
         enum ExternalAccounts {
             Token,
         }
@@ -58,12 +59,12 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         Some(codama_nodes::Node::Program(p)) => p,
         _ => panic!("expected ProgramNode"),
     };
-    assert_eq!(program.identifier, "externalProgram".into());
+    assert_eq!(program.identifier, id("externalProgram"));
     assert_eq!(
         program.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(program.accounts.len(), 1);
-    assert_eq!(program.accounts[0].identifier, "token".into());
+    assert_eq!(program.accounts[0].identifier, id("token"));
     Ok(())
 }

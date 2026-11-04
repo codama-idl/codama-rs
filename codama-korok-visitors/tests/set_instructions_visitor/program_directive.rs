@@ -1,6 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     InstructionNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, StructFieldTypeNode,
     StructTypeNode,
@@ -10,7 +11,7 @@ use codama_nodes::{
 fn from_struct_with_program_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+        #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
         struct Transfer {
             amount: u64,
         }
@@ -23,13 +24,13 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: "externalProgram".into(),
+                identifier: id("externalProgram"),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 instructions: vec![InstructionNode {
-                    identifier: "transfer".into(),
+                    identifier: id("transfer"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![StructFieldTypeNode::new(
-                            "amount",
+                            id("amount"),
                             IntegerTypeNode::le(U64)
                         )])
                         .into()
@@ -48,7 +49,7 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
 fn from_enum_with_program_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
-        #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+        #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
         enum ExternalInstructions {
             Transfer { amount: u64 },
         }
@@ -62,12 +63,12 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         Some(codama_nodes::Node::Program(p)) => p,
         _ => panic!("expected ProgramNode"),
     };
-    assert_eq!(program.identifier, "externalProgram".into());
+    assert_eq!(program.identifier, id("externalProgram"));
     assert_eq!(
         program.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(program.instructions.len(), 1);
-    assert_eq!(program.instructions[0].identifier, "transfer".into());
+    assert_eq!(program.instructions[0].identifier, id("transfer"));
     Ok(())
 }

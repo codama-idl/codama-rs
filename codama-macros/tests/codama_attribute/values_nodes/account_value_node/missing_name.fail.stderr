@@ -4,7 +4,7 @@ error: expected a list: `account(...)` or `account = (...)`
 3 | #[codama(default_value = account)]
   |                          ^^^^^^^
 
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/values_nodes/account_value_node/missing_name.fail.rs:6:26
   |
 6 | #[codama(default_value = account())]

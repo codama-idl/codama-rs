@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, HasIdentifier, PluginNode, ValueNode};
+use crate::{HasIdentifier, Identifier, PluginNode, ValueNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct StructFieldValueNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     pub value: Box<ValueNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
@@ -16,7 +16,7 @@ impl From<StructFieldValueNode> for crate::Node {
 }
 
 impl HasIdentifier for StructFieldValueNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

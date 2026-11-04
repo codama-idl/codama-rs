@@ -2,8 +2,8 @@ use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_koroks::RootKorok;
 use codama_nodes::{
-    CamelCaseString, ConstantPdaSeedValue, ConstantValueNode, CountNode, DiscriminatorNode,
-    FloatValueNode, HasTransforms, InstructionInputValueNode, InstructionNode, Node, PdaNode,
+    ConstantPdaSeedValue, ConstantValueNode, CountNode, DiscriminatorNode, FloatValueNode,
+    HasTransforms, Identifier, InstructionInputValueNode, InstructionNode, Node, PdaNode,
     PdaSeedNode, PdaSeedValueValue, PdaValueNode, PdaValuePda, ProgramLinkNode, ProgramNode,
     RegisteredContextualValueNode, RootNode, StructFieldTypeNode, TransformNode, TypeNode,
     ValueNode,
@@ -301,7 +301,7 @@ impl<'a> Scope<'a> {
         'a: 'b,
     {
         let mut scope = self;
-        let mut followed: Vec<(&CamelCaseString, &CamelCaseString)> = Vec::new();
+        let mut followed: Vec<(&Identifier, &Identifier)> = Vec::new();
         while let TypeNode::Link(link) = r#type {
             scope = scope.get_scope_for_program_link(link.program.as_ref())?;
             let key = (&scope.program.identifier, &link.identifier);

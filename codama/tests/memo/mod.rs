@@ -20,7 +20,7 @@ fn get_idl() {
     "instructions": [
       {
         "kind": "instructionNode",
-        "identifier": "addMemo",
+        "identifier": "add_memo",
         "data": {
           "kind": "structTypeNode",
           "fields": [

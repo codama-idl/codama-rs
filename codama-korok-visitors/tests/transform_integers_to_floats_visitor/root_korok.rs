@@ -4,6 +4,7 @@ use super::utils::{
 };
 use codama_korok_visitors::{KorokVisitable, TransformIntegersToFloatsVisitor};
 use codama_koroks::RootKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     ConstantNode, ConstantPdaSeedNode, DefinedTypeLinkNode, FloatFormat::F64, FloatTypeNode, Node,
     PdaLinkNode, PdaNode, PdaSeedValueNode, PdaValueNode, ProgramNode, RootNode,
@@ -13,24 +14,24 @@ use codama_stores::RootStore;
 
 fn program_with_linked_integers() -> ProgramNode {
     let pda_value = PdaValueNode::new(
-        PdaLinkNode::new("ratePda"),
-        vec![PdaSeedValueNode::new("rate", integer())],
+        PdaLinkNode::new(id("ratePda")),
+        vec![PdaSeedValueNode::new(id("rate"), integer())],
     );
     program_with_float_defined_type("rate")
         .add_account(account_with_field(
-            DefinedTypeLinkNode::new("rate"),
+            DefinedTypeLinkNode::new(id("rate")),
             integer(),
         ))
         .add_constant(ConstantNode::new(
-            "fee",
-            DefinedTypeLinkNode::new("rate"),
+            id("fee"),
+            DefinedTypeLinkNode::new(id("rate")),
             integer(),
         ))
         .add_pda(PdaNode::new(
-            "ratePda",
+            id("ratePda"),
             vec![
-                ConstantPdaSeedNode::new(DefinedTypeLinkNode::new("rate"), integer()).into(),
-                VariablePdaSeedNode::new("rate", DefinedTypeLinkNode::new("rate")).into(),
+                ConstantPdaSeedNode::new(DefinedTypeLinkNode::new(id("rate")), integer()).into(),
+                VariablePdaSeedNode::new(id("rate"), DefinedTypeLinkNode::new(id("rate"))).into(),
             ],
         ))
         .add_instruction(instruction_with_account_default(pda_value))

@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{CrateKorok, EnumKorok, StructKorok};
-use codama_nodes::test_utils::path;
+use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantValueNode,
     DefaultValueStrategy, DefinedTypeLinkNode, DisplaySkip, Docs, FieldDiscriminatorNode,
@@ -43,15 +43,15 @@ fn from_enum() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         accounts: vec![
-                            InstructionAccountNode::new("authority", false, false),
-                            InstructionAccountNode::new("payer", true, true),
+                            InstructionAccountNode::new(id("authority"), false, false),
+                            InstructionAccountNode::new(id("payer"), true, true),
                         ],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -63,7 +63,7 @@ fn from_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -73,12 +73,12 @@ fn from_enum() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
-                        accounts: vec![InstructionAccountNode::new("authority", false, true)],
+                        identifier: id("update"),
+                        accounts: vec![InstructionAccountNode::new(id("authority"), false, true)],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -90,7 +90,7 @@ fn from_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -132,11 +132,11 @@ fn from_enum_with_data_only() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -148,7 +148,7 @@ fn from_enum_with_data_only() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -158,11 +158,11 @@ fn from_enum_with_data_only() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
+                        identifier: id("update"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -174,7 +174,7 @@ fn from_enum_with_data_only() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -220,14 +220,14 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         accounts: vec![
-                            InstructionAccountNode::new("authority", false, false),
-                            InstructionAccountNode::new("payer", true, true),
+                            InstructionAccountNode::new(id("authority"), false, false),
+                            InstructionAccountNode::new(id("payer"), true, true),
                         ],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -243,11 +243,11 @@ fn from_enum_with_accounts_only() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
-                        accounts: vec![InstructionAccountNode::new("authority", false, true)],
+                        identifier: id("update"),
+                        accounts: vec![InstructionAccountNode::new(id("authority"), false, true)],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -290,10 +290,10 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -309,10 +309,10 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
+                        identifier: id("update"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -341,12 +341,12 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(account(name = "authority"))]
-            #[codama(account(name = "payer", signer, writable))]
+            #[codama(account(identifier = "authority"))]
+            #[codama(account(identifier = "payer", signer, writable))]
             Initialize {
                 amount: u64,
             },
-            #[codama(account(name = "authority", signer))]
+            #[codama(account(identifier = "authority", signer))]
             Update {
                 amount: u64,
             },
@@ -363,15 +363,15 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         accounts: vec![
-                            InstructionAccountNode::new("authority", false, false),
-                            InstructionAccountNode::new("payer", true, true),
+                            InstructionAccountNode::new(id("authority"), false, false),
+                            InstructionAccountNode::new(id("payer"), true, true),
                         ],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -383,7 +383,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -393,12 +393,12 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
-                        accounts: vec![InstructionAccountNode::new("authority", false, true)],
+                        identifier: id("update"),
+                        accounts: vec![InstructionAccountNode::new(id("authority"), false, true)],
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -410,7 +410,7 @@ fn from_enum_with_accounts_as_struct_attributes() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
@@ -448,10 +448,10 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U32).into()),
@@ -467,10 +467,10 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
+                        identifier: id("update"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U32).into()),
@@ -515,10 +515,10 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "initialize".into(),
+                        identifier: id("initialize"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -534,10 +534,10 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "update".into(),
+                        identifier: id("update"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -553,10 +553,10 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "write".into(),
+                        identifier: id("write"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -572,10 +572,10 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "close".into(),
+                        identifier: id("close"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -640,7 +640,7 @@ fn with_name_directives() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
         enum MyProgramInstructions {
-            #[codama(name = "initialize")]
+            #[codama(identifier = "initialize")]
             InitializeInstruction,
         }
     };
@@ -653,10 +653,10 @@ fn with_name_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
+                            identifier: id("discriminator"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -698,10 +698,10 @@ fn with_discriminator_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
+                            identifier: id("discriminator"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -734,7 +734,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
 fn with_enum_discriminator_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstructions)]
-        #[codama(enum_discriminator(name = "banana", size = integer(u64)))]
+        #[codama(enum_discriminator(identifier = "banana", size = integer(u64)))]
         enum MyProgramInstructions {
             Initialize,
         }
@@ -748,10 +748,10 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "banana".into(),
+                            identifier: id("banana"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U64).into()),
@@ -791,17 +791,20 @@ fn with_field_attributes_only() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
                                 default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                                ..StructFieldTypeNode::new(
+                                    id("discriminator"),
+                                    IntegerTypeNode::le(U8)
+                                )
                             },
-                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
-                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64))
+                            StructFieldTypeNode::new(id("space"), IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new(id("lamports"), IntegerTypeNode::le(U64))
                         ])
                         .into()
                     )),
@@ -837,17 +840,20 @@ fn with_prepended_field_attributes() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
                                 default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                                ..StructFieldTypeNode::new(
+                                    id("discriminator"),
+                                    IntegerTypeNode::le(U8)
+                                )
                             },
-                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
-                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64))
+                            StructFieldTypeNode::new(id("space"), IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new(id("lamports"), IntegerTypeNode::le(U64))
                         ])
                         .into()
                     )),
@@ -883,17 +889,20 @@ fn with_appended_field_attributes() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "initialize".into(),
+                    identifier: id("initialize"),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
                                 default_value: Box::new(Some(IntegerValueNode::new(0u64).into())),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
-                                ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                                ..StructFieldTypeNode::new(
+                                    id("discriminator"),
+                                    IntegerTypeNode::le(U8)
+                                )
                             },
-                            StructFieldTypeNode::new("lamports", IntegerTypeNode::le(U64)),
-                            StructFieldTypeNode::new("space", IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new(id("lamports"), IntegerTypeNode::le(U64)),
+                            StructFieldTypeNode::new(id("space"), IntegerTypeNode::le(U64)),
                         ])
                         .into()
                     )),
@@ -919,7 +928,7 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
 
         #[derive(CodamaInstructions)]
         enum FluxCapacitorInstructions {
-            #[codama(account(name = "clock_sysvar"))]
+            #[codama(account(identifier = "clock_sysvar"))]
             Charge(Percentage, bool),
         }
     })
@@ -938,12 +947,16 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "charge".into(),
-                    accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
+                    identifier: id("charge"),
+                    accounts: vec![InstructionAccountNode::new(
+                        id("clock_sysvar"),
+                        false,
+                        false
+                    )],
                     data: Box::new(Some(
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -952,10 +965,10 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
                                 plugins: vec![],
                             },
                             StructFieldTypeNode::new(
-                                "arg0",
-                                DefinedTypeLinkNode::new("percentage")
+                                id("arg0"),
+                                DefinedTypeLinkNode::new(id("percentage"))
                             ),
-                            StructFieldTypeNode::new("arg1", BooleanTypeNode::default()),
+                            StructFieldTypeNode::new(id("arg1"), BooleanTypeNode::default()),
                         ])
                         .into()
                     )),
@@ -1008,11 +1021,11 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "warp".into(),
+                        identifier: id("warp"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -1024,7 +1037,7 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("factor", IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new(id("factor"), IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         )),
@@ -1034,11 +1047,11 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "fireTorpedoes".into(),
+                        identifier: id("fire_torpedoes"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -1051,8 +1064,8 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                                     plugins: vec![],
                                 },
                                 StructFieldTypeNode::new(
-                                    "arg0",
-                                    DefinedTypeLinkNode::new("direction")
+                                    id("arg0"),
+                                    DefinedTypeLinkNode::new(id("direction"))
                                 ),
                             ])
                             .into()
@@ -1063,10 +1076,10 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "cheat".into(),
+                        identifier: id("cheat"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -1092,18 +1105,18 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
 
 #[test]
 fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
-    // Tuple args can have custom names via #[codama(name = "...")].
+    // Tuple args can have custom names via #[codama(identifier = "...")].
     let store = CrateStore::hydrate(quote! {
         #[derive(CodamaType)]
         struct Percentage(u64);
 
         #[derive(CodamaInstructions)]
         enum FluxCapacitorInstructions {
-            #[codama(account(name = "clock_sysvar"))]
+            #[codama(account(identifier = "clock_sysvar"))]
             Charge(
-                #[codama(name = "percentage")]
+                #[codama(identifier = "percentage")]
                 Percentage,
-                #[codama(name = "is_valid")]
+                #[codama(identifier = "is_valid")]
                 bool,
             ),
         }
@@ -1123,12 +1136,16 @@ fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 instructions: vec![InstructionNode {
-                    identifier: "charge".into(),
-                    accounts: vec![InstructionAccountNode::new("clock_sysvar", false, false)],
+                    identifier: id("charge"),
+                    accounts: vec![InstructionAccountNode::new(
+                        id("clock_sysvar"),
+                        false,
+                        false
+                    )],
                     data: Box::new(Some(
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -1137,10 +1154,10 @@ fn from_enum_with_tuple_variants_with_custom_names() -> CodamaResult<()> {
                                 plugins: vec![],
                             },
                             StructFieldTypeNode::new(
-                                "percentage",
-                                DefinedTypeLinkNode::new("percentage")
+                                id("percentage"),
+                                DefinedTypeLinkNode::new(id("percentage"))
                             ),
-                            StructFieldTypeNode::new("isValid", BooleanTypeNode::default()),
+                            StructFieldTypeNode::new(id("is_valid"), BooleanTypeNode::default()),
                         ])
                         .into()
                     )),

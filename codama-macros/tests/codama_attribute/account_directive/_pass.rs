@@ -26,10 +26,10 @@ pub struct MyInstructionWithExplicitValues {
     pub delegate: AccountMeta,
 }
 
-#[codama(account(name = "authority", signer))]
-#[codama(account(name = "payer", signer, writable))]
-#[codama(account(name = "owner"))]
-#[codama(account(name = "delegate", signer = "either", optional))]
+#[codama(account(identifier = "authority", signer))]
+#[codama(account(identifier = "payer", signer, writable))]
+#[codama(account(identifier = "owner"))]
+#[codama(account(identifier = "delegate", signer = "either", optional))]
 pub struct MyInstructionWithoutAccountFields;
 
 fn main() {}

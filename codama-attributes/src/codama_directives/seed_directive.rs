@@ -1,5 +1,6 @@
 use crate::{
-    utils::SetOnce, Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
+    utils::{removed_name_key, SetOnce},
+    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{TypeNode, ValueNode};
@@ -34,19 +35,20 @@ impl SeedDirective {
             .parse_metas()?
             .iter()
             .find_map(|m| match m.path_str().as_str() {
-                "name" => Some(false),
+                "identifier" | "name" => Some(false),
                 "value" => Some(true),
                 _ => None,
             })
-            .ok_or_else(|| meta.error("seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds"))?;
+            .ok_or_else(|| meta.error("seed must at least specify `identifier` for variable seeds or `type` and `value` for constant seeds"))?;
 
-        let mut name = SetOnce::<String>::new("name");
+        let mut name = SetOnce::<String>::new("identifier");
         let mut r#type = SetOnce::<Resolvable<TypeNode>>::new("type");
         let mut value = SetOnce::<Resolvable<ValueNode>>::new("value");
 
         pl.each(|ref meta| match (meta.path_str().as_str(), constant_seed) {
-            ("name", true) => Err(meta.error("constant seeds cannot specify name")),
-            ("name", false) => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            ("name", _) => removed_name_key(meta),
+            ("identifier", true) => Err(meta.error("constant seeds cannot specify identifier")),
+            ("identifier", false) => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             ("value", true) => {
                 value.set(Resolvable::<ValueNode>::from_meta(meta.as_value()?)?, meta)
             }
@@ -142,7 +144,7 @@ mod tests {
 
     #[test]
     fn defined_variable() {
-        let meta: Meta = syn::parse_quote! { seed(name = "authority", type = public_key) };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "authority", type = public_key) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = SeedDirective::parse(&meta, &ctx).unwrap();
@@ -159,7 +161,7 @@ mod tests {
 
     #[test]
     fn linked_seed() {
-        let meta: Meta = syn::parse_quote! { seed(name = "authority") };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "authority") };
         let item = syn::parse_quote! { struct Foo { authority: PubKey } };
         let ctx = AttributeContext::Item(&item);
         let directive = SeedDirective::parse(&meta, &ctx).unwrap();
@@ -173,7 +175,7 @@ mod tests {
 
     #[test]
     fn linked_seed_in_variant() {
-        let meta: Meta = syn::parse_quote! { seed(name = "authority") };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "authority") };
         let item: syn::Variant = syn::parse_quote! { Foo { authority: PubKey } };
         let ctx = AttributeContext::Variant(&item);
         let directive = SeedDirective::parse(&meta, &ctx).unwrap();
@@ -191,12 +193,12 @@ mod tests {
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
-        assert_eq!(error.to_string(), "seed must at least specify `name` for variable seeds or `type` and `value` for constant seeds");
+        assert_eq!(error.to_string(), "seed must at least specify `identifier` for variable seeds or `type` and `value` for constant seeds");
     }
 
     #[test]
     fn cannot_find_linked_field() {
-        let meta: Meta = syn::parse_quote! { seed(name = "authority") };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "authority") };
         let item = syn::parse_quote! { struct Foo { owner: PubKey } };
         let ctx = AttributeContext::Item(&item);
         let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
@@ -208,7 +210,7 @@ mod tests {
 
     #[test]
     fn value_with_name() {
-        let meta: Meta = syn::parse_quote! { seed(name = "amount", value = 42) };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "amount", value = 42) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
@@ -217,10 +219,29 @@ mod tests {
 
     #[test]
     fn name_with_value() {
-        let meta: Meta = syn::parse_quote! { seed(value = 42, name = "amount") };
+        let meta: Meta = syn::parse_quote! { seed(value = 42, identifier = "amount") };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
-        assert_eq!(error.to_string(), "constant seeds cannot specify name");
+        assert_eq!(
+            error.to_string(),
+            "constant seeds cannot specify identifier"
+        );
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        for meta in [
+            syn::parse_quote! { seed(name = "authority", type = public_key) },
+            syn::parse_quote! { seed(type = string, value = "x", name = "prefix") },
+        ] {
+            let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "name = ... is removed in v2, use identifier = ..."
+            );
+        }
     }
 }

@@ -43,7 +43,7 @@ describe('getUnionPageFragment', () => {
         expect(imports).toContain('crate::PdaNode');
         expect(imports).toContain('crate::PdaLinkNode');
         expect(imports).toContain('crate::HasIdentifier');
-        expect(imports).toContain('crate::CamelCaseString');
+        expect(imports).toContain('crate::Identifier');
     });
 
     it('strips the longest common PascalCase suffix when naming variants of an inline union', () => {

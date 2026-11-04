@@ -1,9 +1,9 @@
-use crate::{AccountDataValueNode, CamelCaseString, Path};
+use crate::{AccountDataValueNode, Identifier, Path};
 
 impl AccountDataValueNode {
     pub fn new<T>(account: T) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             account: account.into(),
@@ -14,7 +14,7 @@ impl AccountDataValueNode {
 
     pub fn with_path<T, U>(account: T, path: U) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
         U: Into<Path>,
     {
         Self {
@@ -28,25 +28,25 @@ impl AccountDataValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::path;
+    use crate::test_utils::{id, path};
 
     #[test]
     fn new() {
-        let node = AccountDataValueNode::new("my_account");
-        assert_eq!(node.account, CamelCaseString::new("myAccount"));
+        let node = AccountDataValueNode::new(id("myAccount"));
+        assert_eq!(node.account, id("myAccount"));
         assert_eq!(node.path, None);
     }
 
     #[test]
     fn with_path() {
-        let node = AccountDataValueNode::with_path("my_account", path("my_field"));
-        assert_eq!(node.account, CamelCaseString::new("myAccount"));
+        let node = AccountDataValueNode::with_path(id("myAccount"), path("my_field"));
+        assert_eq!(node.account, id("myAccount"));
         assert_eq!(node.path, Some(path("my_field")));
     }
 
     #[test]
     fn to_json() {
-        let node = AccountDataValueNode::new("mint");
+        let node = AccountDataValueNode::new(id("mint"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"accountDataValueNode","account":"mint"}"#);
     }
@@ -55,12 +55,12 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"accountDataValueNode","account":"mint"}"#;
         let node: AccountDataValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, AccountDataValueNode::new("mint"));
+        assert_eq!(node, AccountDataValueNode::new(id("mint")));
     }
 
     #[test]
     fn to_json_with_path() {
-        let node = AccountDataValueNode::with_path("vault", path("state.balances[0]"));
+        let node = AccountDataValueNode::with_path(id("vault"), path("state.balances[0]"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -75,7 +75,7 @@ mod tests {
         let node: AccountDataValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            AccountDataValueNode::with_path("vault", path("state.balances[0]"))
+            AccountDataValueNode::with_path(id("vault"), path("state.balances[0]"))
         );
     }
 

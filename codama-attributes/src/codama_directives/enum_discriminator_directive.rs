@@ -1,17 +1,17 @@
 use crate::{
-    utils::{FromMeta, SetOnce},
+    utils::{removed_name_key, FromMeta, SetOnce},
     Attribute, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    CamelCaseString, DisplaySkip, FieldDiscriminatorNode, IntegerFormat::U8, IntegerTypeNode, Node,
+    DisplaySkip, FieldDiscriminatorNode, Identifier, IntegerFormat::U8, IntegerTypeNode, Node,
     Path, StructFieldDisplayNode, StructFieldTypeNode, TypeNode, TypeNodeTrait,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct EnumDiscriminatorDirective {
-    pub name: Option<CamelCaseString>,
+    pub name: Option<Identifier>,
     pub size: Option<IntegerTypeNode>,
 }
 
@@ -21,19 +21,18 @@ impl EnumDiscriminatorDirective {
             .assert_directive("enum_discriminator")?
             .as_path_list()?;
 
-        let mut name = SetOnce::<CamelCaseString>::new("name");
+        let mut name = SetOnce::<Identifier>::new("identifier");
         let mut size: SetOnce<IntegerTypeNode> = SetOnce::<IntegerTypeNode>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => {
+            "identifier" => {
                 let expr = meta.as_value()?.as_expr()?;
                 let value = expr.as_string()?;
-                let identifier = CamelCaseString::from(value.as_str());
-                // The name is also the path of the discriminator node, so it must be a valid path.
-                if Path::try_from(identifier.as_str()).is_err() {
-                    return Err(expr.error(format!("Invalid enum discriminator name: {value}")));
-                }
+                let identifier = Identifier::try_from(value.as_str()).map_err(|_| {
+                    expr.error(format!("Invalid enum discriminator identifier: {value}"))
+                })?;
                 name.set(identifier, meta)
             }
+            "name" => removed_name_key(meta),
             "size" => {
                 let node = TypeNode::from_meta(meta.as_value()?)?;
                 match IntegerTypeNode::try_from_type_node(node) {
@@ -50,14 +49,18 @@ impl EnumDiscriminatorDirective {
         };
 
         if directive.name.is_none() && directive.size.is_none() {
-            return Err(meta.error("enum_discriminator must specify at least one of: name, size"));
+            return Err(
+                meta.error("enum_discriminator must specify at least one of: identifier, size")
+            );
         }
 
         Ok(directive)
     }
 
-    fn identifier(&self) -> CamelCaseString {
-        self.name.clone().unwrap_or("discriminator".into())
+    fn identifier(&self) -> Identifier {
+        self.name
+            .clone()
+            .unwrap_or_else(|| Identifier::try_from("discriminator").expect("a valid identifier"))
     }
 }
 
@@ -128,16 +131,17 @@ impl TryFrom<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
     use codama_nodes::IntegerFormat::{U16, U32};
 
     #[test]
     fn enum_discriminator_with_name() {
-        let meta: Meta = syn::parse_quote! { enum_discriminator(name = "banana") };
+        let meta: Meta = syn::parse_quote! { enum_discriminator(identifier = "banana") };
         let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some("banana".into()),
+                name: Some(id("banana")),
                 size: None,
             }
         );
@@ -159,12 +163,12 @@ mod tests {
     #[test]
     fn enum_discriminator_with_name_and_size() {
         let meta: Meta =
-            syn::parse_quote! { enum_discriminator(name = "banana", size = integer(u16)) };
+            syn::parse_quote! { enum_discriminator(identifier = "banana", size = integer(u16)) };
         let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some("banana".into()),
+                name: Some(id("banana")),
                 size: Some(IntegerTypeNode::le(U16)),
             }
         );
@@ -176,15 +180,18 @@ mod tests {
         let error = EnumDiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),
-            "enum_discriminator must specify at least one of: name, size"
+            "enum_discriminator must specify at least one of: identifier, size"
         );
     }
 
     #[test]
     fn invalid_enum_discriminator_name() {
-        let meta: Meta = syn::parse_quote! { enum_discriminator(name = "1st") };
+        let meta: Meta = syn::parse_quote! { enum_discriminator(identifier = "1st") };
         let error = EnumDiscriminatorDirective::parse(&meta).unwrap_err();
-        assert_eq!(error.to_string(), "Invalid enum discriminator name: 1st");
+        assert_eq!(
+            error.to_string(),
+            "Invalid enum discriminator identifier: 1st"
+        );
     }
 
     #[test]
@@ -195,8 +202,8 @@ mod tests {
                 "discriminator",
             ),
             (
-                syn::parse_quote! { enum_discriminator(name = "my_kind") },
-                "myKind",
+                syn::parse_quote! { enum_discriminator(identifier = "my_kind") },
+                "my_kind",
             ),
         ] {
             let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
@@ -215,6 +222,16 @@ mod tests {
         assert_eq!(
             field.display,
             Some(StructFieldDisplayNode::skipped(DisplaySkip::Always))
+        );
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let meta: Meta = syn::parse_quote! { enum_discriminator(name = "kind") };
+        let error = EnumDiscriminatorDirective::parse(&meta).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "name = ... is removed in v2, use identifier = ..."
         );
     }
 }

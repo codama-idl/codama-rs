@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, Docs, HasIdentifier, PluginNode, TypeNode};
+use crate::{Docs, HasIdentifier, Identifier, PluginNode, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct DefinedTypeNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     pub r#type: Box<TypeNode>,
@@ -12,7 +12,7 @@ pub struct DefinedTypeNode {
 }
 
 impl HasIdentifier for DefinedTypeNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

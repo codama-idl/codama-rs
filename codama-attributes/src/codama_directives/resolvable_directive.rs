@@ -278,18 +278,19 @@ mod tests {
 
     #[test]
     fn account_directive_with_resolvable_default_value() {
-        let meta: Meta = syn::parse_quote! { account(name = "vault", writable, default_value = wellknown::ata(account("owner"))) };
+        let meta: Meta = syn::parse_quote! { account(identifier = "vault", writable, default_value = wellknown::ata(account("owner"))) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = crate::AttributeContext::Item(&item);
         let directive = crate::AccountDirective::parse(&meta, &ctx).unwrap();
-        assert_eq!(directive.name, codama_nodes::CamelCaseString::new("vault"));
+        assert_eq!(directive.name, codama_nodes::test_utils::id("vault"));
         assert!(directive.is_writable);
         assert!(directive.default_value.as_ref().unwrap().is_unresolved());
     }
 
     #[test]
     fn seed_directive_with_resolvable_type() {
-        let meta: Meta = syn::parse_quote! { seed(name = "authority", type = foo::custom_pubkey) };
+        let meta: Meta =
+            syn::parse_quote! { seed(identifier = "authority", type = foo::custom_pubkey) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = crate::AttributeContext::Item(&item);
         let directive = crate::SeedDirective::parse(&meta, &ctx).unwrap();

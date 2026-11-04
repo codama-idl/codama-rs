@@ -195,7 +195,7 @@ describe('getRenderMap', () => {
 
     it('per-node pages resolve their crate imports to a grouped `use crate::{…}` block plus the macro line', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
-        expect(entry.content).toContain('use crate::{CamelCaseString, HasIdentifier, PluginNode, ProgramLinkNode};');
+        expect(entry.content).toContain('use crate::{HasIdentifier, Identifier, PluginNode, ProgramLinkNode};');
         expect(entry.content).toContain('use codama_nodes_derive::node;');
     });
 
@@ -203,7 +203,7 @@ describe('getRenderMap', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
         expect(entry.content).toContain('#[node]');
         expect(entry.content).toContain('pub struct AccountLinkNode {');
-        expect(entry.content).toContain('{\npub identifier: CamelCaseString,');
+        expect(entry.content).toContain('{\npub identifier: Identifier,');
         expect(entry.content).toContain('impl From<AccountLinkNode> for crate::Node {');
         expect(entry.content).toContain('impl HasIdentifier for AccountLinkNode {');
     });
@@ -279,7 +279,7 @@ describe('getRenderMap', () => {
     it('emits both the HasIdentifier and the HasTransforms impl for DefinedTypeLinkNode', () => {
         const entry = getFromRenderMap(map, 'link_nodes/defined_type_link_node.rs');
         expect(entry.content).toContain(
-            'use crate::{CamelCaseString, HasIdentifier, HasTransforms, PluginNode, ProgramLinkNode, TransformNode};',
+            'use crate::{HasIdentifier, HasTransforms, Identifier, PluginNode, ProgramLinkNode, TransformNode};',
         );
         expect(entry.content).toContain('impl HasIdentifier for DefinedTypeLinkNode {');
         expect(entry.content).toContain('impl HasTransforms for DefinedTypeLinkNode {');
@@ -394,7 +394,7 @@ describe('getRenderMap', () => {
         it('routes VariablePdaSeedNode through Node::PdaSeed with HasIdentifier + a bare Docs field', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/variable_pda_seed_node.rs');
             expect(entry.content).toContain('pub struct VariablePdaSeedNode {');
-            expect(entry.content).toContain('pub identifier: CamelCaseString,');
+            expect(entry.content).toContain('pub identifier: Identifier,');
             expect(entry.content).toContain('pub docs: Docs,');
             // Box rule: direct union fields are boxed.
             expect(entry.content).toContain('pub r#type: Box<TypeNode>,');

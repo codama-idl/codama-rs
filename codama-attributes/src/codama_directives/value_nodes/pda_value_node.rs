@@ -1,22 +1,34 @@
-use crate::utils::{FromMeta, SetOnce};
+use crate::utils::{removed_name_key, FromMeta, SetOnce};
 use codama_errors::IteratorCombineErrors;
-use codama_nodes::{CamelCaseString, PdaLinkNode, PdaSeedValueNode, PdaValueNode, ProgramLinkNode};
+use codama_nodes::{Identifier, PdaLinkNode, PdaSeedValueNode, PdaValueNode, ProgramLinkNode};
 use codama_syn_helpers::{extensions::*, Meta, PathList};
 
 impl FromMeta for PdaValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("pda")?.as_path_list()?;
-        let mut name = SetOnce::<CamelCaseString>::new("name");
-        let mut program = SetOnce::<CamelCaseString>::new("program");
+        let mut name = SetOnce::<Identifier>::new("identifier");
+        let mut program = SetOnce::<Identifier>::new("program");
         let mut seeds = SetOnce::<Vec<PdaSeedValueNode>>::new("seeds");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
-            "program" => program.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "identifier" => name.set(
+                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
+                    .map_err(|e| meta.error(e))?,
+                meta,
+            ),
+            "name" => removed_name_key(meta),
+            "program" => program.set(
+                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
+                    .map_err(|e| meta.error(e))?,
+                meta,
+            ),
             "seeds" => seeds.set(parse_seed_value_nodes(meta.as_path_list()?)?, meta),
             _ => {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
-                    return name.set(seed_name.into(), meta);
+                    return name.set(
+                        Identifier::try_from(seed_name.as_str()).map_err(|e| meta.error(e))?,
+                        meta,
+                    );
                 }
                 if let Meta::Expr(syn::Expr::Array(array)) = meta {
                     return seeds.set(parse_seed_value_nodes(&array.as_path_list())?, meta);
@@ -49,13 +61,14 @@ fn parse_seed_value_nodes(pl: &PathList) -> syn::Result<Vec<PdaSeedValueNode>> {
 mod tests {
     use super::*;
     use crate::{assert_value, assert_value_err};
+    use codama_nodes::test_utils::id;
     use codama_nodes::AccountValueNode;
 
     #[test]
     fn explicit() {
         assert_value!(
-            { pda(name = "token", seeds = []) },
-            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
+            { pda(identifier = "token", seeds = []) },
+            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
         );
     }
 
@@ -69,10 +82,10 @@ mod tests {
                 )
             },
             PdaValueNode::new(
-                PdaLinkNode::new("token"),
+                PdaLinkNode::new(id("token")),
                 vec![
-                    PdaSeedValueNode::new("mint", AccountValueNode::new("mint")),
-                    PdaSeedValueNode::new("owner", AccountValueNode::new("authority"))
+                    PdaSeedValueNode::new(id("mint"), AccountValueNode::new(id("mint"))),
+                    PdaSeedValueNode::new(id("owner"), AccountValueNode::new(id("authority")))
                 ],
             )
             .into()
@@ -83,7 +96,7 @@ mod tests {
     fn implicit_empty() {
         assert_value!(
             { pda("token", []) },
-            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
+            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
         );
     }
 
@@ -91,17 +104,25 @@ mod tests {
     fn name_only() {
         assert_value!(
             { pda("token") },
-            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
+            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
         );
     }
 
     #[test]
     fn missing_name() {
-        assert_value_err!({ pda(seeds = []) }, "name is missing");
+        assert_value_err!({ pda(seeds = []) }, "identifier is missing");
     }
 
     #[test]
     fn invalid_name_attribute() {
         assert_value_err!({ pda(banana = "token") }, "unrecognized attribute");
+    }
+
+    #[test]
+    fn name_is_removed() {
+        assert_value_err!(
+            { pda(name = "my_pda", seeds = []) },
+            "name = ... is removed in v2, use identifier = ..."
+        );
     }
 }

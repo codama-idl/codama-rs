@@ -16,13 +16,13 @@ error: expected a path
 3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
   |                                                     ^^^^^^^^^
 
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:6:40
   |
 6 | #[codama(default_value = pda("token", [seed(42), seed(value = 43)]))]
   |                                        ^^^^^^^^
 
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:6:50
   |
 6 | #[codama(default_value = pda("token", [seed(42), seed(value = 43)]))]

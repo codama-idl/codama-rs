@@ -3,7 +3,7 @@ use codama_korok_visitors::{
     ApplyDisplayVisitor, IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor,
 };
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::{get_data_fields, path};
+use codama_nodes::test_utils::{get_data_fields, id, path};
 use codama_nodes::{
     AmountNumberDisplayNode, DisplaySkip, FieldDiscriminatorNode, InstructionDisplayNode,
     InstructionNode, IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, NumberDisplayNode,
@@ -37,7 +37,7 @@ fn it_applies_displays_to_instruction_structs() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "transfer".into(),
+                identifier: id("transfer"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![StructFieldTypeNode {
                         display: Some(StructFieldDisplayNode::new("Amount")),
@@ -53,7 +53,10 @@ fn it_applies_displays_to_instruction_structs() -> CodamaResult<()> {
                             }
                             .into()
                         ),
-                        ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(codama_nodes::U64))
+                        ..StructFieldTypeNode::new(
+                            id("amount"),
+                            IntegerTypeNode::le(codama_nodes::U64)
+                        )
                     }])
                     .into()
                 )),
@@ -95,7 +98,7 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: "withdraw".into(),
+                        identifier: id("withdraw"),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
@@ -107,12 +110,12 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
                                     )),
                                     display: skipped.clone(),
                                     ..StructFieldTypeNode::new(
-                                        "discriminator",
+                                        id("discriminator"),
                                         IntegerTypeNode::le(U8),
                                     )
                                 },
                                 StructFieldTypeNode::new(
-                                    "amount",
+                                    id("amount"),
                                     IntegerTypeNode::le(codama_nodes::U64),
                                 ),
                             ])
@@ -129,25 +132,21 @@ fn it_applies_displays_to_instruction_enum_variants() -> CodamaResult<()> {
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: "deposit".into(),
-                        data: Box::new(
-                            Some(
-                                StructTypeNode::new(vec![StructFieldTypeNode {
-                                    default_value_strategy: Some(
-                                        codama_nodes::DefaultValueStrategy::Omitted,
-                                    ),
-                                    default_value: Box::new(Some(
-                                        IntegerValueNode::new(1u64).into()
-                                    )),
-                                    display: skipped,
-                                    ..StructFieldTypeNode::new(
-                                        "discriminator",
-                                        IntegerTypeNode::le(U8),
-                                    )
-                                }])
-                                .into()
-                            )
-                        ),
+                        identifier: id("deposit"),
+                        data: Box::new(Some(
+                            StructTypeNode::new(vec![StructFieldTypeNode {
+                                default_value_strategy: Some(
+                                    codama_nodes::DefaultValueStrategy::Omitted,
+                                ),
+                                default_value: Box::new(Some(IntegerValueNode::new(1u64).into())),
+                                display: skipped,
+                                ..StructFieldTypeNode::new(
+                                    id("discriminator"),
+                                    IntegerTypeNode::le(U8),
+                                )
+                            }])
+                            .into()
+                        )),
                         discriminators: vec![
                             FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                         ],
@@ -168,7 +167,7 @@ fn it_preserves_tuple_field_displays() -> CodamaResult<()> {
         #[derive(CodamaInstructions)]
         enum Instructions {
             Withdraw(
-                #[codama(name = "amount")]
+                #[codama(identifier = "amount")]
                 #[codama(display(label = "First", skip = when_injected))]
                 #[codama(display(label = "Amount", flatten))]
                 u64,

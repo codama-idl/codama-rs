@@ -3,7 +3,7 @@ use codama_macros::codama;
 #[codama(type = field("age", integer(u32)))]
 pub struct ImplicitTest;
 
-#[codama(type = field(name = "age", type = integer(u32)))]
+#[codama(type = field(identifier = "age", type = integer(u32)))]
 pub struct ExplicitTest;
 
 #[codama(type = field("age", integer(u32), default_value = 42))]

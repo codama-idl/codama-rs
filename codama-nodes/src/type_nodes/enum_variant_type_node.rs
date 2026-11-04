@@ -1,13 +1,12 @@
 use crate::{
-    CamelCaseString, Docs, EnumVariantTypeNode, HasKind, Node, NodeTrait, RegisteredTypeNode,
-    TypeNode,
+    Docs, EnumVariantTypeNode, HasKind, Identifier, Node, NodeTrait, RegisteredTypeNode, TypeNode,
 };
 use codama_errors::CodamaError;
 
 impl EnumVariantTypeNode {
     pub fn new<T>(identifier: T) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             identifier: identifier.into(),
@@ -21,7 +20,7 @@ impl EnumVariantTypeNode {
 
     pub fn with_data<T, U>(identifier: T, data: U) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
         U: Into<TypeNode>,
     {
         Self {
@@ -52,6 +51,7 @@ impl TryFrom<Node> for EnumVariantTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{
         IntegerTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32,
         U64,
@@ -59,8 +59,8 @@ mod tests {
 
     #[test]
     fn new() {
-        let node = EnumVariantTypeNode::new("my_variant");
-        assert_eq!(node.identifier, CamelCaseString::new("myVariant"));
+        let node = EnumVariantTypeNode::new(id("myVariant"));
+        assert_eq!(node.identifier, id("myVariant"));
         assert_eq!(node.discriminator, None);
         assert_eq!(*node.data, None);
     }
@@ -68,11 +68,11 @@ mod tests {
     #[test]
     fn with_data_struct() {
         let r#struct = StructTypeNode::new(vec![
-            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
-            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
+            StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
         ]);
-        let node = EnumVariantTypeNode::with_data("my_variant", r#struct.clone());
-        assert_eq!(node.identifier, CamelCaseString::new("myVariant"));
+        let node = EnumVariantTypeNode::with_data(id("myVariant"), r#struct.clone());
+        assert_eq!(node.identifier, id("myVariant"));
         assert_eq!(*node.data, Some(TypeNode::Struct(r#struct)));
     }
 
@@ -82,13 +82,13 @@ mod tests {
             IntegerTypeNode::le(U32).into(),
             StringTypeNode::utf8().into(),
         ]);
-        let node = EnumVariantTypeNode::with_data("my_variant", tuple.clone());
+        let node = EnumVariantTypeNode::with_data(id("myVariant"), tuple.clone());
         assert_eq!(*node.data, Some(TypeNode::Tuple(tuple)));
     }
 
     #[test]
     fn with_data_any_type() {
-        let node = EnumVariantTypeNode::with_data("amount", IntegerTypeNode::le(U64));
+        let node = EnumVariantTypeNode::with_data(id("amount"), IntegerTypeNode::le(U64));
         assert_eq!(
             *node.data,
             Some(TypeNode::Integer(IntegerTypeNode::le(U64)))
@@ -98,14 +98,14 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = EnumVariantTypeNode {
-            identifier: "my_variant".into(),
+            identifier: id("myVariant"),
             discriminator: Some(42),
             docs: Docs::default(),
             data: Box::new(Some(TupleTypeNode::new(vec![]).into())),
             display: None,
             plugins: vec![],
         };
-        assert_eq!(node.identifier, CamelCaseString::new("myVariant"));
+        assert_eq!(node.identifier, id("myVariant"));
         assert_eq!(node.discriminator, Some(42));
         assert_eq!(
             *node.data,
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumVariantTypeNode::new("myVariant");
+        let node = EnumVariantTypeNode::new(id("myVariant"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -127,14 +127,14 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"enumVariantTypeNode","identifier":"myVariant"}"#;
         let node: EnumVariantTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, EnumVariantTypeNode::new("myVariant"));
+        assert_eq!(node, EnumVariantTypeNode::new(id("myVariant")));
     }
 
     #[test]
     fn to_json_with_data() {
         let node = EnumVariantTypeNode {
             discriminator: Some(3),
-            ..EnumVariantTypeNode::with_data("myVariant", StructTypeNode::new(vec![]))
+            ..EnumVariantTypeNode::with_data(id("myVariant"), StructTypeNode::new(vec![]))
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -149,16 +149,16 @@ mod tests {
         let node: EnumVariantTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumVariantTypeNode::with_data("myVariant", IntegerTypeNode::le(U64))
+            EnumVariantTypeNode::with_data(id("myVariant"), IntegerTypeNode::le(U64))
         );
     }
 
     #[test]
     fn try_from_node() {
-        let node: Node = EnumVariantTypeNode::new("myVariant").into();
+        let node: Node = EnumVariantTypeNode::new(id("myVariant")).into();
         assert_eq!(
             EnumVariantTypeNode::try_from(node).unwrap(),
-            EnumVariantTypeNode::new("myVariant")
+            EnumVariantTypeNode::new(id("myVariant"))
         );
     }
 

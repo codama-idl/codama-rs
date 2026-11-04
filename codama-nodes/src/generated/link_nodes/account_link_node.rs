@@ -1,10 +1,10 @@
-use crate::{CamelCaseString, HasIdentifier, PluginNode, ProgramLinkNode};
+use crate::{HasIdentifier, Identifier, PluginNode, ProgramLinkNode};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct AccountLinkNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub program: Option<ProgramLinkNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -18,7 +18,7 @@ impl From<AccountLinkNode> for crate::Node {
 }
 
 impl HasIdentifier for AccountLinkNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

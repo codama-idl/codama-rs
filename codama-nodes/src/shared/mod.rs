@@ -1,6 +1,5 @@
 mod base;
 mod bytes_encoding;
-mod camel_case_string;
 pub mod casing;
 mod decimal;
 mod docs;
@@ -16,7 +15,6 @@ mod string;
 mod text;
 
 pub use bytes_encoding::*;
-pub use camel_case_string::*;
 pub use decimal::*;
 pub use docs::*;
 pub use identifier::*;

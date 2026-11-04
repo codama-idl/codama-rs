@@ -1,9 +1,9 @@
-use crate::{AccountLinkNode, CamelCaseString, ProgramLinkNode};
+use crate::{AccountLinkNode, Identifier, ProgramLinkNode};
 
 impl AccountLinkNode {
     pub fn new<T>(identifier: T) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             identifier: identifier.into(),
@@ -14,7 +14,7 @@ impl AccountLinkNode {
 
     pub fn new_from_program<T>(identifier: T, program: ProgramLinkNode) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             identifier: identifier.into(),
@@ -24,53 +24,30 @@ impl AccountLinkNode {
     }
 }
 
-impl From<String> for AccountLinkNode {
-    fn from(identifier: String) -> Self {
-        Self::new(identifier)
-    }
-}
-
-impl From<&str> for AccountLinkNode {
-    fn from(identifier: &str) -> Self {
-        Self::new(identifier)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
 
     #[test]
     fn new() {
-        let node = AccountLinkNode::new("my_account");
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
+        let node = AccountLinkNode::new(id("myAccount"));
+        assert_eq!(node.identifier, id("myAccount"));
     }
 
     #[test]
     fn new_from_program() {
-        let node =
-            AccountLinkNode::new_from_program("my_account", ProgramLinkNode::new("my_program"));
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
-        assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
-    }
-
-    #[test]
-    fn from_string() {
-        let node: AccountLinkNode = String::from("my_account").into();
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
-        assert_eq!(node.program, None);
-    }
-
-    #[test]
-    fn from_str() {
-        let node: AccountLinkNode = "my_account".into();
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
-        assert_eq!(node.program, None);
+        let node = AccountLinkNode::new_from_program(
+            id("myAccount"),
+            ProgramLinkNode::new(id("myProgram")),
+        );
+        assert_eq!(node.identifier, id("myAccount"));
+        assert_eq!(node.program, Some(ProgramLinkNode::new(id("myProgram"))));
     }
 
     #[test]
     fn to_json() {
-        let node = AccountLinkNode::new("myAccount");
+        let node = AccountLinkNode::new(id("myAccount"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -82,6 +59,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"accountLinkNode","identifier":"myAccount"}"#;
         let node: AccountLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, AccountLinkNode::new("myAccount"));
+        assert_eq!(node, AccountLinkNode::new(id("myAccount")));
     }
 }

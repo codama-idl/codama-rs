@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
+use crate::{Identifier, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
 
 impl PdaSeedValueNode {
     pub fn new<T, U>(identifier: T, value: U) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
         U: Into<PdaSeedValueValue>,
     {
         Self {
@@ -43,12 +43,13 @@ impl From<ValueNode> for PdaSeedValueValue {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{DataValueNode, FloatValueNode, IntegerValueNode, Path};
 
     #[test]
     fn new() {
-        let node = PdaSeedValueNode::new("answer", IntegerValueNode::new(42));
-        assert_eq!(node.identifier, CamelCaseString::from("answer"));
+        let node = PdaSeedValueNode::new(id("answer"), IntegerValueNode::new(42));
+        assert_eq!(node.identifier, id("answer"));
         assert_eq!(
             *node.value,
             PdaSeedValueValue::Integer(IntegerValueNode::new(42))
@@ -58,7 +59,7 @@ mod tests {
     #[test]
     fn new_with_data_value() {
         let path: Path = "amount".parse().unwrap();
-        let node = PdaSeedValueNode::new("amount", DataValueNode::new(path.clone()));
+        let node = PdaSeedValueNode::new(id("amount"), DataValueNode::new(path.clone()));
         assert_eq!(
             *node.value,
             PdaSeedValueValue::Data(DataValueNode::new(path))
@@ -76,7 +77,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = PdaSeedValueNode::new("answer", IntegerValueNode::new(42));
+        let node = PdaSeedValueNode::new(id("answer"), IntegerValueNode::new(42));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -90,7 +91,7 @@ mod tests {
         let node: PdaSeedValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("answer", IntegerValueNode::new(42u32))
+            PdaSeedValueNode::new(id("answer"), IntegerValueNode::new(42u32))
         );
     }
 }

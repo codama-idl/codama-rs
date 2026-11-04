@@ -8,7 +8,7 @@ pub struct MyInstruction {
 
 #[derive(CodamaInstruction)]
 #[codama(remaining_accounts(
-    name = "signers",
+    identifier = "signers",
     signer = "either",
     writable = false,
     optional = true,

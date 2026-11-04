@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::get_data_fields;
+use codama_nodes::test_utils::{get_data_fields, id};
 use codama_nodes::{
     AccountBumpValueNode, DefaultValueStrategy, InjectedValueNode, InstructionAccountNode,
     InstructionNode,
@@ -31,26 +31,30 @@ fn it_injects_contextual_default_values() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
-                accounts: vec![InstructionAccountNode::new("vault", true, false)],
+                identifier: id("initialize"),
+                accounts: vec![InstructionAccountNode::new(id("vault"), true, false)],
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
                         StructFieldTypeNode {
-                            default_value: Box::new(Some(InjectedValueNode::new("owner").into())),
-                            ..StructFieldTypeNode::new("owner", PublicKeyTypeNode::new())
+                            default_value: Box::new(Some(
+                                InjectedValueNode::new(id("owner")).into()
+                            )),
+                            ..StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new())
                         },
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                         StructFieldTypeNode {
-                            default_value: Box::new(Some(InjectedValueNode::new("bump").into())),
+                            default_value: Box::new(Some(
+                                InjectedValueNode::new(id("bump")).into()
+                            )),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            ..StructFieldTypeNode::new("bump", IntegerTypeNode::le(U8))
+                            ..StructFieldTypeNode::new(id("bump"), IntegerTypeNode::le(U8))
                         },
                     ])
                     .into()
                 )),
                 provides: vec![
-                    ProvidedNode::new("owner", PayerValueNode::new()),
-                    ProvidedNode::new("bump", AccountBumpValueNode::new("vault")),
+                    ProvidedNode::new(id("owner"), PayerValueNode::new()),
+                    ProvidedNode::new(id("bump"), AccountBumpValueNode::new(id("vault"))),
                 ],
                 ..InstructionNode::default()
             }
@@ -81,15 +85,15 @@ fn it_injects_contextual_default_values_in_variants() -> CodamaResult<()> {
         get_data_fields(instruction)[1..],
         [
             StructFieldTypeNode {
-                default_value: Box::new(Some(InjectedValueNode::new("owner").into())),
-                ..StructFieldTypeNode::new("owner", PublicKeyTypeNode::new())
+                default_value: Box::new(Some(InjectedValueNode::new(id("owner")).into())),
+                ..StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new())
             },
-            StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+            StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
         ]
     );
     assert_eq!(
         instruction.provides,
-        vec![ProvidedNode::new("owner", PayerValueNode::new())]
+        vec![ProvidedNode::new(id("owner"), PayerValueNode::new())]
     );
     Ok(())
 }

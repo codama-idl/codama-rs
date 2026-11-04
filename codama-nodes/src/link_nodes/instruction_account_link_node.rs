@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, InstructionAccountLinkNode, InstructionLinkNode};
+use crate::{Identifier, InstructionAccountLinkNode, InstructionLinkNode};
 
 impl InstructionAccountLinkNode {
     pub fn new<T>(identifier: T) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             identifier: identifier.into(),
@@ -14,7 +14,7 @@ impl InstructionAccountLinkNode {
 
     pub fn new_from_instruction<T>(identifier: T, instruction: InstructionLinkNode) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
     {
         Self {
             identifier: identifier.into(),
@@ -24,78 +24,41 @@ impl InstructionAccountLinkNode {
     }
 }
 
-impl From<String> for InstructionAccountLinkNode {
-    fn from(identifier: String) -> Self {
-        Self::new(identifier)
-    }
-}
-
-impl From<&str> for InstructionAccountLinkNode {
-    fn from(identifier: &str) -> Self {
-        Self::new(identifier)
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::test_utils::id;
     use crate::ProgramLinkNode;
 
     use super::*;
 
     #[test]
     fn new() {
-        let node = InstructionAccountLinkNode::new("my_instruction_account");
-        assert_eq!(
-            node.identifier,
-            CamelCaseString::new("myInstructionAccount")
-        );
+        let node = InstructionAccountLinkNode::new(id("myInstructionAccount"));
+        assert_eq!(node.identifier, id("myInstructionAccount"));
     }
 
     #[test]
     fn new_from_instruction() {
         let node = InstructionAccountLinkNode::new_from_instruction(
-            "my_instruction_account",
+            id("myInstructionAccount"),
             InstructionLinkNode::new_from_program(
-                "my_instruction",
-                ProgramLinkNode::new("my_program"),
+                id("myInstruction"),
+                ProgramLinkNode::new(id("myProgram")),
             ),
         );
-        assert_eq!(
-            node.identifier,
-            CamelCaseString::new("myInstructionAccount")
-        );
+        assert_eq!(node.identifier, id("myInstructionAccount"));
         assert_eq!(
             node.instruction,
             Some(InstructionLinkNode::new_from_program(
-                "myInstruction",
-                ProgramLinkNode::new("myProgram")
+                id("myInstruction"),
+                ProgramLinkNode::new(id("myProgram"))
             ))
         );
     }
 
     #[test]
-    fn from_string() {
-        let node: InstructionAccountLinkNode = String::from("my_instruction_account").into();
-        assert_eq!(
-            node.identifier,
-            CamelCaseString::new("myInstructionAccount")
-        );
-        assert_eq!(node.instruction, None);
-    }
-
-    #[test]
-    fn from_str() {
-        let node: InstructionAccountLinkNode = "my_instruction_account".into();
-        assert_eq!(
-            node.identifier,
-            CamelCaseString::new("myInstructionAccount")
-        );
-        assert_eq!(node.instruction, None);
-    }
-
-    #[test]
     fn to_json() {
-        let node = InstructionAccountLinkNode::new("myAccount");
+        let node = InstructionAccountLinkNode::new(id("myAccount"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -107,6 +70,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"instructionAccountLinkNode","identifier":"myAccount"}"#;
         let node: InstructionAccountLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, InstructionAccountLinkNode::new("myAccount"));
+        assert_eq!(node, InstructionAccountLinkNode::new(id("myAccount")));
     }
 }

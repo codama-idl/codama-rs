@@ -1,7 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::path;
+use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     BooleanTypeNode, EventNode, FieldDiscriminatorNode, IntegerFormat::U64, IntegerTypeNode,
     PublicKeyTypeNode, SizeDiscriminatorNode, StructFieldTypeNode, StructTypeNode,
@@ -25,10 +25,10 @@ fn from_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             EventNode::new(
-                "transferEvent",
+                id("transfer_event"),
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                    StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
+                    StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                 ])
             )
             .into()
@@ -50,7 +50,7 @@ fn from_empty_struct() -> CodamaResult<()> {
     korok.accept(&mut SetEventsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(EventNode::new("pingEvent", StructTypeNode::new(vec![])).into())
+        Some(EventNode::new(id("ping_event"), StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -92,7 +92,7 @@ fn no_overrides() -> CodamaResult<()> {
 fn with_name_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaEvent)]
-        #[codama(name = "transfer")]
+        #[codama(identifier = "transfer")]
         struct TransferEvent;
     };
     let mut korok = StructKorok::parse(&item)?;
@@ -101,7 +101,7 @@ fn with_name_directive() -> CodamaResult<()> {
     korok.accept(&mut SetEventsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(EventNode::new("transfer", StructTypeNode::new(vec![])).into())
+        Some(EventNode::new(id("transfer"), StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -126,7 +126,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
                     SizeDiscriminatorNode::new(100).into(),
                     FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                 ],
-                ..EventNode::new("myEvent", StructTypeNode::new(vec![]))
+                ..EventNode::new(id("my_event"), StructTypeNode::new(vec![]))
             }
             .into()
         )

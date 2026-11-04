@@ -1,6 +1,6 @@
 use codama_macros::codama;
 
-#[codama(seed(type = integer(u8), value = 42, name = "amount"))]
+#[codama(seed(type = integer(u8), value = 42, identifier = "amount"))]
 pub struct TestWithName;
 
 #[codama(seed(type = invalid_type, value = 42))]

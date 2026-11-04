@@ -1,9 +1,9 @@
-use crate::{AccountNode, CamelCaseString, Docs, TypeNode};
+use crate::{AccountNode, Docs, Identifier, TypeNode};
 
 impl AccountNode {
     pub fn new<T, U>(identifier: T, data: U) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
         U: Into<TypeNode>,
     {
         Self {
@@ -21,6 +21,7 @@ impl AccountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{
         DefinedTypeLinkNode, IntegerTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
         U8,
@@ -29,20 +30,20 @@ mod tests {
     #[test]
     fn new() {
         let node = AccountNode::new(
-            "myAccount",
+            id("myAccount"),
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]),
         );
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, id("myAccount"));
         assert_eq!(node.size, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.pda, None);
@@ -51,23 +52,23 @@ mod tests {
 
     #[test]
     fn new_with_any_type() {
-        let node = AccountNode::new("myAccount", DefinedTypeLinkNode::new("myData"));
+        let node = AccountNode::new(id("myAccount"), DefinedTypeLinkNode::new(id("myData")));
         assert_eq!(
             *node.data,
-            TypeNode::Link(DefinedTypeLinkNode::new("myData"))
+            TypeNode::Link(DefinedTypeLinkNode::new(id("myData")))
         );
     }
 
     #[test]
     fn direct_instantiation() {
         let node = AccountNode {
-            identifier: "myAccount".into(),
+            identifier: id("myAccount"),
             size: None,
             docs: Docs::default(),
             data: Box::new(
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
                 ])
                 .into(),
             ),
@@ -75,14 +76,14 @@ mod tests {
             discriminators: vec![],
             plugins: vec![],
         };
-        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, id("myAccount"));
         assert_eq!(node.size, None);
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.pda, None);
@@ -92,10 +93,10 @@ mod tests {
     #[test]
     fn to_json() {
         let node = AccountNode::new(
-            "myAccount",
+            id("myAccount"),
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]),
         );
         let json = serde_json::to_string(&node).unwrap();
@@ -112,10 +113,10 @@ mod tests {
         assert_eq!(
             node,
             AccountNode::new(
-                "myAccount",
+                id("myAccount"),
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
                 ]),
             )
         );
@@ -123,7 +124,7 @@ mod tests {
 
     #[test]
     fn to_json_with_any_type() {
-        let node = AccountNode::new("myAccount", DefinedTypeLinkNode::new("myData"));
+        let node = AccountNode::new(id("myAccount"), DefinedTypeLinkNode::new(id("myData")));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -137,7 +138,7 @@ mod tests {
         let node: AccountNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            AccountNode::new("myAccount", DefinedTypeLinkNode::new("myData"))
+            AccountNode::new(id("myAccount"), DefinedTypeLinkNode::new(id("myData")))
         );
     }
 }
