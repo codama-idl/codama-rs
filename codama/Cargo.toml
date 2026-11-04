@@ -7,15 +7,15 @@ edition = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-codama-macros = { version = "0.13.2", path = "../codama-macros" }
+codama-macros = { workspace = true }
 
 [target.'cfg(not(target_os = "solana"))'.dependencies]
-codama-errors = { version = "0.13.2", path = "../codama-errors" }
-codama-plugin-core = { version = "0.13.2", path = "../codama-plugin-core" }
-codama-korok-visitors = { version = "0.13.2", path = "../codama-korok-visitors" }
-codama-koroks = { version = "0.13.2", path = "../codama-koroks" }
-codama-nodes = { version = "0.13.2", path = "../codama-nodes" }
-codama-stores = { version = "0.13.2", path = "../codama-stores" }
+codama-errors = { workspace = true }
+codama-plugin-core = { workspace = true }
+codama-korok-visitors = { workspace = true }
+codama-koroks = { workspace = true }
+codama-nodes = { workspace = true }
+codama-stores = { workspace = true }
 proc-macro2 = "1.0"
 
 [lints.rust]
