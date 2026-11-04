@@ -57,8 +57,9 @@ JavaScript repositories:
    entry they amount to.
 2. Merging that pull request publishes every crate to crates.io with
    `cargo publish --workspace`, then tags the commit `vX.Y.Z` and creates the
-   GitHub release. A failed publish is resumed by re-running the job: crates
-   already on crates.io are skipped.
+   GitHub release. A failed publish is resumed by re-running the job: the
+   workflow excludes the crates already on crates.io, which Cargo would
+   otherwise refuse to publish again.
 
 The workflow can also be dispatched by hand with its `dry-run` input to
 rehearse either step without pushing or uploading anything.

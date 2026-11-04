@@ -25,7 +25,8 @@ versioned_files = [
     "codama-plugin-core/Cargo.toml",
     "codama-stores/Cargo.toml",
     "codama-syn-helpers/Cargo.toml",
-    # The versions the crates depend on each other at, inherited from the workspace.
+    # The versions the crates depend on each other at, inherited from the workspace. A crate added
+    # to the workspace needs its three entries here, or `cargo publish --locked` fails on the lockfile.
     { path = "Cargo.toml", dependency = "codama" },
     { path = "Cargo.toml", dependency = "codama-attributes" },
     { path = "Cargo.toml", dependency = "codama-cli" },
