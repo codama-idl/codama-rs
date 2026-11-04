@@ -1,7 +1,6 @@
-use super::string::{strip_identifier, strip_index};
-use codama_errors::{CodamaError, CodamaResult};
-use serde::{de, Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use super::string::{impl_constrained_string, strip_identifier, strip_index};
+use codama_errors::CodamaError;
+use serde::Serialize;
 
 /// A path expression into nested data in the spec `path` grammar, such as `header.kind` or `[0].banana`.
 /// The string keeps the value as written, it is never re-cased.
@@ -9,49 +8,18 @@ use std::{fmt, str::FromStr};
 #[serde(transparent)]
 pub struct Path(String);
 
-impl Path {
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
+impl_constrained_string!(
+    Path,
+    is_path,
+    CodamaError::InvalidPath,
+    "a path expression string"
+);
 
+impl Path {
     /// The path has a `.` segment or an `[n]` index, such as `header.kind`, `fees[0]` or `[0]`.
     /// A plain identifier such as `amount` is not nested.
     pub fn is_nested(&self) -> bool {
         strip_identifier(&self.0) != Some("")
-    }
-}
-
-impl fmt::Display for Path {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str(&self.0)
-    }
-}
-
-impl TryFrom<String> for Path {
-    type Error = CodamaError;
-
-    fn try_from(value: String) -> CodamaResult<Self> {
-        if is_path(&value) {
-            Ok(Path(value))
-        } else {
-            Err(CodamaError::InvalidPath(value))
-        }
-    }
-}
-
-impl TryFrom<&str> for Path {
-    type Error = CodamaError;
-
-    fn try_from(value: &str) -> CodamaResult<Self> {
-        Path::try_from(value.to_string())
-    }
-}
-
-impl FromStr for Path {
-    type Err = CodamaError;
-
-    fn from_str(value: &str) -> CodamaResult<Self> {
-        Path::try_from(value)
     }
 }
 
@@ -70,33 +38,6 @@ fn is_path(value: &str) -> bool {
         };
     }
     false
-}
-
-impl<'de> Deserialize<'de> for Path {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct PathVisitor;
-
-        impl de::Visitor<'_> for PathVisitor {
-            type Value = Path;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a path expression string")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Path::try_from(value)
-                    .map_err(|_| E::invalid_value(de::Unexpected::Str(value), &self))
-            }
-        }
-
-        deserializer.deserialize_str(PathVisitor)
-    }
 }
 
 #[cfg(test)]

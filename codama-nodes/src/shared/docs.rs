@@ -7,23 +7,6 @@ use std::ops::Deref;
 pub struct Docs(Option<Text>);
 
 impl Docs {
-    pub fn push<T: Into<String>>(&mut self, line: T) {
-        let line = line.into();
-        match &mut self.0 {
-            None => self.0 = Some(Text::String(line)),
-            Some(text) => {
-                let content = match text {
-                    Text::String(content) => content,
-                    Text::Node(node) => &mut node.content,
-                };
-                if !content.is_empty() {
-                    content.push('\n');
-                }
-                content.push_str(&line);
-            }
-        }
-    }
-
     /// Empty text counts as no docs, so callers that merge docs can replace it.
     /// The text still serializes as written.
     pub fn is_empty(&self) -> bool {
@@ -71,24 +54,6 @@ mod tests {
     }
 
     #[test]
-    fn push() {
-        let mut docs = Docs::default();
-        docs.push("Hello");
-        docs.push(String::from("World"));
-        assert_eq!(*docs, Some(Text::from("Hello\nWorld")));
-    }
-
-    #[test]
-    fn push_to_text_node() {
-        let mut docs = Docs::from(Text::from(TextNode {
-            content: "Hello".to_string(),
-            plugins: vec![],
-        }));
-        docs.push("World");
-        assert_eq!(docs.as_ref().map(Text::content), Some("Hello\nWorld"));
-    }
-
-    #[test]
     fn from_vec() {
         let docs: Docs = vec!["Hello".to_string(), "World".to_string()].into();
         assert_eq!(*docs, Some(Text::from("Hello\nWorld")));
@@ -130,13 +95,6 @@ mod tests {
         assert!(docs.is_empty());
         let json = serde_json::to_string(&docs).unwrap();
         assert_eq!(json, r#""""#);
-    }
-
-    #[test]
-    fn push_to_empty_json() {
-        let mut docs: Docs = serde_json::from_str(r#""""#).unwrap();
-        docs.push("Hello");
-        assert_eq!(*docs, Some(Text::from("Hello")));
     }
 
     #[test]
