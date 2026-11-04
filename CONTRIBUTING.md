@@ -71,3 +71,4 @@ plan is to promote the workspace to 1.0.0 on `main` when codama-rs joins the
 spec v2 release train — freezing the v1-era API — and then cut the `1.x`
 maintenance branch so that `main` hosts the v2 work (see the
 [v2 tracking issue](https://github.com/codama-idl/spec/issues/102)).
+
