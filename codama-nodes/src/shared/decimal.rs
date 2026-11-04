@@ -1,7 +1,7 @@
+use super::string::impl_constrained_string;
 use crate::Integer;
 use codama_errors::{CodamaError, CodamaResult};
-use serde::{de, Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use serde::Serialize;
 
 /// A decimal string in the spec `decimal` grammar, such as `1.5`, `-0.051` or `NaN`.
 /// The string keeps the value as written, also past the precision of an `f64`.
@@ -9,11 +9,14 @@ use std::{fmt, str::FromStr};
 #[serde(transparent)]
 pub struct Decimal(String);
 
-impl Decimal {
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
+impl_constrained_string!(
+    Decimal,
+    is_canonical_decimal,
+    CodamaError::InvalidDecimal,
+    "a canonical decimal string"
+);
 
+impl Decimal {
     /// The nearest `f64`. Distinct strings can round to the same `f64`.
     pub fn to_f64(&self) -> f64 {
         self.0.parse().expect("a decimal parses as f64")
@@ -139,40 +142,6 @@ fn expand_exponent(mantissa: &str, exponent: i32) -> String {
     }
 }
 
-impl fmt::Display for Decimal {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str(&self.0)
-    }
-}
-
-impl TryFrom<String> for Decimal {
-    type Error = CodamaError;
-
-    fn try_from(value: String) -> CodamaResult<Self> {
-        if is_canonical_decimal(&value) {
-            Ok(Decimal(value))
-        } else {
-            Err(CodamaError::InvalidDecimal(value))
-        }
-    }
-}
-
-impl TryFrom<&str> for Decimal {
-    type Error = CodamaError;
-
-    fn try_from(value: &str) -> CodamaResult<Self> {
-        Decimal::try_from(value.to_string())
-    }
-}
-
-impl FromStr for Decimal {
-    type Err = CodamaError;
-
-    fn from_str(value: &str) -> CodamaResult<Self> {
-        Decimal::try_from(value)
-    }
-}
-
 /// Checks `value` against the spec `decimal` grammar or a special.
 /// Allows `0`, `-0`, `10`, `1.5`, `-0.051`, digits past `f64` precision, and `NaN`, `Infinity`, `-Infinity`.
 /// Rejects leading zeros (`01`), trailing fraction zeros (`1.50`), `1e5`, `+1`, `.5`, `1.`, spaces, `inf`, `nan`.
@@ -190,33 +159,6 @@ fn is_canonical_decimal(value: &str) -> bool {
     let integer_ok = is_part(integer) && (integer == "0" || !integer.starts_with('0'));
     let fraction_ok = fraction.is_none_or(|fraction| is_part(fraction) && !fraction.ends_with('0'));
     integer_ok && fraction_ok
-}
-
-impl<'de> Deserialize<'de> for Decimal {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct DecimalVisitor;
-
-        impl de::Visitor<'_> for DecimalVisitor {
-            type Value = Decimal;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a canonical decimal string")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Decimal::try_from(value)
-                    .map_err(|_| E::invalid_value(de::Unexpected::Str(value), &self))
-            }
-        }
-
-        deserializer.deserialize_str(DecimalVisitor)
-    }
 }
 
 #[cfg(test)]

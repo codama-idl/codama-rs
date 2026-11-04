@@ -1,7 +1,6 @@
-use super::string::strip_identifier;
-use codama_errors::{CodamaError, CodamaResult};
-use serde::{de, Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use super::string::{impl_constrained_string, strip_identifier};
+use codama_errors::CodamaError;
+use serde::Serialize;
 
 /// A plugin namespace in the spec `namespace` grammar, such as `anchor`, `i18n.es` or `codama.resolver`.
 /// The string keeps the value as written, it is never re-cased.
@@ -9,45 +8,12 @@ use std::{fmt, str::FromStr};
 #[serde(transparent)]
 pub struct Namespace(String);
 
-impl Namespace {
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl fmt::Display for Namespace {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str(&self.0)
-    }
-}
-
-impl TryFrom<String> for Namespace {
-    type Error = CodamaError;
-
-    fn try_from(value: String) -> CodamaResult<Self> {
-        if is_namespace(&value) {
-            Ok(Namespace(value))
-        } else {
-            Err(CodamaError::InvalidNamespace(value))
-        }
-    }
-}
-
-impl TryFrom<&str> for Namespace {
-    type Error = CodamaError;
-
-    fn try_from(value: &str) -> CodamaResult<Self> {
-        Namespace::try_from(value.to_string())
-    }
-}
-
-impl FromStr for Namespace {
-    type Err = CodamaError;
-
-    fn from_str(value: &str) -> CodamaResult<Self> {
-        Namespace::try_from(value)
-    }
-}
+impl_constrained_string!(
+    Namespace,
+    is_namespace,
+    CodamaError::InvalidNamespace,
+    "a namespace string"
+);
 
 /// Checks `value` against the spec `namespace` grammar.
 /// For example `anchor`, `i18n.es` or `codama.resolver`.
@@ -56,33 +22,6 @@ fn is_namespace(value: &str) -> bool {
     value
         .split('.')
         .all(|segment| strip_identifier(segment) == Some(""))
-}
-
-impl<'de> Deserialize<'de> for Namespace {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct NamespaceVisitor;
-
-        impl de::Visitor<'_> for NamespaceVisitor {
-            type Value = Namespace;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a namespace string")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Namespace::try_from(value)
-                    .map_err(|_| E::invalid_value(de::Unexpected::Str(value), &self))
-            }
-        }
-
-        deserializer.deserialize_str(NamespaceVisitor)
-    }
 }
 
 #[cfg(test)]
