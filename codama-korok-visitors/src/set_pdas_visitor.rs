@@ -62,7 +62,10 @@ pub fn parse_pda_seed_nodes(
     fields: &[FieldKorok],
 ) -> CodamaResult<Vec<PdaSeedNode>> {
     let mut seeds = Vec::new();
-    for directive in attributes.iter().filter_map(SeedDirective::filter) {
+    let directives = attributes
+        .iter()
+        .filter_map(|attribute| Some((attribute, SeedDirective::filter(attribute)?)));
+    for (attribute, directive) in directives {
         match &directive.seed {
             SeedDirectiveType::Variable { name, r#type } => {
                 let type_node = r#type.try_resolved()?.clone();
@@ -74,13 +77,15 @@ pub fn parse_pda_seed_nodes(
                 seeds.push(ConstantPdaSeedNode::new(type_node, value_node).into());
             }
             SeedDirectiveType::Linked(name) => {
-                // Linked seeds resolve by finding a matching field.
-                // If no field matches, the seed is silently skipped (pre-existing behavior).
                 let Some(field) = fields
                     .iter()
                     .find(|field| field.ast.ident.as_ref().is_some_and(|ident| ident == name))
                 else {
-                    continue;
+                    let message = format!(
+                        "Seed `{name}` links to a field that does not exist, \
+                        add `type = ...` to the seed"
+                    );
+                    return Err(attribute.ast().error(message).into());
                 };
                 let (identifier, type_node) = match &field.node {
                     Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => (

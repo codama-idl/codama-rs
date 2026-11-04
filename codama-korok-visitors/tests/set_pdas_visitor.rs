@@ -190,6 +190,26 @@ fn it_fails_on_linked_fields_without_a_type_node() -> CodamaResult<()> {
 }
 
 #[test]
+fn it_fails_on_linked_seeds_without_a_matching_field() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaPda)]
+        #[codama(seed(type = string(utf8), value = "vault"))]
+        #[codama(seed(name = "authority"))]
+        struct Vault {
+            authority: Pubkey,
+        }
+    };
+    let mut korok = StructKorok::parse(&item)?;
+    korok.fields.clear();
+    let error = korok.accept(&mut SetPdasVisitor::new()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Seed `authority` links to a field that does not exist, add `type = ...` to the seed"
+    );
+    Ok(())
+}
+
+#[test]
 fn it_defines_pdas_from_enums() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaPda)]
