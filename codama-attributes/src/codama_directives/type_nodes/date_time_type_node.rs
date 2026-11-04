@@ -1,6 +1,4 @@
-use crate::utils::{
-    hoist_integer_transforms, parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce,
-};
+use crate::utils::{parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce};
 use codama_nodes::{DateTimeTypeNode, IntegerTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -22,12 +20,10 @@ impl FromMeta for DateTimeTypeNode {
             }
         })?;
 
-        Ok(hoist_integer_transforms(number.take(meta)?, |number| {
-            DateTimeTypeNode {
-                ticks_per_second: ticks_per_second.option(),
-                ..DateTimeTypeNode::new(number)
-            }
-        }))
+        Ok(DateTimeTypeNode {
+            ticks_per_second: ticks_per_second.option(),
+            ..DateTimeTypeNode::new(number.take(meta)?)
+        })
     }
 }
 
@@ -73,22 +69,19 @@ mod tests {
 
     #[test]
     fn nested_number() {
+        let integer = || IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8));
         for (meta, expected) in [
             (
                 syn::parse_quote! { date_time(fixed_size(integer(u64), 8)) },
-                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
-                    .add_transform(FixedSizeTransformNode::new(8)),
+                DateTimeTypeNode::new(integer()),
             ),
             (
                 syn::parse_quote! { date_time(number = fixed_size(integer(u64), 8)) },
-                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
-                    .add_transform(FixedSizeTransformNode::new(8)),
+                DateTimeTypeNode::new(integer()),
             ),
             (
                 syn::parse_quote! { date_time(pre_offset(fixed_size(integer(u64), 8), 4, relative)) },
-                DateTimeTypeNode::new(IntegerTypeNode::le(U64))
-                    .add_transform(FixedSizeTransformNode::new(8))
-                    .add_transform(PreOffsetTransformNode::relative(4)),
+                DateTimeTypeNode::new(integer().add_transform(PreOffsetTransformNode::relative(4))),
             ),
         ] {
             assert_eq!(DateTimeTypeNode::from_meta(&meta).unwrap(), expected);
@@ -99,10 +92,11 @@ mod tests {
     fn wrapped() {
         assert_type!(
             { fixed_size(date_time(fixed_size(integer(u64), 8)), 16) },
-            DateTimeTypeNode::new(IntegerTypeNode::le(U64))
-                .add_transform(FixedSizeTransformNode::new(8))
-                .add_transform(FixedSizeTransformNode::new(16))
-                .into()
+            DateTimeTypeNode::new(
+                IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8))
+            )
+            .add_transform(FixedSizeTransformNode::new(16))
+            .into()
         );
     }
 
