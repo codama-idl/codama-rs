@@ -66,6 +66,10 @@ pub enum CodamaError {
 
     #[error("Two different plugins share the namespace `{namespace}` in {location}")]
     PluginMergeConflict { namespace: String, location: String },
+
+    /// Every error that the check of the final root node finds, one message per line.
+    #[error("{}", .0.join("\n"))]
+    InvalidRootNode(Vec<String>),
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
