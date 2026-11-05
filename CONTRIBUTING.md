@@ -62,8 +62,11 @@ JavaScript repositories:
    workflow excludes the crates already on crates.io, which Cargo would
    otherwise refuse to publish again.
 
-The workflow can also be dispatched by hand with its `dry-run` input to
-rehearse either step without pushing or uploading anything.
+The workflow can also be dispatched by hand: its `dry-run` input rehearses
+either step without pushing or uploading anything, and its `override-version`
+input releases a version other than the one the change files amount to, for the
+cases Knope cannot compute itself, such as the first stable major from a `0.x`
+version.
 
 ### Major releases
 

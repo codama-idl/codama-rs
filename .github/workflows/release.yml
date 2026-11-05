@@ -24,6 +24,10 @@ on:
         description: 'Prepare the release without pushing, and package the crates without uploading them'
         type: boolean
         default: true
+      override-version:
+        description: 'Version to release instead of the one the change files amount to, e.g. 1.0.0'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -96,12 +100,14 @@ jobs:
       - name: Prepare the release pull request
         if: steps.plan.outputs.action == 'prepare'
         # The release branch is rebuilt from the current commit on every run, so the pull request
-        # always reflects every pending change file.
+        # always reflects every pending change file. The version override is for the releases
+        # Knope cannot compute, such as the first stable major from a 0.x version.
         run: |
           git checkout -B "knope-release/$GITHUB_REF_NAME"
-          knope prepare-release --verbose ${{ inputs.dry-run && '--dry-run' || '' }}
+          knope prepare-release --verbose ${OVERRIDE_VERSION:+--override-version "$OVERRIDE_VERSION"} ${{ inputs.dry-run && '--dry-run' || '' }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          OVERRIDE_VERSION: ${{ inputs.override-version }}
 
       # --- Release pull request merged: publish, then tag and create the GitHub release. --------
 
