@@ -1,6 +1,7 @@
 use super::string::{impl_constrained_string, strip_identifier, strip_index};
 use codama_errors::CodamaError;
 use serde::Serialize;
+use std::fmt;
 
 /// A path expression into nested data in the spec `path` grammar, such as `header.kind` or `[0].banana`.
 /// The string keeps the value as written, it is never re-cased.
@@ -20,6 +21,41 @@ impl Path {
     /// A plain identifier such as `amount` is not nested.
     pub fn is_nested(&self) -> bool {
         strip_identifier(&self.0) != Some("")
+    }
+
+    /// The segments in order, for example:
+    /// - `amount` -> `Field("amount")`
+    /// - `config.fees[0]` -> `Field("config")`, `Field("fees")`, `Index(0)`
+    pub fn segments(&self) -> impl Iterator<Item = PathKey<'_>> {
+        let mut rest = self.0.as_str();
+        std::iter::from_fn(move || {
+            let next = rest.strip_prefix('.').unwrap_or(rest);
+            if let Some(tail) = strip_identifier(next) {
+                rest = tail;
+                return Some(PathKey::Field(&next[..next.len() - tail.len()]));
+            }
+            let tail = strip_index(next)?;
+            rest = tail;
+            let digits = &next[1..next.len() - tail.len() - 1];
+            Some(PathKey::Index(digits.parse().unwrap_or(usize::MAX)))
+        })
+    }
+}
+
+/// One segment of a path expression: `.identifier` selects a struct field and `[n]` selects an item.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PathKey<'a> {
+    Field(&'a str),
+    /// An index above `usize::MAX` saturates: no tuple has that many items, and array and set items ignore it.
+    Index(usize),
+}
+
+impl fmt::Display for PathKey<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PathKey::Field(identifier) => f.write_str(identifier),
+            PathKey::Index(index) => write!(f, "[{index}]"),
+        }
     }
 }
 
@@ -43,6 +79,7 @@ fn is_path(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::path;
 
     const VALID: [&str; 18] = [
         "discriminator",
@@ -132,6 +169,30 @@ mod tests {
         ] {
             assert_eq!(
                 Path::try_from(value).unwrap().is_nested(),
+                expected,
+                "{value}"
+            );
+        }
+    }
+
+    #[test]
+    fn segments() {
+        use PathKey::{Field, Index};
+        for (value, expected) in [
+            ("amount", vec![Field("amount")]),
+            (
+                "config.fees[0].amount",
+                vec![Field("config"), Field("fees"), Index(0), Field("amount")],
+            ),
+            ("[12]", vec![Index(12)]),
+            ("[0][1].b_c", vec![Index(0), Index(1), Field("b_c")]),
+            (
+                "a[99999999999999999999999]",
+                vec![Field("a"), Index(usize::MAX)],
+            ),
+        ] {
+            assert_eq!(
+                path(value).segments().collect::<Vec<_>>(),
                 expected,
                 "{value}"
             );

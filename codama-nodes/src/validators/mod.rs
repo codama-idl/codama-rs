@@ -2,6 +2,8 @@
 
 mod validate_identifier_collision_visitor;
 mod validate_links_visitor;
+mod validate_paths_visitor;
 
 pub use validate_identifier_collision_visitor::*;
 pub use validate_links_visitor::*;
+pub use validate_paths_visitor::*;

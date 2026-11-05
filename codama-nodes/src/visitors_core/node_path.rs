@@ -66,6 +66,15 @@ impl<'a> NodePath<'a> {
     pub fn steps(&self) -> &[PathStep<'a>] {
         &self.0
     }
+
+    /// The identifier of the closest step of the given kind, such as `programNode` for the program of a link.
+    pub fn find_closest_identifier(&self, kind: &str) -> Option<&'a Identifier> {
+        self.0
+            .iter()
+            .rev()
+            .find(|step| step.kind == kind)?
+            .identifier
+    }
 }
 
 /// Joins the steps with ` > `, such as `program "token" > instruction "transfer" > data`.
@@ -93,7 +102,9 @@ impl fmt::Display for NodePath<'_> {
 mod tests {
     use super::*;
     use crate::test_utils::id;
-    use crate::{DefinedTypeNode, FixedSizeTransformNode, ProgramNode, StringTypeNode};
+    use crate::{
+        DefinedTypeNode, FixedSizeTransformNode, InstructionNode, ProgramNode, StringTypeNode,
+    };
     use PathSegment::{Attribute, Item};
 
     #[test]
@@ -108,6 +119,36 @@ mod tests {
         assert_eq!(
             path.to_string(),
             "program \"token\" > definedType \"config\" > type > transforms[1]"
+        );
+    }
+
+    #[test]
+    fn find_closest_identifier() {
+        let program = ProgramNode::new(id("token"), "");
+        let instruction = |identifier: &str| InstructionNode {
+            identifier: id(identifier),
+            ..InstructionNode::default()
+        };
+        let batch_ix = instruction("batch");
+        let transfer_ix = instruction("transfer");
+        let path = NodePath::default()
+            .join_named(Attribute("program"), &program)
+            .join_named(Item("instructions", 0), &batch_ix)
+            .join_named(Item("subInstructions", 0), &transfer_ix)
+            .join(Attribute("data"), &StringTypeNode::utf8());
+        assert_eq!(
+            path.find_closest_identifier("instructionNode"),
+            Some(&id("transfer"))
+        );
+        assert_eq!(
+            path.find_closest_identifier("programNode"),
+            Some(&id("token"))
+        );
+        assert_eq!(path.find_closest_identifier("accountNode"), None);
+        assert_eq!(path.find_closest_identifier("stringTypeNode"), None);
+        assert_eq!(
+            NodePath::default().find_closest_identifier("programNode"),
+            None
         );
     }
 }

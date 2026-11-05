@@ -17,8 +17,9 @@ pub struct Linkables<'a> {
     programs: HashMap<&'a Identifier, ProgramScope<'a>>,
 }
 
+/// The linkable nodes of one program.
 #[derive(Debug, Clone)]
-struct ProgramScope<'a> {
+pub struct ProgramScope<'a> {
     program: &'a ProgramNode,
     accounts: HashMap<&'a Identifier, &'a AccountNode>,
     defined_types: HashMap<&'a Identifier, &'a DefinedTypeNode>,
@@ -52,8 +53,8 @@ impl<'a> Linkables<'a> {
 
     /// The account that the link points to, in the `program` of the link or else in the closest program of `path`.
     pub fn account(&self, link: &AccountLinkNode, path: &NodePath) -> Option<&'a AccountNode> {
-        let scope = self.program_scope(link.program.as_ref(), path)?;
-        scope.accounts.get(&link.identifier).copied()
+        let program = self.linked_program(link.program.as_ref(), closest_program(path))?;
+        program.account(&link.identifier)
     }
 
     /// The defined type that the link points to, in the `program` of the link or else in the closest program of `path`.
@@ -62,14 +63,14 @@ impl<'a> Linkables<'a> {
         link: &DefinedTypeLinkNode,
         path: &NodePath,
     ) -> Option<&'a DefinedTypeNode> {
-        let scope = self.program_scope(link.program.as_ref(), path)?;
-        scope.defined_types.get(&link.identifier).copied()
+        let program = self.linked_program(link.program.as_ref(), closest_program(path))?;
+        program.defined_type(&link.identifier)
     }
 
     /// The PDA that the link points to, in the `program` of the link or else in the closest program of `path`.
     pub fn pda(&self, link: &PdaLinkNode, path: &NodePath) -> Option<&'a PdaNode> {
-        let scope = self.program_scope(link.program.as_ref(), path)?;
-        scope.pdas.get(&link.identifier).copied()
+        let program = self.linked_program(link.program.as_ref(), closest_program(path))?;
+        program.pda(&link.identifier)
     }
 
     /// The instruction or sub-instruction that the link points to.
@@ -92,23 +93,25 @@ impl<'a> Linkables<'a> {
         let scope = match &link.instruction {
             Some(instruction) => self.instruction_scope(instruction, path)?,
             None => {
-                let program = self.program_scope(None, path)?;
+                let program = self.linked_program(None, closest_program(path))?;
                 program
                     .instructions
-                    .get(find_closest_node_identifier(path, "instructionNode")?)?
+                    .get(path.find_closest_identifier("instructionNode")?)?
             }
         };
         scope.accounts.get(&link.identifier).copied()
     }
 
-    fn program_scope(
+    /// The program that a link points into: the `program` of the link, else `root_program`.
+    /// `root_program` is the program that holds the link, the main or an additional one, as links are relative to it.
+    pub fn linked_program(
         &self,
-        program: Option<&ProgramLinkNode>,
-        path: &NodePath,
+        link_program: Option<&ProgramLinkNode>,
+        root_program: Option<&Identifier>,
     ) -> Option<&ProgramScope<'a>> {
-        let identifier = match program {
+        let identifier = match link_program {
             Some(program) => &program.identifier,
-            None => find_closest_node_identifier(path, "programNode")?,
+            None => root_program?,
         };
         self.programs.get(identifier)
     }
@@ -118,8 +121,8 @@ impl<'a> Linkables<'a> {
         link: &InstructionLinkNode,
         path: &NodePath,
     ) -> Option<&InstructionScope<'a>> {
-        let scope = self.program_scope(link.program.as_ref(), path)?;
-        scope.instructions.get(&link.identifier)
+        let program = self.linked_program(link.program.as_ref(), closest_program(path))?;
+        program.instructions.get(&link.identifier)
     }
 }
 
@@ -132,6 +135,25 @@ impl<'a> ProgramScope<'a> {
             pdas: HashMap::new(),
             instructions: HashMap::new(),
         }
+    }
+
+    /// The identifier of the program.
+    pub fn identifier(&self) -> &'a Identifier {
+        &self.program.identifier
+    }
+
+    /// The account of the program with that identifier.
+    pub fn account(&self, identifier: &Identifier) -> Option<&'a AccountNode> {
+        self.accounts.get(identifier).copied()
+    }
+
+    /// The defined type of the program with that identifier.
+    pub fn defined_type(&self, identifier: &Identifier) -> Option<&'a DefinedTypeNode> {
+        self.defined_types.get(identifier).copied()
+    }
+
+    fn pda(&self, identifier: &Identifier) -> Option<&'a PdaNode> {
+        self.pdas.get(identifier).copied()
     }
 
     fn record(&mut self, program: &'a ProgramNode) {
@@ -157,17 +179,12 @@ impl<'a> ProgramScope<'a> {
     }
 }
 
-fn by_identifier<T: HasIdentifier>(nodes: &[T]) -> impl Iterator<Item = (&Identifier, &T)> {
-    nodes.iter().map(|node| (node.identifier(), node))
+fn closest_program<'a>(path: &NodePath<'a>) -> Option<&'a Identifier> {
+    path.find_closest_identifier("programNode")
 }
 
-/// The identifier of the closest node of the given kind on the path.
-fn find_closest_node_identifier<'p>(path: &NodePath<'p>, kind: &str) -> Option<&'p Identifier> {
-    path.steps()
-        .iter()
-        .rev()
-        .find(|step| step.kind == kind)?
-        .identifier
+fn by_identifier<T: HasIdentifier>(nodes: &[T]) -> impl Iterator<Item = (&Identifier, &T)> {
+    nodes.iter().map(|node| (node.identifier(), node))
 }
 
 #[cfg(test)]
@@ -313,6 +330,74 @@ mod tests {
             ),
             None
         );
+        assert_eq!(
+            linkables.pda(
+                &PdaLinkNode::new_from_program(id("vault"), program_link("token")),
+                &NodePath::default()
+            ),
+            Some(&token.pdas[0])
+        );
+    }
+
+    #[test]
+    fn linked_program() {
+        let root = root();
+        let linkables = Linkables::new(&root);
+        let app = &root.program;
+        let token = &root.additional_programs[0];
+        let token_link = ProgramLinkNode::new(id("token"));
+        let system_link = ProgramLinkNode::new(id("system"));
+        let system = id("system");
+        let linked_program = |link_program, root_program| {
+            linkables
+                .linked_program(link_program, root_program)
+                .map(ProgramScope::identifier)
+        };
+        assert_eq!(
+            linked_program(None, Some(&token.identifier)),
+            Some(&token.identifier)
+        );
+        assert_eq!(
+            linked_program(Some(&token_link), Some(&app.identifier)),
+            Some(&token.identifier)
+        );
+        assert_eq!(
+            linked_program(Some(&token_link), None),
+            Some(&token.identifier)
+        );
+        assert_eq!(
+            linked_program(None, Some(&app.identifier)),
+            Some(&app.identifier)
+        );
+        assert_eq!(
+            linked_program(Some(&system_link), Some(&app.identifier)),
+            None
+        );
+        assert_eq!(linked_program(None, Some(&system)), None);
+        assert_eq!(linked_program(None, None), None);
+    }
+
+    #[test]
+    fn program_scope() {
+        let root = root();
+        let linkables = Linkables::new(&root);
+        let app = &root.program;
+        let token = &root.additional_programs[0];
+        let app_scope = linkables
+            .linked_program(None, Some(&app.identifier))
+            .unwrap();
+        let token_scope = linkables
+            .linked_program(None, Some(&token.identifier))
+            .unwrap();
+        assert_eq!(app_scope.account(&id("config")), Some(&app.accounts[0]));
+        assert_eq!(app_scope.account(&id("mint")), None);
+        assert_eq!(token_scope.account(&id("mint")), Some(&token.accounts[0]));
+        assert_eq!(
+            token_scope.defined_type(&id("amount")),
+            Some(&token.defined_types[0])
+        );
+        assert_eq!(token_scope.pda(&id("vault")), Some(&token.pdas[0]));
+        assert_eq!(token_scope.pda(&id("amount")), None);
     }
 
     #[test]

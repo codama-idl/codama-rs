@@ -234,6 +234,63 @@ fn it_rejects_a_link_to_a_missing_node() {
 }
 
 #[test]
+fn it_rejects_a_data_path_that_does_not_resolve() {
+    let transfer_with_fee_from = |data_path: &str| {
+        hydrate(quote! {
+            #[derive(CodamaInstruction)]
+            struct Transfer {
+                amount: u64,
+                #[codama(default_value = data(#data_path))]
+                fee: u64,
+            }
+        })
+    };
+    assert!(transfer_with_fee_from("amount").get_idl().is_ok());
+    assert_eq!(
+        errors(transfer_with_fee_from("amout")),
+        ["Cannot resolve segment \"amout\" of path \"amout\" in program \"token\" > instruction \"transfer\" > provided \"fee\" > node."]
+    );
+}
+
+#[test]
+fn it_rejects_an_account_value_that_is_not_an_instruction_account() {
+    let transfer_with_owner_from = |account: &str| {
+        hydrate(quote! {
+            #[derive(CodamaInstruction)]
+            #[codama(account(identifier = "authority", signer))]
+            #[codama(account(identifier = "owner", default_value = account(#account)))]
+            struct Transfer {
+                amount: u64,
+            }
+        })
+    };
+    assert!(transfer_with_owner_from("authority").get_idl().is_ok());
+    assert_eq!(
+        errors(transfer_with_owner_from("authorty")),
+        ["Account \"authorty\" is not an account of instruction \"transfer\" in program \"token\" > instruction \"transfer\" > instructionAccount \"owner\" > accountValue \"authorty\"."]
+    );
+}
+
+#[test]
+fn it_rejects_a_field_discriminator_that_does_not_resolve() {
+    let vault_with_discriminator = |field: &str| {
+        hydrate(quote! {
+            #[derive(CodamaAccount)]
+            #[codama(discriminator(field = #field))]
+            struct Vault {
+                kind: u8,
+                amount: u64,
+            }
+        })
+    };
+    assert!(vault_with_discriminator("kind").get_idl().is_ok());
+    assert_eq!(
+        errors(vault_with_discriminator("knd")),
+        ["Cannot resolve segment \"knd\" of path \"knd\" in program \"token\" > account \"vault\" > discriminators[0]."]
+    );
+}
+
+#[test]
 fn it_accepts_enum_accounts_of_another_program_that_share_a_pda() {
     let idl = hydrate(quote! {
         #[derive(CodamaAccounts)]

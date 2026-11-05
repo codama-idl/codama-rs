@@ -2,21 +2,21 @@ use crate::{
     walk_account_link, walk_defined_type_link, walk_instruction_account_link,
     walk_instruction_link, walk_pda_link, walk_program_link, AccountLinkNode, DefinedTypeLinkNode,
     Identifier, InstructionAccountLinkNode, InstructionLinkNode, Linkables, NodePath, NodeVisitor,
-    PdaLinkNode, ProgramLinkNode, RootNode,
+    PdaLinkNode, ProgramLinkNode,
 };
 
 /// Node visitor that lists the links of a root node that point to no node in `errors`, one message per link.
 /// `Linkables` gives the resolution rules of each link kind.
 /// When the `program` or `instruction` link inside a link points to nothing, only that inner link is reported.
-pub struct ValidateLinksVisitor<'r> {
-    linkables: Linkables<'r>,
+pub struct ValidateLinksVisitor<'a> {
+    linkables: &'a Linkables<'a>,
     pub errors: Vec<String>,
 }
 
-impl<'r> ValidateLinksVisitor<'r> {
-    pub fn new(root: &'r RootNode) -> Self {
+impl<'a> ValidateLinksVisitor<'a> {
+    pub fn new(linkables: &'a Linkables<'a>) -> Self {
         Self {
-            linkables: Linkables::new(root),
+            linkables,
             errors: Vec::new(),
         }
     }

@@ -2,13 +2,14 @@ use codama_nodes::test_utils::id;
 use codama_nodes::{
     AccountLinkNode, AccountNode, DefinedTypeLinkNode, DefinedTypeNode, EnumValueNode,
     InstructionAccountLinkNode, InstructionAccountNode, InstructionByteDeltaNode,
-    InstructionLinkNode, InstructionNode, Node, NodePath, NodeVisitor, PdaLinkNode, PdaNode,
-    PdaValueNode, ProgramLinkNode, ProgramNode, ProvidedNode, PublicKeyTypeNode, RootNode,
+    InstructionLinkNode, InstructionNode, Linkables, Node, NodePath, NodeVisitor, PdaLinkNode,
+    PdaNode, PdaValueNode, ProgramLinkNode, ProgramNode, ProvidedNode, PublicKeyTypeNode, RootNode,
     StructFieldTypeNode, StructTypeNode, ValidateLinksVisitor,
 };
 
 fn link_errors(root: &RootNode) -> Vec<String> {
-    let mut visitor = ValidateLinksVisitor::new(root);
+    let linkables = Linkables::new(root);
+    let mut visitor = ValidateLinksVisitor::new(&linkables);
     visitor.visit_root(root, &NodePath::default());
     visitor.errors
 }

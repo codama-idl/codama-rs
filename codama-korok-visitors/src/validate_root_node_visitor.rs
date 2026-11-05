@@ -2,7 +2,8 @@ use crate::KorokVisitor;
 use codama_errors::{CodamaError, CodamaResult};
 use codama_koroks::RootKorok;
 use codama_nodes::{
-    Node, NodePath, NodeVisitor, ValidateIdentifierCollisionVisitor, ValidateLinksVisitor,
+    Linkables, Node, NodePath, NodeVisitor, ValidateIdentifierCollisionVisitor,
+    ValidateLinksVisitor, ValidatePathsVisitor,
 };
 
 /// Runs the node validators on the root node and fails with all their errors in one `CodamaError::InvalidRootNode`.
@@ -26,10 +27,14 @@ impl KorokVisitor for ValidateRootNodeVisitor {
         let mut identifier_collisions = ValidateIdentifierCollisionVisitor::new();
         identifier_collisions.visit_root(root, &path);
 
-        let mut links = ValidateLinksVisitor::new(root);
+        let linkables = Linkables::new(root);
+        let mut links = ValidateLinksVisitor::new(&linkables);
         links.visit_root(root, &path);
 
-        let errors = [identifier_collisions.errors, links.errors].concat();
+        let mut paths = ValidatePathsVisitor::new(&linkables);
+        paths.visit_root(root, &path);
+
+        let errors = [identifier_collisions.errors, links.errors, paths.errors].concat();
         match errors.is_empty() {
             true => Ok(()),
             false => Err(CodamaError::InvalidRootNode(errors)),
