@@ -2,6 +2,14 @@
 
 Every published crate of the workspace shares this changelog and the same version. Earlier releases are listed on the [GitHub releases](https://github.com/codama-idl/codama-rs/releases) page, under their `<crate>-vX.Y.Z` tags.
 
+## 1.0.0 (2026-11-05)
+
+### Features
+
+#### Promote the workspace to 1.0
+
+The v1-era API is now stable: breaking changes land in major releases only, following the ecosystem-wide [release process](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md). This release is otherwise identical to 0.13.3.
+
 ## 0.13.3 (2026-11-04)
 
 ### Fixes
