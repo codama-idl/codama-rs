@@ -84,9 +84,15 @@ jobs:
           else
             action=none
           fi
+          if [ -n "$OVERRIDE_VERSION" ] && [ "$action" != prepare ]; then
+            echo "::error::override-version=$OVERRIDE_VERSION was given but there is no release to prepare (plan: $action)."
+            exit 1
+          fi
           echo "action=$action" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Version $version on $GITHUB_REF_NAME: $action"
+        env:
+          OVERRIDE_VERSION: ${{ inputs.override-version }}
 
       - name: Set the git identity of the release app
         if: steps.plan.outputs.action != 'none'

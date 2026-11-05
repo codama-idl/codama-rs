@@ -66,7 +66,9 @@ The workflow can also be dispatched by hand: its `dry-run` input rehearses
 either step without pushing or uploading anything, and its `override-version`
 input releases a version other than the one the change files amount to, for the
 cases Knope cannot compute itself, such as the first stable major from a `0.x`
-version.
+version. The override needs pending change files to apply to, and only lasts
+until the next push to the branch refreshes the release pull request: dispatch
+it last, right before merging that pull request.
 
 ### Major releases
 
@@ -105,4 +107,6 @@ This workspace is currently pre-1.0: breaking changes may land in any minor
 release. The plan is to promote the workspace to 1.0.0 on `main` when codama-rs
 joins the spec v2 release train — freezing the v1-era API — and then cut the
 `1.x` maintenance branch so that `main` hosts the v2 work (see the
-[v2 tracking issue](https://github.com/codama-idl/spec/issues/102)).
+[v2 tracking issue](https://github.com/codama-idl/spec/issues/102)). That first
+stable release goes through the `override-version` input of the `Release`
+workflow, since `Cut` only runs from 1.0.0 onwards.
