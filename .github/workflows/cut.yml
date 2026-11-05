@@ -85,9 +85,12 @@ jobs:
             git checkout main
           fi
 
-          # 2. Start the next major on main.
+          # 2. Start the next major on main. The change file outliving the label means the promote
+          # already ran: starting the major again would undo it.
           if grep -q '^prerelease_label = ' knope.toml; then
             echo "::warning::main is already in pre-release mode: resuming a partially completed cut."
+          elif [ -f ".changeset/start_major_$next.md" ]; then
+            fail "Major $next was already cut and promoted: merge its stable release before cutting again."
           else
             sed -i 's/^type = "PrepareRelease"$/&\nprerelease_label = "rc"/' knope.toml
             [ "$(grep -c '^prerelease_label = "rc"$' knope.toml)" = 1 ] || fail "Expected exactly one 'type = \"PrepareRelease\"' in knope.toml."
