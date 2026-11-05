@@ -69,9 +69,16 @@ name = "document-change"
 type = "CreateChangeFile"
 
 # `knope prepare-release`: consume the change files, bump every crate, write the changelog, and
-# open or refresh the release pull request. The release workflow runs it from the `knope/release`
-# branch, which it rebuilds on every run. The base of a pull request cannot be a variable, so a
-# maintenance branch gets its own copy of this workflow when it is cut.
+# open or refresh the release pull request. The release workflow runs it from a release branch
+# that it rebuilds on every run, and whose name derives from the branch being released.
+#
+# Two settings of this workflow depend on the branch, and are edited by the `cut` and `promote`
+# workflows rather than by hand:
+# - `prerelease_label = "rc"` on the `PrepareRelease` step, present on `main` during a major
+#   transition only. It makes every release a candidate of the next major, and keeps the change
+#   files around until the stable release consumes them.
+# - `base` of the `CreatePullRequest` step, which names the branch being released: `main` here,
+#   `N.x` on a maintenance branch.
 [[workflows]]
 name = "prepare-release"
 
@@ -84,7 +91,7 @@ command = "git commit --all --message \"Release package $version\""
 
 [[workflows.steps]]
 type = "Command"
-command = "git push --force origin knope/release"
+command = "git push --force origin HEAD"
 
 [[workflows.steps]]
 type = "CreatePullRequest"

@@ -1,0 +1,24 @@
+name: Release app identity
+description: Sets the git identity of the release app, so the commits a workflow pushes are attributed to it.
+
+inputs:
+  token:
+    description: A token of the release app, to look up its user id.
+    required: true
+  app-slug:
+    description: The slug of the release app, as output by actions/create-github-app-token.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set the git identity of the release app
+      shell: bash
+      run: |
+        slug="$APP_SLUG[bot]"
+        id="$(gh api "/users/$slug" --jq .id)"
+        git config user.name "$slug"
+        git config user.email "$id+$slug@users.noreply.github.com"
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        APP_SLUG: ${{ inputs.app-slug }}

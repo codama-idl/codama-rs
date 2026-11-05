@@ -1,0 +1,124 @@
+name: Cut
+
+# Starts work on the next major, following the ecosystem-wide release process
+# (https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md). With `main` at
+# major N, dispatching this workflow:
+#
+# - creates the `N.x` maintenance branch from the tip of `main`, with a single
+#   birth commit pointing its release pull requests at `N.x`;
+# - puts `main` in pre-release mode (`prerelease_label = "rc"` in `knope.toml`)
+#   and seeds the change file of the major bump, so that every release from
+#   `main` is now a candidate of major N+1;
+# - makes `N.x` the default branch until the promote.
+#
+# The commits are pushed directly by the release app, which bypasses the branch
+# ruleset for this purpose. Re-running after a partial failure resumes the cut.
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  cut:
+    name: Cut the next major
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create contents token
+        id: contents-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Create administration token
+        id: admin-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-administration: write
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Pinned: the dispatch runs on the default branch, which is a maintenance branch
+          # while a transition is in flight.
+          ref: main
+          fetch-depth: 0
+          token: ${{ steps.contents-token.outputs.token }}
+
+      - name: Set the git identity of the release app
+        uses: ./.github/actions/release-app-identity
+        with:
+          token: ${{ steps.contents-token.outputs.token }}
+          app-slug: ${{ steps.contents-token.outputs.app-slug }}
+
+      - name: Cut
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "codama") | .version')"
+          [[ "$version" != *-* ]] || fail "main is at the release candidate $version: this major is already cut."
+          major="${version%%.*}"
+          [ "$major" -ge 1 ] || fail "main is at $version: majors are cut from 1.0.0 onwards."
+          maintenance="$major.x"
+          next="$((major + 1))"
+
+          # Each step below is skipped when a previous run already completed it, so that a run that
+          # failed midway is resumed by dispatching the workflow again. The cut is complete once the
+          # maintenance branch is the default branch and main is in pre-release mode.
+          default_branch="$(gh api "/repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+          if [ "$default_branch" = "$maintenance" ] && grep -q '^prerelease_label = ' knope.toml; then
+            fail "main is already in pre-release mode and $maintenance is the default branch: this major is already cut."
+          fi
+
+          # 1. The maintenance branch, with its single birth adjustment.
+          if git ls-remote --exit-code --heads origin "$maintenance" > /dev/null; then
+            echo "::warning::Branch $maintenance already exists: resuming a partially completed cut."
+          else
+            git checkout -b "$maintenance"
+            sed -i "s/^base = \"main\"$/base = \"$maintenance\"/" knope.toml
+            [ "$(grep -c "^base = \"$maintenance\"$" knope.toml)" = 1 ] || fail "Expected exactly one 'base = \"main\"' in knope.toml."
+            git commit --all --message "Cut the $maintenance maintenance branch"
+            git push origin "$maintenance"
+            git checkout main
+          fi
+
+          # 2. Start the next major on main. The change file outliving the label means the promote
+          # already ran: starting the major again would undo it.
+          if grep -q '^prerelease_label = ' knope.toml; then
+            echo "::warning::main is already in pre-release mode: resuming a partially completed cut."
+          elif [ -f ".changeset/start_major_$next.md" ]; then
+            fail "Major $next was already cut and promoted: merge its stable release before cutting again."
+          else
+            sed -i 's/^type = "PrepareRelease"$/&\nprerelease_label = "rc"/' knope.toml
+            [ "$(grep -c '^prerelease_label = "rc"$' knope.toml)" = 1 ] || fail "Expected exactly one 'type = \"PrepareRelease\"' in knope.toml."
+            mkdir -p .changeset
+            cat > ".changeset/start_major_$next.md" << EOF
+          ---
+          default: major
+          ---
+
+          #### Start major $next
+
+          Release candidates of major $next publish from \`main\` while it is in development. The stable release follows the ecosystem-wide [release process](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md).
+          EOF
+            git add .changeset
+            git commit --all --message "Start major $next on main"
+            git push origin main
+          fi
+
+          # 3. The maintenance branch owns the default-branch role for the transition.
+          gh api --method PATCH "/repos/$GITHUB_REPOSITORY" --field "default_branch=$maintenance" > /dev/null
+
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## Cut complete
+
+          - \`$maintenance\` created from \`main\`, and now the default branch.
+          - \`main\` hosts major $next in pre-release mode: each merged release pull request publishes a new candidate (\`$next.0.0-rc.0\`, \`$next.0.0-rc.1\`, and so on).
+
+          Next: land the major $next changes on \`main\`, and dispatch \`promote\` once the candidacy is complete. See [RELEASING.md](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md).
+          EOF
+        env:
+          GH_TOKEN: ${{ steps.admin-token.outputs.token }}

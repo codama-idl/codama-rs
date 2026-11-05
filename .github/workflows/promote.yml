@@ -1,0 +1,104 @@
+name: Promote
+
+# Graduates the release candidates on `main` to the stable major, following
+# the ecosystem-wide release process
+# (https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md). Dispatching
+# this workflow:
+#
+# - takes `main` out of pre-release mode (`prerelease_label` removed from
+#   `knope.toml`): the release workflow then opens the pull request of the
+#   stable major, which consumes every change file accumulated by the
+#   candidates;
+# - makes `main` the default branch again.
+#
+# crates.io has no distribution tags, so the maintenance branch needs no change:
+# Cargo never resolves a `N` requirement to the next major by itself.
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Promote the release candidate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create contents token
+        id: contents-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Create administration token
+        id: admin-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-administration: write
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Pinned: the dispatch runs on the default branch, which is the maintenance branch
+          # until this workflow completes.
+          ref: main
+          fetch-depth: 0
+          token: ${{ steps.contents-token.outputs.token }}
+
+      - name: Set the git identity of the release app
+        uses: ./.github/actions/release-app-identity
+        with:
+          token: ${{ steps.contents-token.outputs.token }}
+          app-slug: ${{ steps.contents-token.outputs.app-slug }}
+
+      - name: Promote
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          default_branch="$(gh api "/repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+
+          # 1. Graduate main. Skipped when a previous run already did, so that a run that failed
+          # midway is resumed by dispatching the workflow again.
+          if grep -q '^prerelease_label = "rc"$' knope.toml; then
+            version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "codama") | .version')"
+            major="${version%%.*}"
+            # The manifests only carry the next major once a release candidate has been published.
+            # Until then, including on the fast-track path, they still carry the outgoing major.
+            if [[ "$version" == *-* ]]; then outgoing="$((major - 1))"; else outgoing="$major"; fi
+            git ls-remote --exit-code --heads origin "$outgoing.x" > /dev/null || fail "Branch $outgoing.x does not exist: run the cut workflow first."
+            sed -i '/^prerelease_label = "rc"$/d' knope.toml
+            ! grep -q '^prerelease_label = ' knope.toml || fail "Failed to remove the prerelease label from knope.toml."
+            git commit --all --message "Exit pre-release mode for the v$((outgoing + 1)) stable release"
+            git push origin main
+          elif [ "$default_branch" = "main" ]; then
+            fail "main is not in pre-release mode: nothing to promote, or it was already promoted."
+          else
+            # The default branch is still the maintenance branch of the outgoing major.
+            echo "::warning::main is already out of pre-release mode: resuming a partially completed promote."
+            outgoing="${default_branch%.x}"
+          fi
+          maintenance="$outgoing.x"
+          stable="$((outgoing + 1))"
+
+          # 2. main takes the default-branch role back.
+          gh api --method PATCH "/repos/$GITHUB_REPOSITORY" --field default_branch=main > /dev/null
+
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## Promote complete
+
+          - \`main\` exited pre-release mode and is the default branch again.
+          - \`$maintenance\` keeps publishing maintenance releases of major $outgoing.
+
+          Remaining (human) steps:
+
+          1. Review and merge the release pull request on \`main\`: the stable $stable.0.0 publishes.
+          2. Audit \`git log --oneline main..$maintenance\` for unported commits: each is forward-ported or recorded as dropped in the tracking issue.
+          3. Post the closing announcement and close the tracking issue.
+
+          See [RELEASING.md](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md).
+          EOF
+        env:
+          GH_TOKEN: ${{ steps.admin-token.outputs.token }}
