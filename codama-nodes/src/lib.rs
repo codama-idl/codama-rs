@@ -30,6 +30,7 @@ pub mod test_utils;
 mod traits;
 mod transform_nodes;
 mod type_nodes;
+mod validators;
 mod value_nodes;
 mod visitors_core;
 
@@ -38,6 +39,7 @@ pub use node::*;
 pub use shared::*;
 pub use traits::*;
 pub use type_nodes::*;
+pub use validators::*;
 pub use visitors_core::*;
 
 // Serde helper function to use with `#[serde(some_thing = "crate::is_default")]`.

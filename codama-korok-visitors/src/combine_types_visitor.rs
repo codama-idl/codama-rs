@@ -1,4 +1,4 @@
-use crate::{assert_unique_field_identifiers, KorokVisitor};
+use crate::KorokVisitor;
 use codama_attributes::{
     Attributes, CodamaAttribute, CodamaDirective, EnumDiscriminatorDirective, FieldDirective,
     ReprAttribute, TryFromFilter,
@@ -11,7 +11,6 @@ use codama_nodes::{
     TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::*;
-use syn::spanned::Spanned;
 
 pub struct CombineTypesVisitor {
     pub r#override: bool,
@@ -126,7 +125,6 @@ impl CombineTypesVisitor {
         fields: &[FieldKorok],
         attributes: &Attributes,
         parent: &str,
-        ast: &impl Spanned,
     ) -> CodamaResult<Vec<StructFieldTypeNode>> {
         if !self.allow_contextual_default_values {
             reject_contextual_default_values(fields, attributes)?;
@@ -150,13 +148,7 @@ impl CombineTypesVisitor {
             .map(|attr| attr.to_struct_field_type_node())
             .collect::<CodamaResult<Vec<_>>>()?;
 
-        let fields = before
-            .into_iter()
-            .chain(fields)
-            .chain(after)
-            .collect::<Vec<_>>();
-        assert_unique_field_identifiers(&fields, parent, ast)?;
-        Ok(fields)
+        Ok(before.into_iter().chain(fields).chain(after).collect())
     }
 
     fn parse_unnamed_fields(
@@ -246,8 +238,7 @@ impl KorokVisitor for CombineTypesVisitor {
         let parent = format!("struct `{}`", korok.ast.ident);
         let type_node: TypeNode = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields =
-                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
@@ -259,8 +250,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 }
             }
             _ => {
-                let fields =
-                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 StructTypeNode::new(fields).into()
             }
         };
@@ -325,8 +315,7 @@ impl KorokVisitor for CombineTypesVisitor {
 
         let variant = match korok.ast.fields {
             syn::Fields::Named(_) => {
-                let fields =
-                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 EnumVariantTypeNode::with_data(korok.name()?, StructTypeNode::new(fields))
             }
             syn::Fields::Unnamed(_) => {
@@ -334,8 +323,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 EnumVariantTypeNode::with_data(korok.name()?, TupleTypeNode::new(items))
             }
             _ => {
-                let fields =
-                    self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
+                let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 if !fields.is_empty() {
                     EnumVariantTypeNode::with_data(korok.name()?, StructTypeNode::new(fields))
                 } else {

@@ -17,7 +17,7 @@ mod set_pdas_visitor;
 mod set_program_metadata_visitor;
 mod transform_integers_to_floats_visitor;
 mod uniform_visitor;
-mod utils;
+mod validate_root_node_visitor;
 mod visitable;
 mod visitor;
 
@@ -40,6 +40,6 @@ pub use set_pdas_visitor::*;
 pub use set_program_metadata_visitor::*;
 pub use transform_integers_to_floats_visitor::*;
 pub use uniform_visitor::*;
-pub(crate) use utils::*;
+pub use validate_root_node_visitor::*;
 pub use visitable::*;
 pub use visitor::*;

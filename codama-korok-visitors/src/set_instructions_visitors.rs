@@ -1,6 +1,4 @@
-use crate::{
-    assert_unique_field_identifiers, parse_field_display, CombineTypesVisitor, KorokVisitor,
-};
+use crate::{parse_field_display, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     AccountDirective, Attributes, CodamaAttribute, CodamaDirective, DefaultValueDirective,
     DiscriminatorDirective, DisplayDirective, EnumDiscriminatorDirective, FieldDirective,
@@ -179,10 +177,6 @@ impl KorokVisitor for SetInstructionsVisitor {
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
 
-        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
-        let fields = std::iter::once(&discriminator).chain(&data.fields);
-        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
-
         let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
         discriminators.insert(0, discriminator_node.into());
@@ -297,7 +291,7 @@ struct DataFieldDefault<'a> {
 }
 
 /// Maps each data field identifier to the default written on its `field(...)` directive or Rust field.
-/// Identifiers are unique in the data, so each field finds its own default.
+/// The check of the final root node rejects duplicate data identifiers, so each field finds its own default.
 fn get_data_field_defaults<'a>(
     attributes: &'a Attributes,
     fields: &'a [FieldKorok],
