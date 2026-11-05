@@ -12,7 +12,7 @@ name: Promote
 # - makes `main` the default branch again.
 #
 # crates.io has no distribution tags, so the maintenance branch needs no change:
-# Cargo never resolves a `N.x` requirement to the next major by itself.
+# Cargo never resolves a `N` requirement to the next major by itself.
 
 on: workflow_dispatch
 
@@ -58,21 +58,30 @@ jobs:
       - name: Promote
         run: |
           fail() { echo "::error::$1"; exit 1; }
-          grep -q '^prerelease_label = "rc"$' knope.toml || fail "main is not in pre-release mode: nothing to promote, or it was already promoted."
-          version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "codama") | .version')"
-          major="${version%%.*}"
-          # The manifests only carry the next major once a release candidate has been published.
-          # Until then, including on the fast-track path, they still carry the outgoing major.
-          if [[ "$version" == *-* ]]; then outgoing="$((major - 1))"; else outgoing="$major"; fi
+          default_branch="$(gh api "/repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+
+          # 1. Graduate main. Skipped when a previous run already did, so that a run that failed
+          # midway is resumed by dispatching the workflow again.
+          if grep -q '^prerelease_label = "rc"$' knope.toml; then
+            version="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == "codama") | .version')"
+            major="${version%%.*}"
+            # The manifests only carry the next major once a release candidate has been published.
+            # Until then, including on the fast-track path, they still carry the outgoing major.
+            if [[ "$version" == *-* ]]; then outgoing="$((major - 1))"; else outgoing="$major"; fi
+            git ls-remote --exit-code --heads origin "$outgoing.x" > /dev/null || fail "Branch $outgoing.x does not exist: run the cut workflow first."
+            sed -i '/^prerelease_label = "rc"$/d' knope.toml
+            ! grep -q '^prerelease_label = ' knope.toml || fail "Failed to remove the prerelease label from knope.toml."
+            git commit --all --message "Exit pre-release mode for the v$((outgoing + 1)) stable release"
+            git push origin main
+          elif [ "$default_branch" = "main" ]; then
+            fail "main is not in pre-release mode: nothing to promote, or it was already promoted."
+          else
+            # The default branch is still the maintenance branch of the outgoing major.
+            echo "::warning::main is already out of pre-release mode: resuming a partially completed promote."
+            outgoing="${default_branch%.x}"
+          fi
           maintenance="$outgoing.x"
           stable="$((outgoing + 1))"
-          git ls-remote --exit-code --heads origin "$maintenance" > /dev/null || fail "Branch $maintenance does not exist: run the cut workflow first."
-
-          # 1. Graduate main.
-          sed -i '/^prerelease_label = "rc"$/d' knope.toml
-          ! grep -q '^prerelease_label = ' knope.toml || fail "Failed to remove the prerelease label from knope.toml."
-          git commit --all --message "Exit pre-release mode for the v$stable stable release"
-          git push origin main
 
           # 2. main takes the default-branch role back.
           gh api --method PATCH "/repos/$GITHUB_REPOSITORY" --field default_branch=main > /dev/null

@@ -79,12 +79,19 @@ maintenance branch, and a new major goes through a cut and a promote. Both are
   `prerelease_label = "rc"` on the `PrepareRelease` step of `knope.toml`,
   seeds the change file of the major bump, and makes `N.x` the default branch.
   From then on each merged release pull request on `main` publishes a
-  candidate of the next major: `(N+1).0.0-rc.0`, `(N+1).0.0-rc.1`, and so on. In pre-release mode the change files survive the
-  candidates, so every candidate's changelog entry restates the whole major.
+  candidate of the next major: `(N+1).0.0-rc.0`, `(N+1).0.0-rc.1`, and so on.
+  In pre-release mode the change files survive the candidates, so every
+  candidate's changelog entry restates the whole major.
 - `Promote` (`.github/workflows/promote.yml`), once the candidacy is complete:
   removes the prerelease label from `knope.toml` on `main`, which makes the
   release workflow open the pull request of the stable `(N+1).0.0`, consuming
   the accumulated change files, and makes `main` the default branch again.
+
+Both workflows skip the steps a previous run completed, so a run that failed
+midway is resumed by dispatching it again. They always operate on `main`, but
+GitHub runs the workflow file of the branch selected at dispatch time, which
+defaults to the default branch: while `N.x` is the default branch, dispatch
+`Promote` with `main` selected to pick up any fix to the workflow landed there.
 
 crates.io has no distribution tags, so the maintenance branch needs no change at
 promote time: Cargo never resolves a `N` requirement to the next major by

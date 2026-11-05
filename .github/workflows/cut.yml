@@ -62,9 +62,16 @@ jobs:
           [[ "$version" != *-* ]] || fail "main is at the release candidate $version: this major is already cut."
           major="${version%%.*}"
           [ "$major" -ge 1 ] || fail "main is at $version: majors are cut from 1.0.0 onwards."
-          ! grep -q '^prerelease_label = ' knope.toml || fail "main is already in pre-release mode: this major is already cut."
           maintenance="$major.x"
           next="$((major + 1))"
+
+          # Each step below is skipped when a previous run already completed it, so that a run that
+          # failed midway is resumed by dispatching the workflow again. The cut is complete once the
+          # maintenance branch is the default branch and main is in pre-release mode.
+          default_branch="$(gh api "/repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+          if [ "$default_branch" = "$maintenance" ] && grep -q '^prerelease_label = ' knope.toml; then
+            fail "main is already in pre-release mode and $maintenance is the default branch: this major is already cut."
+          fi
 
           # 1. The maintenance branch, with its single birth adjustment.
           if git ls-remote --exit-code --heads origin "$maintenance" > /dev/null; then
@@ -79,10 +86,13 @@ jobs:
           fi
 
           # 2. Start the next major on main.
-          sed -i 's/^type = "PrepareRelease"$/&\nprerelease_label = "rc"/' knope.toml
-          [ "$(grep -c '^prerelease_label = "rc"$' knope.toml)" = 1 ] || fail "Expected exactly one 'type = \"PrepareRelease\"' in knope.toml."
-          mkdir -p .changeset
-          cat > ".changeset/start_major_$next.md" << EOF
+          if grep -q '^prerelease_label = ' knope.toml; then
+            echo "::warning::main is already in pre-release mode: resuming a partially completed cut."
+          else
+            sed -i 's/^type = "PrepareRelease"$/&\nprerelease_label = "rc"/' knope.toml
+            [ "$(grep -c '^prerelease_label = "rc"$' knope.toml)" = 1 ] || fail "Expected exactly one 'type = \"PrepareRelease\"' in knope.toml."
+            mkdir -p .changeset
+            cat > ".changeset/start_major_$next.md" << EOF
           ---
           default: major
           ---
@@ -91,9 +101,10 @@ jobs:
 
           Release candidates of major $next publish from \`main\` while it is in development. The stable release follows the ecosystem-wide [release process](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md).
           EOF
-          git add .changeset
-          git commit --all --message "Start major $next on main"
-          git push origin main
+            git add .changeset
+            git commit --all --message "Start major $next on main"
+            git push origin main
+          fi
 
           # 3. The maintenance branch owns the default-branch role for the transition.
           gh api --method PATCH "/repos/$GITHUB_REPOSITORY" --field "default_branch=$maintenance" > /dev/null
