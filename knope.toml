@@ -95,7 +95,7 @@ command = "git push --force origin HEAD"
 
 [[workflows.steps]]
 type = "CreatePullRequest"
-base = "main"
+base = "1.x"
 
 [workflows.steps.title]
 template = "Release package $version"
