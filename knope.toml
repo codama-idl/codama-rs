@@ -84,6 +84,7 @@ name = "prepare-release"
 
 [[workflows.steps]]
 type = "PrepareRelease"
+prerelease_label = "rc"
 
 [[workflows.steps]]
 type = "Command"
