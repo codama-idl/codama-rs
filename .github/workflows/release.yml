@@ -88,6 +88,12 @@ jobs:
             echo "::error::override-version=$OVERRIDE_VERSION was given but there is no release to prepare (plan: $action)."
             exit 1
           fi
+          # In pre-release mode every release is a candidate: a stable version can only reach
+          # this point through a hand-edited release pull request, and must not be published.
+          if [ "$action" = publish ] && [[ "$version" != *-* ]] && grep -q '^prerelease_label = ' knope.toml; then
+            echo "::error::$version is a stable version but $GITHUB_REF_NAME is in pre-release mode: revert the release commit, and dispatch the promote workflow if a stable release is intended."
+            exit 1
+          fi
           echo "action=$action" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Version $version on $GITHUB_REF_NAME: $action"

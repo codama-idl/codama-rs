@@ -103,10 +103,10 @@ promote time: Cargo never resolves a `N` requirement to the next major by
 itself. A maintenance release is an ordinary pull request against `N.x` with a
 change file, followed by the release pull request that opens against `N.x`.
 
-This workspace is currently pre-1.0: breaking changes may land in any minor
-release. The plan is to promote the workspace to 1.0.0 on `main` when codama-rs
-joins the spec v2 release train — freezing the v1-era API — and then cut the
-`1.x` maintenance branch so that `main` hosts the v2 work (see the
-[v2 tracking issue](https://github.com/codama-idl/spec/issues/102)). That first
-stable release goes through the `override-version` input of the `Release`
-workflow, since `Cut` only runs from 1.0.0 onwards.
+The workspace is currently in its first major transition: 1.0.0 froze the
+v1-era API and is maintained on `1.x`, whilst `main` hosts the v2 work in
+pre-release mode as part of the spec v2 release train (see the
+[v2 tracking issue](https://github.com/codama-idl/spec/issues/102)). The 1.0.0
+release itself went through the `override-version` input of the `Release`
+workflow, since Knope never selects 1.0.0 from a `0.x` version and `Cut` only
+runs from 1.0.0 onwards.
