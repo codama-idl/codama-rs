@@ -62,6 +62,7 @@ jobs:
           [[ "$version" != *-* ]] || fail "main is at the release candidate $version: this major is already cut."
           major="${version%%.*}"
           [ "$major" -ge 1 ] || fail "main is at $version: majors are cut from 1.0.0 onwards."
+          git rev-parse -q --verify "refs/tags/v$version" > /dev/null || fail "main is at $version but v$version is not published yet: let the release workflow finish first."
           maintenance="$major.x"
           next="$((major + 1))"
 
