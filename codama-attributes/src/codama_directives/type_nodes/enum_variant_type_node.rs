@@ -1,8 +1,5 @@
 use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{
-    CamelCaseString, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumVariantTypeNode, NestedTypeNode, TypeNode,
-};
+use codama_nodes::{CamelCaseString, EnumVariantTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for EnumVariantTypeNode {
@@ -18,8 +15,6 @@ impl FromMeta for EnumVariantTypeNode {
                 discriminator.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta)
             }
             _ => {
-                // The payload decides the variant kind: `struct(...)` or
-                // `tuple(...)`, and no payload at all means an empty variant.
                 if meta.is_path_or_list() {
                     return payload.set(TypeNode::from_meta(meta)?, meta);
                 }
@@ -31,31 +26,12 @@ impl FromMeta for EnumVariantTypeNode {
         })?;
 
         let name = name.take(meta)?;
-        let discriminator = discriminator.option();
-
-        match payload.option() {
-            None => Ok(EnumEmptyVariantTypeNode {
-                name,
-                discriminator,
-                display: None,
-            }
-            .into()),
-            Some(TypeNode::Struct(node)) => Ok(EnumStructVariantTypeNode {
-                name,
-                discriminator,
-                r#struct: NestedTypeNode::Value(node),
-                display: None,
-            }
-            .into()),
-            Some(TypeNode::Tuple(node)) => Ok(EnumTupleVariantTypeNode {
-                name,
-                discriminator,
-                tuple: NestedTypeNode::Value(node),
-                display: None,
-            }
-            .into()),
-            Some(_) => Err(meta.error("a variant payload must be a struct or a tuple")),
-        }
+        let mut node = match payload.option() {
+            Some(data) => EnumVariantTypeNode::with_data(name, data),
+            None => EnumVariantTypeNode::new(name),
+        };
+        node.discriminator = discriminator.option();
+        Ok(node)
     }
 }
 
@@ -63,7 +39,9 @@ impl FromMeta for EnumVariantTypeNode {
 mod tests {
     use super::*;
     use codama_nodes::{
-        NumberFormat::U8, NumberTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
+        ArrayTypeNode, DefinedTypeLinkNode, FixedCountNode,
+        IntegerFormat::{U64, U8},
+        IntegerTypeNode, PublicKeyTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
     };
 
     fn parse(meta: Meta) -> syn::Result<EnumVariantTypeNode> {
@@ -74,31 +52,29 @@ mod tests {
     fn empty_variant() {
         assert_eq!(
             parse(syn::parse_quote! { variant("pending") }).unwrap(),
-            EnumEmptyVariantTypeNode::new("pending").into()
+            EnumVariantTypeNode::new("pending")
         );
     }
 
     #[test]
     fn struct_variant() {
         assert_eq!(
-            parse(syn::parse_quote! { variant("point", struct(field("x", number(u8)))) }).unwrap(),
-            EnumStructVariantTypeNode::new(
+            parse(syn::parse_quote! { variant("point", struct(field("x", integer(u8)))) }).unwrap(),
+            EnumVariantTypeNode::with_data(
                 "point",
-                StructTypeNode::new(vec![StructFieldTypeNode::new("x", NumberTypeNode::le(U8))])
+                StructTypeNode::new(vec![StructFieldTypeNode::new("x", IntegerTypeNode::le(U8))])
             )
-            .into()
         );
     }
 
     #[test]
     fn tuple_variant() {
         assert_eq!(
-            parse(syn::parse_quote! { variant("pair", tuple(number(u8))) }).unwrap(),
-            EnumTupleVariantTypeNode::new(
+            parse(syn::parse_quote! { variant("pair", tuple(integer(u8))) }).unwrap(),
+            EnumVariantTypeNode::with_data(
                 "pair",
-                TupleTypeNode::new(vec![NumberTypeNode::le(U8).into()])
+                TupleTypeNode::new(vec![IntegerTypeNode::le(U8).into()])
             )
-            .into()
         );
     }
 
@@ -106,7 +82,7 @@ mod tests {
     fn explicit_name() {
         assert_eq!(
             parse(syn::parse_quote! { variant(name = "pending") }).unwrap(),
-            EnumEmptyVariantTypeNode::new("pending").into()
+            EnumVariantTypeNode::new("pending")
         );
     }
 
@@ -115,12 +91,10 @@ mod tests {
         let node = parse(syn::parse_quote! { variant("pending", discriminator = 3) }).unwrap();
         assert_eq!(
             node,
-            EnumEmptyVariantTypeNode {
-                name: "pending".into(),
+            EnumVariantTypeNode {
                 discriminator: Some(3),
-                display: None,
+                ..EnumVariantTypeNode::new("pending")
             }
-            .into()
         );
     }
 
@@ -131,11 +105,25 @@ mod tests {
     }
 
     #[test]
-    fn invalid_payload() {
-        let error = parse(syn::parse_quote! { variant("a", number(u8)) }).unwrap_err();
+    fn any_payload() {
         assert_eq!(
-            error.to_string(),
-            "a variant payload must be a struct or a tuple"
+            parse(syn::parse_quote! { variant("amount", integer(u64)) }).unwrap(),
+            EnumVariantTypeNode::with_data("amount", IntegerTypeNode::le(U64))
+        );
+        assert_eq!(
+            parse(syn::parse_quote! { variant("owner", public_key) }).unwrap(),
+            EnumVariantTypeNode::with_data("owner", PublicKeyTypeNode::new())
+        );
+        assert_eq!(
+            parse(syn::parse_quote! { variant("items", array(integer(u8), 4)) }).unwrap(),
+            EnumVariantTypeNode::with_data(
+                "items",
+                ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(4))
+            )
+        );
+        assert_eq!(
+            parse(syn::parse_quote! { variant("target", link("pubkey")) }).unwrap(),
+            EnumVariantTypeNode::with_data("target", DefinedTypeLinkNode::new("pubkey"))
         );
     }
 

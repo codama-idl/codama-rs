@@ -1,0 +1,5 @@
+error: unrecognized number display
+ --> tests/codama_attribute/type_nodes/integer_type_node/invalid_display.fail.rs:3:40
+  |
+3 | #[codama(type = integer(u64, display = string))]
+  |                                        ^^^^^^

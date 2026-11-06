@@ -22,7 +22,7 @@ impl FromMeta for StructTypeNode {
             })
             .collect_and_combine_errors()?;
 
-        Ok(StructTypeNode { fields })
+        Ok(StructTypeNode::new(fields))
     }
 }
 
@@ -30,7 +30,7 @@ impl FromMeta for StructTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::{NumberFormat::U32, NumberTypeNode, StringTypeNode};
+    use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StringTypeNode};
 
     #[test]
     fn empty() {
@@ -51,9 +51,9 @@ mod tests {
     #[test]
     fn with_one_field() {
         assert_type!(
-            { struct(field("age", number(u32))) },
+            { struct(field("age", integer(u32))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U32))
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             ]).into()
         );
     }
@@ -61,9 +61,9 @@ mod tests {
     #[test]
     fn with_multiple_fields() {
         assert_type!(
-            { struct(field("age", number(u32)), field("name", string(utf8))) },
+            { struct(field("age", integer(u32)), field("name", string(utf8))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
                 StructFieldTypeNode::new("name", StringTypeNode::utf8())
             ]).into()
         );
@@ -72,9 +72,9 @@ mod tests {
     #[test]
     fn with_brackets() {
         assert_type!(
-            { struct[field("age", number(u32)), field("name", string(utf8))] },
+            { struct[field("age", integer(u32)), field("name", string(utf8))] },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U32)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
                 StructFieldTypeNode::new("name", StringTypeNode::utf8())
             ]).into()
         );
@@ -82,6 +82,6 @@ mod tests {
 
     #[test]
     fn invalid_fields_inside() {
-        assert_type_err!({ struct(boolean, number(u32)) }, "expected field(...) attribute");
+        assert_type_err!({ struct(boolean, integer(u32)) }, "expected field(...) attribute");
     }
 }

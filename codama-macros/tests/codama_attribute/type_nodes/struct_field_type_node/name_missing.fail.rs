@@ -1,9 +1,9 @@
 use codama_macros::codama;
 
-#[codama(type = field(number(u32)))]
+#[codama(type = field(integer(u32)))]
 pub struct Test;
 
-#[codama(type = field(type = number(u32)))]
+#[codama(type = field(type = integer(u32)))]
 pub struct TestExplicit;
 
 fn main() {}

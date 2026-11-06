@@ -6,7 +6,7 @@ use derive_more::derive::From;
 
 #[derive(Debug, PartialEq, From)]
 pub enum Attribute<'a> {
-    // E.g. `#[codama(type = number(u8))]` or `#[codama(fixed_size = 32)]`.
+    // E.g. `#[codama(type = integer(u8))]` or `#[codama(fixed_size = 32)]`.
     Codama(CodamaAttribute<'a>),
     // E.g. `#[derive(Debug, CodamaType)]`.
     Derive(DeriveAttribute<'a>),

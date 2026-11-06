@@ -1,4 +1,4 @@
-error: number must be a NumberTypeNode
+error: number must be an IntegerTypeNode
  --> tests/codama_attribute/type_nodes/date_time_type_node/invalid_number.fail.rs:3:27
   |
 3 | #[codama(type = date_time(string))]

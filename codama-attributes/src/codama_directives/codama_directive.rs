@@ -1,5 +1,5 @@
 use crate::{
-    AccountDirective, ArgumentDirective, AttributeContext, DefaultValueDirective,
+    utils::removed_syntax, AccountDirective, AttributeContext, DefaultValueDirective,
     DiscriminatorDirective, DisplayDirective, EncodingDirective, EnumDiscriminatorDirective,
     ErrorDirective, ExportDirective, FieldDirective, FixedSizeDirective, NameDirective,
     OptionalAccountStrategyDirective, PdaDirective, ProgramDirective, RemainingAccountsDirective,
@@ -36,7 +36,6 @@ pub enum CodamaDirective {
 
     // Instruction directives.
     Account(AccountDirective),
-    Argument(ArgumentDirective),
     RemainingAccounts(RemainingAccountsDirective),
 
     // Error directives.
@@ -76,7 +75,7 @@ impl CodamaDirective {
 
             // Instruction directives.
             "account" => Ok(AccountDirective::parse(meta, ctx)?.into()),
-            "argument" => Ok(ArgumentDirective::parse(meta)?.into()),
+            "argument" => removed_syntax(path, "argument(...)", "field(...)"),
             "remaining_accounts" => Ok(RemainingAccountsDirective::parse(meta)?.into()),
             "provide" => Err(path.error("provide directives are not supported yet")),
 
@@ -115,11 +114,26 @@ impl CodamaDirective {
 
             // Instruction directives.
             Self::Account(_) => "account",
-            Self::Argument(_) => "argument",
             Self::RemainingAccounts(_) => "remaining_accounts",
 
             // Error directives.
             Self::Error(_) => "error",
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn argument_is_removed() {
+        let meta: Meta = syn::parse_quote! { argument("age", integer(u8)) };
+        let item: syn::Item = syn::parse_quote! { struct Foo; };
+        let error = CodamaDirective::parse(&meta, &AttributeContext::Item(&item)).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "argument(...) is removed in v2, use field(...)"
+        );
     }
 }

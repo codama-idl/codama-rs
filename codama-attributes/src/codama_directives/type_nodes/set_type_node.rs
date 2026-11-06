@@ -35,33 +35,33 @@ mod tests {
     use crate::{assert_type, assert_type_err};
     use codama_nodes::{
         FixedCountNode,
-        NumberFormat::{U32, U8},
-        NumberTypeNode, PrefixedCountNode,
+        IntegerFormat::{U32, U8},
+        IntegerTypeNode, PrefixedCountNode,
     };
 
     #[test]
     fn implicit() {
         assert_type!(
-            { set(number(u8), fixed_count(3)) },
-            SetTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(3)).into()
+            { set(integer(u8), fixed_count(3)) },
+            SetTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(3)).into()
         );
     }
 
     #[test]
     fn bare_integer_count() {
         assert_type!(
-            { set(number(u8), 3) },
-            SetTypeNode::new(NumberTypeNode::le(U8), FixedCountNode::new(3)).into()
+            { set(integer(u8), 3) },
+            SetTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(3)).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { set(item = number(u8), count = prefixed_count(number(u32))) },
+            { set(item = integer(u8), count = prefixed_count(integer(u32))) },
             SetTypeNode::new(
-                NumberTypeNode::le(U8),
-                PrefixedCountNode::new(NumberTypeNode::le(U32))
+                IntegerTypeNode::le(U8),
+                PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
         );
@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     fn count_missing() {
-        assert_type_err!({ set(number(u8)) }, "count is missing");
+        assert_type_err!({ set(integer(u8)) }, "count is missing");
     }
 
     #[test]

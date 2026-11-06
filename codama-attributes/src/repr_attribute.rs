@@ -1,6 +1,6 @@
 use crate::Attribute;
 use codama_errors::CodamaError;
-use codama_nodes::{NumberFormat, NumberTypeNode};
+use codama_nodes::{IntegerFormat, IntegerTypeNode};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -29,10 +29,10 @@ impl<'a> ReprAttribute<'a> {
         Ok(Self { ast, metas })
     }
 
-    pub fn get_number_type_node(&self) -> Option<NumberTypeNode> {
+    pub fn get_integer_type_node(&self) -> Option<IntegerTypeNode> {
         self.metas.iter().find_map(|meta| match meta {
-            syn::Meta::Path(p) => match NumberFormat::try_from(p.to_string()) {
-                Ok(n) => Some(NumberTypeNode::le(n)),
+            syn::Meta::Path(p) => match IntegerFormat::try_from(p.to_string()) {
+                Ok(n) => Some(IntegerTypeNode::le(n)),
                 Err(_) => None,
             },
             _ => None,
@@ -57,7 +57,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a ReprAttribute<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::NumberFormat::U32;
+    use codama_nodes::IntegerFormat::U32;
     use syn::parse_quote;
 
     #[test]
@@ -85,13 +85,13 @@ mod tests {
     }
 
     #[test]
-    fn test_get_number_type_node() {
+    fn test_get_integer_type_node() {
         let ast = parse_quote! { #[repr(u32, align(4), u64)] };
         let attribute = ReprAttribute::parse(&ast).unwrap();
 
         assert_eq!(
-            attribute.get_number_type_node(),
-            Some(NumberTypeNode::le(U32))
+            attribute.get_integer_type_node(),
+            Some(IntegerTypeNode::le(U32))
         );
     }
 }

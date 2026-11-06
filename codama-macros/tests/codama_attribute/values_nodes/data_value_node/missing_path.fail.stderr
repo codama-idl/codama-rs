@@ -1,0 +1,11 @@
+error: expected a list: `data(...)` or `data = (...)`
+ --> tests/codama_attribute/values_nodes/data_value_node/missing_path.fail.rs:3:26
+  |
+3 | #[codama(default_value = data)]
+  |                          ^^^^
+
+error: path is missing
+ --> tests/codama_attribute/values_nodes/data_value_node/missing_path.fail.rs:6:26
+  |
+6 | #[codama(default_value = data())]
+  |                          ^^^^^^

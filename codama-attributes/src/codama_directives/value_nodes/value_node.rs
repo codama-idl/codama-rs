@@ -3,7 +3,8 @@ use crate::codama_directives::value_nodes::{
 };
 use crate::utils::FromMeta;
 use codama_nodes::{
-    BooleanValueNode, NumberValueNode, PublicKeyValueNode, StringValueNode, ValueNode,
+    BooleanValueNode, FloatValueNode, IntegerValueNode, PublicKeyValueNode, StringValueNode,
+    ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -16,7 +17,8 @@ impl FromMeta for ValueNode {
             _ => BooleanValueNode::from_meta(meta)
                 .map(Self::from)
                 .or(StringValueNode::from_meta(meta).map(Self::from))
-                .or(NumberValueNode::from_meta(meta).map(Self::from))
+                .or(IntegerValueNode::from_meta(meta).map(Self::from))
+                .or(FloatValueNode::from_meta(meta).map(Self::from))
                 .map_err(|_| meta.error("unrecognized value")),
         }
     }

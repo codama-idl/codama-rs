@@ -23,7 +23,7 @@ impl FromMeta for CountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{NumberFormat::U32, NumberTypeNode};
+    use codama_nodes::{IntegerFormat::U32, IntegerTypeNode};
 
     fn parse(meta: Meta) -> syn::Result<CountNode> {
         CountNode::from_meta(&meta)
@@ -52,13 +52,13 @@ mod tests {
 
     #[test]
     fn prefixed() {
-        let expected: CountNode = PrefixedCountNode::new(NumberTypeNode::le(U32)).into();
+        let expected: CountNode = PrefixedCountNode::new(IntegerTypeNode::le(U32)).into();
         assert_eq!(
-            parse(syn::parse_quote! { prefixed_count(number(u32)) }).unwrap(),
+            parse(syn::parse_quote! { prefixed_count(integer(u32)) }).unwrap(),
             expected
         );
         assert_eq!(
-            parse(syn::parse_quote! { prefixed_count(prefix = number(u32)) }).unwrap(),
+            parse(syn::parse_quote! { prefixed_count(prefix = integer(u32)) }).unwrap(),
             expected
         );
     }
@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn invalid_prefix() {
         let error = parse(syn::parse_quote! { prefixed_count(string) }).unwrap_err();
-        assert_eq!(error.to_string(), "prefix must be a NumberTypeNode");
+        assert_eq!(error.to_string(), "prefix must be an IntegerTypeNode");
     }
 
     #[test]

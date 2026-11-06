@@ -77,16 +77,16 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a TypeDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{NumberFormat::U16, NumberTypeNode};
+    use codama_nodes::{IntegerFormat::U16, IntegerTypeNode};
     use syn::parse_quote;
 
     #[test]
     fn ok() {
-        let meta: Meta = parse_quote! { type = number(u16, le) };
+        let meta: Meta = parse_quote! { type = integer(u16, le) };
         let directive = TypeDirective::parse(&meta).unwrap();
         assert_eq!(
             directive.node,
-            Resolvable::Resolved(RegisteredTypeNode::from(NumberTypeNode::le(U16)).into())
+            Resolvable::Resolved(RegisteredTypeNode::from(IntegerTypeNode::le(U16)).into())
         );
     }
 
@@ -122,7 +122,7 @@ mod tests {
 
     #[test]
     fn multiple_inputs() {
-        let meta: Meta = parse_quote! { type = (number(u16, le), public_key) };
+        let meta: Meta = parse_quote! { type = (integer(u16, le), public_key) };
         let error = TypeDirective::parse(&meta).unwrap_err();
         assert_eq!(error.to_string(), "expected a single value, found a list");
     }

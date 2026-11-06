@@ -1,0 +1,5 @@
+error: injected display values are not supported yet
+ --> tests/codama_attribute/type_nodes/integer_type_node/injected_display.fail.rs:3:40
+  |
+3 | #[codama(type = integer(u64, display = injected("amount")))]
+  |                                        ^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,5 @@
+error: argument(...) is removed in v2, use field(...)
+ --> tests/codama_attribute/argument_directive/removed.fail.rs:3:10
+  |
+3 | #[codama(argument("age", integer(u8)))]
+  |          ^^^^^^^^

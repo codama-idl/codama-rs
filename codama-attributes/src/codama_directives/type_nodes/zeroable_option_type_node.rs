@@ -25,21 +25,21 @@ impl FromMeta for ZeroableOptionTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::{NumberTypeNode, U8};
+    use codama_nodes::{IntegerTypeNode, U8};
 
     #[test]
     fn implicit() {
         assert_type!(
-            { zeroable_option(number(u8)) },
-            ZeroableOptionTypeNode::new(NumberTypeNode::le(U8)).into()
+            { zeroable_option(integer(u8)) },
+            ZeroableOptionTypeNode::new(IntegerTypeNode::le(U8)).into()
         );
     }
 
     #[test]
     fn explicit() {
         assert_type!(
-            { zeroable_option(item = number(u8)) },
-            ZeroableOptionTypeNode::new(NumberTypeNode::le(U8)).into()
+            { zeroable_option(item = integer(u8)) },
+            ZeroableOptionTypeNode::new(IntegerTypeNode::le(U8)).into()
         );
     }
 

@@ -1,0 +1,5 @@
+error: argument(...) is removed in v2, use remaining_accounts("x", ...)
+ --> tests/codama_attribute/remaining_accounts_directive/argument_removed.fail.rs:3:29
+  |
+3 | #[codama(remaining_accounts(argument("signers"), signer))]
+  |                             ^^^^^^^^^^^^^^^^^^^

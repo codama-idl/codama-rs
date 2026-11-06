@@ -83,6 +83,7 @@ impl AccountDirective {
             ),
             account_link: None,
             display: self.display.clone(),
+            plugins: vec![],
         })
     }
 }
@@ -243,8 +244,9 @@ mod tests {
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
         let expected_display = InstructionAccountDisplayNode {
-            label: Some("Payer".to_string()),
+            label: Some("Payer".into()),
             skip: Some(DisplaySkip::Never),
+            plugins: vec![],
         };
         assert_eq!(directive.display, Some(expected_display.clone()));
         assert_eq!(
