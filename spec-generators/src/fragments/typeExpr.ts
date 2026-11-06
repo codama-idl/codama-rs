@@ -91,11 +91,12 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
 /**
  * The Rust type for a `string` type expression, by constraint:
  *
- *   - none, `namespace`, `version`         -> `String`
+ *   - none, `version`                      -> `String`
  *   - `identifier`                         -> `CamelCaseString`
  *   - `integer`                            -> `Integer` (unsigned or signed, up to 128 bits)
  *   - `decimal`                            -> `Decimal` (a decimal number written as a string)
  *   - `path`                               -> `Path` (a path expression such as `header.kind`)
+ *   - `namespace`                          -> `Namespace` (dot-separated identifiers such as `i18n.es`)
  */
 function getStringExprFragment(expr: Extract<TypeExpr, { kind: 'string' }>): Fragment {
     switch (expr.constraint) {
@@ -108,6 +109,7 @@ function getStringExprFragment(expr: Extract<TypeExpr, { kind: 'string' }>): Fra
         case 'path':
             return use('crate::Path');
         case 'namespace':
+            return use('crate::Namespace');
         case 'version':
         case undefined:
             return fragment`String`;

@@ -1,4 +1,4 @@
-use crate::{InstructionLifecycle, InstructionStatusNode};
+use crate::{InstructionLifecycle, InstructionStatusNode, Text};
 
 #[allow(clippy::derivable_impls)]
 impl Default for InstructionStatusNode {
@@ -6,6 +6,7 @@ impl Default for InstructionStatusNode {
         Self {
             lifecycle: InstructionLifecycle::default(),
             message: None,
+            plugins: vec![],
         }
     }
 }
@@ -15,13 +16,15 @@ impl InstructionStatusNode {
         Self {
             lifecycle,
             message: None,
+            plugins: vec![],
         }
     }
 
-    pub fn with_message<S: Into<String>>(lifecycle: InstructionLifecycle, message: S) -> Self {
+    pub fn with_message<S: Into<Text>>(lifecycle: InstructionLifecycle, message: S) -> Self {
         Self {
             lifecycle,
             message: Some(message.into()),
+            plugins: vec![],
         }
     }
 }
@@ -29,6 +32,13 @@ impl InstructionStatusNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn default() {
+        let node = InstructionStatusNode::default();
+        assert_eq!(node.lifecycle, InstructionLifecycle::Live);
+        assert_eq!(node.message, None);
+    }
 
     #[test]
     fn new() {
@@ -44,7 +54,7 @@ mod tests {
             "Use newInstruction",
         );
         assert_eq!(node.lifecycle, InstructionLifecycle::Deprecated);
-        assert_eq!(node.message.as_deref(), Some("Use newInstruction"));
+        assert_eq!(node.message, Some(Text::from("Use newInstruction")));
     }
 
     #[test]
@@ -61,7 +71,7 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"instructionStatusNode","lifecycle":"live"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node.lifecycle, InstructionLifecycle::Live);
+        assert_eq!(node, InstructionStatusNode::new(InstructionLifecycle::Live));
     }
 
     #[test]
@@ -81,7 +91,12 @@ mod tests {
     fn from_json_with_message() {
         let json = r#"{"kind":"instructionStatusNode","lifecycle":"deprecated","message":"Use newInstruction instead"}"#;
         let node: InstructionStatusNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node.lifecycle, InstructionLifecycle::Deprecated);
-        assert_eq!(node.message.as_deref(), Some("Use newInstruction instead"));
+        assert_eq!(
+            node,
+            InstructionStatusNode::with_message(
+                InstructionLifecycle::Deprecated,
+                "Use newInstruction instead"
+            )
+        );
     }
 }
