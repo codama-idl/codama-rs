@@ -6,7 +6,7 @@ use crate::{
 impl ProgramNode {
     pub fn new<T: Into<CamelCaseString>, U: Into<String>>(name: T, public_key: U) -> Self {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             public_key: public_key.into(),
             version: "0.0.0".into(),
             ..Default::default()
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn new() {
         let node = ProgramNode::new("my_program", "1234..5678");
-        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "0.0.0".to_string());
         assert_eq!(node.origin, None);
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn default_program() {
         let node = ProgramNode::default();
-        assert_eq!(node.name, CamelCaseString::new(""));
+        assert_eq!(node.identifier, CamelCaseString::new(""));
         assert_eq!(node.public_key, "".to_string());
         assert_eq!(node.version, "".to_string());
         assert_eq!(node.origin, None);
@@ -97,12 +97,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ProgramNode {
-            name: "myProgram".into(),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
         };
-        assert_eq!(node.name, CamelCaseString::new("myProgram"));
+        assert_eq!(node.identifier, CamelCaseString::new("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "1.2.3".to_string());
         assert_eq!(node.origin, None);
@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ProgramNode {
-            name: "myProgram".into(),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(
             node,
             ProgramNode {
-                name: "myProgram".into(),
+                identifier: "myProgram".into(),
                 public_key: "1234..5678".into(),
                 version: "1.2.3".into(),
                 ..ProgramNode::default()

@@ -6,7 +6,7 @@ impl DefinedTypeLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: None,
         }
     }
@@ -16,7 +16,7 @@ impl DefinedTypeLinkNode {
         T: Into<CamelCaseString>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             program: Some(program),
         }
     }
@@ -41,28 +41,28 @@ mod tests {
     #[test]
     fn new() {
         let node = DefinedTypeLinkNode::new("my_type");
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
     }
 
     #[test]
     fn new_from_program() {
         let node =
             DefinedTypeLinkNode::new_from_program("my_type", ProgramLinkNode::new("my_program"));
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn from_string() {
         let node: DefinedTypeLinkNode = String::from("my_type").into();
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.program, None);
     }
 
     #[test]
     fn from_str() {
         let node: DefinedTypeLinkNode = "my_type".into();
-        assert_eq!(node.name, CamelCaseString::new("myType"));
+        assert_eq!(node.identifier, CamelCaseString::new("myType"));
         assert_eq!(node.program, None);
     }
 

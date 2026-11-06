@@ -1,11 +1,13 @@
-use crate::{CamelCaseString, Docs, HasName, PdaSeedNode};
+use crate::{CamelCaseString, Docs, HasIdentifier, PdaSeedNode};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct PdaNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -16,8 +18,8 @@ pub struct PdaNode {
     pub seeds: Vec<PdaSeedNode>,
 }
 
-impl HasName for PdaNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for PdaNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

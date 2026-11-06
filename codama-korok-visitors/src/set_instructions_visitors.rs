@@ -67,7 +67,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         // Transform the defined type into an instruction node.
         let (name, data) = parse_struct(korok)?;
         let instruction = InstructionNode {
-            name,
+            identifier: name,
             optional_account_strategy: parse_optional_account_strategy(&korok.attributes),
             accounts: parse_accounts(&korok.attributes, &korok.fields)?,
             arguments: parse_arguments(&korok.attributes, &korok.fields, data, None)?,
@@ -165,7 +165,7 @@ impl KorokVisitor for SetInstructionsVisitor {
 
         korok.node = Some(
             InstructionNode {
-                name,
+                identifier: name,
                 // The variant-level directive wins over the enum-level default.
                 optional_account_strategy: parse_optional_account_strategy(&korok.attributes)
                     .or(self.enum_optional_account_strategy),
@@ -316,7 +316,7 @@ fn parse_struct(
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
         if let TypeNode::Struct(data) = (*node.r#type).clone() {
-            return Ok((node.name.clone(), data));
+            return Ok((node.identifier.clone(), data));
         };
     };
 

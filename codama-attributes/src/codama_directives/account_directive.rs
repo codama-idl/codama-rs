@@ -70,7 +70,7 @@ impl AccountDirective {
     /// Returns an error if any unresolved directives remain.
     pub fn to_instruction_account_node(&self) -> CodamaResult<InstructionAccountNode> {
         Ok(InstructionAccountNode {
-            name: self.name.clone(),
+            identifier: self.name.clone(),
             is_writable: self.is_writable,
             is_signer: self.is_signer,
             is_optional: if self.is_optional { Some(true) } else { None },

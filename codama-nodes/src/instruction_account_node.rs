@@ -7,7 +7,7 @@ impl InstructionAccountNode {
         U: Into<IsSigner>,
     {
         Self {
-            name: name.into(),
+            identifier: name.into(),
             is_writable,
             is_signer: is_signer.into(),
             is_optional: None,
@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn new() {
         let node = InstructionAccountNode::new("my_account", false, true);
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::True);
         assert_eq!(node.is_optional, None);
@@ -38,7 +38,7 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = InstructionAccountNode {
-            name: "myAccount".into(),
+            identifier: "myAccount".into(),
             is_writable: false,
             is_signer: IsSigner::Either,
             is_optional: Some(true),
@@ -47,7 +47,7 @@ mod tests {
             account_link: None,
             display: None,
         };
-        assert_eq!(node.name, CamelCaseString::new("myAccount"));
+        assert_eq!(node.identifier, CamelCaseString::new("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::Either);
         assert_eq!(node.is_optional, Some(true));

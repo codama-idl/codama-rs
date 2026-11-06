@@ -20,7 +20,7 @@ fn from_struct_with_optional_account_strategy_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                name: "initialize".into(),
+                identifier: "initialize".into(),
                 optional_account_strategy: Some(OptionalAccountStrategy::Omitted),
                 arguments: vec![codama_nodes::InstructionArgumentNode::new(
                     "amount",

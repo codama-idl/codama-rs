@@ -1,11 +1,13 @@
-use crate::{CamelCaseString, HasName, InstructionLinkNode};
+use crate::{CamelCaseString, HasIdentifier, InstructionLinkNode};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct InstructionAccountLinkNode {
     // Data.
-    pub name: CamelCaseString,
+    // TODO(spec v2): keeps the v1 JSON key "name" temporarily so v1 output stays the same. The next v2 regeneration drops it.
+    #[serde(rename = "name")]
+    pub identifier: CamelCaseString,
 
     // Children.
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -18,8 +20,8 @@ impl From<InstructionAccountLinkNode> for crate::Node {
     }
 }
 
-impl HasName for InstructionAccountLinkNode {
-    fn name(&self) -> &CamelCaseString {
-        &self.name
+impl HasIdentifier for InstructionAccountLinkNode {
+    fn identifier(&self) -> &CamelCaseString {
+        &self.identifier
     }
 }

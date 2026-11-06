@@ -26,7 +26,7 @@ impl FromMeta for PdaValueNode {
         })?;
 
         let pda_link_node = PdaLinkNode {
-            name: name.take(meta)?,
+            identifier: name.take(meta)?,
             program: program.option().map(ProgramLinkNode::new),
         };
 
