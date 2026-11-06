@@ -12,6 +12,9 @@ pub struct ScaleOnlyTest;
 #[codama(type = fixed_point(integer(u128), scale = 64, base = 2))]
 pub struct BaseTest;
 
+#[codama(type = fixed_point(integer(u64), scale = 9, unit = "SOL", display = unit("wSOL")))]
+pub struct DisplayTest;
+
 #[codama(type = fixed_point(fixed_size(integer(u64), 8), scale = 6))]
 pub struct NestedNumberTest;
 

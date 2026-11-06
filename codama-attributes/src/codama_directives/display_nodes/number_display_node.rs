@@ -1,5 +1,5 @@
 use crate::utils::{removed_syntax, FromMeta};
-use codama_nodes::{AmountNumberDisplayNode, NumberDisplayNode};
+use codama_nodes::{AmountNumberDisplayNode, NumberDisplayNode, UnitNumberDisplayNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for NumberDisplayNode {
@@ -9,6 +9,7 @@ impl FromMeta for NumberDisplayNode {
             "date_time" => removed_syntax(meta, "date_time display", "the date_time(...) type"),
             "duration" => removed_syntax(meta, "duration display", "the duration(...) type"),
             "injected" => Err(meta.error("injected display values are not supported yet")),
+            "unit" => UnitNumberDisplayNode::from_meta(meta).map(Self::Unit),
             _ => Err(meta.error("unrecognized number display")),
         }
     }
@@ -24,6 +25,12 @@ mod tests {
         assert!(matches!(
             NumberDisplayNode::from_meta(&amount).unwrap(),
             NumberDisplayNode::Amount(_)
+        ));
+
+        let unit: Meta = syn::parse_quote! { unit("SOL") };
+        assert!(matches!(
+            NumberDisplayNode::from_meta(&unit).unwrap(),
+            NumberDisplayNode::Unit(_)
         ));
     }
 
