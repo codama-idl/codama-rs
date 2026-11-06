@@ -1,7 +1,7 @@
 use crate::identify_field_types_visitor::utils::get_node_from_item;
 use codama_nodes::{
-    BooleanTypeNode, DefinedTypeNode, Node, NumberTypeNode, SizePrefixTypeNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, U32, U8,
+    BooleanTypeNode, DefinedTypeNode, HasTransforms, IntegerTypeNode, Node,
+    SizePrefixTransformNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U32, U8,
 };
 use quote::quote;
 
@@ -21,11 +21,12 @@ fn it_wraps_all_named_fields_in_a_defined_struct() {
             StructTypeNode::new(vec![
                 StructFieldTypeNode::new(
                     "name",
-                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32))
+                    StringTypeNode::utf8()
+                        .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
                 ),
-                StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                 StructFieldTypeNode::new("member", BooleanTypeNode::default()),
-                StructFieldTypeNode::new("is_alive", NumberTypeNode::le(U8))
+                StructFieldTypeNode::new("is_alive", IntegerTypeNode::le(U8))
             ])
         )))
     );

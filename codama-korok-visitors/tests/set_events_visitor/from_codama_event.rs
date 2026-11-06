@@ -1,8 +1,9 @@
+use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
 use codama_nodes::{
-    BooleanTypeNode, EventNode, FieldDiscriminatorNode, NumberFormat::U64, NumberTypeNode,
+    BooleanTypeNode, EventNode, FieldDiscriminatorNode, IntegerFormat::U64, IntegerTypeNode,
     PublicKeyTypeNode, SizeDiscriminatorNode, StructFieldTypeNode, StructTypeNode,
 };
 
@@ -27,7 +28,7 @@ fn from_struct() -> CodamaResult<()> {
                 "transferEvent",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new("amount", NumberTypeNode::le(U64)),
+                    StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                 ])
             )
             .into()
@@ -123,7 +124,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
             EventNode {
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
-                    FieldDiscriminatorNode::new("discriminator", 0).into(),
+                    FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
                 ],
                 ..EventNode::new("myEvent", StructTypeNode::new(vec![]))
             }

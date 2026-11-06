@@ -1,9 +1,10 @@
 use crate::KorokVisitor;
 use codama_errors::CodamaResult;
 use codama_nodes::{
-    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, MapTypeNode,
-    NumberFormat::*, NumberTypeNode, OptionTypeNode, PrefixedCountNode, PublicKeyTypeNode,
-    SetTypeNode, SizePrefixTypeNode, StringTypeNode, TypeNode,
+    ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, FloatFormat::*,
+    FloatTypeNode, HasTransforms, IntegerFormat::*, IntegerTypeNode, MapTypeNode, OptionTypeNode,
+    PrefixedCountNode, PublicKeyTypeNode, SetTypeNode, SizePrefixTransformNode, StringTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -53,21 +54,21 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                 path.generic_types().as_slice(),
             ) {
                 ("" | "std::primitive", "bool", []) => Some(BooleanTypeNode::default().into()),
-                ("" | "std::primitive", "usize", []) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u8", []) => Some(NumberTypeNode::le(U8).into()),
-                ("" | "std::primitive", "u16", []) => Some(NumberTypeNode::le(U16).into()),
-                ("" | "std::primitive", "u32", []) => Some(NumberTypeNode::le(U32).into()),
-                ("" | "std::primitive", "u64", []) => Some(NumberTypeNode::le(U64).into()),
-                ("" | "std::primitive", "u128", []) => Some(NumberTypeNode::le(U128).into()),
-                ("" | "std::primitive", "isize", []) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i8", []) => Some(NumberTypeNode::le(I8).into()),
-                ("" | "std::primitive", "i16", []) => Some(NumberTypeNode::le(I16).into()),
-                ("" | "std::primitive", "i32", []) => Some(NumberTypeNode::le(I32).into()),
-                ("" | "std::primitive", "i64", []) => Some(NumberTypeNode::le(I64).into()),
-                ("" | "std::primitive", "i128", []) => Some(NumberTypeNode::le(I128).into()),
-                ("" | "std::primitive", "f32", []) => Some(NumberTypeNode::le(F32).into()),
-                ("" | "std::primitive", "f64", []) => Some(NumberTypeNode::le(F64).into()),
-                (_, "ShortU16", []) => Some(NumberTypeNode::le(ShortU16).into()),
+                ("" | "std::primitive", "usize", []) => Some(IntegerTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u8", []) => Some(IntegerTypeNode::le(U8).into()),
+                ("" | "std::primitive", "u16", []) => Some(IntegerTypeNode::le(U16).into()),
+                ("" | "std::primitive", "u32", []) => Some(IntegerTypeNode::le(U32).into()),
+                ("" | "std::primitive", "u64", []) => Some(IntegerTypeNode::le(U64).into()),
+                ("" | "std::primitive", "u128", []) => Some(IntegerTypeNode::le(U128).into()),
+                ("" | "std::primitive", "isize", []) => Some(IntegerTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i8", []) => Some(IntegerTypeNode::le(I8).into()),
+                ("" | "std::primitive", "i16", []) => Some(IntegerTypeNode::le(I16).into()),
+                ("" | "std::primitive", "i32", []) => Some(IntegerTypeNode::le(I32).into()),
+                ("" | "std::primitive", "i64", []) => Some(IntegerTypeNode::le(I64).into()),
+                ("" | "std::primitive", "i128", []) => Some(IntegerTypeNode::le(I128).into()),
+                ("" | "std::primitive", "f32", []) => Some(FloatTypeNode::le(F32).into()),
+                ("" | "std::primitive", "f64", []) => Some(FloatTypeNode::le(F64).into()),
+                (_, "ShortU16", []) => Some(IntegerTypeNode::le(ShortU16).into()),
                 (
                     ""
                     | "solana_sdk::pubkey"
@@ -81,17 +82,20 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                     Some(PublicKeyTypeNode::new().into())
                 }
                 ("" | "std::string", "String", []) => Some(
-                    SizePrefixTypeNode::new(StringTypeNode::utf8(), NumberTypeNode::le(U32)).into(),
+                    StringTypeNode::utf8()
+                        .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+                        .into(),
                 ),
                 ("" | "std::option", "Option", [t]) => {
                     get_type_node(t).map(|item| OptionTypeNode::new(item).into())
                 }
                 ("" | "std::vec", "Vec", [t]) => get_type_node(t).map(|item| {
-                    ArrayTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32))).into()
+                    ArrayTypeNode::new(item, PrefixedCountNode::new(IntegerTypeNode::le(U32)))
+                        .into()
                 }),
                 ("" | "std::collections", "HashSet" | "BTreeSet", [t]) => {
                     get_type_node(t).map(|item| {
-                        SetTypeNode::new(item, PrefixedCountNode::new(NumberTypeNode::le(U32)))
+                        SetTypeNode::new(item, PrefixedCountNode::new(IntegerTypeNode::le(U32)))
                             .into()
                     })
                 }
@@ -101,7 +105,7 @@ pub fn get_type_node(ty: &syn::Type) -> Option<TypeNode> {
                             MapTypeNode::new(
                                 key,
                                 value,
-                                PrefixedCountNode::new(NumberTypeNode::le(U32)),
+                                PrefixedCountNode::new(IntegerTypeNode::le(U32)),
                             )
                             .into(),
                         ),

@@ -1,5 +1,5 @@
 use super::utils::{combine_modules, get_type, CombineModulesInput};
-use codama_nodes::{NumberFormat::U32, NumberTypeNode, ProgramNode, RootNode, StringValueNode};
+use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, ProgramNode, RootNode, StringValueNode};
 
 #[test]
 fn root_with_no_nodes_to_combines() {
@@ -11,7 +11,7 @@ fn root_with_no_relevant_nodes_to_combines() {
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .add_node(NumberTypeNode::le(U32))
+                .add_node(IntegerTypeNode::le(U32))
                 .add_node(StringValueNode::new("hello"))
         ),
         None

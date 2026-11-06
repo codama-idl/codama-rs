@@ -4,8 +4,8 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    CamelCaseString, DisplaySkip, IntegerFormat::U8, IntegerTypeNode, Node, StructFieldDisplayNode,
-    StructFieldTypeNode, TypeNode, TypeNodeTrait,
+    CamelCaseString, DisplaySkip, FieldDiscriminatorNode, IntegerFormat::U8, IntegerTypeNode, Node,
+    Path, StructFieldDisplayNode, StructFieldTypeNode, TypeNode, TypeNodeTrait,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -24,7 +24,16 @@ impl EnumDiscriminatorDirective {
         let mut name = SetOnce::<CamelCaseString>::new("name");
         let mut size: SetOnce<IntegerTypeNode> = SetOnce::<IntegerTypeNode>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "name" => {
+                let expr = meta.as_value()?.as_expr()?;
+                let value = expr.as_string()?;
+                let identifier = CamelCaseString::from(value.as_str());
+                // The name is also the path of the discriminator node, so it must be a valid path.
+                if Path::try_from(identifier.as_str()).is_err() {
+                    return Err(expr.error(format!("Invalid enum discriminator name: {value}")));
+                }
+                name.set(identifier, meta)
+            }
             "size" => {
                 let node = TypeNode::from_meta(meta.as_value()?)?;
                 match IntegerTypeNode::try_from_type_node(node) {
@@ -45,6 +54,10 @@ impl EnumDiscriminatorDirective {
         }
 
         Ok(directive)
+    }
+
+    fn identifier(&self) -> CamelCaseString {
+        self.name.clone().unwrap_or("discriminator".into())
     }
 }
 
@@ -91,10 +104,24 @@ impl From<&EnumDiscriminatorDirective> for StructFieldTypeNode {
         StructFieldTypeNode {
             display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
             ..StructFieldTypeNode::new(
-                directive.name.clone().unwrap_or("discriminator".into()),
+                directive.identifier(),
                 directive.size.clone().unwrap_or(IntegerTypeNode::le(U8)),
             )
         }
+    }
+}
+
+impl TryFrom<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
+    type Error = CodamaError;
+
+    fn try_from(directive: &EnumDiscriminatorDirective) -> Result<Self, Self::Error> {
+        let path = Path::try_from(directive.identifier().as_str()).map_err(|_| {
+            CodamaError::InvalidNodeConversion {
+                from: "enumDiscriminatorDirective".to_string(),
+                into: "fieldDiscriminatorNode".to_string(),
+            }
+        })?;
+        Ok(FieldDiscriminatorNode::new(path, 0))
     }
 }
 
@@ -151,6 +178,33 @@ mod tests {
             error.to_string(),
             "enum_discriminator must specify at least one of: name, size"
         );
+    }
+
+    #[test]
+    fn invalid_enum_discriminator_name() {
+        let meta: Meta = syn::parse_quote! { enum_discriminator(name = "1st") };
+        let error = EnumDiscriminatorDirective::parse(&meta).unwrap_err();
+        assert_eq!(error.to_string(), "Invalid enum discriminator name: 1st");
+    }
+
+    #[test]
+    fn creates_field_discriminator_nodes() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { enum_discriminator(size = integer(u16)) },
+                "discriminator",
+            ),
+            (
+                syn::parse_quote! { enum_discriminator(name = "my_kind") },
+                "myKind",
+            ),
+        ] {
+            let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
+            assert_eq!(
+                FieldDiscriminatorNode::try_from(&directive).unwrap(),
+                FieldDiscriminatorNode::new(Path::try_from(expected).unwrap(), 0)
+            );
+        }
     }
 
     #[test]

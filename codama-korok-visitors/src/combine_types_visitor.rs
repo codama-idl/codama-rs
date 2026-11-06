@@ -1,12 +1,12 @@
 use crate::KorokVisitor;
 use codama_attributes::{
-    Attributes, EnumDiscriminatorDirective, FieldDirective, ReprAttribute, TryFromFilter,
+    Attributes, CodamaAttribute, CodamaDirective, EnumDiscriminatorDirective, FieldDirective,
+    ReprAttribute, TryFromFilter,
 };
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
-    DefinedTypeNode, EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-    EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, Node, NumberFormat::U8, NumberTypeNode,
+    DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode, Node,
     RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode,
 };
 use codama_syn_helpers::extensions::*;
@@ -146,8 +146,21 @@ impl CombineTypesVisitor {
     fn parse_unnamed_fields(
         &self,
         fields: &[FieldKorok],
+        attributes: &Attributes,
         parent: &str,
     ) -> CodamaResult<Vec<TypeNode>> {
+        // A tuple has no field identifiers, so a `field(...)` directive has no place in it.
+        let field_directive = attributes
+            .iter()
+            .filter_map(CodamaAttribute::filter)
+            .find(|attribute| matches!(attribute.directive.as_ref(), CodamaDirective::Field(_)));
+        if let Some(attribute) = field_directive {
+            return Err(attribute
+                .ast
+                .error("`field(...)` needs named fields, it cannot add a field to a tuple")
+                .into());
+        }
+
         let items = fields
             .iter()
             .enumerate()
@@ -173,7 +186,7 @@ impl KorokVisitor for CombineTypesVisitor {
                 StructTypeNode::new(fields).into()
             }
             syn::Fields::Unnamed(_) => {
-                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
+                let items = self.parse_unnamed_fields(&korok.fields, &korok.attributes, &parent)?;
                 if items.len() == 1 {
                     items.first().unwrap().clone()
                 } else {
@@ -213,12 +226,14 @@ impl KorokVisitor for CombineTypesVisitor {
             .or(korok
                 .attributes
                 .get_first(ReprAttribute::filter)
-                .and_then(|attr| attr.get_number_type_node())
-                .map(NestedTypeNode::Value))
-            .unwrap_or(NestedTypeNode::Value(NumberTypeNode::le(U8)));
+                .and_then(|attr| attr.get_integer_type_node()))
+            .unwrap_or(IntegerTypeNode::le(U8));
 
-        korok.node =
-            Some(DefinedTypeNode::new(korok.name(), EnumTypeNode { variants, size }).into());
+        let r#enum = EnumTypeNode {
+            size,
+            ..EnumTypeNode::new(variants)
+        };
+        korok.node = Some(DefinedTypeNode::new(korok.name(), r#enum).into());
         Ok(())
     }
 
@@ -242,55 +257,31 @@ impl KorokVisitor for CombineTypesVisitor {
             .as_ref()
             .and_then(|(_, x)| x.as_unsigned_integer::<u32>().ok());
 
-        korok.node = match korok.ast.fields {
+        let variant = match korok.ast.fields {
             syn::Fields::Named(_) => {
                 let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
-                Some(
-                    EnumStructVariantTypeNode {
-                        name: korok.name(),
-                        r#struct: StructTypeNode::new(fields).into(),
-                        discriminator,
-                        display: None,
-                    }
-                    .into(),
-                )
+                EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
             }
             syn::Fields::Unnamed(_) => {
-                let items = self.parse_unnamed_fields(&korok.fields, &parent)?;
-                Some(
-                    EnumTupleVariantTypeNode {
-                        name: korok.name(),
-                        tuple: TupleTypeNode::new(items).into(),
-                        discriminator,
-                        display: None,
-                    }
-                    .into(),
-                )
+                let items = self.parse_unnamed_fields(&korok.fields, &korok.attributes, &parent)?;
+                EnumVariantTypeNode::with_data(korok.name(), TupleTypeNode::new(items))
             }
             _ => {
                 let fields = self.parse_named_fields(&korok.fields, &korok.attributes, &parent)?;
                 if !fields.is_empty() {
-                    Some(
-                        EnumStructVariantTypeNode {
-                            name: korok.name(),
-                            r#struct: StructTypeNode::new(fields).into(),
-                            discriminator,
-                            display: None,
-                        }
-                        .into(),
-                    )
+                    EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
                 } else {
-                    Some(
-                        EnumEmptyVariantTypeNode {
-                            name: korok.name(),
-                            discriminator,
-                            display: None,
-                        }
-                        .into(),
-                    )
+                    EnumVariantTypeNode::new(korok.name())
                 }
             }
         };
+        korok.node = Some(
+            EnumVariantTypeNode {
+                discriminator,
+                ..variant
+            }
+            .into(),
+        );
         Ok(())
     }
 }

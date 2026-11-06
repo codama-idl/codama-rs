@@ -53,12 +53,6 @@ impl<'a> ResolveDirectivesVisitor<'a> {
                     self.resolve_value_node(dv)?;
                 }
             }
-            CodamaDirective::Argument(d) => {
-                self.resolve_type_node(&mut d.r#type)?;
-                if let Some(ref mut dv) = d.default_value {
-                    self.resolve_instruction_input_value(dv)?;
-                }
-            }
             CodamaDirective::Seed(d) => match &mut d.seed {
                 SeedDirectiveType::Variable { r#type, .. } => {
                     self.resolve_type_node(r#type)?;

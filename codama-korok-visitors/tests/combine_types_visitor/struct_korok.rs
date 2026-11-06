@@ -2,9 +2,9 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::StructKorok;
 use codama_nodes::{
-    BooleanTypeNode, DefaultValueStrategy, DefinedTypeNode, Node, NumberFormat::U64,
-    NumberTypeNode, NumberValueNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
-    StructTypeNode, TupleTypeNode, U32, U8,
+    BooleanTypeNode, DefaultValueStrategy, DefinedTypeNode, IntegerFormat::U64, IntegerTypeNode,
+    IntegerValueNode, Node, StringTypeNode, StringValueNode, StructFieldTypeNode, StructTypeNode,
+    TupleTypeNode, U32, U8,
 };
 
 #[test]
@@ -16,7 +16,7 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
         }
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields[0].node = Some(StructFieldTypeNode::new("age", NumberTypeNode::le(U8)).into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)).into());
     korok.fields[1].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
 
     assert_eq!(korok.node, None);
@@ -27,7 +27,7 @@ fn it_creates_a_defined_type_struct_from_nammed_fields() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
@@ -43,8 +43,8 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
         struct Coordinates(u32, u32);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields[0].node = Some(NumberTypeNode::le(U32).into());
-    korok.fields[1].node = Some(NumberTypeNode::le(U32).into());
+    korok.fields[0].node = Some(IntegerTypeNode::le(U32).into());
+    korok.fields[1].node = Some(IntegerTypeNode::le(U32).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -54,8 +54,8 @@ fn it_creates_a_defined_type_tuple_from_unnammed_fields() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "coordinates",
                 TupleTypeNode::new(vec![
-                    NumberTypeNode::le(U32).into(),
-                    NumberTypeNode::le(U32).into(),
+                    IntegerTypeNode::le(U32).into(),
+                    IntegerTypeNode::le(U32).into(),
                 ])
             )
             .into()
@@ -70,13 +70,13 @@ fn it_creates_a_defined_type_from_single_unnammed_fields() -> CodamaResult<()> {
         struct Slot(u64);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields[0].node = Some(NumberTypeNode::le(U64).into());
+    korok.fields[0].node = Some(IntegerTypeNode::le(U64).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(DefinedTypeNode::new("slot", NumberTypeNode::le(U64)).into())
+        Some(DefinedTypeNode::new("slot", IntegerTypeNode::le(U64)).into())
     );
     Ok(())
 }
@@ -103,8 +103,8 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
         struct Overriden(u32, u32);
     };
     let mut korok = StructKorok::parse(&item)?;
-    korok.fields[0].node = Some(NumberTypeNode::le(U32).into());
-    korok.fields[1].node = Some(NumberTypeNode::le(U32).into());
+    korok.fields[0].node = Some(IntegerTypeNode::le(U32).into());
+    korok.fields[1].node = Some(IntegerTypeNode::le(U32).into());
 
     let original_node = Some(Node::from(DefinedTypeNode::new(
         "original",
@@ -159,7 +159,7 @@ fn it_fails_if_fields_do_not_resolve_to_type_nodes() -> CodamaResult<()> {
 #[test]
 fn it_adds_attribute_fields_to_empty_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(field("age", number(u8)))]
+        #[codama(field("age", integer(u8)))]
         #[codama(field("name", string(utf8)))]
         struct Person;
     };
@@ -173,7 +173,7 @@ fn it_adds_attribute_fields_to_empty_structs() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
@@ -186,8 +186,8 @@ fn it_adds_attribute_fields_to_empty_structs() -> CodamaResult<()> {
 #[test]
 fn it_prepends_attribute_fields_to_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(field("discriminator", number(u8), value = 0))]
-        #[codama(field("age", number(u8)))]
+        #[codama(field("discriminator", integer(u8), value = 0))]
+        #[codama(field("age", integer(u8)))]
         struct Person {
             name: String,
         }
@@ -204,11 +204,11 @@ fn it_prepends_attribute_fields_to_structs() -> CodamaResult<()> {
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode {
-                        default_value: Box::new(Some(NumberValueNode::new(0u8).into())),
+                        default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        ..StructFieldTypeNode::new("discriminator", NumberTypeNode::le(U8))
+                        ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
                     },
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
@@ -221,7 +221,7 @@ fn it_prepends_attribute_fields_to_structs() -> CodamaResult<()> {
 #[test]
 fn it_appends_attribute_fields_to_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(field(after, "age", number(u8)))]
+        #[codama(field(after, "age", integer(u8)))]
         #[codama(field(after, "is_member", boolean))]
         struct Person {
             name: String,
@@ -239,7 +239,7 @@ fn it_appends_attribute_fields_to_structs() -> CodamaResult<()> {
                 "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
                 ])
             )
@@ -252,9 +252,9 @@ fn it_appends_attribute_fields_to_structs() -> CodamaResult<()> {
 #[test]
 fn it_prepends_and_appends_attribute_fields_to_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
-        #[codama(field("age", number(u8)))]
+        #[codama(field("age", integer(u8)))]
         #[codama(field(after, "last_name", string(utf8)))]
-        #[codama(field("year_of_birth", number(u8)))]
+        #[codama(field("year_of_birth", integer(u8)))]
         #[codama(field(after, "is_member", boolean))]
         struct Person {
             name: String,
@@ -271,8 +271,8 @@ fn it_prepends_and_appends_attribute_fields_to_structs() -> CodamaResult<()> {
             DefinedTypeNode::new(
                 "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("age", NumberTypeNode::le(U8)),
-                    StructFieldTypeNode::new("year_of_birth", NumberTypeNode::le(U8)),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new("year_of_birth", IntegerTypeNode::le(U8)),
                     StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                     StructFieldTypeNode::new("last_name", StringTypeNode::utf8()),
                     StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
