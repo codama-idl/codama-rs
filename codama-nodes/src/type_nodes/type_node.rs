@@ -1,9 +1,9 @@
 use crate::{
     ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, DefinedTypeLinkNode,
     DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, FixedPointTypeNode, FloatTypeNode,
-    HasKind, IntegerTypeNode, LinkNode, MapTypeNode, Node, OptionTypeNode, PublicKeyTypeNode,
-    RemainderOptionTypeNode, SetTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
-    TupleTypeNode, ZeroableOptionTypeNode,
+    HasKind, HasTransforms, IntegerTypeNode, LinkNode, MapTypeNode, Node, OptionTypeNode,
+    PublicKeyTypeNode, RemainderOptionTypeNode, SetTypeNode, StringTypeNode, StructFieldTypeNode,
+    StructTypeNode, TransformNode, TupleTypeNode, ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
 use codama_nodes_derive::node_union;
@@ -153,9 +153,60 @@ impl TryFrom<TypeNode> for RegisteredTypeNode {
     }
 }
 
+impl HasTransforms for TypeNode {
+    fn transforms(&self) -> &[TransformNode] {
+        match self {
+            TypeNode::Array(node) => node.transforms(),
+            TypeNode::Boolean(node) => node.transforms(),
+            TypeNode::Bytes(node) => node.transforms(),
+            TypeNode::DateTime(node) => node.transforms(),
+            TypeNode::Duration(node) => node.transforms(),
+            TypeNode::Enum(node) => node.transforms(),
+            TypeNode::FixedPoint(node) => node.transforms(),
+            TypeNode::Float(node) => node.transforms(),
+            TypeNode::Integer(node) => node.transforms(),
+            TypeNode::Map(node) => node.transforms(),
+            TypeNode::Option(node) => node.transforms(),
+            TypeNode::PublicKey(node) => node.transforms(),
+            TypeNode::RemainderOption(node) => node.transforms(),
+            TypeNode::Set(node) => node.transforms(),
+            TypeNode::String(node) => node.transforms(),
+            TypeNode::Struct(node) => node.transforms(),
+            TypeNode::Tuple(node) => node.transforms(),
+            TypeNode::ZeroableOption(node) => node.transforms(),
+            TypeNode::Link(node) => node.transforms(),
+        }
+    }
+
+    fn transforms_mut(&mut self) -> &mut Vec<TransformNode> {
+        match self {
+            TypeNode::Array(node) => node.transforms_mut(),
+            TypeNode::Boolean(node) => node.transforms_mut(),
+            TypeNode::Bytes(node) => node.transforms_mut(),
+            TypeNode::DateTime(node) => node.transforms_mut(),
+            TypeNode::Duration(node) => node.transforms_mut(),
+            TypeNode::Enum(node) => node.transforms_mut(),
+            TypeNode::FixedPoint(node) => node.transforms_mut(),
+            TypeNode::Float(node) => node.transforms_mut(),
+            TypeNode::Integer(node) => node.transforms_mut(),
+            TypeNode::Map(node) => node.transforms_mut(),
+            TypeNode::Option(node) => node.transforms_mut(),
+            TypeNode::PublicKey(node) => node.transforms_mut(),
+            TypeNode::RemainderOption(node) => node.transforms_mut(),
+            TypeNode::Set(node) => node.transforms_mut(),
+            TypeNode::String(node) => node.transforms_mut(),
+            TypeNode::Struct(node) => node.transforms_mut(),
+            TypeNode::Tuple(node) => node.transforms_mut(),
+            TypeNode::ZeroableOption(node) => node.transforms_mut(),
+            TypeNode::Link(node) => node.transforms_mut(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{FixedSizeTransformNode, SizePrefixTransformNode, U32};
 
     #[test]
     fn kind_from_standalone() {
@@ -197,5 +248,54 @@ mod tests {
             let node: TypeNode = serde_json::from_str(json).unwrap();
             assert_eq!(serde_json::to_string(&node).unwrap(), json);
         }
+    }
+
+    #[test]
+    fn transforms() {
+        let node: TypeNode = StringTypeNode::utf8()
+            .add_transform(FixedSizeTransformNode::new(10))
+            .into();
+        assert_eq!(
+            node.transforms(),
+            [TransformNode::FixedSize(FixedSizeTransformNode::new(10))]
+        );
+    }
+
+    #[test]
+    fn add_transform() {
+        let node =
+            TypeNode::from(IntegerTypeNode::le(U32)).add_transform(FixedSizeTransformNode::new(8));
+        assert_eq!(
+            node,
+            TypeNode::Integer(IntegerTypeNode {
+                transforms: vec![FixedSizeTransformNode::new(8).into()],
+                ..IntegerTypeNode::le(U32)
+            })
+        );
+    }
+
+    #[test]
+    fn link_with_transform() {
+        let node = TypeNode::from(DefinedTypeLinkNode::new("myType"))
+            .add_transform(FixedSizeTransformNode::new(32));
+        assert_eq!(
+            serde_json::to_string(&node).unwrap(),
+            r#"{"kind":"definedTypeLinkNode","identifier":"myType","transforms":[{"kind":"fixedSizeTransformNode","size":32}]}"#
+        );
+    }
+
+    #[test]
+    fn transforms_mut() {
+        let mut node: TypeNode = StringTypeNode::utf8()
+            .add_transform(FixedSizeTransformNode::new(10))
+            .into();
+        node.transforms_mut()[0] = SizePrefixTransformNode::new(IntegerTypeNode::le(U32)).into();
+        assert_eq!(
+            node,
+            TypeNode::String(
+                StringTypeNode::utf8()
+                    .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
+            )
+        );
     }
 }

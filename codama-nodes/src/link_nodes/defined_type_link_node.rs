@@ -41,6 +41,7 @@ impl From<&str> for DefinedTypeLinkNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{FixedSizeTransformNode, HasTransforms, TransformNode};
 
     #[test]
     fn new() {
@@ -85,5 +86,26 @@ mod tests {
         let json = r#"{"kind":"definedTypeLinkNode","identifier":"myType"}"#;
         let node: DefinedTypeLinkNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, DefinedTypeLinkNode::new("myType"));
+    }
+
+    #[test]
+    fn add_transform() {
+        let node =
+            DefinedTypeLinkNode::new("myType").add_transform(FixedSizeTransformNode::new(32));
+        assert_eq!(
+            node.transforms(),
+            [TransformNode::FixedSize(FixedSizeTransformNode::new(32))]
+        );
+    }
+
+    #[test]
+    fn to_json_with_transforms() {
+        let node =
+            DefinedTypeLinkNode::new("myType").add_transform(FixedSizeTransformNode::new(32));
+        let json = serde_json::to_string(&node).unwrap();
+        assert_eq!(
+            json,
+            r#"{"kind":"definedTypeLinkNode","identifier":"myType","transforms":[{"kind":"fixedSizeTransformNode","size":32}]}"#
+        );
     }
 }
