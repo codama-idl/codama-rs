@@ -87,7 +87,10 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a FieldDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode};
+    use codama_nodes::{
+        FixedSizeTransformNode, HasTransforms, IntegerFormat::U8, IntegerTypeNode,
+        IntegerValueNode, StringTypeNode,
+    };
 
     #[test]
     fn ok() {
@@ -116,6 +119,27 @@ mod tests {
                 after: true,
                 name: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
+                docs: Docs::default(),
+                default_value: None,
+                default_value_strategy: None,
+            }
+        );
+    }
+
+    #[test]
+    fn wrapped_type() {
+        let meta: Meta = syn::parse_quote! { field("name", fixed_size(string, 4)) };
+        let directive = FieldDirective::parse(&meta).unwrap();
+        assert_eq!(
+            directive,
+            FieldDirective {
+                after: false,
+                name: "name".into(),
+                r#type: Resolvable::Resolved(
+                    StringTypeNode::utf8()
+                        .add_transform(FixedSizeTransformNode::new(4))
+                        .into()
+                ),
                 docs: Docs::default(),
                 default_value: None,
                 default_value_strategy: None,
