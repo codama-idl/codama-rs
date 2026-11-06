@@ -11,54 +11,54 @@ fn get_idl() {
         r#"{
   "kind": "rootNode",
   "standard": "codama",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "program": {
     "kind": "programNode",
-    "name": "system",
+    "identifier": "system",
     "publicKey": "11111111111111111111111111111111",
     "version": "1.0.0",
     "accounts": [
       {
         "kind": "accountNode",
-        "name": "nonce",
+        "identifier": "nonce",
         "data": {
           "kind": "structTypeNode",
           "fields": [
             {
               "kind": "structFieldTypeNode",
-              "name": "version",
+              "identifier": "version",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "name": "nonceVersion"
+                "identifier": "nonceVersion"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "state",
+              "identifier": "state",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "name": "nonceState"
+                "identifier": "nonceState"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "authority",
+              "identifier": "authority",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "blockhash",
+              "identifier": "blockhash",
               "type": {
                 "kind": "publicKeyTypeNode"
               }
             },
             {
               "kind": "structFieldTypeNode",
-              "name": "lamportsPerSignature",
+              "identifier": "lamportsPerSignature",
               "type": {
-                "kind": "numberTypeNode",
+                "kind": "integerTypeNode",
                 "format": "u64",
                 "endian": "le"
               }
@@ -70,11 +70,11 @@ fn get_idl() {
     "instructions": [
       {
         "kind": "instructionNode",
-        "name": "createAccount",
+        "identifier": "createAccount",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "payer",
+            "identifier": "payer",
             "isWritable": true,
             "isSigner": true,
             "defaultValue": {
@@ -83,117 +83,123 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "newAccount",
+            "identifier": "newAccount",
             "isWritable": true,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "0"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 0
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "lamports",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
             },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "space",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "programAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "lamports",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "space",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "programAddress",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "assign",
+        "identifier": "assign",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "account",
+            "identifier": "account",
             "isWritable": true,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "1"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 1
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "programAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "programAddress",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "transferSol",
+        "identifier": "transferSol",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "source",
+            "identifier": "source",
             "isWritable": true,
             "isSigner": true,
             "display": {
@@ -203,7 +209,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "destination",
+            "identifier": "destination",
             "isWritable": true,
             "isSigner": false,
             "display": {
@@ -212,54 +218,57 @@ fn get_idl() {
             }
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 2
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "amount",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "2"
+              },
               "display": {
-                "kind": "amountNumberDisplayNode",
-                "decimals": {
-                  "kind": "numberValueNode",
-                  "number": 9
-                },
-                "unit": {
-                  "kind": "stringValueNode",
-                  "string": "SOL"
-                }
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
               }
             },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "label": "Amount"
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "amount",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "integerValueNode",
+                    "value": "9"
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "SOL"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Amount"
+              }
             }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ],
@@ -271,116 +280,121 @@ fn get_idl() {
       },
       {
         "kind": "instructionNode",
-        "name": "createAccountWithSeed",
+        "identifier": "createAccountWithSeed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "payer",
+            "identifier": "payer",
             "isWritable": true,
             "isSigner": true
           },
           {
             "kind": "instructionAccountNode",
-            "name": "newAccount",
+            "identifier": "newAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "baseAccount",
+            "identifier": "baseAccount",
             "isWritable": false,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "3"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 3
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "base",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "seed",
-            "type": {
-              "kind": "sizePrefixTypeNode",
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "seed",
               "type": {
                 "kind": "stringTypeNode",
-                "encoding": "utf8"
-              },
-              "prefix": {
-                "kind": "numberTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "sizePrefixTransformNode",
+                    "prefix": {
+                      "kind": "integerTypeNode",
+                      "format": "u64",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "amount",
+              "type": {
+                "kind": "integerTypeNode",
                 "format": "u64",
                 "endian": "le"
               }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "space",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "programAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "amount",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "space",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "programAddress",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "advanceNonceAccount",
+        "identifier": "advanceNonceAccount",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAccount",
+            "identifier": "nonceAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "recentBlockhashesSysvar",
+            "identifier": "recentBlockhashesSysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -390,58 +404,61 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAuthority",
+            "identifier": "nonceAuthority",
             "isWritable": false,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 4
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "4"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "withdrawNonceAccount",
+        "identifier": "withdrawNonceAccount",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAccount",
+            "identifier": "nonceAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "recipientAccount",
+            "identifier": "recipientAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "recentBlockhashesSysvar",
+            "identifier": "recentBlockhashesSysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -451,7 +468,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "rentSysvar",
+            "identifier": "rentSysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -461,61 +478,64 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAuthority",
+            "identifier": "nonceAuthority",
             "isWritable": false,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "5"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 5
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "withdrawAmount",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "withdrawAmount",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "initializeNonceAccount",
+        "identifier": "initializeNonceAccount",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAccount",
+            "identifier": "nonceAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "recentBlockhashesSysvar",
+            "identifier": "recentBlockhashesSysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -525,7 +545,7 @@ fn get_idl() {
           },
           {
             "kind": "instructionAccountNode",
-            "name": "rentSysvar",
+            "identifier": "rentSysvar",
             "isWritable": false,
             "isSigner": false,
             "defaultValue": {
@@ -534,418 +554,445 @@ fn get_idl() {
             }
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 6
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "nonceAuthority",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
-        "discriminators": [
-          {
-            "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
-            "offset": 0
-          }
-        ]
-      },
-      {
-        "kind": "instructionNode",
-        "name": "authorizeNonceAccount",
-        "accounts": [
-          {
-            "kind": "instructionAccountNode",
-            "name": "nonceAccount",
-            "isWritable": true,
-            "isSigner": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "nonceAuthority",
-            "isWritable": false,
-            "isSigner": true
-          }
-        ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 7
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "newNonceAuthority",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
-        "discriminators": [
-          {
-            "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
-            "offset": 0
-          }
-        ]
-      },
-      {
-        "kind": "instructionNode",
-        "name": "allocate",
-        "accounts": [
-          {
-            "kind": "instructionAccountNode",
-            "name": "newAccount",
-            "isWritable": true,
-            "isSigner": true
-          }
-        ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 8
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "space",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          }
-        ],
-        "discriminators": [
-          {
-            "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
-            "offset": 0
-          }
-        ]
-      },
-      {
-        "kind": "instructionNode",
-        "name": "allocateWithSeed",
-        "accounts": [
-          {
-            "kind": "instructionAccountNode",
-            "name": "newAccount",
-            "isWritable": true,
-            "isSigner": false
-          },
-          {
-            "kind": "instructionAccountNode",
-            "name": "baseAccount",
-            "isWritable": false,
-            "isSigner": true
-          }
-        ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 9
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "base",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "seed",
-            "type": {
-              "kind": "sizePrefixTypeNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
               "type": {
-                "kind": "stringTypeNode",
-                "encoding": "utf8"
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
               },
-              "prefix": {
-                "kind": "numberTypeNode",
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "6"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "nonceAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "path": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "identifier": "authorizeNonceAccount",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "identifier": "nonceAccount",
+            "isWritable": true,
+            "isSigner": false
+          },
+          {
+            "kind": "instructionAccountNode",
+            "identifier": "nonceAuthority",
+            "isWritable": false,
+            "isSigner": true
+          }
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "7"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "newNonceAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "path": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "identifier": "allocate",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "identifier": "newAccount",
+            "isWritable": true,
+            "isSigner": true
+          }
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "8"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "space",
+              "type": {
+                "kind": "integerTypeNode",
                 "format": "u64",
                 "endian": "le"
               }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "space",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "programAddress",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "assignWithSeed",
+        "identifier": "allocateWithSeed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "account",
+            "identifier": "newAccount",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "baseAccount",
+            "identifier": "baseAccount",
             "isWritable": false,
             "isSigner": true
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "9"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 10
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "base",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "seed",
-            "type": {
-              "kind": "sizePrefixTypeNode",
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "seed",
               "type": {
                 "kind": "stringTypeNode",
-                "encoding": "utf8"
-              },
-              "prefix": {
-                "kind": "numberTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "sizePrefixTransformNode",
+                    "prefix": {
+                      "kind": "integerTypeNode",
+                      "format": "u64",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "space",
+              "type": {
+                "kind": "integerTypeNode",
                 "format": "u64",
                 "endian": "le"
               }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "programAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "programAddress",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "transferSolWithSeed",
+        "identifier": "assignWithSeed",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "source",
+            "identifier": "account",
             "isWritable": true,
             "isSigner": false
           },
           {
             "kind": "instructionAccountNode",
-            "name": "baseAccount",
+            "identifier": "baseAccount",
+            "isWritable": false,
+            "isSigner": true
+          }
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "10"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "seed",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "sizePrefixTransformNode",
+                    "prefix": {
+                      "kind": "integerTypeNode",
+                      "format": "u64",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "programAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "path": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "identifier": "transferSolWithSeed",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "identifier": "source",
+            "isWritable": true,
+            "isSigner": false
+          },
+          {
+            "kind": "instructionAccountNode",
+            "identifier": "baseAccount",
             "isWritable": false,
             "isSigner": true
           },
           {
             "kind": "instructionAccountNode",
-            "name": "destination",
+            "identifier": "destination",
             "isWritable": true,
             "isSigner": false
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 11
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "amount",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u64",
-              "endian": "le"
-            }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "fromSeed",
-            "type": {
-              "kind": "sizePrefixTypeNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
               "type": {
-                "kind": "stringTypeNode",
-                "encoding": "utf8"
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
               },
-              "prefix": {
-                "kind": "numberTypeNode",
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "11"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "amount",
+              "type": {
+                "kind": "integerTypeNode",
                 "format": "u64",
                 "endian": "le"
               }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "fromSeed",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8",
+                "transforms": [
+                  {
+                    "kind": "sizePrefixTransformNode",
+                    "prefix": {
+                      "kind": "integerTypeNode",
+                      "format": "u64",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "fromOwner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
             }
-          },
-          {
-            "kind": "instructionArgumentNode",
-            "name": "fromOwner",
-            "type": {
-              "kind": "publicKeyTypeNode"
-            }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
       },
       {
         "kind": "instructionNode",
-        "name": "upgradeNonceAccount",
+        "identifier": "upgradeNonceAccount",
         "accounts": [
           {
             "kind": "instructionAccountNode",
-            "name": "nonceAccount",
+            "identifier": "nonceAccount",
             "isWritable": true,
             "isSigner": false
           }
         ],
-        "arguments": [
-          {
-            "kind": "instructionArgumentNode",
-            "name": "discriminator",
-            "defaultValueStrategy": "omitted",
-            "type": {
-              "kind": "numberTypeNode",
-              "format": "u32",
-              "endian": "le"
-            },
-            "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 12
-            },
-            "display": {
-              "kind": "structFieldDisplayNode",
-              "skip": "always"
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "identifier": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "integerTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "integerValueNode",
+                "value": "12"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
             }
-          }
-        ],
+          ]
+        },
         "discriminators": [
           {
             "kind": "fieldDiscriminatorNode",
-            "name": "discriminator",
+            "path": "discriminator",
             "offset": 0
           }
         ]
@@ -954,21 +1001,21 @@ fn get_idl() {
     "definedTypes": [
       {
         "kind": "definedTypeNode",
-        "name": "nonceVersion",
+        "identifier": "nonceVersion",
         "type": {
           "kind": "enumTypeNode",
           "variants": [
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "legacy"
+              "kind": "enumVariantTypeNode",
+              "identifier": "legacy"
             },
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "current"
+              "kind": "enumVariantTypeNode",
+              "identifier": "current"
             }
           ],
           "size": {
-            "kind": "numberTypeNode",
+            "kind": "integerTypeNode",
             "format": "u32",
             "endian": "le"
           }
@@ -976,21 +1023,21 @@ fn get_idl() {
       },
       {
         "kind": "definedTypeNode",
-        "name": "nonceState",
+        "identifier": "nonceState",
         "type": {
           "kind": "enumTypeNode",
           "variants": [
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "uninitialized"
+              "kind": "enumVariantTypeNode",
+              "identifier": "uninitialized"
             },
             {
-              "kind": "enumEmptyVariantTypeNode",
-              "name": "initialized"
+              "kind": "enumVariantTypeNode",
+              "identifier": "initialized"
             }
           ],
           "size": {
-            "kind": "numberTypeNode",
+            "kind": "integerTypeNode",
             "format": "u32",
             "endian": "le"
           }
@@ -1000,55 +1047,55 @@ fn get_idl() {
     "errors": [
       {
         "kind": "errorNode",
-        "name": "accountAlreadyInUse",
+        "identifier": "accountAlreadyInUse",
         "code": 0,
         "message": "an account with the same address already exists"
       },
       {
         "kind": "errorNode",
-        "name": "resultWithNegativeLamports",
+        "identifier": "resultWithNegativeLamports",
         "code": 1,
         "message": "account does not have enough SOL to perform the operation"
       },
       {
         "kind": "errorNode",
-        "name": "invalidProgramId",
+        "identifier": "invalidProgramId",
         "code": 2,
         "message": "cannot assign account to this program id"
       },
       {
         "kind": "errorNode",
-        "name": "invalidAccountDataLength",
+        "identifier": "invalidAccountDataLength",
         "code": 3,
         "message": "cannot allocate account data of this length"
       },
       {
         "kind": "errorNode",
-        "name": "maxSeedLengthExceeded",
+        "identifier": "maxSeedLengthExceeded",
         "code": 4,
         "message": "length of requested seed is too long"
       },
       {
         "kind": "errorNode",
-        "name": "addressWithSeedMismatch",
+        "identifier": "addressWithSeedMismatch",
         "code": 5,
         "message": "provided address does not match addressed derived from seed"
       },
       {
         "kind": "errorNode",
-        "name": "nonceNoRecentBlockhashes",
+        "identifier": "nonceNoRecentBlockhashes",
         "code": 6,
         "message": "advancing stored nonce requires a populated RecentBlockhashes sysvar"
       },
       {
         "kind": "errorNode",
-        "name": "nonceBlockhashNotExpired",
+        "identifier": "nonceBlockhashNotExpired",
         "code": 7,
         "message": "stored nonce is still in recent_blockhashes"
       },
       {
         "kind": "errorNode",
-        "name": "nonceUnexpectedBlockhashValue",
+        "identifier": "nonceUnexpectedBlockhashValue",
         "code": 8,
         "message": "specified nonce does not match stored nonce"
       }
