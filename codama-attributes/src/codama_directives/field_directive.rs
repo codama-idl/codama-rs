@@ -1,11 +1,12 @@
 use crate::{
     codama_directives::type_nodes::StructFieldMetaConsumer,
     utils::{FromMeta, MetaConsumer},
-    Attribute, CodamaAttribute, CodamaDirective, Resolvable,
+    Attribute, CodamaAttribute, CodamaDirective, DefaultValueDirective, Resolvable,
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, Docs, StructFieldTypeNode, TypeNode, ValueNode,
+    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, StructFieldTypeNode,
+    TypeNode, ValueNode,
 };
 use codama_syn_helpers::Meta;
 
@@ -15,7 +16,8 @@ pub struct FieldDirective {
     pub name: CamelCaseString,
     pub r#type: Resolvable<TypeNode>,
     pub docs: Docs,
-    pub default_value: Option<Resolvable<ValueNode>>,
+    /// A value, or a contextual value such as `payer` that only an instruction can provide.
+    pub default_value: Option<Resolvable<InstructionInputValueNode>>,
     pub default_value_strategy: Option<DefaultValueStrategy>,
 }
 
@@ -26,11 +28,14 @@ impl FieldDirective {
             // `after` goes first, because `consume_field` reads every other bare path as a type.
             .consume_after()?
             .consume_field()?
-            .consume_default_value()?
+            .consume_default_value(DefaultValueDirective::parse)?
             .assert_fully_consumed()?;
 
-        let default_value = consumer.default_value_node();
         let default_value_strategy = consumer.default_value_strategy();
+        let default_value = consumer
+            .default_value
+            .option()
+            .map(|directive| directive.node);
 
         Ok(FieldDirective {
             after: consumer.after.option().unwrap_or(false),
@@ -43,19 +48,22 @@ impl FieldDirective {
     }
 
     /// Construct a `StructFieldTypeNode` from this directive.
+    /// A contextual default value is not a value node, so the field keeps no default for it.
     /// Returns an error if any unresolved directives remain.
     pub fn to_struct_field_type_node(&self) -> CodamaResult<StructFieldTypeNode> {
+        let r#type = self.r#type.try_resolved()?.clone();
+        let default_value = self
+            .default_value
+            .as_ref()
+            .map(|node| node.try_resolved())
+            .transpose()?
+            .and_then(|node| ValueNode::try_from(node.clone()).ok());
         Ok(StructFieldTypeNode {
             identifier: self.name.clone(),
-            r#type: Box::new(self.r#type.try_resolved()?.clone()),
+            r#type: Box::new(r#type),
             docs: self.docs.clone(),
-            default_value: Box::new(
-                self.default_value
-                    .as_ref()
-                    .map(|r| r.try_resolved().cloned())
-                    .transpose()?,
-            ),
-            default_value_strategy: self.default_value_strategy,
+            default_value_strategy: default_value.as_ref().and(self.default_value_strategy),
+            default_value: Box::new(default_value),
             display: None,
             plugins: vec![],
         })
@@ -89,7 +97,7 @@ mod tests {
     use super::*;
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms, IntegerFormat::U8, IntegerTypeNode,
-        IntegerValueNode, StringTypeNode,
+        IntegerValueNode, PayerValueNode, PublicKeyTypeNode, StringTypeNode,
     };
 
     #[test]
@@ -162,6 +170,54 @@ mod tests {
                 default_value_strategy: None,
             }
         );
+    }
+
+    #[test]
+    fn with_contextual_default_value() {
+        for (meta, default_value_strategy) in [
+            (
+                syn::parse_quote! { field("owner", public_key, default_value = payer) },
+                None,
+            ),
+            (
+                syn::parse_quote! { field("owner", public_key, value = payer) },
+                Some(DefaultValueStrategy::Omitted),
+            ),
+        ] {
+            let directive = FieldDirective::parse(&meta).unwrap();
+            assert_eq!(
+                directive,
+                FieldDirective {
+                    after: false,
+                    name: "owner".into(),
+                    r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
+                    docs: Docs::default(),
+                    default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
+                    default_value_strategy,
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn struct_field_type_node_keeps_value_defaults_only() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { field("age", integer(u8), value = 42) },
+                StructFieldTypeNode {
+                    default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
+                    default_value_strategy: Some(DefaultValueStrategy::Omitted),
+                    ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U8))
+                },
+            ),
+            (
+                syn::parse_quote! { field("owner", public_key, value = payer) },
+                StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
+            ),
+        ] {
+            let directive = FieldDirective::parse(&meta).unwrap();
+            assert_eq!(directive.to_struct_field_type_node().unwrap(), expected);
+        }
     }
 
     #[test]

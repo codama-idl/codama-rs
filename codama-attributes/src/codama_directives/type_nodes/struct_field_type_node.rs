@@ -1,6 +1,7 @@
 use crate::{
     codama_directives::type_nodes::struct_field_meta_consumer::StructFieldMetaConsumer,
     utils::{FromMeta, MetaConsumer},
+    DefaultValueDirective,
 };
 use codama_nodes::{Docs, StructFieldTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
@@ -10,7 +11,7 @@ impl FromMeta for StructFieldTypeNode {
         meta.assert_directive("field")?;
         let consumer = StructFieldMetaConsumer::from_meta(meta)?
             .consume_field()?
-            .consume_default_value()?
+            .consume_default_value(DefaultValueDirective::parse_value_nodes_only)?
             .assert_fully_consumed()?;
 
         let default_value_strategy = consumer.default_value_strategy();
@@ -85,6 +86,14 @@ mod tests {
                 ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             }
             .into()
+        );
+    }
+
+    #[test]
+    fn contextual_default_value() {
+        assert_type_err!(
+            { field("owner", public_key, default_value = payer) },
+            "unrecognized value"
         );
     }
 

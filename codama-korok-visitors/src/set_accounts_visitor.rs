@@ -1,4 +1,4 @@
-use crate::{parse_pda_node, CombineTypesVisitor, KorokVisitor};
+use crate::{assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
     TryFromFilter,
@@ -153,6 +153,10 @@ impl KorokVisitor for SetAccountsVisitor {
         };
         let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
         let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
+
+        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
+        let fields = std::iter::once(&discriminator).chain(&data.fields);
+        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
         data.fields.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
