@@ -3,7 +3,6 @@ use codama_nodes_derive::node;
 
 #[node]
 pub struct ConditionalValueNode {
-    // Children.
     pub condition: Box<ConditionalValueCondition>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub value: Box<Option<ValueNode>>,

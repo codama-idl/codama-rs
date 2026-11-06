@@ -8,14 +8,11 @@ use codama_nodes_derive::node;
 #[node]
 #[derive(Default)]
 pub struct InstructionNode {
-    // Data.
     pub identifier: CamelCaseString,
-    #[serde(skip_serializing_if = "crate::is_default")]
-    pub optional_account_strategy: Option<OptionalAccountStrategy>,
-
-    // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
+    #[serde(skip_serializing_if = "crate::is_default")]
+    pub optional_account_strategy: Option<OptionalAccountStrategy>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub accounts: Vec<InstructionAccountNode>,
     #[serde(skip_serializing_if = "crate::is_default")]

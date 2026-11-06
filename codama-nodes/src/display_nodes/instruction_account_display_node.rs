@@ -47,7 +47,7 @@ mod tests {
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"instructionAccountDisplayNode","skip":"whenInjected","label":"To"}"#
+            r#"{"kind":"instructionAccountDisplayNode","label":"To","skip":"whenInjected"}"#
         );
     }
 

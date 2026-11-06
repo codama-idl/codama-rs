@@ -3,7 +3,6 @@ use codama_nodes_derive::node;
 
 #[node]
 pub struct AmountNumberDisplayNode {
-    // Children.
     pub decimals: Box<InjectableIntegerValueNode>,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub unit: Box<Option<InjectableUnitValueNode>>,

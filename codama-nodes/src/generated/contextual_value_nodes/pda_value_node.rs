@@ -3,7 +3,6 @@ use codama_nodes_derive::node;
 
 #[node]
 pub struct PdaValueNode {
-    // Children.
     pub pda: Box<PdaValuePda>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub seeds: Vec<PdaSeedValueNode>,

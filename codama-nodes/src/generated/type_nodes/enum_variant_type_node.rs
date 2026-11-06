@@ -4,12 +4,9 @@ use codama_nodes_derive::node;
 #[node]
 #[derive(Default)]
 pub struct EnumVariantTypeNode {
-    // Data.
     pub identifier: CamelCaseString,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub discriminator: Option<u32>,
-
-    // Children.
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     #[serde(skip_serializing_if = "crate::is_default")]

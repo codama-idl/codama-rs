@@ -3,7 +3,6 @@ use codama_nodes_derive::type_node;
 
 #[type_node]
 pub struct ArrayTypeNode {
-    // Children.
     pub item: Box<TypeNode>,
     pub count: Box<CountNode>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
