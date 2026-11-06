@@ -8,6 +8,7 @@ impl ConstantDiscriminatorNode {
         Self {
             constant: constant.into(),
             offset,
+            plugins: vec![],
         }
     }
 }
@@ -15,18 +16,19 @@ impl ConstantDiscriminatorNode {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Base16, ConstantDiscriminatorNode, ConstantValueNode, NumberTypeNode, NumberValueNode, U32,
+        Base16, ConstantDiscriminatorNode, ConstantValueNode, IntegerTypeNode, IntegerValueNode,
+        U32,
     };
 
     #[test]
     fn new() {
         let node = ConstantDiscriminatorNode::new(
-            ConstantValueNode::new(NumberTypeNode::le(U32), NumberValueNode::new(42u32)),
+            ConstantValueNode::new(IntegerTypeNode::le(U32), IntegerValueNode::new(42u32)),
             0,
         );
         assert_eq!(
             node.constant,
-            ConstantValueNode::new(NumberTypeNode::le(U32), NumberValueNode::new(42u32))
+            ConstantValueNode::new(IntegerTypeNode::le(U32), IntegerValueNode::new(42u32))
         );
         assert_eq!(node.offset, 0);
     }

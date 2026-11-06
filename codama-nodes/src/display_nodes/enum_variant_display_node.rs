@@ -1,9 +1,9 @@
-use crate::EnumVariantDisplayNode;
+use crate::{EnumVariantDisplayNode, Text};
 
 impl EnumVariantDisplayNode {
     pub fn new<T>(label: T) -> Self
     where
-        T: Into<String>,
+        T: Into<Text>,
     {
         Self {
             label: Some(label.into()),
@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn new() {
         let node = EnumVariantDisplayNode::new("Buy");
-        assert_eq!(node.label.as_deref(), Some("Buy"));
+        assert_eq!(node.label, Some(Text::from("Buy")));
         assert_eq!(node.skip_inner_data, None);
     }
 
@@ -33,13 +33,14 @@ mod tests {
     #[test]
     fn to_json() {
         let node = EnumVariantDisplayNode {
-            label: Some("Buy".to_string()),
+            label: Some("Buy".into()),
             skip_inner_data: Some(true),
+            plugins: vec![],
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"enumVariantDisplayNode","label":"Buy","skipInnerData":true}"#
+            r#"{"kind":"enumVariantDisplayNode","skipInnerData":true,"label":"Buy"}"#
         );
     }
 

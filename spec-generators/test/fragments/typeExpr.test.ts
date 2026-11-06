@@ -65,12 +65,18 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['crate::CamelCaseString']);
     });
 
-    it('routes stringVersion, stringNamespace and stringPath to plain String (no brand on the Rust side)', () => {
-        for (const expr of [stringVersion(), stringNamespace(), stringPath()]) {
+    it('routes stringVersion and stringNamespace to plain String (no brand on the Rust side)', () => {
+        for (const expr of [stringVersion(), stringNamespace()]) {
             const result = getTypeExprFragment(expr);
             expect(result.content).toBe('String');
             expect(result.imports.size).toBe(0);
         }
+    });
+
+    it('routes stringPath to Path via a crate-rooted import', () => {
+        const result = getTypeExprFragment(stringPath());
+        expect(result.content).toBe('Path');
+        expect([...result.imports.keys()]).toEqual(['crate::Path']);
     });
 
     it('routes stringInteger to Integer via a crate-rooted import', () => {

@@ -2,7 +2,7 @@ use crate::RemainderCountNode;
 
 impl RemainderCountNode {
     pub fn new() -> Self {
-        Self::default()
+        Self { plugins: vec![] }
     }
 }
 
@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn new() {
         let node = RemainderCountNode::new();
-        assert_eq!(node, RemainderCountNode {});
+        assert_eq!(node, RemainderCountNode { plugins: vec![] });
     }
 
     #[test]

@@ -1,9 +1,9 @@
-use crate::{DisplaySkip, InstructionAccountDisplayNode};
+use crate::{DisplaySkip, InstructionAccountDisplayNode, Text};
 
 impl InstructionAccountDisplayNode {
     pub fn new<T>(label: T) -> Self
     where
-        T: Into<String>,
+        T: Into<Text>,
     {
         Self {
             label: Some(label.into()),
@@ -26,7 +26,7 @@ mod tests {
     #[test]
     fn new() {
         let node = InstructionAccountDisplayNode::new("To");
-        assert_eq!(node.label.as_deref(), Some("To"));
+        assert_eq!(node.label, Some(Text::from("To")));
         assert_eq!(node.skip, None);
     }
 
@@ -40,13 +40,14 @@ mod tests {
     #[test]
     fn to_json() {
         let node = InstructionAccountDisplayNode {
-            label: Some("To".to_string()),
+            label: Some("To".into()),
             skip: Some(DisplaySkip::WhenInjected),
+            plugins: vec![],
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"instructionAccountDisplayNode","label":"To","skip":"whenInjected"}"#
+            r#"{"kind":"instructionAccountDisplayNode","skip":"whenInjected","label":"To"}"#
         );
     }
 

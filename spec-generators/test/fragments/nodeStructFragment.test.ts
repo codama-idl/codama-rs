@@ -68,7 +68,7 @@ describe('getNodeStructFragment', () => {
     });
 
     it('derives `Default` for a node of defaultable fields and nothing for an unresolved required node', () => {
-        expect(getNodeStructFragment(nodeOf('fieldDiscriminatorNode'), spec).content).toContain('#[derive(Default)]');
+        expect(getNodeStructFragment(nodeOf('sizeDiscriminatorNode'), spec).content).toContain('#[derive(Default)]');
         const withNode = defineNode('exampleNode', { attributes: [attribute('constant', node('unknownNode'))] });
         expect(getNodeStructFragment(withNode, spec).content).not.toContain('#[derive(');
     });
@@ -86,7 +86,15 @@ describe('getNodeStructFragment', () => {
     });
 
     it('does NOT derive `Default` when a required field references an opaque type', () => {
-        for (const kind of ['instructionStatusNode', 'rootNode', 'errorNode', 'integerValueNode', 'floatValueNode']) {
+        for (const kind of [
+            'instructionStatusNode',
+            'rootNode',
+            'errorNode',
+            'integerValueNode',
+            'floatValueNode',
+            'fieldDiscriminatorNode',
+            'dataValueNode',
+        ]) {
             expect(getNodeStructFragment(nodeOf(kind), spec).content).not.toContain('Default');
         }
     });

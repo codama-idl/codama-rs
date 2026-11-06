@@ -1,9 +1,9 @@
-use crate::{DisplaySkip, StructFieldDisplayNode};
+use crate::{DisplaySkip, StructFieldDisplayNode, Text};
 
 impl StructFieldDisplayNode {
     pub fn new<T>(label: T) -> Self
     where
-        T: Into<String>,
+        T: Into<Text>,
     {
         Self {
             label: Some(label.into()),
@@ -29,14 +29,16 @@ impl StructFieldDisplayNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{IntegerValueNode, TextNode, ValueLabelDisplayNode};
 
     #[test]
     fn new() {
         let node = StructFieldDisplayNode::new("Amount");
-        assert_eq!(node.label.as_deref(), Some("Amount"));
+        assert_eq!(node.label, Some(Text::from("Amount")));
         assert_eq!(node.skip, None);
         assert_eq!(node.flatten, None);
         assert_eq!(node.flatten_prefix, None);
+        assert_eq!(node.value_labels, vec![]);
     }
 
     #[test]
@@ -54,15 +56,20 @@ mod tests {
     #[test]
     fn to_json() {
         let node = StructFieldDisplayNode {
-            label: Some("Amount".to_string()),
+            label: Some("Amount".into()),
             skip: Some(DisplaySkip::Never),
             flatten: Some(true),
-            flatten_prefix: Some("inner".to_string()),
+            flatten_prefix: Some("inner".into()),
+            value_labels: vec![ValueLabelDisplayNode::new(
+                IntegerValueNode::new(0u8),
+                "Zero",
+            )],
+            plugins: vec![],
         };
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"structFieldDisplayNode","label":"Amount","skip":"never","flatten":true,"flattenPrefix":"inner"}"#
+            r#"{"kind":"structFieldDisplayNode","skip":"never","flatten":true,"label":"Amount","flattenPrefix":"inner","valueLabels":[{"kind":"valueLabelDisplayNode","value":{"kind":"integerValueNode","value":"0"},"label":"Zero"}]}"#
         );
     }
 
@@ -71,5 +78,19 @@ mod tests {
         let json = r#"{"kind":"structFieldDisplayNode","label":"Amount"}"#;
         let node: StructFieldDisplayNode = serde_json::from_str(json).unwrap();
         assert_eq!(node, StructFieldDisplayNode::new("Amount"));
+    }
+
+    #[test]
+    fn from_json_with_text_node_label() {
+        let json =
+            r#"{"kind":"structFieldDisplayNode","label":{"kind":"textNode","content":"Amount"}}"#;
+        let node: StructFieldDisplayNode = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            node,
+            StructFieldDisplayNode::new(TextNode {
+                content: "Amount".to_string(),
+                plugins: vec![],
+            })
+        );
     }
 }

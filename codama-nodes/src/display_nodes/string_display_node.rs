@@ -5,6 +5,7 @@ impl StringDisplayNode {
         Self {
             slice_start,
             slice_end,
+            plugins: vec![],
         }
     }
 }
