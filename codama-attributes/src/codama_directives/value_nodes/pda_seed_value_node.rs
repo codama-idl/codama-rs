@@ -27,7 +27,14 @@ impl FromMeta for PdaSeedValueNode {
             "argument" => return removed_syntax(meta, "argument(...)", "data(...)"),
             "data" => {
                 let value = DataValueNode::from_meta(meta)?;
-                return Ok(PdaSeedValueNode::new(value.path.to_string(), value));
+                let path = value.path.to_string();
+                // The seed takes the name of the data field, which a nested path does not give.
+                if value.path.is_nested() {
+                    return Err(meta.error(format!(
+                        r#"a nested path needs a seed name, use seed("name", data("{path}"))"#
+                    )));
+                }
+                return Ok(PdaSeedValueNode::new(path, value));
             }
             _ => {}
         }
@@ -129,6 +136,40 @@ mod tests {
             PdaSeedValueNode::new(
                 "identifier",
                 DataValueNode::new(Path::try_from("identifier").unwrap())
+            )
+        );
+    }
+
+    #[test]
+    fn implicit_data_value_node_with_nested_path() {
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { data("config.mint") },
+                r#"a nested path needs a seed name, use seed("name", data("config.mint"))"#,
+            ),
+            (
+                syn::parse_quote! { data("fees[0]") },
+                r#"a nested path needs a seed name, use seed("name", data("fees[0]"))"#,
+            ),
+            (
+                syn::parse_quote! { data("[0].mint") },
+                r#"a nested path needs a seed name, use seed("name", data("[0].mint"))"#,
+            ),
+        ] {
+            let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
+            assert_eq!(error.to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn explicit_data_value_node_with_nested_path() {
+        let meta: Meta = syn::parse_quote! { seed("mint", data("config.mint")) };
+        let node = PdaSeedValueNode::from_meta(&meta).unwrap();
+        assert_eq!(
+            node,
+            PdaSeedValueNode::new(
+                "mint",
+                DataValueNode::new(Path::try_from("config.mint").unwrap())
             )
         );
     }

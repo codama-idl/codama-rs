@@ -1,5 +1,29 @@
-use super::utils::{combine_modules, get_type, CombineModulesInput};
+use super::utils::{combine_modules, get_plugin, get_type, CombineModulesInput};
 use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, ProgramNode, RootNode, StringValueNode};
+
+#[test]
+fn roots_with_plugins() {
+    assert_eq!(
+        combine_modules(
+            CombineModulesInput::new()
+                .add_node(RootNode {
+                    plugins: vec![get_plugin("namespace.a")],
+                    ..RootNode::new(ProgramNode::new("program_a", "1234"))
+                })
+                .add_node(RootNode {
+                    plugins: vec![get_plugin("namespace.b")],
+                    ..RootNode::new(ProgramNode::new("program_b", "1234"))
+                })
+        ),
+        Some(
+            RootNode {
+                plugins: vec![get_plugin("namespace.a"), get_plugin("namespace.b")],
+                ..RootNode::new(ProgramNode::new("program_a", "1234"))
+            }
+            .into()
+        )
+    );
+}
 
 #[test]
 fn root_with_no_nodes_to_combines() {

@@ -12,7 +12,7 @@ use codama_nodes::{
 };
 
 #[test]
-fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
+fn it_sets_defined_types_on_structs_with_named_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Person {
@@ -46,7 +46,7 @@ fn it_sets_defined_types_on_structs_with_nammed_fields() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
+fn it_sets_defined_types_on_structs_with_unnamed_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Coordinates(u32, u32);
@@ -73,7 +73,7 @@ fn it_sets_defined_types_on_structs_with_unnammed_fields() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_sets_defined_types_on_structs_with_single_unnammed_fields() -> CodamaResult<()> {
+fn it_sets_defined_types_on_structs_with_single_unnamed_fields() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Age(u8);
@@ -190,7 +190,7 @@ fn it_sets_defined_types_on_enums_with_explicit_discriminators() -> CodamaResult
 }
 
 #[test]
-fn it_fails_if_nammed_fields_have_no_nodes() -> CodamaResult<()> {
+fn it_fails_if_named_fields_have_no_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo { bar: NoNode }
@@ -209,7 +209,7 @@ fn it_fails_if_nammed_fields_have_no_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_if_nammed_fields_are_not_struct_field_type_nodes() -> CodamaResult<()> {
+fn it_fails_if_named_fields_are_not_struct_field_type_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo { bar: NotStructFieldTypeNode }
@@ -229,7 +229,7 @@ fn it_fails_if_nammed_fields_are_not_struct_field_type_nodes() -> CodamaResult<(
 }
 
 #[test]
-fn it_fails_if_unnammed_fields_have_no_nodes() -> CodamaResult<()> {
+fn it_fails_if_unnamed_fields_have_no_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo (NoNode);
@@ -248,7 +248,7 @@ fn it_fails_if_unnammed_fields_have_no_nodes() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_fails_if_unnammed_fields_are_not_type_nodes() -> CodamaResult<()> {
+fn it_fails_if_unnamed_fields_are_not_type_nodes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaType)]
         struct Foo (NotTypeNode);

@@ -8,6 +8,7 @@ use codama_nodes::{
     CamelCaseString, ConstantPdaSeedNode, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode,
     TypeNode, VariablePdaSeedNode,
 };
+use codama_syn_helpers::extensions::ToTokensExtension;
 
 #[derive(Default)]
 pub struct SetPdasVisitor;
@@ -75,27 +76,29 @@ pub fn parse_pda_seed_nodes(
             SeedDirectiveType::Linked(name) => {
                 // Linked seeds resolve by finding a matching field.
                 // If no field matches, the seed is silently skipped (pre-existing behavior).
-                let seed = fields.iter().find_map(|field| {
-                    if field.ast.ident.as_ref().is_none_or(|ident| ident != name) {
-                        return None;
-                    }
-                    let (name, type_node) = match &field.node {
-                        Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => (
-                            struct_field.identifier.clone(),
-                            (*struct_field.r#type).clone(),
-                        ),
-                        _ => match TypeNode::try_from(field.node.clone()) {
-                            Ok(type_node) => (name.clone().into(), type_node),
-                            Err(_) => return None,
-                        },
-                    };
-                    Some(PdaSeedNode::Variable(VariablePdaSeedNode::new(
-                        name, type_node,
-                    )))
-                });
-                if let Some(seed) = seed {
-                    seeds.push(seed);
-                }
+                let Some(field) = fields
+                    .iter()
+                    .find(|field| field.ast.ident.as_ref().is_some_and(|ident| ident == name))
+                else {
+                    continue;
+                };
+                let (identifier, type_node) = match &field.node {
+                    Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => (
+                        struct_field.identifier.clone(),
+                        (*struct_field.r#type).clone(),
+                    ),
+                    _ => match TypeNode::try_from(field.node.clone()) {
+                        Ok(type_node) => (name.clone().into(), type_node),
+                        Err(_) => {
+                            let message = format!(
+                                "Seed `{name}` links to a field whose type does not resolve, \
+                                add `type = ...` to the seed"
+                            );
+                            return Err(field.ast.error(message).into());
+                        }
+                    },
+                };
+                seeds.push(VariablePdaSeedNode::new(identifier, type_node).into());
             }
         }
     }

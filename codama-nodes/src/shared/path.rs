@@ -13,6 +13,12 @@ impl Path {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+
+    /// The path has a `.` segment or an `[n]` index, such as `header.kind`, `fees[0]` or `[0]`.
+    /// A plain identifier such as `amount` is not nested.
+    pub fn is_nested(&self) -> bool {
+        strip_identifier(&self.0) != Some("")
+    }
 }
 
 impl fmt::Display for Path {
@@ -171,6 +177,24 @@ mod tests {
             Path::try_from("header..kind".to_string()),
             Err(CodamaError::InvalidPath(value)) if value == "header..kind"
         ));
+    }
+
+    #[test]
+    fn is_nested() {
+        for (value, expected) in [
+            ("amount", false),
+            ("_private", false),
+            ("header.kind", true),
+            ("fees[0]", true),
+            ("[0]", true),
+            ("[0].banana", true),
+        ] {
+            assert_eq!(
+                Path::try_from(value).unwrap().is_nested(),
+                expected,
+                "{value}"
+            );
+        }
     }
 
     #[test]
