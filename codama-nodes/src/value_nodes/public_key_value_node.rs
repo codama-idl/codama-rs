@@ -8,6 +8,7 @@ impl PublicKeyValueNode {
         Self {
             public_key: public_key.into(),
             identifier: None,
+            plugins: vec![],
         }
     }
 }
@@ -32,6 +33,7 @@ mod tests {
         let node = PublicKeyValueNode {
             public_key: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".into(),
             identifier: Some("spl_token".into()),
+            plugins: vec![],
         };
         assert_eq!(
             node.public_key,

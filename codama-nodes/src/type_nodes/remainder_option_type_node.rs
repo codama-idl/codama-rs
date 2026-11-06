@@ -7,6 +7,8 @@ impl RemainderOptionTypeNode {
     {
         Self {
             item: Box::new(item.into()),
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 }
@@ -14,28 +16,28 @@ impl RemainderOptionTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NumberTypeNode, U64};
+    use crate::{IntegerTypeNode, U64};
 
     #[test]
     fn new() {
-        let node = RemainderOptionTypeNode::new(NumberTypeNode::le(U64));
-        assert_eq!(*node.item, TypeNode::Number(NumberTypeNode::le(U64)));
+        let node = RemainderOptionTypeNode::new(IntegerTypeNode::le(U64));
+        assert_eq!(*node.item, TypeNode::Integer(IntegerTypeNode::le(U64)));
     }
 
     #[test]
     fn to_json() {
-        let node = RemainderOptionTypeNode::new(NumberTypeNode::le(U64));
+        let node = RemainderOptionTypeNode::new(IntegerTypeNode::le(U64));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"remainderOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#
+            r#"{"kind":"remainderOptionTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"remainderOptionTypeNode","item":{"kind":"numberTypeNode","format":"u64","endian":"le"}}"#;
+        let json = r#"{"kind":"remainderOptionTypeNode","item":{"kind":"integerTypeNode","format":"u64","endian":"le"}}"#;
         let node: RemainderOptionTypeNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, RemainderOptionTypeNode::new(NumberTypeNode::le(U64)));
+        assert_eq!(node, RemainderOptionTypeNode::new(IntegerTypeNode::le(U64)));
     }
 }

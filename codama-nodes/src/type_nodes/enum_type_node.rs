@@ -1,73 +1,72 @@
-use crate::{EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode, U8};
+use crate::{EnumTypeNode, EnumVariantTypeNode, IntegerTypeNode, U8};
 
 impl EnumTypeNode {
     pub fn new(variants: Vec<EnumVariantTypeNode>) -> Self {
         Self {
             variants,
-            size: NestedTypeNode::Value(NumberTypeNode::le(U8)),
+            size: IntegerTypeNode::le(U8),
+            transforms: vec![],
+            plugins: vec![],
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        EnumEmptyVariantTypeNode, EnumStructVariantTypeNode, EnumTupleVariantTypeNode,
-        NumberTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32,
-    };
-
     use super::*;
+    use crate::{StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32};
 
     #[test]
     fn new() {
         let r#enum = EnumTypeNode::new(vec![
-            EnumEmptyVariantTypeNode::new("quit").into(),
-            EnumTupleVariantTypeNode::new(
+            EnumVariantTypeNode::new("quit"),
+            EnumVariantTypeNode::with_data(
                 "move",
                 TupleTypeNode::new(vec![
-                    NumberTypeNode::le(U8).into(),
-                    NumberTypeNode::le(U8).into(),
+                    IntegerTypeNode::le(U8).into(),
+                    IntegerTypeNode::le(U8).into(),
                 ]),
-            )
-            .into(),
-            EnumStructVariantTypeNode::new(
+            ),
+            EnumVariantTypeNode::with_data(
                 "write",
                 StructTypeNode::new(vec![StructFieldTypeNode::new(
                     "message",
                     StringTypeNode::utf8(),
                 )]),
-            )
-            .into(),
+            ),
         ]);
-        assert_eq!(r#enum.size, NestedTypeNode::Value(NumberTypeNode::le(U8)));
+        assert_eq!(r#enum.variants.len(), 3);
+        assert_eq!(r#enum.size, IntegerTypeNode::le(U8));
     }
 
     #[test]
     fn direct_instantiation() {
         let r#enum = EnumTypeNode {
             variants: vec![],
-            size: NumberTypeNode::le(U32).into(),
+            size: IntegerTypeNode::le(U32),
+            transforms: vec![],
+            plugins: vec![],
         };
-        assert_eq!(r#enum.size, NestedTypeNode::Value(NumberTypeNode::le(U32)));
+        assert_eq!(r#enum.size, IntegerTypeNode::le(U32));
     }
 
     #[test]
     fn to_json() {
-        let node = EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant").into()]);
+        let node = EnumTypeNode::new(vec![EnumVariantTypeNode::new("myVariant")]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
-            r#"{"kind":"enumTypeNode","variants":[{"kind":"enumEmptyVariantTypeNode","name":"myVariant"}],"size":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#
+            r#"{"kind":"enumTypeNode","variants":[{"kind":"enumVariantTypeNode","identifier":"myVariant"}],"size":{"kind":"integerTypeNode","format":"u8","endian":"le"}}"#
         );
     }
 
     #[test]
     fn from_json() {
-        let json = r#"{"kind":"enumTypeNode","variants":[{"kind":"enumEmptyVariantTypeNode","name":"myVariant"}],"size":{"kind":"numberTypeNode","format":"u8","endian":"le"}}"#;
+        let json = r#"{"kind":"enumTypeNode","variants":[{"kind":"enumVariantTypeNode","identifier":"myVariant"}],"size":{"kind":"integerTypeNode","format":"u8","endian":"le"}}"#;
         let node: EnumTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumTypeNode::new(vec![EnumEmptyVariantTypeNode::new("myVariant").into()])
+            EnumTypeNode::new(vec![EnumVariantTypeNode::new("myVariant")])
         );
     }
 }

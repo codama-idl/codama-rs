@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn new() {
         let node = PayerValueNode::new();
-        assert_eq!(node, PayerValueNode {});
+        assert_eq!(node, PayerValueNode { plugins: vec![] });
     }
 
     #[test]
