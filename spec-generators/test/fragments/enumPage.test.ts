@@ -5,17 +5,17 @@ import { getEnumPageFragment } from '../../src/fragments/enumPage';
 
 const spec = getSpec();
 const sharedCategory = spec.categories.find(c => c.name === 'shared')!;
-const programOrigin = sharedCategory.enumerations.find(e => e.name === 'programOrigin')!;
+const floatFormat = sharedCategory.enumerations.find(e => e.name === 'floatFormat')!;
 const instructionLifecycle = sharedCategory.enumerations.find(e => e.name === 'instructionLifecycle')!;
 const endianness = sharedCategory.enumerations.find(e => e.name === 'endianness')!;
 const defaultValueStrategy = sharedCategory.enumerations.find(e => e.name === 'defaultValueStrategy')!;
 
 describe('getEnumPageFragment', () => {
     it('renders a plain `pub enum` with the standard derive set and `rename_all = "camelCase"`', () => {
-        const result = getEnumPageFragment(programOrigin);
+        const result = getEnumPageFragment(floatFormat);
         expect(result.content).toContain('#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]');
         expect(result.content).toContain('#[serde(rename_all = "camelCase")]');
-        expect(result.content).toContain('pub enum ProgramOrigin {');
+        expect(result.content).toContain('pub enum FloatFormat {');
     });
 
     it('emits variants in spec declaration order, PascalCased', () => {
@@ -42,14 +42,14 @@ describe('getEnumPageFragment', () => {
     });
 
     it('includes enum-level docs and variant-level docs from the spec', () => {
-        const result = getEnumPageFragment(programOrigin);
-        expect(result.content).toContain('/// The toolchain that originally generated a program description.');
-        expect(result.content).toContain('/// The program was originally described by an Anchor IDL.');
-        expect(result.content).toContain('/// The program was originally described by a Shank IDL.');
+        const result = getEnumPageFragment(floatFormat);
+        expect(result.content).toContain('/// The wire format of a floating-point serialization.');
+        expect(result.content).toContain('/// IEEE-754 32-bit floating point.');
+        expect(result.content).toContain('/// IEEE-754 64-bit floating point.');
     });
 
     it('carries the serde import map entries for Serialize and Deserialize', () => {
-        const result = getEnumPageFragment(programOrigin);
+        const result = getEnumPageFragment(floatFormat);
         const imports = [...result.imports.keys()].toSorted();
         expect(imports).toContain('serde::Serialize');
         expect(imports).toContain('serde::Deserialize');

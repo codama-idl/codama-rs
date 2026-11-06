@@ -5,16 +5,18 @@ import {
     boolean,
     docs,
     enumeration,
-    f64,
     json,
     literal,
     literalUnion,
-    nestedUnion,
     node,
     string,
+    stringDecimal,
     stringIdentifier,
+    stringInteger,
+    stringNamespace,
+    stringPath,
     stringVersion,
-    tuple,
+    text,
     u32,
     union,
 } from '@codama/spec/api';
@@ -27,7 +29,7 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(string()).content).toBe('String');
     });
 
-    it('renders address as plain String for v1 (no brand, no import)', () => {
+    it('renders address as plain String (no brand, no import)', () => {
         const result = getTypeExprFragment(address());
         expect(result.content).toBe('String');
         expect(result.imports.size).toBe(0);
@@ -43,22 +45,13 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(u32()).content).toBe('u32');
     });
 
-    it('renders float as the bespoke `crate::Number` enum (mirrors JS `float → number`)', () => {
-        // v1's only float (`numberValueNode.number`) is `f64`; Rust's
-        // `Number` enum (`u64|i64|f64` with custom serde) is the
-        // analogue of TS's polymorphic `number`.
-        const result = getTypeExprFragment(f64());
-        expect(result.content).toBe('Number');
-        expect([...result.imports.keys()]).toEqual(['crate::Number']);
-    });
-
     it('renders json as the opaque `serde_json::Value` with a matching import', () => {
         const result = getTypeExprFragment(json());
         expect(result.content).toBe('Value');
         expect([...result.imports.keys()]).toEqual(['serde_json::Value']);
     });
 
-    it("renders the v1 `literal('codama')` TypeExpr as `String`", () => {
+    it("renders the `literal('codama')` TypeExpr as `String`", () => {
         expect(getTypeExprFragment(literal('codama')).content).toBe('String');
     });
 
@@ -72,10 +65,30 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['crate::CamelCaseString']);
     });
 
-    it('routes stringVersion to plain String (no Version brand on the Rust side in v1)', () => {
-        const result = getTypeExprFragment(stringVersion());
-        expect(result.content).toBe('String');
-        expect(result.imports.size).toBe(0);
+    it('routes stringVersion, stringNamespace and stringPath to plain String (no brand on the Rust side)', () => {
+        for (const expr of [stringVersion(), stringNamespace(), stringPath()]) {
+            const result = getTypeExprFragment(expr);
+            expect(result.content).toBe('String');
+            expect(result.imports.size).toBe(0);
+        }
+    });
+
+    it('routes stringInteger to Integer via a crate-rooted import', () => {
+        const result = getTypeExprFragment(stringInteger());
+        expect(result.content).toBe('Integer');
+        expect([...result.imports.keys()]).toEqual(['crate::Integer']);
+    });
+
+    it('routes stringDecimal to Decimal via a crate-rooted import', () => {
+        const result = getTypeExprFragment(stringDecimal());
+        expect(result.content).toBe('Decimal');
+        expect([...result.imports.keys()]).toEqual(['crate::Decimal']);
+    });
+
+    it('routes text to Text via a crate-rooted import', () => {
+        const result = getTypeExprFragment(text());
+        expect(result.content).toBe('Text');
+        expect([...result.imports.keys()]).toEqual(['crate::Text']);
     });
 
     it('routes docs to Docs via a crate-rooted import', () => {
@@ -108,13 +121,6 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['crate::TypeNode']);
     });
 
-    it('renders nestedUnion(alias, kind) as Alias<Kind> with both crate imports', () => {
-        const result = getTypeExprFragment(nestedUnion('nestedTypeNode', 'numberTypeNode'));
-        expect(result.content).toBe('NestedTypeNode<NumberTypeNode>');
-        const imports = [...result.imports.keys()].toSorted();
-        expect(imports).toEqual(['crate::NestedTypeNode', 'crate::NumberTypeNode']);
-    });
-
     it('renders array(T) as Vec<T> and propagates the inner imports', () => {
         const result = getTypeExprFragment(array(node('pdaSeedValueNode')));
         expect(result.content).toBe('Vec<PdaSeedValueNode>');
@@ -123,11 +129,5 @@ describe('getTypeExprFragment', () => {
 
     it('handles nested array types', () => {
         expect(getTypeExprFragment(array(array(boolean()))).content).toBe('Vec<Vec<bool>>');
-    });
-
-    it('renders tuple(items) as (A, B, …) and merges the inner imports', () => {
-        const result = getTypeExprFragment(tuple(node('programLinkNode'), boolean()));
-        expect(result.content).toBe('(ProgramLinkNode, bool)');
-        expect([...result.imports.keys()]).toEqual(['crate::ProgramLinkNode']);
     });
 });

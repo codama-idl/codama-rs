@@ -6,41 +6,12 @@ import { getReferencedLiteralUnions, literalUnionVariantName } from '../src/lite
 const spec = getSpec();
 
 describe('getReferencedLiteralUnions', () => {
-    it('finds the sole v1 literalUnion (`isSigner`) and dedups the two value-identical refs into one entry', () => {
+    it('finds the two literalUnions (`base`, `isSigner`) and dedups the two value-identical `isSigner` refs', () => {
         const refs = getReferencedLiteralUnions(spec);
-        expect(refs).toHaveLength(1);
-        expect(refs[0].typeName).toBe('IsSigner');
-        expect(refs[0].values).toEqual([true, false, 'either']);
-    });
-
-    it('returns refs sorted alphabetically by typeName', () => {
-        // Synthesise a spec with two distinct literalUnions on differently-named attributes;
-        // the result must be sorted by typeName.
-        const synthetic: Spec = {
-            version: '1.0.0',
-            categories: [
-                {
-                    name: 'fake',
-                    docs: [],
-                    nodes: [
-                        {
-                            kind: 'fakeNode',
-                            docs: [],
-                            attributes: [
-                                { name: 'zebra', type: { kind: 'literalUnion', values: ['a', 'b'] } },
-                                { name: 'apple', type: { kind: 'literalUnion', values: [1, 2] } },
-                            ],
-                            examples: [],
-                        },
-                    ],
-                    unions: [],
-                    enumerations: [],
-                    nestedUnions: [],
-                },
-            ],
-        };
-        const refs = getReferencedLiteralUnions(synthetic);
-        expect(refs.map(r => r.typeName)).toEqual(['Apple', 'Zebra']);
+        expect(refs).toEqual([
+            { typeName: 'Base', values: [2, 10] },
+            { typeName: 'IsSigner', values: [true, false, 'either'] },
+        ]);
     });
 
     it('throws when the same value-set is referenced by two differently-named attributes (would yield an ambiguous type name)', () => {
@@ -63,7 +34,6 @@ describe('getReferencedLiteralUnions', () => {
                     ],
                     unions: [],
                     enumerations: [],
-                    nestedUnions: [],
                 },
             ],
         };
@@ -71,56 +41,34 @@ describe('getReferencedLiteralUnions', () => {
     });
 
     it('dedups two same-named attributes carrying value-identical literalUnions into a single ref', () => {
-        // Mirrors the v1 isSigner case: two attributes both named
-        // `isSigner` carrying `[true, false, "either"]` -> one IsSigner.
-        const synthetic: Spec = {
-            version: '1.0.0',
-            categories: [
-                {
-                    name: 'fake',
-                    docs: [],
-                    nodes: [
-                        {
-                            kind: 'fooNode',
-                            docs: [],
-                            attributes: [
-                                { name: 'isSigner', type: { kind: 'literalUnion', values: [true, false, 'either'] } },
-                            ],
-                            examples: [],
-                        },
-                        {
-                            kind: 'barNode',
-                            docs: [],
-                            attributes: [
-                                { name: 'isSigner', type: { kind: 'literalUnion', values: [true, false, 'either'] } },
-                            ],
-                            examples: [],
-                        },
-                    ],
-                    unions: [],
-                    enumerations: [],
-                    nestedUnions: [],
-                },
-            ],
-        };
-        const refs = getReferencedLiteralUnions(synthetic);
-        expect(refs).toHaveLength(1);
-        expect(refs[0].typeName).toBe('IsSigner');
+        const isSignerAttributes = spec.categories
+            .flatMap(c => c.nodes)
+            .flatMap(n => n.attributes)
+            .filter(a => a.name === 'isSigner' && a.type.kind === 'literalUnion');
+        expect(isSignerAttributes).toHaveLength(2);
+        expect(getReferencedLiteralUnions(spec).filter(r => r.typeName === 'IsSigner')).toHaveLength(1);
     });
 });
 
 describe('literalUnionVariantName', () => {
     it('maps booleans to True/False', () => {
-        expect(literalUnionVariantName(true)).toBe('True');
-        expect(literalUnionVariantName(false)).toBe('False');
+        expect(literalUnionVariantName(true, 'IsSigner')).toBe('True');
+        expect(literalUnionVariantName(false, 'IsSigner')).toBe('False');
     });
 
     it('PascalCases string values', () => {
-        expect(literalUnionVariantName('either')).toBe('Either');
-        expect(literalUnionVariantName('camelCase')).toBe('CamelCase');
+        expect(literalUnionVariantName('either', 'IsSigner')).toBe('Either');
+        expect(literalUnionVariantName('camelCase', 'IsSigner')).toBe('CamelCase');
     });
 
-    it('handles numeric values via their string form', () => {
-        expect(literalUnionVariantName(42)).toBe('42');
+    it('prefixes numeric values with the type name', () => {
+        expect(literalUnionVariantName(2, 'Base')).toBe('Base2');
+        expect(literalUnionVariantName(10, 'Base')).toBe('Base10');
+    });
+
+    it('throws on numeric values that are not non-negative safe integers', () => {
+        for (const value of [-1, 1.5, 1e21, Number.NaN]) {
+            expect(() => literalUnionVariantName(value, 'Base')).toThrow(/non-negative safe integers/);
+        }
     });
 });

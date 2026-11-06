@@ -19,15 +19,23 @@ src/
 ├── defaults.ts         # CATEGORY_DIRECTORIES, name overrides, CATEGORY_ROUTING
 ├── repoDirectory.ts    # locates the Rust workspace root
 ├── unions.ts           # flattenNodeUnion + getEmittableUnions
+├── baseAttributes.ts   # withBaseAttributes: appends the spec base attributes (plugins) to every node
+├── nodeFlavor.ts       # getNodeMacroFlavor: #[node] or #[type_node] per node
+├── literalUnions.ts    # getReferencedLiteralUnions + literalUnionVariantName
 └── fragments/
+    ├── index.ts            # re-exports every fragment renderer
     ├── helpers.ts          # `use(name)` — Rust analogue of the JS `use(…)` helper
     ├── typeExpr.ts         # spec TypeExpr → Rust Fragment
     ├── attributeBodyLine.ts
-    ├── structFragment.ts
+    ├── nodeStructFragment.ts
     ├── fromImpl.ts
-    ├── hasNameImpl.ts
+    ├── hasIdentifierImpl.ts
     ├── nodePage.ts
     ├── unionPage.ts
+    ├── registeredUnionPage.ts  # category union with `#[registered]`-only variants
+    ├── enumPage.ts         # spec enumeration -> Rust enum shell
+    ├── literalUnionPage.ts # literalUnion -> Rust enum shell
+    ├── codamaVersionPage.ts    # CODAMA_VERSION constant
     ├── page.ts             # use-block renderer (groups crate::*)
     └── modPage.ts          # Rust mod.rs renderer
 
@@ -36,6 +44,10 @@ bin/generate.ts         # pnpm generate entry; wraps generate()
 test/
 ├── fragments/          # one .test.ts per fragment renderer
 ├── generate.test.ts    # validateRenderOptions + render-map assertions
+├── baseAttributes.test.ts
+├── literalUnions.test.ts
+├── nodeFlavor.test.ts
+├── unions.test.ts
 └── scope.test.ts       # buildRenderScope tests
 ```
 
@@ -43,7 +55,7 @@ test/
 
 The generator builds an in-memory `RenderMap<Fragment>` — a map from output path to a fragment carrying content + an `ImportMap` — before touching the filesystem.
 
-Per spec entity, the generator emits a page fragment composed from focused sub-fragments (`structFragment`, `fromImpl`, `hasNameImpl`, `unionPage`, …). Each sub-fragment attaches its referenced identifiers as concrete `crate::Foo` imports via the shared `use(name)` helper in `fragments/helpers.ts`.
+Per spec entity, the generator emits a page fragment composed from focused sub-fragments (`nodeStructFragment`, `fromImpl`, `hasIdentifierImpl`, `unionPage`, …). Each sub-fragment attaches its referenced identifiers as concrete `crate::Foo` imports via the shared `use(name)` helper in `fragments/helpers.ts`.
 
 The page renderer (`fragments/page.ts`) groups every `use crate::Foo;` line into a single `use crate::{…};` block, keeps non-`crate::` paths (e.g. `codama_nodes_derive::node`) on their own lines, and prepends the import block to the page body.
 
@@ -60,21 +72,21 @@ pnpm generate
 
 `pnpm generate` builds the orchestrator with `tsup`, runs the bundled script via `node ./dist/generate.mjs`, and then runs `cargo fmt -p codama-nodes` to keep the output rustfmt-clean. A CI job (`spec-generators` in `.github/workflows/main.yml`) runs the same pipeline and fails on `git diff --exit-code`, catching anyone who forgets to regenerate after editing the spec dep.
 
-## Scope (v1)
+## Scope
 
-This first iteration generates source files for nodes and unions in spec category `link`. Each generated per-node file contains the struct definition wrapped in `#[node]`, a `From<Self> for crate::Node` impl routing through the category's union variant, and a `HasIdentifier` impl when the node has a `name: stringIdentifier()` attribute. That attribute renders as the Rust field `identifier` with `#[serde(rename = "name")]`, except on the nodes in `TEMP_NAME_NODE_EXCEPTIONS` (`src/defaults.ts`), which keep the field `name` and get no impl. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasIdentifier` impl when every member node has one.
+The generator emits a source file for every node of the spec categories in `CATEGORY_ROUTING` (`src/defaults.ts`), plus their unions, the `shared` enumerations and literal unions, and `CODAMA_VERSION`. Each generated per-node file contains the struct definition wrapped in `#[node]` or `#[type_node]`, a `From<Self> for crate::Node` impl routing through the category's union variant (except `topLevel` nodes, which are direct `Node` variants), and a `HasIdentifier` impl when the node has a required `identifier: stringIdentifier()` attribute. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasIdentifier` impl when every member node has one.
 
-Other categories (`count`, `discriminator`, `pdaSeed`, `value`, `topLevel`, `contextualValue`, `type`) stay hand-written for now and will land in future PRs. Per-node constructors (`AccountLinkNode::new`, etc.), bespoke `TryFrom` impls, and `#[cfg(test)] mod tests` blocks also stay hand-written, in `codama-nodes/src/<name>.rs` files that `use` the generated struct.
+Per-node constructors (`AccountLinkNode::new`, etc.), bespoke `TryFrom` impls, and `#[cfg(test)] mod tests` blocks stay hand-written. They live in `codama-nodes/src/`, at the path of the generated file without `generated/` (for example `codama-nodes/src/link_nodes/account_link_node.rs`), and `use` the generated struct.
 
-Nested-union type aliases, enumerations, and the top-level `Node` registry stay hand-written. Expanding the generator's scope to cover them is a future PR.
+The `type` category unions, the top-level `Node` registry, and the bespoke impls of enumerations and literal unions (`Default`, custom serde) stay hand-written.
 
 ## Bumping `@codama/spec`
 
 1. Update the version pin in `package.json`.
 2. `pnpm install`.
 3. `pnpm generate`.
-4. Review the diff under `codama-nodes/src/generated/`, run `cargo test --workspace`, fix any consumer fallout in the hand-written `codama-nodes/src/<name>.rs` files.
+4. Review the diff under `codama-nodes/src/generated/`, run `cargo test --workspace`, fix any consumer fallout in the hand-written files under `codama-nodes/src/`.
 
 ## Tests
 
-Tests mirror the source layout: one `test/fragments/<name>.test.ts` per fragment renderer, plus a `test/scope.test.ts` for `buildRenderScope` and a `test/generate.test.ts` for option validation + render-map assertions via `getFromRenderMap` (no filesystem access).
+Tests mirror the source layout: `test/fragments/<name>.test.ts` for the fragment renderers and `test/<name>.test.ts` for the top-level modules, plus a `test/scope.test.ts` for `buildRenderScope` and a `test/generate.test.ts` for option validation + render-map assertions via `getFromRenderMap` (no filesystem access). `generate.test.ts` also covers the renderers without their own test file (`codamaVersionPage`, `registeredUnionPage`).
