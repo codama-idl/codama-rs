@@ -10,6 +10,13 @@ use codama_macros::codama;
     u64,
     display = amount(decimals = 9, unit = "SOL")
 ))]
+#[codama(type = integer(u64, unit = "slots"))]
+#[codama(type = integer(format = u16, endian = be, unit = "bps"))]
+#[codama(type = integer(
+    u64,
+    unit = "lamports",
+    display = amount(decimals = 9, unit = "SOL")
+))]
 pub struct Test;
 
 fn main() {}

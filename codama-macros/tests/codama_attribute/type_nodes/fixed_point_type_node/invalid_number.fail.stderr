@@ -1,0 +1,5 @@
+error: number must be an IntegerTypeNode
+ --> tests/codama_attribute/type_nodes/fixed_point_type_node/invalid_number.fail.rs:3:29
+  |
+3 | #[codama(type = fixed_point(string, scale = 6))]
+  |                             ^^^^^^

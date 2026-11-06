@@ -7,6 +7,7 @@ impl FromMeta for IntegerTypeNode {
         let pl = meta.assert_directive("integer")?.as_path_list()?;
         let mut format = SetOnce::<IntegerFormat>::new("format");
         let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
+        let mut unit = SetOnce::<String>::new("unit");
         let mut display = SetOnce::<NumberDisplayNode>::new("display");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
@@ -24,6 +25,7 @@ impl FromMeta for IntegerTypeNode {
                     _ => Err(path.error("invalid endian")),
                 }
             }
+            "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             "display" => display.set(NumberDisplayNode::from_meta(meta.as_value()?)?, meta),
             _ => {
                 if let Ok(path) = meta.as_path() {
@@ -39,6 +41,7 @@ impl FromMeta for IntegerTypeNode {
         })?;
 
         Ok(IntegerTypeNode {
+            unit: unit.option(),
             display: Box::new(display.option()),
             ..IntegerTypeNode::new(format.take(meta)?, endian.take(meta)?)
         })
@@ -102,6 +105,20 @@ mod tests {
                 syn::parse_quote! { integer(endian = le, format = u16) },
                 IntegerTypeNode::le(U16),
             ),
+            (
+                syn::parse_quote! { integer(u64, unit = "slots") },
+                IntegerTypeNode {
+                    unit: Some("slots".to_string()),
+                    ..IntegerTypeNode::le(U64)
+                },
+            ),
+            (
+                syn::parse_quote! { integer(unit = "bps", format = u16, endian = be) },
+                IntegerTypeNode {
+                    unit: Some("bps".to_string()),
+                    ..IntegerTypeNode::be(U16)
+                },
+            ),
         ] {
             assert_eq!(IntegerTypeNode::from_meta(&meta).unwrap(), expected);
         }
@@ -109,17 +126,32 @@ mod tests {
 
     #[test]
     fn amount_display() {
-        let meta: Meta =
-            syn::parse_quote! { integer(u64, display = amount(decimals = 9, unit = "SOL")) };
-        let display =
-            AmountNumberDisplayNode::new(IntegerValueNode::new(9u64), StringValueNode::new("SOL"));
-        assert_eq!(
-            IntegerTypeNode::from_meta(&meta).unwrap(),
-            IntegerTypeNode {
-                display: Box::new(Some(NumberDisplayNode::Amount(display))),
-                ..IntegerTypeNode::le(U64)
-            }
-        );
+        let display = || {
+            let display = AmountNumberDisplayNode::new(
+                IntegerValueNode::new(9u64),
+                StringValueNode::new("SOL"),
+            );
+            Box::new(Some(NumberDisplayNode::Amount(display)))
+        };
+        for (meta, expected) in [
+            (
+                syn::parse_quote! { integer(u64, display = amount(decimals = 9, unit = "SOL")) },
+                IntegerTypeNode {
+                    display: display(),
+                    ..IntegerTypeNode::le(U64)
+                },
+            ),
+            (
+                syn::parse_quote! { integer(u64, unit = "lamports", display = amount(decimals = 9, unit = "SOL")) },
+                IntegerTypeNode {
+                    unit: Some("lamports".to_string()),
+                    display: display(),
+                    ..IntegerTypeNode::le(U64)
+                },
+            ),
+        ] {
+            assert_eq!(IntegerTypeNode::from_meta(&meta).unwrap(), expected);
+        }
     }
 
     #[test]
@@ -149,6 +181,18 @@ mod tests {
             (
                 syn::parse_quote! { integer(u16 = ?what?, le) },
                 "unrecognized attribute",
+            ),
+            (
+                syn::parse_quote! { integer(u64, unit = "slots", unit = "bps") },
+                "unit is already set",
+            ),
+            (
+                syn::parse_quote! { integer(u64, unit = slots) },
+                "expected a string",
+            ),
+            (
+                syn::parse_quote! { integer(u64, "slots") },
+                "expected a path",
             ),
             (syn::parse_quote! { integer(f64) }, "unrecognized attribute"),
             (syn::parse_quote! { integer(42) }, "expected a path"),
