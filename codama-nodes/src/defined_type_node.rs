@@ -18,13 +18,12 @@ impl DefinedTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{IntegerTypeNode, U8};
+    use crate::{Identifier, IntegerTypeNode, U8};
 
     #[test]
     fn new() {
-        let node = DefinedTypeNode::new(id("myType"), IntegerTypeNode::le(U8));
-        assert_eq!(node.identifier, id("myType"));
+        let node = DefinedTypeNode::new("myType", IntegerTypeNode::le(U8));
+        assert_eq!(node.identifier, Identifier::from("myType"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U8)));
     }
@@ -32,19 +31,19 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = DefinedTypeNode {
-            identifier: id("myType"),
+            identifier: "myType".into(),
             docs: Docs::default(),
             r#type: Box::new(IntegerTypeNode::le(U8).into()),
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("myType"));
+        assert_eq!(node.identifier, Identifier::from("myType"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U8)));
     }
 
     #[test]
     fn to_json() {
-        let node = DefinedTypeNode::new(id("myType"), IntegerTypeNode::le(U8));
+        let node = DefinedTypeNode::new("myType", IntegerTypeNode::le(U8));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -58,7 +57,7 @@ mod tests {
         let node: DefinedTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            DefinedTypeNode::new(id("myType"), IntegerTypeNode::le(U8))
+            DefinedTypeNode::new("myType", IntegerTypeNode::le(U8))
         );
     }
 }

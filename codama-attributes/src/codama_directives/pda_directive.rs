@@ -16,7 +16,7 @@ impl PdaDirective {
             .as_expr()?
             .as_string()?;
         Ok(Self {
-            pda: PdaLinkNode::new(Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?),
+            pda: PdaLinkNode::new(name.parse::<Identifier>().map_err(|e| meta.error(e))?),
         })
     }
 }
@@ -46,7 +46,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a PdaDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
@@ -55,7 +54,7 @@ mod tests {
         assert_eq!(
             directive,
             PdaDirective {
-                pda: PdaLinkNode::new(id("my_pda")),
+                pda: PdaLinkNode::new("my_pda"),
             }
         );
     }

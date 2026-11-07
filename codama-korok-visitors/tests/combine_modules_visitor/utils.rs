@@ -2,8 +2,7 @@ use codama_attributes::Attributes;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineModulesVisitor, KorokVisitable};
 use codama_koroks::{ItemKorok, ModuleKorok, UnsupportedItemKorok};
-use codama_nodes::test_utils::id;
-use codama_nodes::{DefinedTypeNode, Namespace, Node, PluginNode, PublicKeyTypeNode};
+use codama_nodes::{DefinedTypeNode, Identifier, Namespace, Node, PluginNode, PublicKeyTypeNode};
 use codama_stores::CrateStore;
 use quote::{format_ident, quote};
 use std::default;
@@ -88,7 +87,10 @@ pub fn try_combine_modules(input: CombineModulesInput) -> CodamaResult<Option<No
 }
 
 pub fn get_type(name: &str) -> DefinedTypeNode {
-    DefinedTypeNode::new(id(name), PublicKeyTypeNode::new())
+    DefinedTypeNode::new(
+        name.parse::<Identifier>().unwrap(),
+        PublicKeyTypeNode::new(),
+    )
 }
 
 pub fn get_plugin(namespace: &str) -> PluginNode {

@@ -1,6 +1,10 @@
-/// Implements `as_str`, `Display`, `TryFrom`, `FromStr` and `Deserialize` for a constrained string type of the spec.
+/// Implements `as_str`, `Display`, `From<&'static str>`, `TryFrom<String>`, `FromStr` and `Deserialize`
+/// for a constrained string type of the spec.
 /// The type must be a tuple struct over a `String`, which holds the value as given.
 /// `$is_valid` checks the grammar and `$error` wraps a rejected string.
+/// A string literal converts with `From`, which panics when the literal breaks the grammar, as the JS
+/// factories throw: an invalid literal is a bug in the code that wrote it. Any other string goes through
+/// `TryFrom<String>` or `FromStr`, which return the error instead.
 /// `Deserialize` goes through `TryFrom`, so a JSON string must match the same grammar.
 /// `$expecting` completes the serde message "expected ..." for a rejected JSON string.
 macro_rules! impl_constrained_string {
@@ -29,11 +33,13 @@ macro_rules! impl_constrained_string {
             }
         }
 
-        impl TryFrom<&str> for $type {
-            type Error = ::codama_errors::CodamaError;
-
-            fn try_from(value: &str) -> ::codama_errors::CodamaResult<Self> {
-                Self::try_from(value.to_string())
+        /// Panics when the literal breaks the grammar. Use `TryFrom<String>` or `FromStr` for any other string.
+        impl From<&'static str> for $type {
+            fn from(value: &'static str) -> Self {
+                match Self::try_from(value.to_string()) {
+                    Ok(value) => value,
+                    Err(error) => panic!("{error}"),
+                }
             }
         }
 
@@ -41,7 +47,7 @@ macro_rules! impl_constrained_string {
             type Err = ::codama_errors::CodamaError;
 
             fn from_str(value: &str) -> ::codama_errors::CodamaResult<Self> {
-                Self::try_from(value)
+                Self::try_from(value.to_string())
             }
         }
 
@@ -66,7 +72,7 @@ macro_rules! impl_constrained_string {
                     where
                         E: ::serde::de::Error,
                     {
-                        $type::try_from(value).map_err(|_| {
+                        value.parse::<$type>().map_err(|_| {
                             E::invalid_value(::serde::de::Unexpected::Str(value), &self)
                         })
                     }

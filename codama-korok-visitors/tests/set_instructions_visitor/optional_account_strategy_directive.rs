@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     InstructionNode, IntegerFormat::U64, IntegerTypeNode, OptionalAccountStrategy, StructTypeNode,
 };
@@ -23,11 +22,11 @@ fn from_struct_with_optional_account_strategy_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: id("initialize"),
+                identifier: "initialize".into(),
                 optional_account_strategy: Some(OptionalAccountStrategy::Omitted),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![codama_nodes::StructFieldTypeNode::new(
-                        id("amount"),
+                        "amount",
                         IntegerTypeNode::le(U64)
                     )])
                     .into()

@@ -43,7 +43,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a IdentifierDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
+    use codama_nodes::Identifier;
 
     #[test]
     fn ok() {
@@ -52,7 +52,7 @@ mod tests {
         assert_eq!(
             directive,
             IdentifierDirective {
-                identifier: id("banana")
+                identifier: "banana".into()
             }
         );
     }
@@ -62,7 +62,7 @@ mod tests {
         for value in ["my_banana", "myBanana", "MyBanana"] {
             let meta: Meta = syn::parse_quote! { identifier = #value };
             let directive = IdentifierDirective::parse(&meta).unwrap();
-            assert_eq!(directive.identifier, id(value));
+            assert_eq!(directive.identifier, value.parse::<Identifier>().unwrap());
         }
     }
 

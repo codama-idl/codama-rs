@@ -27,27 +27,27 @@ impl InstructionLinkNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+    use crate::Identifier;
 
     #[test]
     fn new() {
-        let node = InstructionLinkNode::new(id("myInstruction"));
-        assert_eq!(node.identifier, id("myInstruction"));
+        let node = InstructionLinkNode::new("myInstruction");
+        assert_eq!(node.identifier, Identifier::from("myInstruction"));
     }
 
     #[test]
     fn new_from_program() {
         let node = InstructionLinkNode::new_from_program(
-            id("myInstruction"),
-            ProgramLinkNode::new(id("myProgram")),
+            "myInstruction",
+            ProgramLinkNode::new("myProgram"),
         );
-        assert_eq!(node.identifier, id("myInstruction"));
-        assert_eq!(node.program, Some(ProgramLinkNode::new(id("myProgram"))));
+        assert_eq!(node.identifier, Identifier::from("myInstruction"));
+        assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn to_json() {
-        let node = InstructionLinkNode::new(id("myInstruction"));
+        let node = InstructionLinkNode::new("myInstruction");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -59,6 +59,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"instructionLinkNode","identifier":"myInstruction"}"#;
         let node: InstructionLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, InstructionLinkNode::new(id("myInstruction")));
+        assert_eq!(node, InstructionLinkNode::new("myInstruction"));
     }
 }

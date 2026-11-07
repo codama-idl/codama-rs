@@ -1,12 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::id;
-    use crate::{InstructionRemainingAccountsNode, IsSigner, Text};
+    use crate::{Identifier, InstructionRemainingAccountsNode, IsSigner, Text};
 
     #[test]
     fn direct_instantiation() {
         let node = InstructionRemainingAccountsNode {
-            identifier: id("signers"),
+            identifier: "signers".into(),
             is_optional: None,
             is_signer: Some(IsSigner::Either),
             is_writable: Some(true),
@@ -14,7 +13,7 @@ mod tests {
             display: None,
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("signers"));
+        assert_eq!(node.identifier, Identifier::from("signers"));
         assert_eq!(node.is_optional, None);
         assert_eq!(node.is_signer, Some(IsSigner::Either));
         assert_eq!(node.is_writable, Some(true));
@@ -25,7 +24,7 @@ mod tests {
     #[test]
     fn to_json_with_identifier_only() {
         let node = InstructionRemainingAccountsNode {
-            identifier: id("signers"),
+            identifier: "signers".into(),
             ..InstructionRemainingAccountsNode::default()
         };
         let json = serde_json::to_string(&node).unwrap();
@@ -38,7 +37,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = InstructionRemainingAccountsNode {
-            identifier: id("signers"),
+            identifier: "signers".into(),
             is_optional: None,
             is_signer: Some(IsSigner::Either),
             is_writable: Some(true),
@@ -60,7 +59,7 @@ mod tests {
         assert_eq!(
             node,
             InstructionRemainingAccountsNode {
-                identifier: id("signers"),
+                identifier: "signers".into(),
                 is_optional: None,
                 is_signer: Some(IsSigner::Either),
                 is_writable: Some(true),

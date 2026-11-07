@@ -62,26 +62,25 @@ impl EnumValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{IntegerValueNode, StringValueNode, StructFieldValueNode};
+    use crate::{Identifier, IntegerValueNode, StringValueNode, StructFieldValueNode};
 
     #[test]
     fn new() {
         let node = EnumValueNode::new(
-            DefinedTypeLinkNode::new(id("command")),
-            id("move"),
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("move"),
             StructValueNode::new(vec![
-                StructFieldValueNode::new(id("x"), IntegerValueNode::new(10)),
-                StructFieldValueNode::new(id("y"), IntegerValueNode::new(20)),
+                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
+                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
             ]),
         );
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new(id("command")));
-        assert_eq!(node.variant, id("move"));
+        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
+        assert_eq!(node.variant, Identifier::from("move"));
         assert_eq!(
             *node.value,
             Some(ValueNode::Struct(StructValueNode::new(vec![
-                StructFieldValueNode::new(id("x"), IntegerValueNode::new(10)),
-                StructFieldValueNode::new(id("y"), IntegerValueNode::new(20)),
+                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
+                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
             ])))
         );
     }
@@ -89,8 +88,8 @@ mod tests {
     #[test]
     fn new_with_any_value() {
         let node = EnumValueNode::new(
-            DefinedTypeLinkNode::new(id("command")),
-            id("write"),
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("write"),
             StringValueNode::new("Hello World"),
         );
         assert_eq!(
@@ -101,29 +100,32 @@ mod tests {
 
     #[test]
     fn empty() {
-        let node = EnumValueNode::empty(DefinedTypeLinkNode::new(id("command")), id("exit"));
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new(id("command")));
-        assert_eq!(node.variant, id("exit"));
+        let node = EnumValueNode::empty(
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("exit"),
+        );
+        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
+        assert_eq!(node.variant, Identifier::from("exit"));
         assert_eq!(*node.value, None);
     }
 
     #[test]
     fn fields() {
         let node = EnumValueNode::fields(
-            DefinedTypeLinkNode::new(id("command")),
-            id("move"),
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("move"),
             vec![
-                StructFieldValueNode::new(id("x"), IntegerValueNode::new(10)),
-                StructFieldValueNode::new(id("y"), IntegerValueNode::new(20)),
+                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
+                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
             ],
         );
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new(id("command")));
-        assert_eq!(node.variant, id("move"));
+        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
+        assert_eq!(node.variant, Identifier::from("move"));
         assert_eq!(
             *node.value,
             Some(ValueNode::Struct(StructValueNode::new(vec![
-                StructFieldValueNode::new(id("x"), IntegerValueNode::new(10)),
-                StructFieldValueNode::new(id("y"), IntegerValueNode::new(20)),
+                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
+                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
             ])))
         );
     }
@@ -131,12 +133,12 @@ mod tests {
     #[test]
     fn tuple() {
         let node = EnumValueNode::tuple(
-            DefinedTypeLinkNode::new(id("command")),
-            id("write"),
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("write"),
             vec![StringValueNode::new("Hello World").into()],
         );
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new(id("command")));
-        assert_eq!(node.variant, id("write"));
+        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
+        assert_eq!(node.variant, Identifier::from("write"));
         assert_eq!(
             *node.value,
             Some(ValueNode::Tuple(TupleValueNode::new(vec![
@@ -147,7 +149,10 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumValueNode::empty(DefinedTypeLinkNode::new(id("command")), id("exit"));
+        let node = EnumValueNode::empty(
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("exit"),
+        );
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -161,15 +166,18 @@ mod tests {
         let node: EnumValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumValueNode::empty(DefinedTypeLinkNode::new(id("command")), id("exit"))
+            EnumValueNode::empty(
+                DefinedTypeLinkNode::new("command"),
+                Identifier::from("exit")
+            )
         );
     }
 
     #[test]
     fn to_json_with_value() {
         let node = EnumValueNode::new(
-            DefinedTypeLinkNode::new(id("command")),
-            id("move"),
+            DefinedTypeLinkNode::new("command"),
+            Identifier::from("move"),
             IntegerValueNode::new(42),
         );
         let json = serde_json::to_string(&node).unwrap();
@@ -186,8 +194,8 @@ mod tests {
         assert_eq!(
             node,
             EnumValueNode::new(
-                DefinedTypeLinkNode::new(id("command")),
-                id("move"),
+                DefinedTypeLinkNode::new("command"),
+                Identifier::from("move"),
                 IntegerValueNode::new(42)
             )
         );

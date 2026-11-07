@@ -1,7 +1,6 @@
 use super::utils::{combine_modules, get_plugin, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, InstructionNode,
+    AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, Identifier, InstructionNode,
     IntegerTypeNode, IntegerValueNode, Node, PdaNode, PluginNode, ProgramNode, RootNode,
     StructTypeNode, U8,
 };
@@ -93,7 +92,7 @@ fn it_names_the_program_of_conflicting_nodes_by_identifier() {
     let program_a = get_mock_program("a", "1234");
     let program_b = ProgramNode {
         defined_types: vec![DefinedTypeNode::new(
-            id("defined_type_a"),
+            "defined_type_a",
             IntegerTypeNode::le(U8),
         )],
         ..get_mock_program("b", "1234")
@@ -116,12 +115,12 @@ fn it_names_the_program_of_conflicting_nodes_by_public_key() {
         public_key: "1234".into(),
         ..ProgramNode::default()
     }
-    .add_error(ErrorNode::new(id("duplicated"), 1, "first"));
+    .add_error(ErrorNode::new("duplicated", 1, "first"));
     let program_b = ProgramNode {
         public_key: "1234".into(),
         ..ProgramNode::default()
     }
-    .add_error(ErrorNode::new(id("duplicated"), 2, "second"));
+    .add_error(ErrorNode::new("duplicated", 2, "second"));
     let error = try_combine_modules(
         CombineModulesInput::new()
             .add_node(program_a)
@@ -213,34 +212,37 @@ fn it_does_not_override_the_program_data_when_set() {
 /// whilst using an identifier to tag all fields with unique values.
 fn get_mock_program(identifier: &str, public_key: &str) -> ProgramNode {
     ProgramNode {
-        identifier: id(&format!("program_{}", identifier)),
+        identifier: Identifier::try_from(format!("program_{}", identifier)).unwrap(),
         public_key: public_key.into(),
         version: format!("version_{}", identifier),
         docs: vec![format!("docs_{}", identifier)].into(),
         accounts: vec![AccountNode::new(
-            id(&format!("account_{}", identifier)),
+            Identifier::try_from(format!("account_{}", identifier)).unwrap(),
             StructTypeNode::default(),
         )],
         instructions: vec![InstructionNode {
-            identifier: id(&format!("instruction_{}", identifier)),
+            identifier: Identifier::try_from(format!("instruction_{}", identifier)).unwrap(),
             ..InstructionNode::default()
         }],
         defined_types: vec![DefinedTypeNode::new(
-            id(&format!("defined_type_{}", identifier)),
+            Identifier::try_from(format!("defined_type_{}", identifier)).unwrap(),
             StructTypeNode::default(),
         )],
-        pdas: vec![PdaNode::new(id(&format!("pda_{}", identifier)), vec![])],
+        pdas: vec![PdaNode::new(
+            Identifier::try_from(format!("pda_{}", identifier)).unwrap(),
+            vec![],
+        )],
         events: vec![EventNode::new(
-            id(&format!("event_{}", identifier)),
+            Identifier::try_from(format!("event_{}", identifier)).unwrap(),
             StructTypeNode::default(),
         )],
         errors: vec![ErrorNode::new(
-            id(&format!("error_{}", identifier)),
+            Identifier::try_from(format!("error_{}", identifier)).unwrap(),
             42,
             format!("message_{}", identifier),
         )],
         constants: vec![ConstantNode::new(
-            id(&format!("constant_{}", identifier)),
+            Identifier::try_from(format!("constant_{}", identifier)).unwrap(),
             IntegerTypeNode::le(U8),
             IntegerValueNode::new(42u8),
         )],

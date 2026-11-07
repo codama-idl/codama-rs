@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     BooleanTypeNode, EventNode, FieldDiscriminatorNode, IntegerFormat::U64, IntegerTypeNode,
     PublicKeyTypeNode, SizeDiscriminatorNode, StructFieldTypeNode, StructTypeNode,
@@ -25,10 +24,10 @@ fn from_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             EventNode::new(
-                id("transfer_event"),
+                "transfer_event",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                    StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                    StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                 ])
             )
             .into()
@@ -50,7 +49,7 @@ fn from_empty_struct() -> CodamaResult<()> {
     korok.accept(&mut SetEventsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(EventNode::new(id("ping_event"), StructTypeNode::new(vec![])).into())
+        Some(EventNode::new("ping_event", StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -101,7 +100,7 @@ fn with_name_directive() -> CodamaResult<()> {
     korok.accept(&mut SetEventsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(EventNode::new(id("transfer"), StructTypeNode::new(vec![])).into())
+        Some(EventNode::new("transfer", StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -124,9 +123,9 @@ fn with_discriminator_directives() -> CodamaResult<()> {
             EventNode {
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
-                    FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
+                    FieldDiscriminatorNode::new("discriminator", 0).into(),
                 ],
-                ..EventNode::new(id("my_event"), StructTypeNode::new(vec![]))
+                ..EventNode::new("my_event", StructTypeNode::new(vec![]))
             }
             .into()
         )

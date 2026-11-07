@@ -1,5 +1,4 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, DefinedTypeLinkNode, IntegerFormat::U64, IntegerTypeNode, Node, OptionTypeNode,
 };
@@ -29,11 +28,11 @@ fn it_identifies_option_types() {
 fn it_fallsback_to_defined_type_link_nodes() {
     assert_eq!(
         get_node_from_type(quote! { some::wrong::Option }),
-        Some(DefinedTypeLinkNode::new(id("option")).into())
+        Some(DefinedTypeLinkNode::new("option").into())
     );
     assert_eq!(
         get_node_from_type(quote! { Option }),
-        Some(DefinedTypeLinkNode::new(id("option")).into())
+        Some(DefinedTypeLinkNode::new("option").into())
     );
 }
 
@@ -42,7 +41,7 @@ fn it_identifies_option_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { Option<MyCustomType> }),
         Some(Node::Type(
-            OptionTypeNode::new(DefinedTypeLinkNode::new(id("my_custom_type"))).into()
+            OptionTypeNode::new(DefinedTypeLinkNode::new("my_custom_type")).into()
         ))
     );
 }

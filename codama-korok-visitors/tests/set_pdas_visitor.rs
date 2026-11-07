@@ -8,8 +8,6 @@ use codama_nodes::{
     PublicKeyTypeNode, StringTypeNode, StringValueNode, VariablePdaSeedNode,
 };
 
-use codama_nodes::test_utils::id;
-
 #[test]
 fn it_defines_pdas_from_structs() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
@@ -27,15 +25,15 @@ fn it_defines_pdas_from_structs() -> CodamaResult<()> {
         korok.node,
         Some(
             PdaNode::new(
-                id("counter"),
+                "counter",
                 vec![
                     ConstantPdaSeedNode::new(
                         StringTypeNode::utf8(),
                         StringValueNode::new("counter_pda")
                     )
                     .into(),
-                    VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                    VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                 ]
             )
             .into()
@@ -65,15 +63,15 @@ fn it_defines_pdas_from_structs_with_linked_fields() -> CodamaResult<()> {
         korok.node,
         Some(
             PdaNode::new(
-                id("counter"),
+                "counter",
                 vec![
                     ConstantPdaSeedNode::new(
                         StringTypeNode::utf8(),
                         StringValueNode::new("counter_pda")
                     )
                     .into(),
-                    VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                    VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                 ]
             )
             .into()
@@ -104,15 +102,15 @@ fn it_defines_pdas_from_structs_with_linked_fields_and_custom_nodes() -> CodamaR
         korok.node,
         Some(
             PdaNode::new(
-                id("counter"),
+                "counter",
                 vec![
                     ConstantPdaSeedNode::new(
                         StringTypeNode::utf8(),
                         StringValueNode::new("counter_pda")
                     )
                     .into(),
-                    VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                    VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                 ]
             )
             .into()
@@ -144,15 +142,15 @@ fn it_defines_pdas_from_structs_with_linked_fields_and_type_overrides() -> Codam
         korok.node,
         Some(
             PdaNode::new(
-                id("counter"),
+                "counter",
                 vec![
                     ConstantPdaSeedNode::new(
                         StringTypeNode::utf8(),
                         StringValueNode::new("counter_pda")
                     )
                     .into(),
-                    VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                    VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                 ]
             )
             .into()
@@ -228,15 +226,15 @@ fn it_defines_pdas_from_enums() -> CodamaResult<()> {
         korok.node,
         Some(
             PdaNode::new(
-                id("counter"),
+                "counter",
                 vec![
                     ConstantPdaSeedNode::new(
                         StringTypeNode::utf8(),
                         StringValueNode::new("counter_pda")
                     )
                     .into(),
-                    VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                    VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                    VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                 ]
             )
             .into()
@@ -263,15 +261,14 @@ fn it_wraps_pda_in_program_node_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: id("associatedToken"),
+                identifier: "associatedToken".into(),
                 public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
                 pdas: vec![PdaNode::new(
-                    id("associated_token"),
+                    "associated_token",
                     vec![
-                        VariablePdaSeedNode::new(id("owner"), PublicKeyTypeNode::new()).into(),
-                        VariablePdaSeedNode::new(id("tokenProgram"), PublicKeyTypeNode::new())
-                            .into(),
-                        VariablePdaSeedNode::new(id("mint"), PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("tokenProgram", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
                     ]
                 )],
                 ..ProgramNode::default()
@@ -299,13 +296,13 @@ fn it_wraps_pda_in_program_node_from_enum_with_program_directive() -> CodamaResu
         korok.node,
         Some(
             ProgramNode {
-                identifier: id("associatedToken"),
+                identifier: "associatedToken".into(),
                 public_key: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
                 pdas: vec![PdaNode::new(
-                    id("associated_token"),
+                    "associated_token",
                     vec![
-                        VariablePdaSeedNode::new(id("owner"), PublicKeyTypeNode::new()).into(),
-                        VariablePdaSeedNode::new(id("mint"), PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
                     ]
                 )],
                 ..ProgramNode::default()

@@ -19,13 +19,12 @@ impl ErrorNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::TextNode;
+    use crate::{Identifier, TextNode};
 
     #[test]
     fn new() {
-        let node = ErrorNode::new(id("myError"), 42, "Something went wrong");
-        assert_eq!(node.identifier, id("myError"));
+        let node = ErrorNode::new("myError", 42, "Something went wrong");
+        assert_eq!(node.identifier, Identifier::from("myError"));
         assert_eq!(node.code, 42);
         assert_eq!(node.message, Text::from("Something went wrong"));
         assert_eq!(node.docs, Docs::default());
@@ -34,13 +33,13 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ErrorNode {
-            identifier: id("myError"),
+            identifier: "myError".into(),
             code: 42,
             message: "Something went wrong".into(),
             docs: Docs::default(),
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("myError"));
+        assert_eq!(node.identifier, Identifier::from("myError"));
         assert_eq!(node.code, 42);
         assert_eq!(node.message, Text::from("Something went wrong"));
         assert_eq!(node.docs, Docs::default());
@@ -48,7 +47,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = ErrorNode::new(id("myError"), 42, "Something went wrong");
+        let node = ErrorNode::new("myError", 42, "Something went wrong");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -60,10 +59,7 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"errorNode","identifier":"myError","code":42,"message":"Something went wrong"}"#;
         let node: ErrorNode = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            node,
-            ErrorNode::new(id("myError"), 42, "Something went wrong")
-        );
+        assert_eq!(node, ErrorNode::new("myError", 42, "Something went wrong"));
     }
 
     #[test]
@@ -72,7 +68,7 @@ mod tests {
             content: "Something went wrong".to_string(),
             plugins: vec![],
         };
-        let node = ErrorNode::new(id("myError"), 42, message);
+        let node = ErrorNode::new("myError", 42, message);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,

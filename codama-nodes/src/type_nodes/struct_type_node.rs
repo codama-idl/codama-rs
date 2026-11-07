@@ -13,20 +13,20 @@ impl StructTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+
     use crate::{IntegerTypeNode, StringTypeNode, U32};
 
     #[test]
     fn new() {
         let node = StructTypeNode::new(vec![
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-            StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
         ]);
         assert_eq!(
             node.fields,
             vec![
-                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
             ]
         );
     }
@@ -34,8 +34,8 @@ mod tests {
     #[test]
     fn to_json() {
         let node = StructTypeNode::new(vec![
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-            StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
         ]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
@@ -51,8 +51,8 @@ mod tests {
         assert_eq!(
             node,
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
             ])
         );
     }

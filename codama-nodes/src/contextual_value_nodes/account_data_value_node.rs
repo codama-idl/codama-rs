@@ -28,25 +28,25 @@ impl AccountDataValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::{id, path};
+    use crate::{Identifier, Path};
 
     #[test]
     fn new() {
-        let node = AccountDataValueNode::new(id("myAccount"));
-        assert_eq!(node.account, id("myAccount"));
+        let node = AccountDataValueNode::new("myAccount");
+        assert_eq!(node.account, Identifier::from("myAccount"));
         assert_eq!(node.path, None);
     }
 
     #[test]
     fn with_path() {
-        let node = AccountDataValueNode::with_path(id("myAccount"), path("my_field"));
-        assert_eq!(node.account, id("myAccount"));
-        assert_eq!(node.path, Some(path("my_field")));
+        let node = AccountDataValueNode::with_path("myAccount", Path::from("my_field"));
+        assert_eq!(node.account, Identifier::from("myAccount"));
+        assert_eq!(node.path, Some(Path::from("my_field")));
     }
 
     #[test]
     fn to_json() {
-        let node = AccountDataValueNode::new(id("mint"));
+        let node = AccountDataValueNode::new("mint");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"accountDataValueNode","account":"mint"}"#);
     }
@@ -55,12 +55,12 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"accountDataValueNode","account":"mint"}"#;
         let node: AccountDataValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, AccountDataValueNode::new(id("mint")));
+        assert_eq!(node, AccountDataValueNode::new("mint"));
     }
 
     #[test]
     fn to_json_with_path() {
-        let node = AccountDataValueNode::with_path(id("vault"), path("state.balances[0]"));
+        let node = AccountDataValueNode::with_path("vault", Path::from("state.balances[0]"));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -75,7 +75,7 @@ mod tests {
         let node: AccountDataValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            AccountDataValueNode::with_path(id("vault"), path("state.balances[0]"))
+            AccountDataValueNode::with_path("vault", Path::from("state.balances[0]"))
         );
     }
 

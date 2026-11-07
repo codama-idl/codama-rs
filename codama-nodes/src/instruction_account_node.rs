@@ -23,13 +23,12 @@ impl InstructionAccountNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{AccountValueNode, InstructionInputValueNode, Text};
+    use crate::{AccountValueNode, Identifier, InstructionInputValueNode, Text};
 
     #[test]
     fn new() {
-        let node = InstructionAccountNode::new(id("myAccount"), false, true);
-        assert_eq!(node.identifier, id("myAccount"));
+        let node = InstructionAccountNode::new("myAccount", false, true);
+        assert_eq!(node.identifier, Identifier::from("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::True);
         assert_eq!(node.is_optional, None);
@@ -40,17 +39,17 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = InstructionAccountNode {
-            identifier: id("myAccount"),
+            identifier: "myAccount".into(),
             is_writable: false,
             is_signer: IsSigner::Either,
             is_optional: Some(true),
             docs: vec!["Hello".to_string()].into(),
-            default_value: Box::new(Some(AccountValueNode::new(id("myOtherAccount")).into())),
+            default_value: Box::new(Some(AccountValueNode::new("myOtherAccount").into())),
             account_link: None,
             display: None,
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("myAccount"));
+        assert_eq!(node.identifier, Identifier::from("myAccount"));
         assert!(!node.is_writable);
         assert_eq!(node.is_signer, IsSigner::Either);
         assert_eq!(node.is_optional, Some(true));
@@ -58,14 +57,14 @@ mod tests {
         assert_eq!(
             *node.default_value,
             Some(InstructionInputValueNode::AccountValue(
-                AccountValueNode::new(id("myOtherAccount"))
+                AccountValueNode::new("myOtherAccount")
             ))
         );
     }
 
     #[test]
     fn to_json() {
-        let node = InstructionAccountNode::new(id("myAccount"), false, true);
+        let node = InstructionAccountNode::new("myAccount", false, true);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -77,9 +76,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"instructionAccountNode","identifier":"myAccount","isWritable":false,"isSigner":true}"#;
         let node: InstructionAccountNode = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            node,
-            InstructionAccountNode::new(id("myAccount"), false, true)
-        );
+        assert_eq!(node, InstructionAccountNode::new("myAccount", false, true));
     }
 }

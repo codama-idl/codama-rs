@@ -228,7 +228,7 @@ mod tests {
         ] {
             let decimal = Decimal::from(value);
             assert_eq!(decimal.as_str(), expected);
-            assert_eq!(Decimal::try_from(expected).unwrap(), decimal);
+            assert_eq!(Decimal::from(expected), decimal);
         }
     }
 
@@ -303,8 +303,18 @@ mod tests {
     }
 
     #[test]
-    fn try_from() {
-        assert_eq!(Decimal::try_from("1.5").unwrap().as_str(), "1.5");
+    fn from_static_str() {
+        assert_eq!(Decimal::from("1.5").as_str(), "1.5");
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid decimal: 1.50")]
+    fn from_static_str_panics_on_a_non_canonical_decimal() {
+        let _ = Decimal::from("1.50");
+    }
+
+    #[test]
+    fn try_from_string() {
         assert_eq!(
             Decimal::try_from("1.5".to_string()).unwrap().as_str(),
             "1.5"

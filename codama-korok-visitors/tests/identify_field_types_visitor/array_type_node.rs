@@ -1,5 +1,4 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     ArrayTypeNode, BooleanTypeNode, DefinedTypeLinkNode, FixedCountNode, IntegerTypeNode, Node,
     PrefixedCountNode, U32, U8,
@@ -30,7 +29,7 @@ fn it_identifies_vecs_of_custom_types() {
         get_node_from_type(quote! { Vec<MyCustomType> }),
         Some(Node::Type(
             ArrayTypeNode::new(
-                DefinedTypeLinkNode::new(id("my_custom_type")),
+                DefinedTypeLinkNode::new("my_custom_type"),
                 PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )
             .into()
@@ -61,7 +60,7 @@ fn it_identifies_fixed_arrays_of_custom_types() {
         get_node_from_type(quote! { [MyCustomType; 5] }),
         Some(Node::Type(
             ArrayTypeNode::new(
-                DefinedTypeLinkNode::new(id("my_custom_type")),
+                DefinedTypeLinkNode::new("my_custom_type"),
                 FixedCountNode::new(5)
             )
             .into()

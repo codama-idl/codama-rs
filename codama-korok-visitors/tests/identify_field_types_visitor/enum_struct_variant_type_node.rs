@@ -1,5 +1,4 @@
 use crate::identify_field_types_visitor::utils::get_node_from_enum_variant;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     EnumVariantTypeNode, IntegerTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode,
     StructTypeNode, I32,
@@ -14,10 +13,10 @@ fn it_identifies_struct_variants() {
         }),
         Some(Node::Type(
             EnumVariantTypeNode::with_data(
-                id("move"),
+                "move",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("x"), IntegerTypeNode::le(I32)),
-                    StructFieldTypeNode::new(id("y"), IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                 ])
             )
             .into()

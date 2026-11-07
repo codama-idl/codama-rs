@@ -76,8 +76,18 @@ mod tests {
     }
 
     #[test]
-    fn try_from() {
-        assert_eq!(Namespace::try_from("i18n.es").unwrap().as_str(), "i18n.es");
+    fn from_static_str() {
+        assert_eq!(Namespace::from("i18n.es").as_str(), "i18n.es");
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid namespace: i18n..es")]
+    fn from_static_str_panics_on_an_invalid_namespace() {
+        let _ = Namespace::from("i18n..es");
+    }
+
+    #[test]
+    fn try_from_string() {
         assert_eq!(
             Namespace::try_from("i18n.es".to_string()).unwrap().as_str(),
             "i18n.es"

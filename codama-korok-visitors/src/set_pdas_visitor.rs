@@ -69,10 +69,7 @@ pub fn parse_pda_seed_nodes(
         match &directive.seed {
             SeedDirectiveType::Variable { name, r#type } => {
                 let type_node = r#type.try_resolved()?.clone();
-                seeds.push(
-                    VariablePdaSeedNode::new(Identifier::try_from(name.as_str())?, type_node)
-                        .into(),
-                );
+                seeds.push(VariablePdaSeedNode::new(name.parse::<Identifier>()?, type_node).into());
             }
             SeedDirectiveType::Constant { r#type, value } => {
                 let type_node = r#type.try_resolved()?.clone();

@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumVariantKorok;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, DefaultValueStrategy, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode,
     IntegerValueNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
@@ -14,7 +13,7 @@ fn it_creates_enum_empty_variants() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(korok.node, Some(EnumVariantTypeNode::new(id("foo")).into()));
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("foo").into()));
     Ok(())
 }
 
@@ -22,8 +21,8 @@ fn it_creates_enum_empty_variants() -> CodamaResult<()> {
 fn it_creates_enum_struct_variants() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo { x: i32, y: i32 } };
     let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node = Some(StructFieldTypeNode::new(id("x"), IntegerTypeNode::le(I32)).into());
-    korok.fields[1].node = Some(StructFieldTypeNode::new(id("y"), IntegerTypeNode::le(I32)).into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)).into());
+    korok.fields[1].node = Some(StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -31,10 +30,10 @@ fn it_creates_enum_struct_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             EnumVariantTypeNode::with_data(
-                id("foo"),
+                "foo",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("x"), IntegerTypeNode::le(I32)),
-                    StructFieldTypeNode::new(id("y"), IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
+                    StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
                 ])
             )
             .into()
@@ -56,7 +55,7 @@ fn it_creates_enum_tuple_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             EnumVariantTypeNode::with_data(
-                id("foo"),
+                "foo",
                 TupleTypeNode::new(vec![
                     IntegerTypeNode::le(U64).into(),
                     StringTypeNode::utf8().into(),
@@ -80,7 +79,7 @@ fn it_keeps_track_of_the_variant_discriminant() -> CodamaResult<()> {
         Some(
             EnumVariantTypeNode {
                 discriminator: Some(42),
-                ..EnumVariantTypeNode::new(id("foo"))
+                ..EnumVariantTypeNode::new("foo")
             }
             .into()
         )
@@ -93,9 +92,9 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let ast: syn::Variant = syn::parse_quote! { Foo };
     let mut korok = EnumVariantKorok::parse(&ast)?;
 
-    korok.node = Some(EnumVariantTypeNode::new(id("bar")).into());
+    korok.node = Some(EnumVariantTypeNode::new("bar").into());
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(korok.node, Some(EnumVariantTypeNode::new(id("bar")).into()));
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("bar").into()));
     Ok(())
 }
 
@@ -147,7 +146,7 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
-    assert_eq!(korok.node, Some(EnumVariantTypeNode::new(id("bar")).into()));
+    assert_eq!(korok.node, Some(EnumVariantTypeNode::new("bar").into()));
     Ok(())
 }
 
@@ -166,10 +165,10 @@ fn it_adds_attribute_fields_to_empty_enum_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             EnumVariantTypeNode::with_data(
-                id("person"),
+                "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
-                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
             .into()
@@ -188,8 +187,7 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
         }
     };
     let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node =
-        Some(StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()).into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -197,15 +195,15 @@ fn it_prepends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             EnumVariantTypeNode::with_data(
-                id("person"),
+                "person",
                 StructTypeNode::new(vec![
                     StructFieldTypeNode {
                         default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                         default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                        ..StructFieldTypeNode::new(id("discriminator"), IntegerTypeNode::le(U8))
+                        ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
                     },
-                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
-                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
                 ])
             )
             .into()
@@ -224,8 +222,7 @@ fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
         }
     };
     let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node =
-        Some(StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()).into());
+    korok.fields[0].node = Some(StructFieldTypeNode::new("name", StringTypeNode::utf8()).into());
 
     assert_eq!(korok.node, None);
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -233,11 +230,11 @@ fn it_appends_attribute_fields_to_enum_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             EnumVariantTypeNode::with_data(
-                id("person"),
+                "person",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
-                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
-                    StructFieldTypeNode::new(id("is_member"), BooleanTypeNode::default()),
+                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
                 ])
             )
             .into()

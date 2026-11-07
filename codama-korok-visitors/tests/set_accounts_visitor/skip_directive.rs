@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::EnumKorok;
-use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     AccountNode, DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode,
     IntegerFormat::{U64, U8},
@@ -34,13 +33,13 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: id("mint"),
+                        identifier: "mint".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: id("discriminator"),
+                                    identifier: "discriminator".into(),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -52,24 +51,24 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new(id("supply"), IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new("supply", IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: id("token"),
+                        identifier: "token".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: id("discriminator"),
+                                    identifier: "discriminator".into(),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -81,13 +80,13 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     }
@@ -121,12 +120,12 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: id("mint"),
+                        identifier: "mint".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -138,17 +137,17 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: id("token"),
+                        identifier: "token".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -160,7 +159,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     }
@@ -196,12 +195,12 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: id("first"),
+                        identifier: "first".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -213,17 +212,17 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: id("third"),
+                        identifier: "third".into(),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -235,7 +234,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                         ),
                         pda: None,
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         plugins: vec![],
                     }

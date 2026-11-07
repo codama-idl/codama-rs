@@ -1,15 +1,14 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    AccountNode, BooleanTypeNode, IntegerTypeNode, ProgramNode, RootNode, StringTypeNode,
-    StructFieldTypeNode, StructTypeNode, U32,
+    AccountNode, BooleanTypeNode, Identifier, IntegerTypeNode, ProgramNode, RootNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, U32,
 };
 
 fn create_account_with_single_field(name: &str, field_name: &str) -> AccountNode {
     AccountNode::new(
-        id(name),
+        name.parse::<Identifier>().unwrap(),
         StructTypeNode::new(vec![StructFieldTypeNode::new(
-            id(field_name),
+            field_name.parse::<Identifier>().unwrap(),
             StringTypeNode::utf8(),
         )]),
     )
@@ -18,17 +17,17 @@ fn create_account_with_single_field(name: &str, field_name: &str) -> AccountNode
 #[test]
 fn it_merges_accounts_into_root_nodes() {
     let membership = AccountNode::new(
-        id("membership"),
+        "membership",
         StructTypeNode::new(vec![
-            StructFieldTypeNode::new(id("identifier"), StringTypeNode::utf8()),
-            StructFieldTypeNode::new(id("active"), BooleanTypeNode::default()),
+            StructFieldTypeNode::new("identifier", StringTypeNode::utf8()),
+            StructFieldTypeNode::new("active", BooleanTypeNode::default()),
         ]),
     );
     let person = AccountNode::new(
-        id("person"),
+        "person",
         StructTypeNode::new(vec![
-            StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
+            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
         ]),
     );
     assert_eq!(
@@ -51,10 +50,8 @@ fn it_merges_accounts_into_root_nodes() {
 #[test]
 fn it_merges_accounts_inside_programs_into_root_nodes() {
     let empty_data = StructTypeNode::new(vec![]);
-    let program_a =
-        ProgramNode::default().add_account(AccountNode::new(id("foo"), empty_data.clone()));
-    let program_b =
-        ProgramNode::default().add_account(AccountNode::new(id("bar"), empty_data.clone()));
+    let program_a = ProgramNode::default().add_account(AccountNode::new("foo", empty_data.clone()));
+    let program_b = ProgramNode::default().add_account(AccountNode::new("bar", empty_data.clone()));
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -64,8 +61,8 @@ fn it_merges_accounts_inside_programs_into_root_nodes() {
         Some(
             RootNode::new(
                 ProgramNode::default()
-                    .add_account(AccountNode::new(id("foo"), empty_data.clone()))
-                    .add_account(AccountNode::new(id("bar"), empty_data))
+                    .add_account(AccountNode::new("foo", empty_data.clone()))
+                    .add_account(AccountNode::new("bar", empty_data))
             )
             .into()
         )
