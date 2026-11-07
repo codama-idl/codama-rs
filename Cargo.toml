@@ -18,18 +18,18 @@ members = [
 ]
 
 [workspace.dependencies]
-codama = { version = "1.0.0", path = "codama" }
-codama-attributes = { version = "1.0.0", path = "codama-attributes" }
-codama-cli = { version = "1.0.0", path = "codama-cli" }
-codama-errors = { version = "1.0.0", path = "codama-errors" }
-codama-korok-visitors = { version = "1.0.0", path = "codama-korok-visitors" }
-codama-koroks = { version = "1.0.0", path = "codama-koroks" }
-codama-macros = { version = "1.0.0", path = "codama-macros" }
-codama-nodes = { version = "1.0.0", path = "codama-nodes" }
-codama-nodes-derive = { version = "1.0.0", path = "codama-nodes/derive" }
-codama-plugin-core = { version = "1.0.0", path = "codama-plugin-core" }
-codama-stores = { version = "1.0.0", path = "codama-stores" }
-codama-syn-helpers = { version = "1.0.0", path = "codama-syn-helpers" }
+codama = { version = "2.0.0-rc.0", path = "codama" }
+codama-attributes = { version = "2.0.0-rc.0", path = "codama-attributes" }
+codama-cli = { version = "2.0.0-rc.0", path = "codama-cli" }
+codama-errors = { version = "2.0.0-rc.0", path = "codama-errors" }
+codama-korok-visitors = { version = "2.0.0-rc.0", path = "codama-korok-visitors" }
+codama-koroks = { version = "2.0.0-rc.0", path = "codama-koroks" }
+codama-macros = { version = "2.0.0-rc.0", path = "codama-macros" }
+codama-nodes = { version = "2.0.0-rc.0", path = "codama-nodes" }
+codama-nodes-derive = { version = "2.0.0-rc.0", path = "codama-nodes/derive" }
+codama-plugin-core = { version = "2.0.0-rc.0", path = "codama-plugin-core" }
+codama-stores = { version = "2.0.0-rc.0", path = "codama-stores" }
+codama-syn-helpers = { version = "2.0.0-rc.0", path = "codama-syn-helpers" }
 
 [workspace.package]
 edition = "2021"

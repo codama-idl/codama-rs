@@ -2,6 +2,98 @@
 
 Every published crate of the workspace shares this changelog and the same version. Earlier releases are listed on the [GitHub releases](https://github.com/codama-idl/codama-rs/releases) page, under their `<crate>-vX.Y.Z` tags.
 
+## 2.0.0-rc.0 (2026-11-07)
+
+### Breaking Changes
+
+#### Add `Text`, `Integer` and `Decimal`, and rewrite `Docs` for spec v2
+
+`Docs` is now an optional `Text` (a plain string or a `textNode`) and serialises as a single string. `Integer` and `Decimal` hold spec v2 numeric literals as canonical base-10 strings, with `Decimal::from(f64)` producing the same digits as JavaScript. `Node` gains `Transform` and `Text`, `TypeNode` gains `Integer`, `Float`, `FixedPoint` and `Duration`, and the v1 nesting machinery (`NestedTypeNode`, `#[nestable_type_node]`, the wrapper type nodes, the generic `NodeUnion` derive) is removed. The per-node constructors return over the following changes.
+
+#### Add `unit(...)` number displays
+
+`display(unit("SOL"))`, or `display = unit(...)` inline on a number type, labels a number with a unit without scaling it, and the unit can also be a public key such as a mint address. Floats and fixed points take only this display, so an `amount(...)` display on them is now an error pointing to `unit(...)`, and an `amount(...)` display without `decimals` suggests either.
+
+#### Build spec v2 instruction data and defaults from Rust code
+
+The fields of an instruction are now collected into a single `data` struct instead of a list of arguments, and a contextual default such as `#[codama(default_value = payer)]` is injected into its field from a `provides` entry on the instruction. Rust integer and float types map to `integerTypeNode` and `floatTypeNode`. Using `field(...)` on a tuple struct or variant is now an error, and an `enum_discriminator` name must be a valid identifier.
+
+#### Emit transforms from wrapper attributes
+
+`fixed_size(...)`, `size_prefix(...)`, `pre_offset(...)`, `post_offset(...)`, `sentinel(...)`, `hidden_prefix(...)` and `hidden_suffix(...)` keep their syntax, but they now attach transforms to the type they wrap, innermost first, rather than producing wrapper nodes in the IDL. They can also wrap a `link(...)`, and the prefix of `size_prefix(...)` must be an `integer(...)`.
+
+#### Fail when modules or plugins describe the same item differently
+
+When several modules describe the same program, two nodes of the same kind and identifier with different content, or two plugins with the same namespace and different payloads, are now an error instead of one silently replacing the other. Identical duplicates still merge into one. A linked PDA seed that matches no field is also an error.
+
+#### Inject contextual defaults from `field(...)` and reject ambiguous fields
+
+A contextual default such as `default_value = payer` written in a `field(...)` directive on an instruction is now injected through a `provides` entry, like a default written on a Rust field. Contextual defaults outside an instruction, two fields of a struct whose identifiers share the same camelCase form, and a `default_value` next to an `account(...)` directive are now errors instead of being dropped or accepted.
+
+#### Merge enum variant types and port value nodes to spec v2
+
+The empty, tuple and struct enum variant types are replaced by a single `EnumVariantTypeNode` whose optional `data` can be any type node, and an `EnumValueNode` payload can now be any value node rather than an `EnumValuePayload`. Number values split into `IntegerValueNode` and `FloatValueNode`. Instruction arguments are referenced with a `DataValueNode` holding a validated `Path`, which replaces `ArgumentValueNode`, and `AccountDataValueNode` replaces `AccountFieldValueNode`.
+
+#### Regenerate the nodes from spec v2
+
+Node structs now follow spec v2: every node carries `plugins`, type nodes carry `transforms` in place of the v1 wrapper nodes, and `NumberTypeNode`/`NumberValueNode` are replaced by `IntegerTypeNode`, `FloatTypeNode`, `FixedPointTypeNode`, `DurationTypeNode`, `IntegerValueNode` and `FloatValueNode`. Named nodes serialise `identifier` instead of `name`, nodes are no longer `Copy`, and the v1-only nodes (`argumentValueNode`, `resolverValueNode`, `instructionArgumentNode`, the three enum variant nodes, `amountTypeNode`, `solAmountTypeNode`) are removed.
+
+#### Reject PDA seeds that would otherwise be dropped
+
+A seed linked to a field by name, such as `seed(name = "authority")`, now fails with an error asking for an explicit `type = ...` when the field's Rust type has no Codama type, instead of silently leaving the seed out of the PDA. A nested `data(...)` path in the seed list of a `pda(...)` value must also be named explicitly with `seed("name", data(...))`.
+
+#### Remove `Docs::push`
+
+`Docs` no longer has a `push` method. Build docs from a `Vec<String>` or a `Text` instead, e.g. `Docs::from(vec!["First line".to_string()])`.
+
+#### Rename the `name` field of nodes to `identifier`
+
+Following spec v2, the 22 nodes that identify themselves by a name now expose that name as `identifier` rather than `name`, and the `HasName` trait becomes `HasIdentifier` with an `identifier()` method. This only affects code constructing or reading nodes directly, e.g. plugins: the `#[codama(...)]` attributes and the generated IDL are unchanged by this step.
+
+#### Replace `amount` and `sol_amount` with `fixed_point`, and add `duration` and ticks
+
+`amount(number(u64), 6, "USDC")` becomes `fixed_point(integer(u64), scale = 6, unit = "USDC")`, with an optional `base`, and `sol_amount(...)` becomes `fixed_point(..., scale = 9, unit = "SOL")`. `integer(...)` and `float(...)` accept a `unit`, `date_time(...)` accepts `ticks_per_second`, and the new `duration(...)` type describes time spans. Using `amount(...)` or `sol_amount(...)` fails with a hint pointing to the replacement.
+
+#### Replace wrapper type nodes with transforms
+
+Layout modifiers no longer wrap the type they apply to: `FixedSizeTypeNode`, `SizePrefixTypeNode`, `PreOffsetTypeNode`, `PostOffsetTypeNode`, `SentinelTypeNode`, `HiddenPrefixTypeNode` and `HiddenSuffixTypeNode` become the `*TransformNode`s of spec v2, attached to any type node or defined type link with `add_transform`, e.g. `StringTypeNode::utf8().add_transform(FixedSizeTransformNode::new(42))`. Floats move to the new `FloatTypeNode`, `FixedPointTypeNode` and `DurationTypeNode` are added, and `DateTimeTypeNode` now wraps an `IntegerTypeNode`.
+
+#### Split `number` into `integer` and `float`, and replace `argument` with `field` and `data`
+
+Write `integer(...)` or `float(...)` wherever you used `number(...)`, including in `size = ...` and `prefix = ...`. Instruction arguments are declared as data fields with `field(...)`, values that read from instruction data use `data(...)`, which also accepts nested paths such as `data("config.fees[0]")`, and `remaining_accounts(argument("x"), ...)` becomes `remaining_accounts("x", ...)`. Amount displays now require `decimals`, and enum variants accept any payload type. Using a removed spelling fails with a hint pointing to its replacement.
+
+#### Start major 2
+
+Release candidates of major 2 publish from `main` while it is in development. The stable release follows the ecosystem-wide [release process](https://github.com/codama-idl/spec/blob/HEAD/RELEASING.md).
+
+#### Update count, discriminator and display node constructors for spec v2
+
+`FieldDiscriminatorNode` now points at its field with a `Path`, validated against the spec path grammar like the `path` of `dataValueNode` and `accountDataValueNode`, so a nested field such as `header.kind` can serve as a discriminator. `AmountNumberDisplayNode::new` requires `decimals` and no longer implements `Default`, and `PrefixedCountNode::new` takes an `IntegerTypeNode`. New constructors are available for `SentinelCountNode`, `UnitNumberDisplayNode` and `ValueLabelDisplayNode`, along with `IntegerTypeNode::{le, be}` and `IntegerValueNode::new`.
+
+#### Update program, account and instruction nodes for spec v2
+
+Instructions describe their payload with a single optional `data` type node, plus an optional `return_data`, instead of a list of arguments. Accounts accept any type node as their data, remaining accounts are identified by name rather than carrying an argument or resolver value, and byte deltas use the spec v2 value nodes. Programs no longer have an `origin`, error and status messages accept rich text, and plugin namespaces are validated, so invalid ones are rejected when deserialising.
+
+#### Use snake_case identifiers and replace `name = ...` with `identifier = ...`
+
+Identifiers derived from Rust code are now snake_case (`MyAccount` → `my_account`, `HTTPServer` → `http_server`), whilst identifiers written in attributes, such as `field("x", ...)`, `pda("...")` or `identifier = "..."`, are kept exactly as written and must match the spec identifier grammar. References must therefore use the derived spelling, e.g. `pda("my_pda")` for `struct MyPda`. The `name = "..."` key becomes `identifier = "..."`, with a hint when the old key is used. In the Rust API, `CamelCaseString` is replaced by `Identifier`, which validates its value.
+
+### Features
+
+#### Emit float values for numbers written at float positions
+
+A whole number such as `default_value = 1` on a float field, constant, discriminator or PDA seed now produces a `floatValueNode` rather than an `integerValueNode`, following links to find the type, so the output matches spec v2 and `@codama/upgrade`.
+
+### Fixes
+
+#### Emit node attributes in spec declaration order
+
+Nodes now serialise their attributes in the order the spec declares them, followed by `plugins`, which matches the IDLs produced by `@codama` JS. Only the order of keys in the JSON changes, not its content.
+
+#### Keep defaults and plugins that were silently dropped
+
+An instruction field renamed with `type = field("...", ...)` now keeps its `default_value`, and plugins set on a program by several modules are now merged instead of only keeping those of the first module.
+
 ## 1.0.0 (2026-11-05)
 
 ### Features
