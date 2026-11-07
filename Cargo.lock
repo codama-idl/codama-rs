@@ -155,6 +155,7 @@ dependencies = [
  "codama-plugin-core",
  "codama-stores",
  "proc-macro2",
+ "quote",
 ]
 
 [[package]]

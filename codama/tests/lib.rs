@@ -3,6 +3,7 @@ mod membership;
 mod memo;
 mod program_override;
 mod system;
+mod validation;
 
 pub fn get_path(relative_path: &str) -> std::path::PathBuf {
     let project_dir = env!("CARGO_MANIFEST_DIR");

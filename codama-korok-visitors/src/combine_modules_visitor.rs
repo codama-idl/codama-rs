@@ -271,7 +271,7 @@ fn merge_plugins(
     Ok(())
 }
 
-fn merge_nodes_with_identifier<T>(
+pub(crate) fn merge_nodes_with_identifier<T>(
     nodes: &mut Vec<T>,
     new_nodes: Vec<T>,
     location: &str,

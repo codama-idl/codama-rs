@@ -1,7 +1,7 @@
 use crate::DirectiveResolver;
 use codama_attributes::ResolvableDirective;
 use codama_errors::CodamaResult;
-use codama_korok_visitors::KorokVisitable;
+use codama_korok_visitors::{KorokVisitable, ValidateRootNodeVisitor};
 use codama_nodes::{InstructionInputValueNode, RegisteredTypeNode};
 
 pub trait KorokPlugin {
@@ -111,6 +111,8 @@ pub fn resolve_plugins<'a>(plugins: &'a [Box<dyn KorokPlugin + 'a>]) -> ResolveP
         plugins
             .iter()
             .try_for_each(|plugin| plugin.on_root_node_set(visitable))?;
+        // Phase 5: Validate the final root node outside any plugin.
+        visitable.accept(&mut ValidateRootNodeVisitor::new())?;
         Ok(())
     })
 }

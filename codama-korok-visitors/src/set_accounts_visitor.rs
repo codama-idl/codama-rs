@@ -1,4 +1,4 @@
-use crate::{assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor, KorokVisitor};
+use crate::{merge_nodes_with_identifier, parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
     TryFromFilter,
@@ -106,8 +106,8 @@ impl KorokVisitor for SetAccountsVisitor {
             })
             .collect::<Vec<_>>();
 
-        // Gather all PDAs the variants.
-        let pdas = korok
+        // Gather all PDAs of the variants.
+        let variant_pdas = korok
             .variants
             .iter()
             .flat_map(|variant| match &variant.node {
@@ -116,6 +116,11 @@ impl KorokVisitor for SetAccountsVisitor {
                 _ => vec![],
             })
             .collect::<Vec<_>>();
+
+        // Variants that share a PDA each hold a copy of it, so equal copies merge into one.
+        let mut pdas = Vec::new();
+        let location = format!("enum `{}`", korok.ast.ident);
+        merge_nodes_with_identifier(&mut pdas, variant_pdas, &location)?;
 
         let node: Node = ProgramNode {
             accounts,
@@ -154,9 +159,6 @@ impl KorokVisitor for SetAccountsVisitor {
         let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
         let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
 
-        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
-        let fields = std::iter::once(&discriminator).chain(&data.fields);
-        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
         data.fields.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);

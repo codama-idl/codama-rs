@@ -18,6 +18,10 @@ codama-nodes = { workspace = true }
 codama-stores = { workspace = true }
 proc-macro2 = "1.0"
 
+[dev-dependencies]
+codama-nodes = { path = "../codama-nodes", features = ["dev-context-only-utils"] }
+quote = "1.0"
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(target_os, values("solana"))',
