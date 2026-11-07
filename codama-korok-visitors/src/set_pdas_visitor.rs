@@ -5,7 +5,7 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    CamelCaseString, ConstantPdaSeedNode, Docs, Node, PdaNode, PdaSeedNode, RegisteredTypeNode,
+    ConstantPdaSeedNode, Docs, Identifier, Node, PdaNode, PdaSeedNode, RegisteredTypeNode,
     TypeNode, VariablePdaSeedNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
@@ -26,7 +26,7 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        let pda = parse_pda_node(korok.name(), &korok.attributes, &korok.fields)?;
+        let pda = parse_pda_node(korok.name()?, &korok.attributes, &korok.fields)?;
         korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
@@ -37,14 +37,14 @@ impl KorokVisitor for SetPdasVisitor {
             return Ok(());
         };
 
-        let pda = parse_pda_node(korok.name(), &korok.attributes, &[])?;
+        let pda = parse_pda_node(korok.name()?, &korok.attributes, &[])?;
         korok.node = Some(ProgramDirective::apply(&korok.attributes, pda.into()));
         Ok(())
     }
 }
 
 pub fn parse_pda_node(
-    name: CamelCaseString,
+    name: Identifier,
     attributes: &Attributes,
     fields: &[FieldKorok],
 ) -> CodamaResult<PdaNode> {
@@ -69,7 +69,10 @@ pub fn parse_pda_seed_nodes(
         match &directive.seed {
             SeedDirectiveType::Variable { name, r#type } => {
                 let type_node = r#type.try_resolved()?.clone();
-                seeds.push(VariablePdaSeedNode::new(name.as_str(), type_node).into());
+                seeds.push(
+                    VariablePdaSeedNode::new(Identifier::try_from(name.as_str())?, type_node)
+                        .into(),
+                );
             }
             SeedDirectiveType::Constant { r#type, value } => {
                 let type_node = r#type.try_resolved()?.clone();
@@ -93,7 +96,11 @@ pub fn parse_pda_seed_nodes(
                         (*struct_field.r#type).clone(),
                     ),
                     _ => match TypeNode::try_from(field.node.clone()) {
-                        Ok(type_node) => (name.clone().into(), type_node),
+                        Ok(type_node) => {
+                            let identifier =
+                                Identifier::from_rust_name(name).map_err(|e| field.ast.error(e))?;
+                            (identifier, type_node)
+                        }
                         Err(_) => {
                             let message = format!(
                                 "Seed `{name}` links to a field whose type does not resolve, \

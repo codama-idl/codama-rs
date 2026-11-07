@@ -1,0 +1,5 @@
+error: name = ... is removed in v2, use identifier = ...
+ --> tests/codama_program/name_removed.fail.rs:3:17
+  |
+3 | codama_program!(name = "associatedToken");
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^

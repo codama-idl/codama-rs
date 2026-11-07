@@ -22,9 +22,9 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('pub is_writable: bool,');
     });
 
-    it('renders a required stringIdentifier field as CamelCaseString with no serde attribute', () => {
+    it('renders a required stringIdentifier field as Identifier with no serde attribute', () => {
         const result = getAttributeBodyLineFragment(attribute('variant', stringIdentifier()));
-        expect(result.content).toBe('pub variant: CamelCaseString,');
+        expect(result.content).toBe('pub variant: Identifier,');
     });
 
     it('renders a required text attribute as `Text` and an optional one as `Option<Text>`', () => {
@@ -51,7 +51,7 @@ describe('getAttributeBodyLineFragment', () => {
 
     it('escapes the Rust keyword `type` as `r#type` in field position', () => {
         const result = getAttributeBodyLineFragment(attribute('type', stringIdentifier()));
-        expect(result.content).toBe('pub r#type: CamelCaseString,');
+        expect(result.content).toBe('pub r#type: Identifier,');
     });
 
     it('boxes a required union field as `Box<T>` (box-all-union rule)', () => {

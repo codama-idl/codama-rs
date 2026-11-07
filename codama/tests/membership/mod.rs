@@ -71,7 +71,7 @@ fn get_idl() {
               "identifier": "bio",
               "type": {
                 "kind": "definedTypeLinkNode",
-                "identifier": "boundedString25"
+                "identifier": "bounded_string25"
               }
             }
           ]
@@ -111,7 +111,7 @@ fn get_idl() {
       },
       {
         "kind": "definedTypeNode",
-        "identifier": "boundedString25",
+        "identifier": "bounded_string25",
         "type": {
           "kind": "structTypeNode",
           "fields": [

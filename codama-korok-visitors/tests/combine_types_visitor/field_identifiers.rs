@@ -12,10 +12,10 @@ fn it_rejects_fields_with_one_identifier() -> CodamaResult<()> {
             syn::parse_quote! {
                 #[derive(CodamaInstruction)]
                 struct Transfer {
-                    #[codama(name = "owner")]
+                    #[codama(identifier = "owner")]
                     #[codama(default_value = payer)]
                     source_owner: Pubkey,
-                    #[codama(name = "owner")]
+                    #[codama(identifier = "owner")]
                     #[codama(default_value = payer)]
                     destination_owner: Pubkey,
                 }
@@ -52,12 +52,12 @@ fn it_rejects_fields_with_one_identifier() -> CodamaResult<()> {
                 #[derive(CodamaType)]
                 struct Config {
                     owner_key: Pubkey,
-                    #[codama(name = "OwnerKey")]
+                    #[codama(identifier = "OwnerKey")]
                     key: Pubkey,
                 }
             },
             Box::new(SetDefinedTypesVisitor::new()),
-            "Field `ownerKey` is not unique in struct `Config`",
+            "Field `OwnerKey` is not unique in struct `Config`",
         ),
         (
             syn::parse_quote! {
@@ -74,7 +74,7 @@ fn it_rejects_fields_with_one_identifier() -> CodamaResult<()> {
             syn::parse_quote! {
                 #[derive(CodamaInstructions)]
                 enum Instructions {
-                    Transfer(#[codama(name = "amount")] u64, #[codama(name = "amount")] u64),
+                    Transfer(#[codama(identifier = "amount")] u64, #[codama(identifier = "amount")] u64),
                 }
             },
             Box::new(SetInstructionsVisitor::new()),
@@ -84,7 +84,7 @@ fn it_rejects_fields_with_one_identifier() -> CodamaResult<()> {
             syn::parse_quote! {
                 #[derive(CodamaInstructions)]
                 enum Instructions {
-                    Transfer(#[codama(name = "arg1")] u64, u64),
+                    Transfer(#[codama(identifier = "arg1")] u64, u64),
                 }
             },
             Box::new(SetInstructionsVisitor::new()),
@@ -104,7 +104,7 @@ fn it_rejects_fields_with_one_identifier() -> CodamaResult<()> {
             syn::parse_quote! {
                 #[derive(CodamaEvents)]
                 enum Events {
-                    Deposited(#[codama(name = "amount")] u64, #[codama(name = "amount")] u64),
+                    Deposited(#[codama(identifier = "amount")] u64, #[codama(identifier = "amount")] u64),
                 }
             },
             Box::new(SetEventsVisitor::new()),

@@ -1,13 +1,13 @@
 use crate::{
-    AccountNode, CamelCaseString, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode,
-    HasIdentifier, InstructionNode, PdaNode, PluginNode,
+    AccountNode, ConstantNode, DefinedTypeNode, Docs, ErrorNode, EventNode, HasIdentifier,
+    Identifier, InstructionNode, PdaNode, PluginNode,
 };
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct ProgramNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     pub public_key: String,
     pub version: String,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -31,7 +31,7 @@ pub struct ProgramNode {
 }
 
 impl HasIdentifier for ProgramNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

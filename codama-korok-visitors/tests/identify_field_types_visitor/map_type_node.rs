@@ -1,4 +1,5 @@
 use crate::identify_field_types_visitor::utils::get_node_from_type;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, DefinedTypeLinkNode, IntegerTypeNode, MapTypeNode, Node, PrefixedCountNode,
     U32, U64,
@@ -34,7 +35,7 @@ fn it_identifies_maps_of_custom_types() {
         get_node_from_type(quote! { HashMap<MyCustomType, u64> }),
         Some(Node::Type(
             MapTypeNode::new(
-                DefinedTypeLinkNode::new("myCustomType"),
+                DefinedTypeLinkNode::new(id("my_custom_type")),
                 IntegerTypeNode::le(U64),
                 PrefixedCountNode::new(IntegerTypeNode::le(U32))
             )

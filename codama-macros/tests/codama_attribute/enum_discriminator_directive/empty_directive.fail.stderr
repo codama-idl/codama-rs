@@ -4,7 +4,7 @@ error: expected a list: `enum_discriminator(...)` or `enum_discriminator = (...)
 3 | #[codama(enum_discriminator)]
   |          ^^^^^^^^^^^^^^^^^^
 
-error: enum_discriminator must specify at least one of: name, size
+error: enum_discriminator must specify at least one of: identifier, size
  --> tests/codama_attribute/enum_discriminator_directive/empty_directive.fail.rs:6:10
   |
 6 | #[codama(enum_discriminator())]

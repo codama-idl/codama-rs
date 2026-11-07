@@ -3,6 +3,7 @@ use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
 use codama_koroks::FieldKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     ConstantValueNode, FixedSizeTransformNode, HasTransforms, HiddenPrefixTransformNode,
     IntegerFormat::{U16, U32, U8},
@@ -222,7 +223,7 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                "field",
+                id("field"),
                 IntegerTypeNode::le(U32)
                     .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U8)))
             )

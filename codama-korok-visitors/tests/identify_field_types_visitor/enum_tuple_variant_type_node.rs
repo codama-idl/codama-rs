@@ -1,4 +1,5 @@
 use crate::identify_field_types_visitor::utils::get_node_from_enum_variant;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, EnumVariantTypeNode, IntegerTypeNode, Node, RegisteredTypeNode, TupleTypeNode,
     U8,
@@ -13,7 +14,7 @@ fn it_identifies_tuple_variants() {
         }),
         Some(Node::Type(
             EnumVariantTypeNode::with_data(
-                "push",
+                id("push"),
                 TupleTypeNode::new(vec![
                     IntegerTypeNode::le(U8).into(),
                     BooleanTypeNode::default().into()

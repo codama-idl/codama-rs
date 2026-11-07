@@ -1,10 +1,11 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
+use codama_nodes::test_utils::id;
 use codama_nodes::{ErrorNode, ProgramNode, RootNode};
 
 #[test]
 fn it_merges_errors_into_root_nodes() {
-    let wrong_account = ErrorNode::new("wrongAccount", 1, "This account is not valid");
-    let wrong_argument = ErrorNode::new("wrongArgument", 2, "This argument is not valid");
+    let wrong_account = ErrorNode::new(id("wrongAccount"), 1, "This account is not valid");
+    let wrong_argument = ErrorNode::new(id("wrongArgument"), 2, "This argument is not valid");
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -24,8 +25,8 @@ fn it_merges_errors_into_root_nodes() {
 
 #[test]
 fn it_merges_errors_inside_programs_into_root_nodes() {
-    let error_a = ErrorNode::new("foo", 1, "foo");
-    let error_b = ErrorNode::new("bar", 2, "bar");
+    let error_a = ErrorNode::new(id("foo"), 1, "foo");
+    let error_b = ErrorNode::new(id("bar"), 2, "bar");
     let program_a = ProgramNode::default().add_error(error_a.clone());
     let program_b = ProgramNode::default().add_error(error_b.clone());
     assert_eq!(
@@ -40,8 +41,8 @@ fn it_merges_errors_inside_programs_into_root_nodes() {
 
 #[test]
 fn it_fails_on_errors_with_identical_names() {
-    let first_error = ErrorNode::new("duplicated", 1, "first");
-    let second_error = ErrorNode::new("duplicated", 2, "second");
+    let first_error = ErrorNode::new(id("duplicated"), 1, "first");
+    let second_error = ErrorNode::new(id("duplicated"), 2, "second");
     let error = try_combine_modules(
         CombineModulesInput::new()
             .add_node(first_error)
@@ -56,8 +57,8 @@ fn it_fails_on_errors_with_identical_names() {
 
 #[test]
 fn it_fails_on_errors_with_identical_names_inside_programs() {
-    let first_error = ErrorNode::new("duplicated", 1, "first");
-    let second_error = ErrorNode::new("duplicated", 2, "second");
+    let first_error = ErrorNode::new(id("duplicated"), 1, "first");
+    let second_error = ErrorNode::new(id("duplicated"), 2, "second");
     let program_a = ProgramNode::default().add_error(first_error);
     let program_b = ProgramNode::default().add_error(second_error);
     let error = try_combine_modules(
@@ -74,8 +75,8 @@ fn it_fails_on_errors_with_identical_names_inside_programs() {
 
 #[test]
 fn it_fails_on_errors_with_identical_names_with_an_initial_program_node() {
-    let first_error = ErrorNode::new("duplicated", 1, "first");
-    let second_error = ErrorNode::new("duplicated", 2, "second");
+    let first_error = ErrorNode::new(id("duplicated"), 1, "first");
+    let second_error = ErrorNode::new(id("duplicated"), 2, "second");
     let program_a = ProgramNode::default().add_error(first_error);
     let program_b = ProgramNode::default().add_error(second_error);
     let error = try_combine_modules(
@@ -92,7 +93,7 @@ fn it_fails_on_errors_with_identical_names_with_an_initial_program_node() {
 
 #[test]
 fn it_keeps_a_single_error_when_identical_names_have_equal_content() {
-    let first_error = ErrorNode::new("duplicated", 1, "first");
+    let first_error = ErrorNode::new(id("duplicated"), 1, "first");
     let program = ProgramNode::default().add_error(first_error.clone());
     assert_eq!(
         combine_modules(

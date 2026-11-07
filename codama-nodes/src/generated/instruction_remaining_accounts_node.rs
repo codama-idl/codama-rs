@@ -1,12 +1,10 @@
-use crate::{
-    CamelCaseString, Docs, HasIdentifier, InstructionAccountDisplayNode, IsSigner, PluginNode,
-};
+use crate::{Docs, HasIdentifier, Identifier, InstructionAccountDisplayNode, IsSigner, PluginNode};
 use codama_nodes_derive::node;
 
 #[node]
 #[derive(Default)]
 pub struct InstructionRemainingAccountsNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub is_optional: Option<bool>,
     #[serde(skip_serializing_if = "crate::is_default")]
@@ -22,7 +20,7 @@ pub struct InstructionRemainingAccountsNode {
 }
 
 impl HasIdentifier for InstructionRemainingAccountsNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

@@ -3,7 +3,7 @@ use codama_macros::codama;
 #[codama(type = link("customString"))]
 pub struct ImplicitTest;
 
-#[codama(type = link(name = "customString"))]
+#[codama(type = link(identifier = "customString"))]
 pub struct ExplicitTest;
 
 #[codama(type = option(link("customString")))]

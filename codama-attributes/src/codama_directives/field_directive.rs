@@ -5,7 +5,7 @@ use crate::{
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    CamelCaseString, DefaultValueStrategy, Docs, InstructionInputValueNode, StructFieldTypeNode,
+    DefaultValueStrategy, Docs, Identifier, InstructionInputValueNode, StructFieldTypeNode,
     TypeNode, ValueNode,
 };
 use codama_syn_helpers::Meta;
@@ -13,7 +13,7 @@ use codama_syn_helpers::Meta;
 #[derive(Debug, PartialEq)]
 pub struct FieldDirective {
     pub after: bool,
-    pub name: CamelCaseString,
+    pub name: Identifier,
     pub r#type: Resolvable<TypeNode>,
     pub docs: Docs,
     /// A value, or a contextual value such as `payer` that only an instruction can provide.
@@ -95,6 +95,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a FieldDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms, IntegerFormat::U8, IntegerTypeNode,
         IntegerValueNode, PayerValueNode, PublicKeyTypeNode, StringTypeNode,
@@ -108,7 +109,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "age".into(),
+                name: id("age"),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -125,7 +126,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: true,
-                name: "age".into(),
+                name: id("age"),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -142,7 +143,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "name".into(),
+                name: id("name"),
                 r#type: Resolvable::Resolved(
                     StringTypeNode::utf8()
                         .add_transform(FixedSizeTransformNode::new(4))
@@ -163,7 +164,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "age".into(),
+                name: id("age"),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: Some(Resolvable::Resolved(IntegerValueNode::new(42u8).into())),
@@ -189,7 +190,7 @@ mod tests {
                 directive,
                 FieldDirective {
                     after: false,
-                    name: "owner".into(),
+                    name: id("owner"),
                     r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
                     docs: Docs::default(),
                     default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
@@ -207,12 +208,12 @@ mod tests {
                 StructFieldTypeNode {
                     default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                    ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U8))
+                    ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8))
                 },
             ),
             (
                 syn::parse_quote! { field("owner", public_key, value = payer) },
-                StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
+                StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new()),
             ),
         ] {
             let directive = FieldDirective::parse(&meta).unwrap();

@@ -1,13 +1,13 @@
 use crate::{
-    utils::{FromMeta, MetaConsumer, SetOnce},
+    utils::{removed_name_key, FromMeta, MetaConsumer, SetOnce},
     DefaultValueDirective, Resolvable,
 };
-use codama_nodes::{CamelCaseString, DefaultValueStrategy, Docs, TypeNode, ValueNode};
+use codama_nodes::{DefaultValueStrategy, Docs, Identifier, TypeNode, ValueNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 pub(crate) struct StructFieldMetaConsumer {
     pub metas: Vec<Meta>,
-    pub name: SetOnce<CamelCaseString>,
+    pub name: SetOnce<Identifier>,
     pub r#type: SetOnce<Resolvable<TypeNode>>,
     pub default_value: SetOnce<DefaultValueDirective>,
     pub after: SetOnce<bool>,
@@ -18,7 +18,7 @@ impl MetaConsumer for StructFieldMetaConsumer {
     fn new(metas: Vec<Meta>) -> Self {
         Self {
             metas,
-            name: SetOnce::new("name"),
+            name: SetOnce::new("identifier"),
             r#type: SetOnce::new("type"),
             default_value: SetOnce::new("default_value"),
             after: SetOnce::new("after"),
@@ -38,11 +38,15 @@ impl MetaConsumer for StructFieldMetaConsumer {
 impl StructFieldMetaConsumer {
     pub fn consume_field(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
-            "name" => {
-                this.name
-                    .set(meta.as_value()?.as_expr()?.as_string()?.into(), meta)?;
+            "identifier" => {
+                let value = meta.as_value()?.as_expr()?.as_string()?;
+                this.name.set(
+                    Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                    meta,
+                )?;
                 Ok(None)
             }
+            "name" => removed_name_key(meta),
             "type" => {
                 this.r#type
                     .set(Resolvable::<TypeNode>::from_meta(meta.as_value()?)?, meta)?;
@@ -54,7 +58,10 @@ impl StructFieldMetaConsumer {
             }
             _ => {
                 if let Ok(value) = meta.as_expr().and_then(|e| e.as_string()) {
-                    this.name.set(value.into(), meta)?;
+                    this.name.set(
+                        Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                        meta,
+                    )?;
                     return Ok(None);
                 }
                 // A path or a list is a type keyword or a resolvable directive, so its error is the user's error.

@@ -1,4 +1,4 @@
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/remaining_accounts_directive/missing_name.fail.rs:3:10
   |
 3 | #[codama(remaining_accounts(signer, optional))]

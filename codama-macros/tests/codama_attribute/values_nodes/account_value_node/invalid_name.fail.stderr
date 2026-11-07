@@ -10,7 +10,7 @@ error: expected a string
 6 | #[codama(default_value = account(banana))]
   |                                  ^^^^^^
 
-error: only 'name' attribute supported
+error: only 'identifier' attribute supported
  --> tests/codama_attribute/values_nodes/account_value_node/invalid_name.fail.rs:9:34
   |
 9 | #[codama(default_value = account(banana = "authority"))]

@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, Docs, EventNode, TypeNode};
+use crate::{Docs, EventNode, Identifier, TypeNode};
 
 impl EventNode {
     pub fn new<T, U>(identifier: T, data: U) -> Self
     where
-        T: Into<CamelCaseString>,
+        T: Into<Identifier>,
         U: Into<TypeNode>,
     {
         Self {
@@ -19,25 +19,26 @@ impl EventNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::id;
     use crate::{IntegerTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U8};
 
     #[test]
     fn new() {
         let node = EventNode::new(
-            "myEvent",
+            id("myEvent"),
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]),
         );
 
-        assert_eq!(node.identifier, CamelCaseString::new("myEvent"));
+        assert_eq!(node.identifier, id("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.discriminators, vec![]);
@@ -46,12 +47,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = EventNode {
-            identifier: "myEvent".into(),
+            identifier: id("myEvent"),
             docs: Docs::default(),
             data: Box::new(
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
                 ])
                 .into(),
             ),
@@ -59,13 +60,13 @@ mod tests {
             plugins: vec![],
         };
 
-        assert_eq!(node.identifier, CamelCaseString::new("myEvent"));
+        assert_eq!(node.identifier, id("myEvent"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(
             *node.data,
             TypeNode::Struct(StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]))
         );
         assert_eq!(node.discriminators, vec![]);
@@ -74,10 +75,10 @@ mod tests {
     #[test]
     fn to_json() {
         let node = EventNode::new(
-            "myEvent",
+            id("myEvent"),
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
             ]),
         );
 
@@ -98,10 +99,10 @@ mod tests {
         assert_eq!(
             node,
             EventNode::new(
-                "myEvent",
+                id("myEvent"),
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                    StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                    StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                    StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
                 ]),
             )
         );

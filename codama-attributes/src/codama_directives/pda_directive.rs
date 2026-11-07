@@ -1,6 +1,6 @@
 use crate::{Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::PdaLinkNode;
+use codama_nodes::{Identifier, PdaLinkNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
@@ -16,7 +16,7 @@ impl PdaDirective {
             .as_expr()?
             .as_string()?;
         Ok(Self {
-            pda: PdaLinkNode::new(name),
+            pda: PdaLinkNode::new(Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?),
         })
     }
 }
@@ -46,6 +46,7 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a PdaDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
@@ -54,7 +55,7 @@ mod tests {
         assert_eq!(
             directive,
             PdaDirective {
-                pda: PdaLinkNode::new("my_pda"),
+                pda: PdaLinkNode::new(id("my_pda")),
             }
         );
     }

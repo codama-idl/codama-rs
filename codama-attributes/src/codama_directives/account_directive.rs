@@ -1,17 +1,17 @@
 use crate::{
-    utils::{FromMeta, SetOnce},
+    utils::{removed_name_key, FromMeta, SetOnce},
     Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
 };
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    CamelCaseString, Docs, InstructionAccountDisplayNode, InstructionAccountNode,
+    Docs, Identifier, InstructionAccountDisplayNode, InstructionAccountNode,
     InstructionInputValueNode, IsSigner,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct AccountDirective {
-    pub name: CamelCaseString,
+    pub name: Identifier,
     pub is_writable: bool,
     pub is_signer: IsSigner,
     pub is_optional: bool,
@@ -23,12 +23,14 @@ pub struct AccountDirective {
 impl AccountDirective {
     pub fn parse(meta: &Meta, ctx: &AttributeContext) -> syn::Result<Self> {
         meta.assert_directive("account")?;
-        let mut name = SetOnce::<CamelCaseString>::new("name");
+        let mut name = SetOnce::<Identifier>::new("identifier");
         if let AttributeContext::Field(syn::Field {
             ident: Some(ident), ..
         }) = ctx
         {
-            name = name.initial_value(ident.to_string().into())
+            name = name.initial_value(
+                Identifier::from_rust_name(&ident.to_string()).map_err(|e| ident.error(e))?,
+            )
         }
         let mut is_writable = SetOnce::<bool>::new("writable").initial_value(false);
         let mut is_signer = SetOnce::<IsSigner>::new("signer").initial_value(false.into());
@@ -42,7 +44,12 @@ impl AccountDirective {
             false => meta
                 .as_path_list()?
                 .each(|ref meta| match meta.path_str().as_str() {
-                    "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+                    "identifier" => name.set(
+                        Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
+                            .map_err(|e| meta.error(e))?,
+                        meta,
+                    ),
+                    "name" => removed_name_key(meta),
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
                     "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),
                     "optional" => is_optional.set(bool::from_meta(meta)?, meta),
@@ -113,18 +120,19 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
     use codama_nodes::{DisplaySkip, PayerValueNode};
 
     #[test]
     fn fully_set() {
-        let meta: Meta = syn::parse_quote! { account(name = "payer", writable, signer, optional, default_value = payer) };
+        let meta: Meta = syn::parse_quote! { account(identifier = "payer", writable, signer, optional, default_value = payer) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
+                name: id("payer"),
                 is_writable: true,
                 is_signer: IsSigner::True,
                 is_optional: true,
@@ -138,7 +146,7 @@ mod tests {
     #[test]
     fn fully_set_with_explicit_values() {
         let meta: Meta = syn::parse_quote! { account(
-            name = "payer",
+            identifier = "payer",
             writable = true,
             signer = "either",
             optional = false,
@@ -150,7 +158,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
+                name: id("payer"),
                 is_writable: true,
                 is_signer: IsSigner::Either,
                 is_optional: false,
@@ -170,7 +178,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "authority".into(),
+                name: id("authority"),
                 is_writable: false,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -187,19 +195,19 @@ mod tests {
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let error = AccountDirective::parse(&meta, &ctx).unwrap_err();
-        assert_eq!(error.to_string(), "name is missing");
+        assert_eq!(error.to_string(), "identifier is missing");
     }
 
     #[test]
     fn with_docs() {
-        let meta: Meta = syn::parse_quote! { account(name = "stake", writable, docs = "what this account is for") };
+        let meta: Meta = syn::parse_quote! { account(identifier = "stake", writable, docs = "what this account is for") };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
         assert_eq!(
             directive,
             AccountDirective {
-                name: "stake".into(),
+                name: id("stake"),
                 is_writable: true,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -212,14 +220,14 @@ mod tests {
 
     #[test]
     fn with_docs_array() {
-        let meta: Meta = syn::parse_quote! { account(name = "authority", signer, docs = ["Line 1", "Line 2", "Line 3"]) };
+        let meta: Meta = syn::parse_quote! { account(identifier = "authority", signer, docs = ["Line 1", "Line 2", "Line 3"]) };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
         let directive = AccountDirective::parse(&meta, &ctx).unwrap();
         assert_eq!(
             directive,
             AccountDirective {
-                name: "authority".into(),
+                name: id("authority"),
                 is_writable: false,
                 is_signer: IsSigner::True,
                 is_optional: false,
@@ -238,7 +246,7 @@ mod tests {
     #[test]
     fn with_display() {
         let meta: Meta = syn::parse_quote! {
-            account(name = "payer", display(label = "Payer", skip = never))
+            account(identifier = "payer", display(label = "Payer", skip = never))
         };
         let item = syn::parse_quote! { struct Foo; };
         let ctx = AttributeContext::Item(&item);
@@ -252,6 +260,18 @@ mod tests {
         assert_eq!(
             directive.to_instruction_account_node().unwrap().display,
             Some(expected_display)
+        );
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let meta: Meta = syn::parse_quote! { account(name = "payer", signer) };
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        let error = AccountDirective::parse(&meta, &ctx).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "name = ... is removed in v2, use identifier = ..."
         );
     }
 }

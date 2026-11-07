@@ -3,6 +3,8 @@ use codama_korok_visitors::{DebugVisitor, IdentifyFieldTypesVisitor, KorokVisita
 use codama_koroks::StructKorok;
 use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StructFieldTypeNode};
 
+use codama_nodes::test_utils::id;
+
 #[test]
 fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! { struct Foo { bar: u32 } };
@@ -12,8 +14,10 @@ fn it_outputs_an_indented_debug_string() -> CodamaResult<()> {
     let mut visitor = DebugVisitor::new();
     korok.accept(&mut visitor)?;
 
-    let node_json =
-        serde_json::to_string(&StructFieldTypeNode::new("bar", IntegerTypeNode::le(U32)))?;
+    let node_json = serde_json::to_string(&StructFieldTypeNode::new(
+        id("bar"),
+        IntegerTypeNode::le(U32),
+    ))?;
 
     assert_eq!(
         visitor.get_result(),

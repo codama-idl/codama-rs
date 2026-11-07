@@ -1,0 +1,35 @@
+error: name = ... is removed in v2, use identifier = ...
+ --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:3:10
+  |
+3 | #[codama(name = "my_type")]
+  |          ^^^^
+
+error: name = ... is removed in v2, use identifier = ...
+ --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:7:16
+  |
+7 | #[codama(field(name = "owner", public_key))]
+  |                ^^^^^^^^^^^^^^
+
+error: name = ... is removed in v2, use identifier = ...
+  --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:11:18
+   |
+11 | #[codama(account(name = "payer", signer))]
+   |                  ^^^^^^^^^^^^^^
+
+error: name = ... is removed in v2, use identifier = ...
+  --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:12:29
+   |
+12 | #[codama(remaining_accounts(name = "signers", signer))]
+   |                             ^^^^^^^^^^^^^^^^
+
+error: name = ... is removed in v2, use identifier = ...
+  --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:16:18
+   |
+16 | #[codama(program(name = "token", address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"))]
+   |                  ^^^^^^^^^^^^^^
+
+error: name = ... is removed in v2, use identifier = ...
+  --> tests/codama_attribute/identifier_directive/name_removed.fail.rs:17:15
+   |
+17 | #[codama(seed(name = "owner", type = public_key))]
+   |               ^^^^^^^^^^^^^^

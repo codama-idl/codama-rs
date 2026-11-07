@@ -6,6 +6,8 @@ use codama_nodes::{
     StructTypeNode,
 };
 
+use codama_nodes::test_utils::id;
+
 #[test]
 fn it_sets_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
     let item: syn::Field = syn::parse_quote! {
@@ -22,7 +24,7 @@ fn it_sets_default_values_to_struct_field_type_nodes() -> CodamaResult<()> {
         Some(
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
-                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
+                ..StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U8))
             }
             .into()
         )
@@ -47,7 +49,7 @@ fn it_sets_omitted_default_values_to_struct_field_type_nodes() -> CodamaResult<(
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
                 default_value_strategy: Some(codama_nodes::DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
+                ..StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U8))
             }
             .into()
         )
@@ -64,7 +66,7 @@ fn it_overrides_any_existing_default_value() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&item)?;
     let original_field = StructFieldTypeNode {
         default_value: Box::new(Some(IntegerValueNode::new(1u8).into())),
-        ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8))
+        ..StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U8))
     };
     korok.node = Some(original_field.clone().into());
 
@@ -109,7 +111,7 @@ fn it_ignores_struct_field_type_nodes_with_a_contextual_default_value() -> Codam
     korok.accept(&mut SetDefaultValuesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()).into())
+        Some(StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()).into())
     );
     Ok(())
 }

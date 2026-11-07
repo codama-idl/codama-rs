@@ -204,7 +204,7 @@ mod tests {
         let file = file_ctx();
         // This is the bug scenario: multi-attr cfg_attr should expand to multiple attributes
         let attrs: Vec<syn::Attribute> = vec![parse_quote! {
-            #[cfg_attr(feature = "codama", codama(type = boolean), codama(name = "foo"))]
+            #[cfg_attr(feature = "codama", codama(type = boolean), codama(identifier = "foo"))]
         }];
         let ctx = AttributeContext::File(&file);
         let attributes = Attributes::parse(&attrs, ctx).unwrap();
@@ -219,7 +219,10 @@ mod tests {
             assert!(matches!(attr.directive.as_ref(), CodamaDirective::Type(_)));
         }
         if let Attribute::Codama(attr) = &attributes[1] {
-            assert!(matches!(attr.directive.as_ref(), CodamaDirective::Name(_)));
+            assert!(matches!(
+                attr.directive.as_ref(),
+                CodamaDirective::Identifier(_)
+            ));
         }
     }
 
@@ -243,20 +246,20 @@ mod tests {
     fn parse_multi_attr_cfg_attr_preserves_order() {
         let file = file_ctx();
         let attrs: Vec<syn::Attribute> = vec![parse_quote! {
-            #[cfg_attr(feature = "codama", codama(name = "first"), codama(name = "second"), codama(name = "third"))]
+            #[cfg_attr(feature = "codama", codama(identifier = "first"), codama(identifier = "second"), codama(identifier = "third"))]
         }];
         let ctx = AttributeContext::File(&file);
         let attributes = Attributes::parse(&attrs, ctx).unwrap();
 
         assert_eq!(attributes.len(), 3);
 
-        // All should be Name directives in order
+        // All should be Identifier directives in order
         let names: Vec<_> = attributes
             .iter()
             .filter_map(CodamaAttribute::filter)
             .filter_map(|a| {
-                if let CodamaDirective::Name(n) = a.directive.as_ref() {
-                    Some(n.name.as_ref().to_string())
+                if let CodamaDirective::Identifier(n) = a.directive.as_ref() {
+                    Some(n.identifier.as_ref().to_string())
                 } else {
                     None
                 }
@@ -271,7 +274,7 @@ mod tests {
         // Mix of separate attrs and multi-attr cfg_attr
         let attrs: Vec<syn::Attribute> = vec![
             parse_quote! { #[derive(Clone)] },
-            parse_quote! { #[cfg_attr(feature = "x", codama(name = "a"), codama(name = "b"))] },
+            parse_quote! { #[cfg_attr(feature = "x", codama(identifier = "a"), codama(identifier = "b"))] },
             parse_quote! { #[codama(type = boolean)] },
         ];
         let ctx = AttributeContext::File(&file);

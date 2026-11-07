@@ -1,6 +1,6 @@
 use codama_macros::codama;
 
-#[codama(enum_discriminator(name = "apple", name = "banana"))]
+#[codama(enum_discriminator(identifier = "apple", identifier = "banana"))]
 pub struct Test;
 
 fn main() {}

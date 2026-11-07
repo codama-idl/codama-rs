@@ -61,6 +61,7 @@ impl FromMeta for TypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
     use codama_nodes::{
         Base, FixedSizeTransformNode,
         FloatFormat::F64,
@@ -141,7 +142,7 @@ mod tests {
             (
                 syn::parse_quote! { struct(field("at", date_time(integer(i64), ticks_per_second = 1000))) },
                 StructTypeNode::new(vec![StructFieldTypeNode::new(
-                    "at",
+                    id("at"),
                     DateTimeTypeNode {
                         ticks_per_second: Some(1000),
                         ..DateTimeTypeNode::new(IntegerTypeNode::le(I64))
@@ -151,8 +152,11 @@ mod tests {
             ),
             (
                 syn::parse_quote! { enum(variant("timeout", duration(integer(u64), ticks_per_second = 1000))) },
-                EnumTypeNode::new(vec![EnumVariantTypeNode::with_data("timeout", duration())])
-                    .into(),
+                EnumTypeNode::new(vec![EnumVariantTypeNode::with_data(
+                    id("timeout"),
+                    duration(),
+                )])
+                .into(),
             ),
             (
                 syn::parse_quote! { tuple(integer(u64, unit = "slots"), float(f64, unit = "USD")) },

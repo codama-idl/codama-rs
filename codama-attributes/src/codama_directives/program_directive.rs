@@ -1,11 +1,14 @@
-use crate::{utils::SetOnce, Attribute, CodamaAttribute, CodamaDirective, TryFromFilter};
+use crate::{
+    utils::{removed_name_key, SetOnce},
+    Attribute, CodamaAttribute, CodamaDirective, TryFromFilter,
+};
 use codama_errors::CodamaError;
-use codama_nodes::{CamelCaseString, Node, ProgramNode};
+use codama_nodes::{Identifier, Node, ProgramNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct ProgramDirective {
-    pub name: CamelCaseString,
+    pub name: Identifier,
     pub address: String,
 }
 
@@ -13,11 +16,16 @@ impl ProgramDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("program")?.as_path_list()?;
 
-        let mut name = SetOnce::<CamelCaseString>::new("name");
+        let mut name = SetOnce::<Identifier>::new("identifier");
         let mut address = SetOnce::<String>::new("address");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "identifier" => name.set(
+                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
+                    .map_err(|e| meta.error(e))?,
+                meta,
+            ),
+            "name" => removed_name_key(meta),
             "address" => address.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
@@ -119,15 +127,16 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a ProgramDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
-        let meta: Meta = syn::parse_quote! { program(name = "associatedToken", address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL") };
+        let meta: Meta = syn::parse_quote! { program(identifier = "associatedToken", address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL") };
         let directive = ProgramDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
             ProgramDirective {
-                name: CamelCaseString::from("associatedToken"),
+                name: id("associatedToken"),
                 address: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
             }
         );
@@ -138,13 +147,23 @@ mod tests {
         let meta: Meta =
             syn::parse_quote! { program(address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL") };
         let error = ProgramDirective::parse(&meta).unwrap_err();
-        assert_eq!(error.to_string(), "name is missing");
+        assert_eq!(error.to_string(), "identifier is missing");
     }
 
     #[test]
     fn address_missing() {
-        let meta: Meta = syn::parse_quote! { program(name = "associatedToken") };
+        let meta: Meta = syn::parse_quote! { program(identifier = "associatedToken") };
         let error = ProgramDirective::parse(&meta).unwrap_err();
         assert_eq!(error.to_string(), "address is missing");
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let meta: Meta = syn::parse_quote! { program(name = "token", address = "1111") };
+        let error = ProgramDirective::parse(&meta).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "name = ... is removed in v2, use identifier = ..."
+        );
     }
 }

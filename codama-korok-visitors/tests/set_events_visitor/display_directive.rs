@@ -30,7 +30,7 @@ fn it_preserves_tuple_field_displays() -> CodamaResult<()> {
         #[derive(CodamaEvents)]
         enum Events {
             Withdraw(
-                #[codama(name = "amount")]
+                #[codama(identifier = "amount")]
                 #[codama(display(label = "First", skip = always))]
                 #[codama(display(label = "Amount", flatten, flatten_prefix = "Withdraw "))]
                 u64,
@@ -57,7 +57,7 @@ fn it_leaves_tuple_fields_without_displays_untouched() -> CodamaResult<()> {
     let fields = event_fields(syn::parse_quote! {
         #[derive(CodamaEvents)]
         enum Events {
-            Withdraw(#[codama(name = "amount")] u64),
+            Withdraw(#[codama(identifier = "amount")] u64),
         }
     })?;
 
@@ -71,7 +71,7 @@ fn it_preserves_both_halves_of_a_tuple_field_display() -> CodamaResult<()> {
         #[derive(CodamaEvents)]
         enum Events {
             Withdraw(
-                #[codama(name = "amount")]
+                #[codama(identifier = "amount")]
                 #[codama(display(label = "Amount", amount(decimals = 9, unit = "SOL")))]
                 u64,
             ),

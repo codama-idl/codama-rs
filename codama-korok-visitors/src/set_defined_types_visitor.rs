@@ -54,7 +54,7 @@ impl KorokVisitor for SetDefinedTypesVisitor {
             return Ok(());
         };
 
-        korok.node = Some(DefinedTypeNode::new(korok.name(), type_node).into());
+        korok.node = Some(DefinedTypeNode::new(korok.name()?, type_node).into());
         Ok(())
     }
 }

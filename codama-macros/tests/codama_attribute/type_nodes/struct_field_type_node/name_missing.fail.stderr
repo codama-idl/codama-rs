@@ -1,10 +1,10 @@
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/type_nodes/struct_field_type_node/name_missing.fail.rs:3:17
   |
 3 | #[codama(type = field(integer(u32)))]
   |                 ^^^^^^^^^^^^^^^^^^^
 
-error: name is missing
+error: identifier is missing
  --> tests/codama_attribute/type_nodes/struct_field_type_node/name_missing.fail.rs:6:17
   |
 6 | #[codama(type = field(type = integer(u32)))]

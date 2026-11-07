@@ -1,6 +1,6 @@
 use crate::utils::FromMeta;
 use codama_errors::IteratorCombineErrors;
-use codama_nodes::{StructFieldTypeNode, StructTypeNode};
+use codama_nodes::{casing::camel_case, StructFieldTypeNode, StructTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 use std::collections::HashSet;
 
@@ -28,12 +28,13 @@ impl FromMeta for StructTypeNode {
 }
 
 /// The spec forbids two fields of one struct with one identifier, also when only their casing differs.
+/// Two identifiers collide when their camelCase forms are equal (`owner_key` and `ownerKey`).
 fn check_duplicate_identifiers(metas: &[Meta], fields: &[StructFieldTypeNode]) -> syn::Result<()> {
     let mut identifiers = HashSet::new();
     let duplicate = metas
         .iter()
         .zip(fields)
-        .find(|(_, field)| !identifiers.insert(&field.identifier));
+        .find(|(_, field)| !identifiers.insert(camel_case(field.identifier.as_str())));
     match duplicate {
         Some((meta, field)) => Err(meta.error(format!(
             "Field `{}` is not unique in `struct(...)`",
@@ -47,6 +48,7 @@ fn check_duplicate_identifiers(metas: &[Meta], fields: &[StructFieldTypeNode]) -
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
+    use codama_nodes::test_utils::id;
     use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StringTypeNode};
 
     #[test]
@@ -70,7 +72,7 @@ mod tests {
         assert_type!(
             { struct(field("age", integer(u32))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
             ]).into()
         );
     }
@@ -80,8 +82,8 @@ mod tests {
         assert_type!(
             { struct(field("age", integer(u32)), field("name", string(utf8))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new("name", StringTypeNode::utf8())
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8())
             ]).into()
         );
     }
@@ -91,8 +93,8 @@ mod tests {
         assert_type!(
             { struct[field("age", integer(u32)), field("name", string(utf8))] },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new("name", StringTypeNode::utf8())
+                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8())
             ]).into()
         );
     }

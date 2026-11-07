@@ -265,7 +265,7 @@ impl KorokVisitor for CombineTypesVisitor {
             }
         };
 
-        korok.set_node(Some(DefinedTypeNode::new(korok.name(), type_node).into()));
+        korok.set_node(Some(DefinedTypeNode::new(korok.name()?, type_node).into()));
         Ok(())
     }
 
@@ -299,7 +299,7 @@ impl KorokVisitor for CombineTypesVisitor {
             size,
             ..EnumTypeNode::new(variants)
         };
-        korok.node = Some(DefinedTypeNode::new(korok.name(), r#enum).into());
+        korok.node = Some(DefinedTypeNode::new(korok.name()?, r#enum).into());
         Ok(())
     }
 
@@ -327,19 +327,19 @@ impl KorokVisitor for CombineTypesVisitor {
             syn::Fields::Named(_) => {
                 let fields =
                     self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
-                EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
+                EnumVariantTypeNode::with_data(korok.name()?, StructTypeNode::new(fields))
             }
             syn::Fields::Unnamed(_) => {
                 let items = self.parse_unnamed_fields(&korok.fields, &korok.attributes, &parent)?;
-                EnumVariantTypeNode::with_data(korok.name(), TupleTypeNode::new(items))
+                EnumVariantTypeNode::with_data(korok.name()?, TupleTypeNode::new(items))
             }
             _ => {
                 let fields =
                     self.parse_named_fields(&korok.fields, &korok.attributes, &parent, korok.ast)?;
                 if !fields.is_empty() {
-                    EnumVariantTypeNode::with_data(korok.name(), StructTypeNode::new(fields))
+                    EnumVariantTypeNode::with_data(korok.name()?, StructTypeNode::new(fields))
                 } else {
-                    EnumVariantTypeNode::new(korok.name())
+                    EnumVariantTypeNode::new(korok.name()?)
                 }
             }
         };

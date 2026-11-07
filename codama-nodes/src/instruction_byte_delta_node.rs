@@ -28,14 +28,11 @@ impl InstructionByteDeltaNode {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_utils::{id, path};
     use crate::{
         AccountLinkNode, DataValueNode, InstructionByteDeltaNode, InstructionByteDeltaValue,
-        IntegerValueNode, Path,
+        IntegerValueNode,
     };
-
-    fn path(value: &str) -> Path {
-        value.parse().unwrap()
-    }
 
     #[test]
     fn new() {
@@ -50,10 +47,10 @@ mod tests {
 
     #[test]
     fn new_with_account_link() {
-        let node = InstructionByteDeltaNode::new(AccountLinkNode::new("myAccount"), false);
+        let node = InstructionByteDeltaNode::new(AccountLinkNode::new(id("myAccount")), false);
         assert_eq!(
             *node.value,
-            InstructionByteDeltaValue::AccountLink(AccountLinkNode::new("myAccount"))
+            InstructionByteDeltaValue::AccountLink(AccountLinkNode::new(id("myAccount")))
         );
         assert!(!node.with_header);
     }
@@ -91,7 +88,7 @@ mod tests {
 
     #[test]
     fn to_json_with_account_link() {
-        let node = InstructionByteDeltaNode::new(AccountLinkNode::new("myAccount"), false);
+        let node = InstructionByteDeltaNode::new(AccountLinkNode::new(id("myAccount")), false);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -105,7 +102,7 @@ mod tests {
         let node: InstructionByteDeltaNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            InstructionByteDeltaNode::new(AccountLinkNode::new("myAccount"), false)
+            InstructionByteDeltaNode::new(AccountLinkNode::new(id("myAccount")), false)
         );
     }
 

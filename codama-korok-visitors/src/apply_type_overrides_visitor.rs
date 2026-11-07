@@ -85,7 +85,7 @@ fn apply_type_override(mut korok: KorokMut) -> CodamaResult<()> {
 
     let node = directive.node.try_resolved()?.clone();
     match (&mut korok, TypeNode::try_from(node.clone())) {
-        (KorokMut::Field(field_korok), Ok(type_node)) => field_korok.set_type_node(type_node),
+        (KorokMut::Field(field_korok), Ok(type_node)) => field_korok.set_type_node(type_node)?,
         _ => korok.set_node(Some(node.into())),
     };
     Ok(())

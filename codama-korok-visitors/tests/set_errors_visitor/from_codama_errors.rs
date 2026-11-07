@@ -1,6 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetErrorsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::id;
 use codama_nodes::{BooleanTypeNode, ErrorNode, ProgramNode};
 
 #[test]
@@ -27,10 +28,18 @@ fn from_enum() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 1, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 2, "Invalid Mint"),
-                    ErrorNode::new("mintMismatch", 3, "Account not associated with this Mint"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        0,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 1, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 2, "Invalid Mint"),
+                    ErrorNode::new(
+                        id("mint_mismatch"),
+                        3,
+                        "Account not associated with this Mint"
+                    ),
                 ],
                 ..ProgramNode::default()
             }
@@ -60,8 +69,12 @@ fn from_enum_with_thiserror_prefix() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 1, "Insufficient funds"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        0,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 1, "Insufficient funds"),
                 ],
                 ..ProgramNode::default()
             }
@@ -96,10 +109,10 @@ fn from_enum_with_ignored_data() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("emptyStruct", 0, "Empty struct"),
-                    ErrorNode::new("emptyTuple", 1, "Empty tuple"),
-                    ErrorNode::new("filledStruct", 2, "Filled struct"),
-                    ErrorNode::new("filledTuple", 3, "Filled tuple"),
+                    ErrorNode::new(id("empty_struct"), 0, "Empty struct"),
+                    ErrorNode::new(id("empty_tuple"), 1, "Empty tuple"),
+                    ErrorNode::new(id("filled_struct"), 2, "Filled struct"),
+                    ErrorNode::new(id("filled_tuple"), 3, "Filled tuple"),
                 ],
                 ..ProgramNode::default()
             }
@@ -133,10 +146,18 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 42, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 43, "Invalid Mint"),
-                    ErrorNode::new("mintMismatch", 100, "Account not associated with this Mint"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        0,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 42, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 43, "Invalid Mint"),
+                    ErrorNode::new(
+                        id("mint_mismatch"),
+                        100,
+                        "Account not associated with this Mint"
+                    ),
                 ],
                 ..ProgramNode::default()
             }
@@ -170,10 +191,18 @@ fn from_enum_with_codama_error_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 600, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 601, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 602, "Invalid Mint"),
-                    ErrorNode::new("mintMismatch", 603, "Account not associated with this Mint"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        600,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 601, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 602, "Invalid Mint"),
+                    ErrorNode::new(
+                        id("mint_mismatch"),
+                        603,
+                        "Account not associated with this Mint"
+                    ),
                 ],
                 ..ProgramNode::default()
             }
@@ -207,10 +236,18 @@ fn from_enum_with_labeled_codama_error_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 600, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 601, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 602, "Invalid Mint"),
-                    ErrorNode::new("mintMismatch", 603, "Account not associated with this Mint"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        600,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 601, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 602, "Invalid Mint"),
+                    ErrorNode::new(
+                        id("mint_mismatch"),
+                        603,
+                        "Account not associated with this Mint"
+                    ),
                 ],
                 ..ProgramNode::default()
             }
@@ -244,10 +281,18 @@ fn from_enum_with_codama_error_directives_overriding_default_codes() -> CodamaRe
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 10, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 1, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 50, "Invalid Mint"),
-                    ErrorNode::new("mintMismatch", 43, "Account not associated with this Mint"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        10,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 1, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 50, "Invalid Mint"),
+                    ErrorNode::new(
+                        id("mint_mismatch"),
+                        43,
+                        "Account not associated with this Mint"
+                    ),
                 ],
                 ..ProgramNode::default()
             }
@@ -281,9 +326,13 @@ fn from_enum_with_codama_error_directives_overriding_thiserror_messages() -> Cod
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("notRentExempt", 0, "Lamports below rent-exempt threshold"),
-                    ErrorNode::new("insufficientFunds", 1, "Insufficient funds"),
-                    ErrorNode::new("invalidMint", 2, "This message is used"),
+                    ErrorNode::new(
+                        id("not_rent_exempt"),
+                        0,
+                        "Lamports below rent-exempt threshold"
+                    ),
+                    ErrorNode::new(id("insufficient_funds"), 1, "Insufficient funds"),
+                    ErrorNode::new(id("invalid_mint"), 2, "This message is used"),
                 ],
                 ..ProgramNode::default()
             }
@@ -331,10 +380,10 @@ fn with_name_directives() -> CodamaResult<()> {
         #[derive(CodamaErrors)]
         enum MyProgramErrors {
             #[error("Too many apples")]
-            #[codama(name = "apple_overload")]
+            #[codama(identifier = "apple_overload")]
             Apple,
             #[error("Too many bananas")]
-            #[codama(name = "banana_overload")]
+            #[codama(identifier = "banana_overload")]
             Banana,
         }
     };
@@ -347,8 +396,8 @@ fn with_name_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 errors: vec![
-                    ErrorNode::new("appleOverload", 0, "Too many apples"),
-                    ErrorNode::new("bananaOverload", 1, "Too many bananas"),
+                    ErrorNode::new(id("apple_overload"), 0, "Too many apples"),
+                    ErrorNode::new(id("banana_overload"), 1, "Too many bananas"),
                 ],
                 ..ProgramNode::default()
             }

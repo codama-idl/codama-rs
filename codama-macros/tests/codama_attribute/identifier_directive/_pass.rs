@@ -1,6 +1,6 @@
 use codama_macros::codama;
 
-#[codama(name = "my_special_name")]
+#[codama(identifier = "my_special_name")]
 pub struct Test;
 
 fn main() {}

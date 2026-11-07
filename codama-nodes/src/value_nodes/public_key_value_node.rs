@@ -16,7 +16,7 @@ impl PublicKeyValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::CamelCaseString;
+    use crate::test_utils::id;
 
     #[test]
     fn new() {
@@ -32,14 +32,14 @@ mod tests {
     fn direct_instantiation() {
         let node = PublicKeyValueNode {
             public_key: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".into(),
-            identifier: Some("spl_token".into()),
+            identifier: Some(id("splToken")),
             plugins: vec![],
         };
         assert_eq!(
             node.public_key,
             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".to_string()
         );
-        assert_eq!(node.identifier, Some(CamelCaseString::new("splToken")));
+        assert_eq!(node.identifier, Some(id("splToken")));
     }
 
     #[test]

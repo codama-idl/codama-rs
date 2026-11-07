@@ -3,7 +3,7 @@ use codama::{Codama, NodeTrait};
 
 /// A `codama_program!` declaration renames the primary program end-to-end
 /// through the default plugin pipeline. The crate is named `my-crate-name`, so
-/// without the override the program would be `myCrateName`; the address still
+/// without the override the program would be `my_crate_name`; the address still
 /// resolves from `package.metadata.solana.program-id`.
 #[test]
 fn it_renames_the_primary_program_from_a_codama_program_macro() {

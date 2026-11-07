@@ -4,6 +4,7 @@ use codama_korok_visitors::{
     SetInstructionsVisitor, SetProgramMetadataVisitor,
 };
 use codama_koroks::CrateKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::Node;
 use codama_stores::CrateStore;
 use quote::quote;
@@ -20,7 +21,7 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
             }
 
             #[derive(CodamaAccount)]
-            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
             struct ExternalAccount {
                 amount: u64,
             }
@@ -43,13 +44,13 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        "externalProgram".into()
+        id("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -58,7 +59,7 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
         root.additional_programs[0].accounts[0].identifier,
-        "externalAccount".into()
+        id("external_account")
     );
 
     Ok(())
@@ -71,7 +72,7 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
 
         mod my_module {
             #[derive(CodamaAccount)]
-            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
             struct ExternalAccount {
                 amount: u64,
             }
@@ -99,13 +100,13 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        "externalProgram".into()
+        id("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -114,7 +115,7 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
         root.additional_programs[0].accounts[0].identifier,
-        "externalAccount".into()
+        id("external_account")
     );
 
     Ok(())
@@ -127,13 +128,13 @@ fn it_merges_multiple_items_with_same_program_directive() -> CodamaResult<()> {
 
         mod my_module {
             #[derive(CodamaAccount)]
-            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
             struct ExternalAccount {
                 owner: Pubkey,
             }
 
             #[derive(CodamaInstruction)]
-            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
             struct ExternalInstruction {
                 amount: u64,
             }
@@ -162,7 +163,7 @@ fn it_merges_multiple_items_with_same_program_directive() -> CodamaResult<()> {
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        "externalProgram".into()
+        id("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -192,7 +193,7 @@ fn it_applies_program_directive_on_mod_block() -> CodamaResult<()> {
                 }
             }
 
-            #[codama(program(name = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
+            #[codama(program(identifier = "externalProgram", address = "ExtProg111111111111111111111111111111111111"))]
             mod my_external_program {
                 #[derive(CodamaAccount)]
                 struct SomeExternalAccount {
@@ -224,27 +225,27 @@ fn it_applies_program_directive_on_mod_block() -> CodamaResult<()> {
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, "myAccount".into());
+    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
     assert_eq!(root.program.instructions.len(), 1);
     assert_eq!(
         root.program.instructions[0].identifier,
-        "myInstruction".into()
+        id("my_instruction")
     );
 
     // The external program should be an additional program with its items.
     assert_eq!(root.additional_programs.len(), 1);
     let ext = &root.additional_programs[0];
-    assert_eq!(ext.identifier, "externalProgram".into());
+    assert_eq!(ext.identifier, id("externalProgram"));
     assert_eq!(
         ext.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(ext.accounts.len(), 1);
-    assert_eq!(ext.accounts[0].identifier, "someExternalAccount".into());
+    assert_eq!(ext.accounts[0].identifier, id("some_external_account"));
     assert_eq!(ext.instructions.len(), 1);
     assert_eq!(
         ext.instructions[0].identifier,
-        "someExternalInstruction".into()
+        id("some_external_instruction")
     );
 
     Ok(())

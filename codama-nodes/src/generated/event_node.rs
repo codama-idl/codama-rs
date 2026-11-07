@@ -1,9 +1,9 @@
-use crate::{CamelCaseString, DiscriminatorNode, Docs, HasIdentifier, PluginNode, TypeNode};
+use crate::{DiscriminatorNode, Docs, HasIdentifier, Identifier, PluginNode, TypeNode};
 use codama_nodes_derive::node;
 
 #[node]
 pub struct EventNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub docs: Docs,
     pub data: Box<TypeNode>,
@@ -14,7 +14,7 @@ pub struct EventNode {
 }
 
 impl HasIdentifier for EventNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

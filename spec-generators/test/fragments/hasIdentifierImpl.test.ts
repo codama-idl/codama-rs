@@ -55,7 +55,7 @@ describe('getStructHasIdentifierImplFragment', () => {
         expect(result?.content).toBe(
             [
                 'impl HasIdentifier for ProgramLinkNode {',
-                'fn identifier(&self) -> &CamelCaseString {',
+                'fn identifier(&self) -> &Identifier {',
                 '&self.identifier',
                 '}',
                 '}',
@@ -63,10 +63,10 @@ describe('getStructHasIdentifierImplFragment', () => {
         );
     });
 
-    it('carries the crate imports for HasIdentifier and CamelCaseString - and NOT the struct name (defined in the same file)', () => {
+    it('carries the crate imports for HasIdentifier and Identifier - and NOT the struct name (defined in the same file)', () => {
         const result = getStructHasIdentifierImplFragment(nodeOf('programLinkNode'));
         const imports = [...(result?.imports.keys() ?? [])].toSorted();
-        expect(imports).toEqual(['crate::CamelCaseString', 'crate::HasIdentifier']);
+        expect(imports).toEqual(['crate::HasIdentifier', 'crate::Identifier']);
     });
 
     it('returns undefined for a node without a required identifier', () => {
@@ -84,7 +84,7 @@ describe('getUnionHasIdentifierImplFragment', () => {
         expect(result?.content).toBe(
             [
                 'impl HasIdentifier for LinkNode {',
-                'fn identifier(&self) -> &CamelCaseString {',
+                'fn identifier(&self) -> &Identifier {',
                 'match self {',
                 'LinkNode::Account(node) => node.identifier(),',
                 'LinkNode::Program(node) => node.identifier(),',
@@ -111,10 +111,10 @@ describe('getUnionHasIdentifierImplFragment', () => {
         expect(getUnionHasIdentifierImplFragment('LinkNode', variants)).toBeUndefined();
     });
 
-    it('carries the crate imports for HasIdentifier and CamelCaseString', () => {
+    it('carries the crate imports for HasIdentifier and Identifier', () => {
         const variants = [{ name: 'Account', node: nodeOf('accountLinkNode') }];
         const result = getUnionHasIdentifierImplFragment('LinkNode', variants);
         const imports = [...(result?.imports.keys() ?? [])].toSorted();
-        expect(imports).toEqual(['crate::CamelCaseString', 'crate::HasIdentifier']);
+        expect(imports).toEqual(['crate::HasIdentifier', 'crate::Identifier']);
     });
 });

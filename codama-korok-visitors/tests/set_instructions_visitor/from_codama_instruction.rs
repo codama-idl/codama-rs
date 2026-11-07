@@ -1,9 +1,9 @@
-use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     IdentifyFieldTypesVisitor, KorokVisitable, SetDefaultValuesVisitor, SetInstructionsVisitor,
 };
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     AccountValueNode, BooleanTypeNode, BooleanValueNode, DataValueNode, DefaultValueStrategy, Docs,
     FieldDiscriminatorNode, InjectedValueNode, InstructionAccountNode, InstructionNode,
@@ -34,15 +34,15 @@ fn from_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 accounts: vec![
-                    InstructionAccountNode::new("authority", false, false),
-                    InstructionAccountNode::new("payer", true, true),
+                    InstructionAccountNode::new(id("authority"), false, false),
+                    InstructionAccountNode::new(id("payer"), true, true),
                 ],
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
-                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("is_canonical"), BooleanTypeNode::default(),),
                     ])
                     .into()
                 )),
@@ -72,11 +72,11 @@ fn from_struct_with_data_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
-                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("is_canonical"), BooleanTypeNode::default(),),
                     ])
                     .into()
                 )),
@@ -108,10 +108,10 @@ fn from_struct_with_accounts_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 accounts: vec![
-                    InstructionAccountNode::new("authority", false, false),
-                    InstructionAccountNode::new("payer", true, true),
+                    InstructionAccountNode::new(id("authority"), false, false),
+                    InstructionAccountNode::new(id("payer"), true, true),
                 ],
                 ..InstructionNode::default()
             }
@@ -125,8 +125,8 @@ fn from_struct_with_accounts_only() -> CodamaResult<()> {
 fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(account(name = "authority"))]
-        #[codama(account(name = "payer", signer, writable))]
+        #[codama(account(identifier = "authority"))]
+        #[codama(account(identifier = "payer", signer, writable))]
         struct Initialize {
             amount: u64,
             is_canonical: bool,
@@ -141,15 +141,15 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 accounts: vec![
-                    InstructionAccountNode::new("authority", false, false),
-                    InstructionAccountNode::new("payer", true, true),
+                    InstructionAccountNode::new(id("authority"), false, false),
+                    InstructionAccountNode::new(id("payer"), true, true),
                 ],
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
-                        StructFieldTypeNode::new("is_canonical", BooleanTypeNode::default(),),
+                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("is_canonical"), BooleanTypeNode::default(),),
                     ])
                     .into()
                 )),
@@ -165,8 +165,8 @@ fn from_struct_with_accounts_as_struct_attributes() -> CodamaResult<()> {
 fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(account(name = "rent_sysvar", default_value = sysvar("rent")))]
-        #[codama(account(name = "token_program", default_value = program("token")))]
+        #[codama(account(identifier = "rent_sysvar", default_value = sysvar("rent")))]
+        #[codama(account(identifier = "token_program", default_value = program("token")))]
         struct Initialize {
             #[codama(account)]
             authority: AccountMeta,
@@ -182,10 +182,10 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 accounts: vec![
                     InstructionAccountNode {
-                        identifier: "rentSysvar".into(),
+                        identifier: id("rent_sysvar"),
                         default_value: Box::new(Some(
                             PublicKeyValueNode::new("SysvarRent111111111111111111111111111111111")
                                 .into(),
@@ -199,7 +199,7 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     InstructionAccountNode {
-                        identifier: "tokenProgram".into(),
+                        identifier: id("token_program"),
                         default_value: Box::new(Some(
                             PublicKeyValueNode::new("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
                                 .into(),
@@ -212,9 +212,9 @@ fn from_struct_with_default_values_in_accounts() -> CodamaResult<()> {
                         display: None,
                         plugins: vec![],
                     },
-                    InstructionAccountNode::new("authority", false, false),
+                    InstructionAccountNode::new(id("authority"), false, false),
                     InstructionAccountNode {
-                        identifier: "payer".into(),
+                        identifier: id("payer"),
                         is_signer: true.into(),
                         is_writable: true,
                         default_value: Box::new(Some(PayerValueNode::new().into())),
@@ -256,30 +256,33 @@ fn from_struct_with_default_values_in_data() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
                         StructFieldTypeNode {
                             default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
-                            ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                            ..StructFieldTypeNode::new(id("discriminator"), IntegerTypeNode::le(U8))
                         },
-                        StructFieldTypeNode::new("capacity", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("capacity"), IntegerTypeNode::le(U64)),
                         StructFieldTypeNode {
                             default_value: Box::new(Some(
-                                InjectedValueNode::new("maxCapacity").into()
+                                InjectedValueNode::new(id("max_capacity")).into()
                             )),
-                            ..StructFieldTypeNode::new("max_capacity", IntegerTypeNode::le(U64))
+                            ..StructFieldTypeNode::new(id("max_capacity"), IntegerTypeNode::le(U64))
                         },
                         StructFieldTypeNode {
                             default_value: Box::new(Some(BooleanValueNode::new(false).into())),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            ..StructFieldTypeNode::new("with_metadata", BooleanTypeNode::default())
+                            ..StructFieldTypeNode::new(
+                                id("with_metadata"),
+                                BooleanTypeNode::default()
+                            )
                         }
                     ])
                     .into()
                 )),
                 provides: vec![ProvidedNode::new(
-                    "maxCapacity",
+                    id("max_capacity"),
                     DataValueNode::new(path("capacity")),
                 )],
                 ..InstructionNode::default()
@@ -294,8 +297,8 @@ fn from_struct_with_default_values_in_data() -> CodamaResult<()> {
 fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(account(name = "authority"))]
-        #[codama(account(name = "payer", default_value = account("authority")))]
+        #[codama(account(identifier = "authority"))]
+        #[codama(account(identifier = "payer", default_value = account("authority")))]
         struct Initialize;
     };
     let mut korok = StructKorok::parse(&item)?;
@@ -306,12 +309,14 @@ fn from_struct_with_default_values_linking_to_other_accounts() -> CodamaResult<(
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 accounts: vec![
-                    InstructionAccountNode::new("authority", false, false),
+                    InstructionAccountNode::new(id("authority"), false, false),
                     InstructionAccountNode {
-                        default_value: Box::new(Some(AccountValueNode::new("authority").into())),
-                        ..InstructionAccountNode::new("payer", false, false)
+                        default_value: Box::new(Some(
+                            AccountValueNode::new(id("authority")).into()
+                        )),
+                        ..InstructionAccountNode::new(id("payer"), false, false)
                     },
                 ],
                 ..InstructionNode::default()
@@ -341,21 +346,21 @@ fn from_struct_with_default_values_linking_to_other_fields() -> CodamaResult<()>
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("capacity", IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new(id("capacity"), IntegerTypeNode::le(U64)),
                         StructFieldTypeNode {
                             default_value: Box::new(Some(
-                                InjectedValueNode::new("maxCapacity").into()
+                                InjectedValueNode::new(id("max_capacity")).into()
                             )),
-                            ..StructFieldTypeNode::new("max_capacity", IntegerTypeNode::le(U64))
+                            ..StructFieldTypeNode::new(id("max_capacity"), IntegerTypeNode::le(U64))
                         },
                     ])
                     .into()
                 )),
                 provides: vec![ProvidedNode::new(
-                    "maxCapacity",
+                    id("max_capacity"),
                     DataValueNode::new(path("capacity")),
                 )],
                 ..InstructionNode::default()
@@ -381,7 +386,7 @@ fn from_empty_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 ..InstructionNode::default()
             }
             .into()
@@ -428,7 +433,7 @@ fn no_overrides() -> CodamaResult<()> {
 fn with_name_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaInstruction)]
-        #[codama(name = "initialize")]
+        #[codama(identifier = "initialize")]
         struct InitializeInstruction;
     };
     let mut korok = StructKorok::parse(&item)?;
@@ -439,7 +444,7 @@ fn with_name_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "initialize".into(),
+                identifier: id("initialize"),
                 ..InstructionNode::default()
             }
             .into()
@@ -464,7 +469,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "myInstruction".into(),
+                identifier: id("my_instruction"),
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
                     FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
@@ -493,11 +498,11 @@ fn with_field_attributes_only() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "myInstruction".into(),
+                identifier: id("my_instruction"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
-                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+                        StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
                     ])
                     .into()
                 )),
@@ -528,16 +533,16 @@ fn with_prepended_field_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "myInstruction".into(),
+                identifier: id("my_instruction"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
                         StructFieldTypeNode {
                             default_value: Box::new(Some(IntegerValueNode::new(0u8).into())),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                            ..StructFieldTypeNode::new("discriminator", IntegerTypeNode::le(U8))
+                            ..StructFieldTypeNode::new(id("discriminator"), IntegerTypeNode::le(U8))
                         },
-                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                        StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
                     ])
                     .into()
                 )),
@@ -568,12 +573,12 @@ fn with_appended_field_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "myInstruction".into(),
+                identifier: id("my_instruction"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
-                        StructFieldTypeNode::new("name", StringTypeNode::utf8()),
-                        StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
+                        StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
+                        StructFieldTypeNode::new(id("is_member"), BooleanTypeNode::default()),
                     ])
                     .into()
                 )),
@@ -606,14 +611,14 @@ fn with_prepended_and_appended_field_attributes() -> CodamaResult<()> {
         korok.node,
         Some(
             InstructionNode {
-                identifier: "myInstruction".into(),
+                identifier: id("my_instruction"),
                 data: Box::new(Some(
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("year_of_birth", IntegerTypeNode::le(U8)),
-                        StructFieldTypeNode::new("is_member", BooleanTypeNode::default()),
-                        StructFieldTypeNode::new("age", IntegerTypeNode::le(U8)),
-                        StructFieldTypeNode::new("first_name", StringTypeNode::utf8()),
-                        StructFieldTypeNode::new("last_name", StringTypeNode::utf8()),
+                        StructFieldTypeNode::new(id("year_of_birth"), IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new(id("is_member"), BooleanTypeNode::default()),
+                        StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8)),
+                        StructFieldTypeNode::new(id("first_name"), StringTypeNode::utf8()),
+                        StructFieldTypeNode::new(id("last_name"), StringTypeNode::utf8()),
                     ])
                     .into()
                 )),

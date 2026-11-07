@@ -1,11 +1,11 @@
 use crate::{
-    CamelCaseString, DiscriminatorNode, Docs, HasIdentifier, PdaLinkNode, PluginNode, TypeNode,
+    DiscriminatorNode, Docs, HasIdentifier, Identifier, PdaLinkNode, PluginNode, TypeNode,
 };
 use codama_nodes_derive::node;
 
 #[node]
 pub struct AccountNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub size: Option<u64>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -20,7 +20,7 @@ pub struct AccountNode {
 }
 
 impl HasIdentifier for AccountNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

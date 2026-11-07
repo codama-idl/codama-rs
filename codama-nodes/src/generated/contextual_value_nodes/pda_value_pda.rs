@@ -1,4 +1,4 @@
-use crate::{CamelCaseString, HasIdentifier, PdaLinkNode, PdaNode};
+use crate::{HasIdentifier, Identifier, PdaLinkNode, PdaNode};
 use codama_nodes_derive::node_union;
 
 #[node_union]
@@ -8,7 +8,7 @@ pub enum PdaValuePda {
 }
 
 impl HasIdentifier for PdaValuePda {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         match self {
             PdaValuePda::Pda(node) => node.identifier(),
             PdaValuePda::PdaLink(node) => node.identifier(),

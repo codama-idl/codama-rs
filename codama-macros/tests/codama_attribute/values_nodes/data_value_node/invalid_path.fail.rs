@@ -6,7 +6,7 @@ pub struct TestWithInteger;
 #[codama(default_value = data(banana))]
 pub struct TestWithPath;
 
-#[codama(default_value = data(name = "amount"))]
+#[codama(default_value = data(identifier = "amount"))]
 pub struct TestWithKey;
 
 #[codama(default_value = data("a..b"))]

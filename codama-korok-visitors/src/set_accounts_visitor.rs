@@ -6,9 +6,9 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    AccountNode, CamelCaseString, DefaultValueStrategy, EnumVariantTypeNode,
-    FieldDiscriminatorNode, IntegerValueNode, Node, PdaLinkNode, ProgramNode, StructFieldTypeNode,
-    StructTypeNode, TypeNode,
+    AccountNode, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode, Identifier,
+    IntegerValueNode, Node, PdaLinkNode, ProgramNode, StructFieldTypeNode, StructTypeNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::*;
 
@@ -177,9 +177,7 @@ impl KorokVisitor for SetAccountsVisitor {
     }
 }
 
-fn parse_struct(
-    korok: &codama_koroks::StructKorok,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+fn parse_struct(korok: &codama_koroks::StructKorok) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `DefinedTypeNode` to work with.
     if let Some(Node::DefinedType(node)) = &korok.node {
         // Ensure the data type is a struct.
@@ -199,7 +197,7 @@ fn parse_struct(
 fn parse_enum_variant(
     korok: &codama_koroks::EnumVariantKorok,
     enum_name: &str,
-) -> CodamaResult<(CamelCaseString, StructTypeNode)> {
+) -> CodamaResult<(Identifier, StructTypeNode)> {
     // Ensure we have a `Node`.
     if let Some(node) = &korok.node {
         // Ensure we have a `EnumVariantTypeNode`.

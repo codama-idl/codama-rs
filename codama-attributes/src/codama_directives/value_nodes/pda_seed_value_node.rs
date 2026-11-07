@@ -1,6 +1,6 @@
-use crate::utils::{removed_syntax, FromMeta, SetOnce};
+use crate::utils::{removed_name_key, removed_syntax, FromMeta, SetOnce};
 use codama_nodes::{
-    AccountValueNode, CamelCaseString, DataValueNode, PdaSeedValueNode, PdaSeedValueValue,
+    AccountValueNode, DataValueNode, Identifier, PdaSeedValueNode, PdaSeedValueValue,
     StringValueNode, ValueNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
@@ -34,23 +34,33 @@ impl FromMeta for PdaSeedValueNode {
                         r#"a nested path needs a seed name, use seed("name", data("{path}"))"#
                     )));
                 }
-                return Ok(PdaSeedValueNode::new(path, value));
+                let identifier = Identifier::try_from(path.as_str()).map_err(|e| meta.error(e))?;
+                return Ok(PdaSeedValueNode::new(identifier, value));
             }
             _ => {}
         }
 
         // Regular seed parsing.
         let pl = meta.assert_directive("seed")?.as_path_list()?;
-        let mut name = SetOnce::<CamelCaseString>::new("name");
+        let mut name = SetOnce::<Identifier>::new("identifier");
         let mut value: SetOnce<PdaSeedValueValue> = SetOnce::<PdaSeedValueValue>::new("value");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "name" => name.set(meta.as_value()?.as_expr()?.as_string()?.into(), meta),
+            "identifier" => name.set(
+                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
+                    .map_err(|e| meta.error(e))?,
+                meta,
+            ),
+            "name" => removed_name_key(meta),
             "value" => value.set(PdaSeedValueValue::from_meta(meta.as_value()?)?, meta),
             _ => {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     match name.is_set() {
-                        false => return name.set(seed_name.into(), meta),
+                        false => {
+                            let identifier = Identifier::try_from(seed_name.as_str())
+                                .map_err(|e| meta.error(e))?;
+                            return name.set(identifier, meta);
+                        }
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
                     }
                 }
@@ -70,17 +80,18 @@ impl FromMeta for PdaSeedValueNode {
 
 #[cfg(test)]
 mod tests {
+    use codama_nodes::test_utils::id;
     use codama_nodes::{IntegerValueNode, Path};
 
     use super::*;
 
     #[test]
     fn explicit() {
-        let meta: Meta = syn::parse_quote! { seed(name = "identifier", value = 42) };
+        let meta: Meta = syn::parse_quote! { seed(identifier = "identifier", value = 42) };
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
+            PdaSeedValueNode::new(id("identifier"), IntegerValueNode::new(42u8))
         );
     }
 
@@ -90,7 +101,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
+            PdaSeedValueNode::new(id("identifier"), IntegerValueNode::new(42u8))
         );
     }
 
@@ -100,7 +111,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("authority", AccountValueNode::new("authority"))
+            PdaSeedValueNode::new(id("authority"), AccountValueNode::new(id("authority")))
         );
     }
 
@@ -111,7 +122,7 @@ mod tests {
         assert_eq!(
             node,
             PdaSeedValueNode::new(
-                "identifier",
+                id("identifier"),
                 DataValueNode::new(Path::try_from("identifier").unwrap())
             )
         );
@@ -123,7 +134,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new("authority", AccountValueNode::new("authority"))
+            PdaSeedValueNode::new(id("authority"), AccountValueNode::new(id("authority")))
         );
     }
 
@@ -134,7 +145,7 @@ mod tests {
         assert_eq!(
             node,
             PdaSeedValueNode::new(
-                "identifier",
+                id("identifier"),
                 DataValueNode::new(Path::try_from("identifier").unwrap())
             )
         );
@@ -168,7 +179,7 @@ mod tests {
         assert_eq!(
             node,
             PdaSeedValueNode::new(
-                "mint",
+                id("mint"),
                 DataValueNode::new(Path::try_from("config.mint").unwrap())
             )
         );
@@ -180,7 +191,7 @@ mod tests {
         for meta in [
             syn::parse_quote! { argument("identifier") },
             syn::parse_quote! { seed("identifier", argument("identifier")) },
-            syn::parse_quote! { seed(name = "identifier", value = argument("identifier")) },
+            syn::parse_quote! { seed(identifier = "identifier", value = argument("identifier")) },
         ] {
             let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
             assert_eq!(error.to_string(), hint);
@@ -191,6 +202,16 @@ mod tests {
     fn err_todo() {
         let meta: Meta = syn::parse_quote! { seed() };
         let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
-        assert_eq!(error.to_string(), "name is missing");
+        assert_eq!(error.to_string(), "identifier is missing");
+    }
+
+    #[test]
+    fn name_is_removed() {
+        let meta: Meta = syn::parse_quote! { seed(name = "mint", account("mint")) };
+        let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "name = ... is removed in v2, use identifier = ..."
+        );
     }
 }

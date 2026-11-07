@@ -13,8 +13,8 @@ error: expected a string
 error: expected a string
  --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:9:31
   |
-9 | #[codama(default_value = data(name = "amount"))]
-  |                               ^^^^^^^^^^^^^^^
+9 | #[codama(default_value = data(identifier = "amount"))]
+  |                               ^^^^^^^^^^^^^^^^^^^^^
 
 error: Invalid path: a..b
   --> tests/codama_attribute/values_nodes/data_value_node/invalid_path.fail.rs:12:31

@@ -1,4 +1,5 @@
 use crate::identify_field_types_visitor::utils::get_node_from_item;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, HasTransforms, IntegerTypeNode, Node,
     SizePrefixTransformNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
@@ -17,18 +18,18 @@ fn it_wraps_all_variants_in_a_defined_enum() {
             }
         }),
         Some(Node::DefinedType(DefinedTypeNode::new(
-            "message",
+            id("message"),
             EnumTypeNode::new(vec![
-                EnumVariantTypeNode::new("quit"),
+                EnumVariantTypeNode::new(id("quit")),
                 EnumVariantTypeNode::with_data(
-                    "move",
+                    id("move"),
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
-                        StructFieldTypeNode::new("y", IntegerTypeNode::le(I32))
+                        StructFieldTypeNode::new(id("x"), IntegerTypeNode::le(I32)),
+                        StructFieldTypeNode::new(id("y"), IntegerTypeNode::le(I32))
                     ])
                 ),
                 EnumVariantTypeNode::with_data(
-                    "write",
+                    id("write"),
                     TupleTypeNode::new(vec![StringTypeNode::utf8()
                         .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
                         .into()])

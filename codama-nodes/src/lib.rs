@@ -24,6 +24,9 @@ mod program_node;
 mod provided_node;
 mod root_node;
 mod shared;
+#[cfg(feature = "dev-context-only-utils")]
+#[doc(hidden)]
+pub mod test_utils;
 mod traits;
 mod transform_nodes;
 mod type_nodes;

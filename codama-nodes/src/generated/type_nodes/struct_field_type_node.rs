@@ -1,12 +1,12 @@
 use crate::{
-    CamelCaseString, DefaultValueStrategy, Docs, HasIdentifier, PluginNode, StructFieldDisplayNode,
+    DefaultValueStrategy, Docs, HasIdentifier, Identifier, PluginNode, StructFieldDisplayNode,
     TypeNode, ValueNode,
 };
 use codama_nodes_derive::node;
 
 #[node]
 pub struct StructFieldTypeNode {
-    pub identifier: CamelCaseString,
+    pub identifier: Identifier,
     #[serde(skip_serializing_if = "crate::is_default")]
     pub default_value_strategy: Option<DefaultValueStrategy>,
     #[serde(default, skip_serializing_if = "crate::is_default")]
@@ -27,7 +27,7 @@ impl From<StructFieldTypeNode> for crate::Node {
 }
 
 impl HasIdentifier for StructFieldTypeNode {
-    fn identifier(&self) -> &CamelCaseString {
+    fn identifier(&self) -> &Identifier {
         &self.identifier
     }
 }

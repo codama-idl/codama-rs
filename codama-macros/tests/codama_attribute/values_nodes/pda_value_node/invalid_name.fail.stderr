@@ -1,8 +1,8 @@
 error: expected a string
- --> tests/codama_attribute/values_nodes/pda_value_node/invalid_name.fail.rs:3:37
+ --> tests/codama_attribute/values_nodes/pda_value_node/invalid_name.fail.rs:3:43
   |
-3 | #[codama(default_value = pda(name = invalid))]
-  |                                     ^^^^^^^
+3 | #[codama(default_value = pda(identifier = invalid))]
+  |                                           ^^^^^^^
 
 error: unrecognized attribute
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_name.fail.rs:6:30

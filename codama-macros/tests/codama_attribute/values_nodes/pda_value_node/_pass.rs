@@ -1,20 +1,20 @@
 use codama_macros::codama;
 
-#[codama(default_value = pda(name = "token"))]
+#[codama(default_value = pda(identifier = "token"))]
 pub struct TestExplicit;
 
 #[codama(default_value = pda("token"))]
 pub struct TestImplicit;
 
-#[codama(default_value = pda(name = "token", seeds = []))]
+#[codama(default_value = pda(identifier = "token", seeds = []))]
 pub struct TestExplicitWithEmptySeeds;
 
 #[codama(default_value = pda("token", []))]
 pub struct TestImplicitWithEmptySeeds;
 
-#[codama(default_value = pda(name = "token", seeds = [
-  seed(name = "mint", value = account("token_mint")),
-  seed(name = "owner", value = account("authority")),
+#[codama(default_value = pda(identifier = "token", seeds = [
+  seed(identifier = "mint", value = account("token_mint")),
+  seed(identifier = "owner", value = account("authority")),
 ]))]
 pub struct TestExplicitWithSeeds;
 

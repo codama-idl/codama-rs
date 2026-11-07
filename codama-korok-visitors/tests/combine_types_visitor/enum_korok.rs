@@ -1,6 +1,7 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
 use codama_koroks::EnumKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::{
     DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode,
     IntegerFormat::{U32, U8},
@@ -17,16 +18,16 @@ fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
         }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    let variant_quit = EnumVariantTypeNode::new("quit");
+    let variant_quit = EnumVariantTypeNode::new(id("quit"));
     let variant_move = EnumVariantTypeNode::with_data(
-        "move",
+        id("move"),
         StructTypeNode::new(vec![
-            StructFieldTypeNode::new("x", IntegerTypeNode::le(I32)),
-            StructFieldTypeNode::new("y", IntegerTypeNode::le(I32)),
+            StructFieldTypeNode::new(id("x"), IntegerTypeNode::le(I32)),
+            StructFieldTypeNode::new(id("y"), IntegerTypeNode::le(I32)),
         ]),
     );
     let variant_write = EnumVariantTypeNode::with_data(
-        "write",
+        id("write"),
         TupleTypeNode::new(vec![StringTypeNode::utf8().into()]),
     );
     korok.variants[0].node = Some(variant_quit.clone().into());
@@ -39,7 +40,7 @@ fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "message",
+                id("message"),
                 EnumTypeNode::new(vec![variant_quit, variant_move, variant_write,])
             )
             .into()
@@ -52,11 +53,11 @@ fn it_creates_a_defined_type_enum_from_variants() -> CodamaResult<()> {
 fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! { enum Direction { Left } };
     let mut korok = EnumKorok::parse(&item)?;
-    korok.variants[0].node = Some(EnumVariantTypeNode::new("left").into());
+    korok.variants[0].node = Some(EnumVariantTypeNode::new(id("left")).into());
 
     let original_node = Some(Node::from(DefinedTypeNode::new(
-        "direction",
-        EnumTypeNode::new(vec![EnumVariantTypeNode::new("right")]),
+        id("direction"),
+        EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("right"))]),
     )));
     korok.node = original_node.clone();
     korok.accept(&mut CombineTypesVisitor::new())?;
@@ -68,7 +69,7 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
 fn it_ignores_invalid_variants() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! { enum Direction { Left, InvalidNode } };
     let mut korok = EnumKorok::parse(&item)?;
-    korok.variants[0].node = Some(EnumVariantTypeNode::new("left").into());
+    korok.variants[0].node = Some(EnumVariantTypeNode::new(id("left")).into());
     korok.variants[1].node = Some(IntegerTypeNode::le(I32).into());
 
     assert_eq!(korok.node, None);
@@ -77,8 +78,8 @@ fn it_ignores_invalid_variants() -> CodamaResult<()> {
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "direction",
-                EnumTypeNode::new(vec![EnumVariantTypeNode::new("left"),])
+                id("direction"),
+                EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("left")),])
             )
             .into()
         )
@@ -93,8 +94,8 @@ fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaR
         enum Message { Hello, Bye }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    let variant_hello = EnumVariantTypeNode::new("hello");
-    let variant_bye = EnumVariantTypeNode::new("bye");
+    let variant_hello = EnumVariantTypeNode::new(id("hello"));
+    let variant_bye = EnumVariantTypeNode::new(id("bye"));
     korok.variants[0].node = Some(variant_hello.clone().into());
     korok.variants[1].node = Some(variant_bye.clone().into());
 
@@ -104,7 +105,7 @@ fn it_creates_defined_enums_with_custom_sizes_using_repr_attributes() -> CodamaR
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "message",
+                id("message"),
                 EnumTypeNode {
                     variants: vec![variant_hello, variant_bye,],
                     size: IntegerTypeNode::le(U32),
@@ -126,8 +127,8 @@ fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directive
         enum Message { Hello, Bye }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    let variant_hello = EnumVariantTypeNode::new("hello");
-    let variant_bye = EnumVariantTypeNode::new("bye");
+    let variant_hello = EnumVariantTypeNode::new(id("hello"));
+    let variant_bye = EnumVariantTypeNode::new(id("bye"));
     korok.variants[0].node = Some(variant_hello.clone().into());
     korok.variants[1].node = Some(variant_bye.clone().into());
 
@@ -137,7 +138,7 @@ fn it_creates_defined_enums_with_custom_sizes_using_enum_discriminator_directive
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "message",
+                id("message"),
                 EnumTypeNode {
                     variants: vec![variant_hello, variant_bye],
                     size: IntegerTypeNode::le(U32),
@@ -159,8 +160,8 @@ fn it_prefers_enum_discriminator_sizes_over_repr_attributes() -> CodamaResult<()
         enum Message { Hello, Bye }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    let variant_hello = EnumVariantTypeNode::new("hello");
-    let variant_bye = EnumVariantTypeNode::new("bye");
+    let variant_hello = EnumVariantTypeNode::new(id("hello"));
+    let variant_bye = EnumVariantTypeNode::new(id("bye"));
     korok.variants[0].node = Some(variant_hello.clone().into());
     korok.variants[1].node = Some(variant_bye.clone().into());
 
@@ -170,7 +171,7 @@ fn it_prefers_enum_discriminator_sizes_over_repr_attributes() -> CodamaResult<()
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "message",
+                id("message"),
                 EnumTypeNode {
                     variants: vec![variant_hello, variant_bye],
                     size: IntegerTypeNode::le(U32),
@@ -190,8 +191,8 @@ fn it_defaults_defined_enums_to_u8_without_repr_or_enum_discriminator() -> Codam
         enum Message { Hello, Bye }
     };
     let mut korok = EnumKorok::parse(&item)?;
-    let variant_hello = EnumVariantTypeNode::new("hello");
-    let variant_bye = EnumVariantTypeNode::new("bye");
+    let variant_hello = EnumVariantTypeNode::new(id("hello"));
+    let variant_bye = EnumVariantTypeNode::new(id("bye"));
     korok.variants[0].node = Some(variant_hello.clone().into());
     korok.variants[1].node = Some(variant_bye.clone().into());
 
@@ -201,7 +202,7 @@ fn it_defaults_defined_enums_to_u8_without_repr_or_enum_discriminator() -> Codam
         korok.node,
         Some(
             DefinedTypeNode::new(
-                "message",
+                id("message"),
                 EnumTypeNode {
                     variants: vec![variant_hello, variant_bye],
                     size: IntegerTypeNode::le(U8),

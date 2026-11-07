@@ -4,6 +4,7 @@ use codama_korok_visitors::{
     SetProgramMetadataVisitor,
 };
 use codama_koroks::CrateKorok;
+use codama_nodes::test_utils::id;
 use codama_nodes::Node;
 use codama_stores::CrateStore;
 use quote::quote;
@@ -68,7 +69,7 @@ fn it_keeps_one_type_when_two_modules_define_it_identically() -> CodamaResult<()
         panic!("Expected a RootNode");
     };
     assert_eq!(root.program.defined_types.len(), 1);
-    assert_eq!(root.program.defined_types[0].identifier, "config".into());
+    assert_eq!(root.program.defined_types[0].identifier, id("config"));
     Ok(())
 }
 

@@ -1,7 +1,7 @@
-use crate::helpers::path;
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
+use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantPdaSeedNode,
     ConstantValueNode, DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode,
@@ -39,13 +39,13 @@ fn from_enum() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: "mint".into(),
+                        identifier: id("mint"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -58,14 +58,14 @@ fn from_enum() -> CodamaResult<()> {
                                     plugins: vec![],
                                 },
                                 StructFieldTypeNode::new(
-                                    "mint_authority",
+                                    id("mint_authority"),
                                     PublicKeyTypeNode::new()
                                 ),
                                 StructFieldTypeNode::new(
-                                    "freeze_authority",
+                                    id("freeze_authority"),
                                     OptionTypeNode::new(PublicKeyTypeNode::new())
                                 ),
-                                StructFieldTypeNode::new("supply", IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new(id("supply"), IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
@@ -76,13 +76,13 @@ fn from_enum() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "token".into(),
+                        identifier: id("token"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -94,9 +94,9 @@ fn from_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
-                                StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
-                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
+                                StructFieldTypeNode::new(id("mint"), PublicKeyTypeNode::new()),
+                                StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new()),
+                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
                             ])
                             .into()
                         ),
@@ -134,12 +134,12 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: "mint".into(),
+                        identifier: id("mint"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -156,12 +156,12 @@ fn from_enum_with_empty_variants() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "token".into(),
+                        identifier: id("token"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -206,12 +206,12 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: "mint".into(),
+                        identifier: id("mint"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U32).into()),
@@ -228,12 +228,12 @@ fn from_enum_with_custom_enum_size() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "token".into(),
+                        identifier: id("token"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U32).into()),
@@ -279,12 +279,12 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        identifier: "mint".into(),
+                        identifier: id("mint"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -301,12 +301,12 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "token".into(),
+                        identifier: id("token"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -323,12 +323,12 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "associatedToken".into(),
+                        identifier: id("associated_token"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -345,12 +345,12 @@ fn from_enum_with_explicit_discriminators() -> CodamaResult<()> {
                         plugins: vec![],
                     },
                     AccountNode {
-                        identifier: "buffer".into(),
+                        identifier: id("buffer"),
                         size: None,
                         docs: Docs::default(),
                         data: Box::new(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -414,7 +414,7 @@ fn with_name_directives() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccounts)]
         enum MyProgramAccounts {
-            #[codama(name = "token")]
+            #[codama(identifier = "token")]
             TokenAccount,
         }
     };
@@ -427,12 +427,12 @@ fn with_name_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    identifier: "token".into(),
+                    identifier: id("token"),
                     size: None,
                     docs: Docs::default(),
                     data: Box::new(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
+                            identifier: id("discriminator"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -475,12 +475,12 @@ fn with_discriminator_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    identifier: "token".into(),
+                    identifier: id("token"),
                     size: None,
                     docs: Docs::default(),
                     data: Box::new(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
+                            identifier: id("discriminator"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -514,7 +514,7 @@ fn with_discriminator_directives() -> CodamaResult<()> {
 fn with_enum_discriminator_directive() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
         #[derive(CodamaAccounts)]
-        #[codama(enum_discriminator(name = "banana", size = integer(u64)))]
+        #[codama(enum_discriminator(identifier = "banana", size = integer(u64)))]
         enum MyProgramAccounts {
             Token,
         }
@@ -528,12 +528,12 @@ fn with_enum_discriminator_directive() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    identifier: "token".into(),
+                    identifier: id("token"),
                     size: None,
                     docs: Docs::default(),
                     data: Box::new(
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "banana".into(),
+                            identifier: id("banana"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U64).into()),
@@ -561,12 +561,12 @@ fn with_seed_directives() -> CodamaResult<()> {
         #[derive(CodamaAccounts)]
         enum MyProgramAccounts {
             #[codama(seed(type = string(utf8), value = "counter_pda"))]
-            #[codama(seed(name = "authority"))]
+            #[codama(seed(identifier = "authority"))]
             Counter {
                 authority: Pubkey,
             },
-            #[codama(seed(name = "owner", type = public_key))]
-            #[codama(seed(name = "mint", type = public_key))]
+            #[codama(seed(identifier = "owner", type = public_key))]
+            #[codama(seed(identifier = "mint", type = public_key))]
             Token,
         }
     };
@@ -581,15 +581,15 @@ fn with_seed_directives() -> CodamaResult<()> {
             ProgramNode {
                 accounts: vec![
                     AccountNode {
-                        pda: Some(PdaLinkNode::new("counter")),
+                        pda: Some(PdaLinkNode::new(id("counter"))),
                         discriminators: vec![
                             FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
                         ..AccountNode::new(
-                            "counter",
+                            id("counter"),
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: "discriminator".into(),
+                                    identifier: id("discriminator"),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -601,19 +601,19 @@ fn with_seed_directives() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                                StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
                             ])
                         )
                     },
                     AccountNode {
-                        pda: Some(PdaLinkNode::new("token")),
+                        pda: Some(PdaLinkNode::new(id("token"))),
                         discriminators: vec![
                             FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                         ],
                         ..AccountNode::new(
-                            "token",
+                            id("token"),
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -626,21 +626,22 @@ fn with_seed_directives() -> CodamaResult<()> {
                 ],
                 pdas: vec![
                     PdaNode::new(
-                        "counter",
+                        id("counter"),
                         vec![
                             ConstantPdaSeedNode::new(
                                 StringTypeNode::utf8(),
                                 StringValueNode::new("counter_pda")
                             )
                             .into(),
-                            VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                            VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new())
+                                .into(),
                         ]
                     ),
                     PdaNode::new(
-                        "token",
+                        id("token"),
                         vec![
-                            VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
-                            VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
+                            VariablePdaSeedNode::new(id("owner"), PublicKeyTypeNode::new()).into(),
+                            VariablePdaSeedNode::new(id("mint"), PublicKeyTypeNode::new()).into(),
                         ]
                     )
                 ],
@@ -670,14 +671,14 @@ fn with_pda_directive() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    pda: Some(PdaLinkNode::new("myCounterPda")),
+                    pda: Some(PdaLinkNode::new(id("my_counter_pda"))),
                     discriminators: vec![
                         FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
                     ..AccountNode::new(
-                        "counter",
+                        id("counter"),
                         StructTypeNode::new(vec![StructFieldTypeNode {
-                            identifier: "discriminator".into(),
+                            identifier: id("discriminator"),
                             default_value_strategy: Some(DefaultValueStrategy::Omitted),
                             docs: Docs::default(),
                             r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -701,7 +702,7 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
         #[derive(CodamaAccounts)]
         enum MyProgramAccounts {
             #[codama(pda = "my_counter_pda")]
-            #[codama(seed(name = "authority"))]
+            #[codama(seed(identifier = "authority"))]
             Counter {
                 authority: Pubkey,
             },
@@ -717,15 +718,15 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    pda: Some(PdaLinkNode::new("myCounterPda")),
+                    pda: Some(PdaLinkNode::new(id("my_counter_pda"))),
                     discriminators: vec![
                         FieldDiscriminatorNode::new(path("discriminator"), 0).into()
                     ],
                     ..AccountNode::new(
-                        "counter",
+                        id("counter"),
                         StructTypeNode::new(vec![
                             StructFieldTypeNode {
-                                identifier: "discriminator".into(),
+                                identifier: id("discriminator"),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -733,13 +734,15 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
                                 display: Some(StructFieldDisplayNode::skipped(DisplaySkip::Always)),
                                 plugins: vec![],
                             },
-                            StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                            StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
                         ])
                     )
                 }],
                 pdas: vec![PdaNode::new(
-                    "myCounterPda",
-                    vec![VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),]
+                    id("my_counter_pda"),
+                    vec![
+                        VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
+                    ]
                 )],
                 ..ProgramNode::default()
             }
