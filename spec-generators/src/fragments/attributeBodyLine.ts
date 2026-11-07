@@ -43,49 +43,70 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
     // we resolve the field type here instead.
     const isLiteralUnion = attr.type.kind === 'literalUnion';
     const inner = isLiteralUnion ? use(`crate::${pascalCase(attr.name)}`) : getTypeExprFragment(attr.type);
-    const isOptional = attr.optional === true;
-    const isVecLike = isVecLikeType(attr.type);
-    const isUnion = isUnionType(attr.type);
 
     let typeFragment: Fragment;
     let serdeAttr: string;
-    if (isDocsType(attr.type)) {
-        // `docs` attributes are kept as a bare `Docs` regardless of
-        // `optional`. `Docs` has its own sensible `Default`/`is_default`,
-        // so wrapping it in `Option<…>` would be redundant and divergent
-        // from the hand-written convention.
-        typeFragment = inner;
-        serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
-    } else if (isVecLike) {
-        // Every array is a bare `Vec<T>` that skips-when-empty and
-        // defaults-when-absent, independent of `optional`. See the
-        // "Array attributes are omitted when empty" convention in the
-        // `@codama/spec` README. `array(union(...))` fields are Vecs, not
-        // bare unions, so this branch must precede the union branch below;
-        // the element type's own boxing is handled by `getTypeExprFragment`.
-        typeFragment = inner;
-        serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
-    } else if (isOptional) {
-        if (isUnion) {
-            // Optional union → `Box<Option<T>>` (box outside Option).
+    switch (getAttributeFieldShape(attr)) {
+        case 'docs':
+            // `docs` attributes are kept as a bare `Docs` regardless of
+            // `optional`. `Docs` has its own sensible `Default`/`is_default`,
+            // so wrapping it in `Option<…>` would be redundant and divergent
+            // from the hand-written convention.
+            typeFragment = inner;
+            serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
+            break;
+        case 'vec':
+            // Every array is a bare `Vec<T>` that skips-when-empty and
+            // defaults-when-absent, independent of `optional`. See the
+            // "Array attributes are omitted when empty" convention in the
+            // `@codama/spec` README. The element type's own boxing is
+            // handled by `getTypeExprFragment`.
+            typeFragment = inner;
+            serdeAttr = '#[serde(default, skip_serializing_if = "crate::is_default")]';
+            break;
+        case 'boxedOption':
             typeFragment = fragment`Box<Option<${inner}>>`;
             serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';
-        } else {
+            break;
+        case 'option':
             typeFragment = fragment`Option<${inner}>`;
             serdeAttr = '#[serde(skip_serializing_if = "crate::is_default")]';
-        }
-    } else if (isUnion) {
-        typeFragment = fragment`Box<${inner}>`;
-        serdeAttr = '';
-    } else {
-        typeFragment = inner;
-        serdeAttr = '';
+            break;
+        case 'boxed':
+            typeFragment = fragment`Box<${inner}>`;
+            serdeAttr = '';
+            break;
+        case 'plain':
+            typeFragment = inner;
+            serdeAttr = '';
+            break;
     }
 
     const fieldName = rustFieldName(attr.name);
     const fieldLine = fragment`pub ${fieldName}: ${typeFragment},`;
     if (serdeAttr === '') return fieldLine;
     return mergeFragments([fragment`${serdeAttr}`, fieldLine], parts => parts.join('\n'));
+}
+
+/** The Rust wrapping of a struct field. See {@link getAttributeFieldShape}. */
+export type AttributeFieldShape = 'boxed' | 'boxedOption' | 'docs' | 'option' | 'plain' | 'vec';
+
+/**
+ * The Rust wrapping of a struct field, from the attribute alone. The node walker reads fields with the same rule.
+ *
+ *   - `docs`        -> bare `Docs`, regardless of `optional`.
+ *   - `vec`         -> bare `Vec<T>`, regardless of `optional`. Checked before the union rule.
+ *   - `boxedOption` -> `Box<Option<T>>` for an optional `union` or `anyNode`.
+ *   - `option`      -> `Option<T>` for any other optional attribute.
+ *   - `boxed`       -> `Box<T>` for a required `union` or `anyNode`.
+ *   - `plain`       -> `T` for any other required attribute.
+ */
+export function getAttributeFieldShape(attr: AttributeSpec): AttributeFieldShape {
+    if (isDocsType(attr.type)) return 'docs';
+    if (isVecLikeType(attr.type)) return 'vec';
+    const isUnion = isUnionType(attr.type);
+    if (attr.optional === true) return isUnion ? 'boxedOption' : 'option';
+    return isUnion ? 'boxed' : 'plain';
 }
 
 function isVecLikeType(type: TypeExpr): boolean {
@@ -102,7 +123,8 @@ function isDocsType(type: TypeExpr): boolean {
     return type.kind === 'docs';
 }
 
-function rustFieldName(specName: string): string {
+/** The Rust field name of a spec attribute: snake_case, with `r#` for a Rust keyword. */
+export function rustFieldName(specName: string): string {
     const snake = snakeCase(specName);
     return RUST_KEYWORDS.has(snake) ? `r#${snake}` : snake;
 }

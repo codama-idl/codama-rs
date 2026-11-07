@@ -1,10 +1,10 @@
 use crate::{
     AccountNode, ConstantNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode,
     DisplayNode, ErrorNode, EventNode, HasKind, InstructionAccountNode, InstructionByteDeltaNode,
-    InstructionNode, InstructionRemainingAccountsNode, InstructionStatusNode, LinkNode,
-    NodeUnionTrait, PdaNode, PdaSeedNode, PluginNode, ProgramNode, ProvidedNode,
-    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TextNode,
-    TransformNode, TypeNode, ValueNode,
+    InstructionNode, InstructionRemainingAccountsNode, InstructionStatusNode, LinkNode, NodePath,
+    NodeUnionTrait, NodeVisitor, PathSegment, PdaNode, PdaSeedNode, PluginNode, ProgramNode,
+    ProvidedNode, RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode,
+    TextNode, TransformNode, TypeNode, ValueNode,
 };
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
@@ -60,6 +60,54 @@ impl From<TypeNode> for Node {
 impl From<ValueNode> for Node {
     fn from(node: ValueNode) -> Self {
         Node::Value(node.into())
+    }
+}
+
+/// Visits the node inside the value, with the path joined to it. See `NodeVisitor::visit_node`.
+pub fn walk_node<'a, V: NodeVisitor + ?Sized>(
+    visitor: &mut V,
+    node: &'a Node,
+    path: &NodePath<'a>,
+    segment: PathSegment,
+) {
+    match node {
+        Node::ContextualValue(node) => {
+            visitor.visit_registered_contextual_value(node, path, segment)
+        }
+        Node::Count(node) => visitor.visit_count(node, path, segment),
+        Node::Discriminator(node) => visitor.visit_discriminator(node, path, segment),
+        Node::Display(node) => visitor.visit_display(node, path, segment),
+        Node::Link(node) => visitor.visit_link(node, path, segment),
+        Node::PdaSeed(node) => visitor.visit_pda_seed(node, path, segment),
+        Node::Transform(node) => visitor.visit_transform(node, path, segment),
+        Node::Type(node) => visitor.visit_registered_type(node, path, segment),
+        Node::Value(node) => visitor.visit_registered_value(node, path, segment),
+        Node::Account(node) => visitor.visit_account(node, &path.join_named(segment, node)),
+        Node::Constant(node) => visitor.visit_constant(node, &path.join_named(segment, node)),
+        Node::DefinedType(node) => {
+            visitor.visit_defined_type(node, &path.join_named(segment, node))
+        }
+        Node::Error(node) => visitor.visit_error(node, &path.join_named(segment, node)),
+        Node::Event(node) => visitor.visit_event(node, &path.join_named(segment, node)),
+        Node::Instruction(node) => visitor.visit_instruction(node, &path.join_named(segment, node)),
+        Node::InstructionAccount(node) => {
+            visitor.visit_instruction_account(node, &path.join_named(segment, node))
+        }
+        Node::InstructionByteDelta(node) => {
+            visitor.visit_instruction_byte_delta(node, &path.join(segment, node))
+        }
+        Node::InstructionRemainingAccounts(node) => {
+            visitor.visit_instruction_remaining_accounts(node, &path.join_named(segment, node))
+        }
+        Node::InstructionStatus(node) => {
+            visitor.visit_instruction_status(node, &path.join(segment, node))
+        }
+        Node::Pda(node) => visitor.visit_pda(node, &path.join_named(segment, node)),
+        Node::Plugin(node) => visitor.visit_plugin(node, &path.join(segment, node)),
+        Node::Program(node) => visitor.visit_program(node, &path.join_named(segment, node)),
+        Node::Provided(node) => visitor.visit_provided(node, &path.join_named(segment, node)),
+        Node::Root(node) => visitor.visit_root(node, &path.join(segment, node)),
+        Node::Text(node) => visitor.visit_text(node, &path.join(segment, node)),
     }
 }
 

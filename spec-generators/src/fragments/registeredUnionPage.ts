@@ -30,24 +30,13 @@ import { use } from './helpers';
  */
 export function getRegisteredUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const enumName = `Registered${pascalCase(union.name)}`;
-    // Strip the longest common PascalCase suffix across BOTH standalone
-    // and registered-only leaves. `valueNode` → `'ValueNode'` (leaves
-    // end in `ValueNode`); `contextualValueNode` → also `'ValueNode'`
-    // (leaves like `accountValueNode` end in `ValueNode`, NOT
-    // `ContextualValueNode`).
-    const suffix = getRegisteredUnionStripSuffix(union, spec);
-
-    const registeredOnlyKinds = new Set(getRegisteredOnlyLeafKinds(union, spec));
-    const standaloneLeaves = [...flattenNodeUnion(union, spec)];
-    const standaloneVariants = standaloneLeaves
-        .map(node => ({ kind: node.kind, name: variantNameForKind(node.kind, suffix) }))
-        .toSorted((a, b) => a.name.localeCompare(b.name));
-    const registeredOnlyVariants = getRegisteredOnlyLeafKinds(union, spec).map(kind => ({
-        kind,
-        name: variantNameForKind(kind, suffix),
-    }));
+    const { standalone: standaloneVariants, registeredOnly: registeredOnlyVariants } = getRegisteredUnionVariants(
+        union,
+        spec,
+    );
 
     // Sanity check: the registered-only kinds must not overlap with the standalone set.
+    const registeredOnlyKinds = new Set(getRegisteredOnlyLeafKinds(union, spec));
     for (const v of registeredOnlyVariants) {
         if (!registeredOnlyKinds.has(v.kind)) {
             throw new Error(`unexpected variant kind "${v.kind}" while building ${enumName}`);
@@ -73,6 +62,33 @@ export function getRegisteredUnionPageFragment(union: UnionSpec, spec: Spec): Fr
         fragment`#[derive(${use('codama_nodes_derive::RegisteredNodes')})]\n#[${use('codama_nodes_derive::node_union')}]\npub enum ${enumName} {\n${body}\n}`,
         ['crate::HasKind'],
     );
+}
+
+/**
+ * The variants of a `RegisteredNodes`-mode union, as {@link getRegisteredUnionPageFragment} emits them.
+ * `standalone` variants are sorted by name and also make up the standalone twin. `registeredOnly` follow spec order.
+ */
+export function getRegisteredUnionVariants(
+    union: UnionSpec,
+    spec: Spec,
+): {
+    readonly registeredOnly: readonly { readonly kind: string; readonly name: string }[];
+    readonly standalone: readonly { readonly kind: string; readonly name: string }[];
+} {
+    // Strip the longest common PascalCase suffix across BOTH standalone
+    // and registered-only leaves. `valueNode` → `'ValueNode'` (leaves
+    // end in `ValueNode`); `contextualValueNode` → also `'ValueNode'`
+    // (leaves like `accountValueNode` end in `ValueNode`, NOT
+    // `ContextualValueNode`).
+    const suffix = getRegisteredUnionStripSuffix(union, spec);
+    const standalone = [...flattenNodeUnion(union, spec)]
+        .map(node => ({ kind: node.kind, name: variantNameForKind(node.kind, suffix) }))
+        .toSorted((a, b) => a.name.localeCompare(b.name));
+    const registeredOnly = getRegisteredOnlyLeafKinds(union, spec).map(kind => ({
+        kind,
+        name: variantNameForKind(kind, suffix),
+    }));
+    return { registeredOnly, standalone };
 }
 
 function variantNameForKind(kind: string, suffix: string): string {

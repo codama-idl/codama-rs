@@ -19,6 +19,7 @@ import {
     getLiteralUnionPageFragment,
     getModPagesRenderMap,
     getNodePageFragment,
+    getNodeVisitorPageFragment,
     getPageFragment,
     getRegisteredUnionPageFragment,
     getUnionPageFragment,
@@ -87,8 +88,9 @@ export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Frag
 
 /**
  * Build the render map: one page per node, per emittable union, per
- * enumeration, and per literalUnion value-set, plus a
- * `codama_version.rs` constant pinned to the spec version.
+ * enumeration, and per literalUnion value-set, the node walker page
+ * (`node_visitor.rs`), plus a `codama_version.rs` constant pinned to
+ * the spec version.
  */
 function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
     const entries: Record<Path, Fragment> = {};
@@ -148,6 +150,8 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             entries[path] = getPageFragment(getLiteralUnionPageFragment(ref));
         }
     }
+
+    entries['node_visitor.rs'] = getPageFragment(getNodeVisitorPageFragment(spec));
 
     // `CODAMA_VERSION` constant pinned to the spec version at
     // generation time, mirroring the JS `CODAMA_VERSION`. Used by the
