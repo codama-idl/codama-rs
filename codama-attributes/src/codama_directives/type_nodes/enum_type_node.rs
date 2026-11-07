@@ -40,7 +40,7 @@ impl FromMeta for EnumTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::test_utils::id;
+
     use codama_nodes::{
         IntegerFormat::{U16, U8},
         TupleTypeNode,
@@ -57,8 +57,8 @@ mod tests {
         assert_type!(
             { enum(variant("pending"), variant("done")) },
             EnumTypeNode::new(vec![
-                EnumVariantTypeNode::new(id("pending")),
-                EnumVariantTypeNode::new(id("done")),
+                EnumVariantTypeNode::new("pending"),
+                EnumVariantTypeNode::new("done"),
             ])
             .into()
         );
@@ -69,7 +69,7 @@ mod tests {
         assert_type!(
             { enum(variant("pair", tuple(integer(u8)))) },
             EnumTypeNode::new(vec![EnumVariantTypeNode::with_data(
-                id("pair"),
+                "pair",
                 TupleTypeNode::new(vec![IntegerTypeNode::le(U8).into()])
             )])
             .into()
@@ -82,7 +82,7 @@ mod tests {
             { enum(variant("a")) },
             EnumTypeNode {
                 size: IntegerTypeNode::le(U8),
-                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("a"))])
+                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("a")])
             }
             .into()
         );
@@ -94,7 +94,7 @@ mod tests {
             { enum(variant("a"), size = integer(u16)) },
             EnumTypeNode {
                 size: IntegerTypeNode::le(U16),
-                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("a"))])
+                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("a")])
             }
             .into()
         );

@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetAccountsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, ConstantPdaSeedNode, FieldDiscriminatorNode,
     IntegerFormat::{U64, U8},
@@ -28,11 +27,11 @@ fn from_struct() -> CodamaResult<()> {
         korok.node,
         Some(
             AccountNode::new(
-                id("token"),
+                "token",
                 StructTypeNode::new(vec![
-                    StructFieldTypeNode::new(id("mint"), PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new()),
-                    StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                    StructFieldTypeNode::new("mint", PublicKeyTypeNode::new()),
+                    StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
+                    StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                 ])
             )
             .into()
@@ -54,7 +53,7 @@ fn from_empty_struct() -> CodamaResult<()> {
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(AccountNode::new(id("token"), StructTypeNode::new(vec![])).into())
+        Some(AccountNode::new("token", StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -105,7 +104,7 @@ fn with_name_directive() -> CodamaResult<()> {
     korok.accept(&mut SetAccountsVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(AccountNode::new(id("token"), StructTypeNode::new(vec![])).into())
+        Some(AccountNode::new("token", StructTypeNode::new(vec![])).into())
     );
     Ok(())
 }
@@ -128,9 +127,9 @@ fn with_discriminator_directives() -> CodamaResult<()> {
             AccountNode {
                 discriminators: vec![
                     SizeDiscriminatorNode::new(100).into(),
-                    FieldDiscriminatorNode::new(path("discriminator"), 0).into(),
+                    FieldDiscriminatorNode::new("discriminator", 0).into(),
                 ],
-                ..AccountNode::new(id("my_account"), StructTypeNode::new(vec![]))
+                ..AccountNode::new("my_account", StructTypeNode::new(vec![]))
             }
             .into()
         )
@@ -159,25 +158,25 @@ fn with_seed_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    pda: Some(PdaLinkNode::new(id("counter"))),
+                    pda: Some(PdaLinkNode::new("counter")),
                     ..AccountNode::new(
-                        id("counter"),
+                        "counter",
                         StructTypeNode::new(vec![StructFieldTypeNode::new(
-                            id("authority"),
+                            "authority",
                             PublicKeyTypeNode::new()
                         ),])
                     )
                 }],
                 pdas: vec![PdaNode::new(
-                    id("counter"),
+                    "counter",
                     vec![
                         ConstantPdaSeedNode::new(
                             StringTypeNode::utf8(),
                             StringValueNode::new("counter_pda")
                         )
                         .into(),
-                        VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                        VariablePdaSeedNode::new(id("identifier"), IntegerTypeNode::le(U8)).into(),
+                        VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),
+                        VariablePdaSeedNode::new("identifier", IntegerTypeNode::le(U8)).into(),
                     ]
                 )],
                 ..ProgramNode::default()
@@ -203,8 +202,8 @@ fn with_pda_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             AccountNode {
-                pda: Some(PdaLinkNode::new(id("my_counter_pda"))),
-                ..AccountNode::new(id("counter"), StructTypeNode::default())
+                pda: Some(PdaLinkNode::new("my_counter_pda")),
+                ..AccountNode::new("counter", StructTypeNode::default())
             }
             .into()
         )
@@ -232,20 +231,18 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
         Some(
             ProgramNode {
                 accounts: vec![AccountNode {
-                    pda: Some(PdaLinkNode::new(id("my_counter_pda"))),
+                    pda: Some(PdaLinkNode::new("my_counter_pda")),
                     ..AccountNode::new(
-                        id("counter"),
+                        "counter",
                         StructTypeNode::new(vec![StructFieldTypeNode::new(
-                            id("authority"),
+                            "authority",
                             PublicKeyTypeNode::new()
                         ),])
                     )
                 }],
                 pdas: vec![PdaNode::new(
-                    id("my_counter_pda"),
-                    vec![
-                        VariablePdaSeedNode::new(id("authority"), PublicKeyTypeNode::new()).into(),
-                    ]
+                    "my_counter_pda",
+                    vec![VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into(),]
                 )],
                 ..ProgramNode::default()
             }

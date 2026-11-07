@@ -1,5 +1,4 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode,
     IntegerFormat::{U32, U64},
@@ -9,17 +8,17 @@ use codama_nodes::{
 #[test]
 fn it_merges_defined_types_into_root_nodes() {
     let membership = DefinedTypeNode::new(
-        id("membership"),
+        "membership",
         EnumTypeNode::new(vec![
-            EnumVariantTypeNode::new(id("free")),
-            EnumVariantTypeNode::new(id("premium")),
+            EnumVariantTypeNode::new("free"),
+            EnumVariantTypeNode::new("premium"),
         ]),
     );
     let person = DefinedTypeNode::new(
-        id("person"),
+        "person",
         StructTypeNode::new(vec![
-            StructFieldTypeNode::new(id("name"), StringTypeNode::utf8()),
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
+            StructFieldTypeNode::new("name", StringTypeNode::utf8()),
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
         ]),
     );
     assert_eq!(
@@ -42,9 +41,9 @@ fn it_merges_defined_types_into_root_nodes() {
 #[test]
 fn it_merges_defined_types_inside_programs_into_root_nodes() {
     let program_a = ProgramNode::default()
-        .add_defined_type(DefinedTypeNode::new(id("foo"), IntegerTypeNode::le(U32)));
+        .add_defined_type(DefinedTypeNode::new("foo", IntegerTypeNode::le(U32)));
     let program_b = ProgramNode::default()
-        .add_defined_type(DefinedTypeNode::new(id("bar"), IntegerTypeNode::le(U32)));
+        .add_defined_type(DefinedTypeNode::new("bar", IntegerTypeNode::le(U32)));
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -54,8 +53,8 @@ fn it_merges_defined_types_inside_programs_into_root_nodes() {
         Some(
             RootNode::new(
                 ProgramNode::default()
-                    .add_defined_type(DefinedTypeNode::new(id("foo"), IntegerTypeNode::le(U32)))
-                    .add_defined_type(DefinedTypeNode::new(id("bar"), IntegerTypeNode::le(U32)))
+                    .add_defined_type(DefinedTypeNode::new("foo", IntegerTypeNode::le(U32)))
+                    .add_defined_type(DefinedTypeNode::new("bar", IntegerTypeNode::le(U32)))
             )
             .into()
         )
@@ -64,8 +63,8 @@ fn it_merges_defined_types_inside_programs_into_root_nodes() {
 
 #[test]
 fn it_fails_on_defined_types_with_identical_names() {
-    let first_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U32));
-    let second_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U64));
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
+    let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
     let error = try_combine_modules(
         CombineModulesInput::new()
             .add_node(first_counter)
@@ -80,8 +79,8 @@ fn it_fails_on_defined_types_with_identical_names() {
 
 #[test]
 fn it_fails_on_defined_types_with_identical_names_inside_programs() {
-    let first_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U32));
-    let second_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U64));
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
+    let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
     let program_a = ProgramNode::default().add_defined_type(first_counter);
     let program_b = ProgramNode::default().add_defined_type(second_counter);
     let error = try_combine_modules(
@@ -98,8 +97,8 @@ fn it_fails_on_defined_types_with_identical_names_inside_programs() {
 
 #[test]
 fn it_fails_on_defined_types_with_identical_names_with_an_initial_program_node() {
-    let first_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U32));
-    let second_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U64));
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
+    let second_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U64));
     let program_a = ProgramNode::default().add_defined_type(first_counter);
     let program_b = ProgramNode::default().add_defined_type(second_counter);
     let error = try_combine_modules(
@@ -116,7 +115,7 @@ fn it_fails_on_defined_types_with_identical_names_with_an_initial_program_node()
 
 #[test]
 fn it_keeps_a_single_defined_type_when_identical_names_have_equal_content() {
-    let first_counter = DefinedTypeNode::new(id("counter"), IntegerTypeNode::le(U32));
+    let first_counter = DefinedTypeNode::new("counter", IntegerTypeNode::le(U32));
     let program = ProgramNode::default().add_defined_type(first_counter.clone());
     assert_eq!(
         combine_modules(

@@ -16,7 +16,7 @@ impl PublicKeyValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+    use crate::Identifier;
 
     #[test]
     fn new() {
@@ -32,14 +32,14 @@ mod tests {
     fn direct_instantiation() {
         let node = PublicKeyValueNode {
             public_key: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".into(),
-            identifier: Some(id("splToken")),
+            identifier: Some(Identifier::from("splToken")),
             plugins: vec![],
         };
         assert_eq!(
             node.public_key,
             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".to_string()
         );
-        assert_eq!(node.identifier, Some(id("splToken")));
+        assert_eq!(node.identifier, Some(Identifier::from("splToken")));
     }
 
     #[test]

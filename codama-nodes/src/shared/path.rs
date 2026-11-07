@@ -108,8 +108,18 @@ mod tests {
     }
 
     #[test]
-    fn try_from() {
-        assert_eq!(Path::try_from("[0].kind").unwrap().as_str(), "[0].kind");
+    fn from_static_str() {
+        assert_eq!(Path::from("[0].kind").as_str(), "[0].kind");
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid path: header..kind")]
+    fn from_static_str_panics_on_an_invalid_path() {
+        let _ = Path::from("header..kind");
+    }
+
+    #[test]
+    fn try_from_string() {
         assert_eq!(
             Path::try_from("[0].kind".to_string()).unwrap().as_str(),
             "[0].kind"
@@ -130,11 +140,7 @@ mod tests {
             ("[0]", true),
             ("[0].banana", true),
         ] {
-            assert_eq!(
-                Path::try_from(value).unwrap().is_nested(),
-                expected,
-                "{value}"
-            );
+            assert_eq!(Path::from(value).is_nested(), expected, "{value}");
         }
     }
 

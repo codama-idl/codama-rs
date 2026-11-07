@@ -26,7 +26,7 @@ impl FromMeta for PdaValueNode {
             _ => {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     return name.set(
-                        Identifier::try_from(seed_name.as_str()).map_err(|e| meta.error(e))?,
+                        seed_name.parse::<Identifier>().map_err(|e| meta.error(e))?,
                         meta,
                     );
                 }
@@ -61,14 +61,14 @@ fn parse_seed_value_nodes(pl: &PathList) -> syn::Result<Vec<PdaSeedValueNode>> {
 mod tests {
     use super::*;
     use crate::{assert_value, assert_value_err};
-    use codama_nodes::test_utils::id;
+
     use codama_nodes::AccountValueNode;
 
     #[test]
     fn explicit() {
         assert_value!(
             { pda(identifier = "token", seeds = []) },
-            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
+            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
         );
     }
 
@@ -82,10 +82,10 @@ mod tests {
                 )
             },
             PdaValueNode::new(
-                PdaLinkNode::new(id("token")),
+                PdaLinkNode::new("token"),
                 vec![
-                    PdaSeedValueNode::new(id("mint"), AccountValueNode::new(id("mint"))),
-                    PdaSeedValueNode::new(id("owner"), AccountValueNode::new(id("authority")))
+                    PdaSeedValueNode::new("mint", AccountValueNode::new("mint")),
+                    PdaSeedValueNode::new("owner", AccountValueNode::new("authority"))
                 ],
             )
             .into()
@@ -96,7 +96,7 @@ mod tests {
     fn implicit_empty() {
         assert_value!(
             { pda("token", []) },
-            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
+            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
         );
     }
 
@@ -104,7 +104,7 @@ mod tests {
     fn name_only() {
         assert_value!(
             { pda("token") },
-            PdaValueNode::new(PdaLinkNode::new(id("token")), vec![]).into()
+            PdaValueNode::new(PdaLinkNode::new("token"), vec![]).into()
         );
     }
 

@@ -6,8 +6,6 @@ use codama_nodes::{
     IntegerTypeNode, IntegerValueNode, NumberDisplayNode, StringValueNode, StructFieldTypeNode,
 };
 
-use codama_nodes::test_utils::id;
-
 #[test]
 fn it_set_the_node_on_the_korok() -> CodamaResult<()> {
     let item: syn::Item = syn::parse_quote! {
@@ -34,7 +32,7 @@ fn it_wraps_the_node_in_a_struct_field_for_named_field_koroks() -> CodamaResult<
     korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(StructFieldTypeNode::new(id("is_valid"), BooleanTypeNode::default()).into())
+        Some(StructFieldTypeNode::new("is_valid", BooleanTypeNode::default()).into())
     );
     Ok(())
 }
@@ -51,7 +49,7 @@ fn it_keeps_field_type_nodes_as_given_for_named_field_koroks() -> CodamaResult<(
     korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(StructFieldTypeNode::new(id("valid"), BooleanTypeNode::default()).into())
+        Some(StructFieldTypeNode::new("valid", BooleanTypeNode::default()).into())
     );
     Ok(())
 }
@@ -68,10 +66,7 @@ fn it_links_defined_types_for_named_field_koroks() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(
-            StructFieldTypeNode::new(id("name"), DefinedTypeLinkNode::new(id("customString")))
-                .into()
-        )
+        Some(StructFieldTypeNode::new("name", DefinedTypeLinkNode::new("customString")).into())
     );
     Ok(())
 }
@@ -89,7 +84,7 @@ fn it_uses_the_name_directive() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeOverridesVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(StructFieldTypeNode::new(id("is_valid"), BooleanTypeNode::default()).into())
+        Some(StructFieldTypeNode::new("is_valid", BooleanTypeNode::default()).into())
     );
     Ok(())
 }
@@ -110,7 +105,7 @@ fn it_preserves_number_display_metadata() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("amount"),
+                "amount",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(

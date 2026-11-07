@@ -127,7 +127,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a ProgramDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
@@ -136,7 +135,7 @@ mod tests {
         assert_eq!(
             directive,
             ProgramDirective {
-                name: id("associatedToken"),
+                name: "associatedToken".into(),
                 address: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
             }
         );

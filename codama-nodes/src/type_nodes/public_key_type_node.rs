@@ -9,7 +9,7 @@ impl PublicKeyTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+
     use crate::AccountLinkNode;
 
     #[test]
@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn to_json_with_account_link() {
         let node = PublicKeyTypeNode {
-            account_link: Some(AccountLinkNode::new(id("mint"))),
+            account_link: Some(AccountLinkNode::new("mint")),
             ..PublicKeyTypeNode::new()
         };
         let json = serde_json::to_string(&node).unwrap();

@@ -1,7 +1,9 @@
 use proc_macro2::TokenStream;
 use thiserror::Error;
 
+/// Variants are added in minor versions, so matches outside this crate need a wildcard arm.
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum CodamaError {
     #[error("{0}")]
     Filesystem(#[from] std::io::Error),

@@ -324,11 +324,7 @@ mod tests {
         assert_eq!(
             directive,
             DiscriminatorDirective {
-                discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("account_type").unwrap(),
-                    0
-                )
-                .into(),
+                discriminator: FieldDiscriminatorNode::new("account_type", 0).into(),
             }
         );
     }
@@ -340,11 +336,7 @@ mod tests {
         assert_eq!(
             directive,
             DiscriminatorDirective {
-                discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("account_type").unwrap(),
-                    42
-                )
-                .into(),
+                discriminator: FieldDiscriminatorNode::new("account_type", 42).into(),
             }
         );
     }
@@ -356,11 +348,7 @@ mod tests {
         assert_eq!(
             directive,
             DiscriminatorDirective {
-                discriminator: FieldDiscriminatorNode::new(
-                    Path::try_from("header.account_type").unwrap(),
-                    0
-                )
-                .into(),
+                discriminator: FieldDiscriminatorNode::new("header.account_type", 0).into(),
             }
         );
     }

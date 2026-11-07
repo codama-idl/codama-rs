@@ -26,39 +26,38 @@ impl InstructionAccountLinkNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::id;
-    use crate::ProgramLinkNode;
+    use crate::{Identifier, ProgramLinkNode};
 
     use super::*;
 
     #[test]
     fn new() {
-        let node = InstructionAccountLinkNode::new(id("myInstructionAccount"));
-        assert_eq!(node.identifier, id("myInstructionAccount"));
+        let node = InstructionAccountLinkNode::new("myInstructionAccount");
+        assert_eq!(node.identifier, Identifier::from("myInstructionAccount"));
     }
 
     #[test]
     fn new_from_instruction() {
         let node = InstructionAccountLinkNode::new_from_instruction(
-            id("myInstructionAccount"),
+            "myInstructionAccount",
             InstructionLinkNode::new_from_program(
-                id("myInstruction"),
-                ProgramLinkNode::new(id("myProgram")),
+                "myInstruction",
+                ProgramLinkNode::new("myProgram"),
             ),
         );
-        assert_eq!(node.identifier, id("myInstructionAccount"));
+        assert_eq!(node.identifier, Identifier::from("myInstructionAccount"));
         assert_eq!(
             node.instruction,
             Some(InstructionLinkNode::new_from_program(
-                id("myInstruction"),
-                ProgramLinkNode::new(id("myProgram"))
+                "myInstruction",
+                ProgramLinkNode::new("myProgram")
             ))
         );
     }
 
     #[test]
     fn to_json() {
-        let node = InstructionAccountLinkNode::new(id("myAccount"));
+        let node = InstructionAccountLinkNode::new("myAccount");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -70,6 +69,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"instructionAccountLinkNode","identifier":"myAccount"}"#;
         let node: InstructionAccountLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, InstructionAccountLinkNode::new(id("myAccount")));
+        assert_eq!(node, InstructionAccountLinkNode::new("myAccount"));
     }
 }

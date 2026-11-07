@@ -1,14 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::id;
     use crate::{
-        AccountBumpValueNode, Docs, InjectedValueNode, InstructionNode, IntegerTypeNode,
-        ProvidedNode, StructFieldTypeNode, StructTypeNode, U64, U8,
+        AccountBumpValueNode, Docs, Identifier, InjectedValueNode, InstructionNode,
+        IntegerTypeNode, ProvidedNode, StructFieldTypeNode, StructTypeNode, U64, U8,
     };
 
     fn data() -> StructTypeNode {
         StructTypeNode::new(vec![StructFieldTypeNode::new(
-            id("amount"),
+            "amount",
             IntegerTypeNode::le(U64),
         )])
     }
@@ -16,10 +15,10 @@ mod tests {
     #[test]
     fn empty_instruction() {
         let node = InstructionNode {
-            identifier: id("myInstruction"),
+            identifier: "myInstruction".into(),
             ..InstructionNode::default()
         };
-        assert_eq!(node.identifier, id("myInstruction"));
+        assert_eq!(node.identifier, Identifier::from("myInstruction"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.optional_account_strategy, None);
         assert_eq!(node.accounts, vec![]);
@@ -35,14 +34,14 @@ mod tests {
     #[test]
     fn instruction_with_sub_instructions() {
         let node = InstructionNode {
-            identifier: id("myInstruction"),
+            identifier: "myInstruction".into(),
             sub_instructions: vec![
                 InstructionNode {
-                    identifier: id("mySubInstructionA"),
+                    identifier: "mySubInstructionA".into(),
                     ..InstructionNode::default()
                 },
                 InstructionNode {
-                    identifier: id("mySubInstructionB"),
+                    identifier: "mySubInstructionB".into(),
                     ..InstructionNode::default()
                 },
             ],
@@ -52,11 +51,11 @@ mod tests {
             node.sub_instructions,
             vec![
                 InstructionNode {
-                    identifier: id("mySubInstructionA"),
+                    identifier: "mySubInstructionA".into(),
                     ..InstructionNode::default()
                 },
                 InstructionNode {
-                    identifier: id("mySubInstructionB"),
+                    identifier: "mySubInstructionB".into(),
                     ..InstructionNode::default()
                 },
             ]
@@ -66,7 +65,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = InstructionNode {
-            identifier: id("myInstruction"),
+            identifier: "myInstruction".into(),
             ..InstructionNode::default()
         };
         let json = serde_json::to_string(&node).unwrap();
@@ -83,7 +82,7 @@ mod tests {
         assert_eq!(
             node,
             InstructionNode {
-                identifier: id("myInstruction"),
+                identifier: "myInstruction".into(),
                 ..InstructionNode::default()
             }
         );
@@ -92,7 +91,7 @@ mod tests {
     #[test]
     fn to_json_with_data_and_return_data() {
         let node = InstructionNode {
-            identifier: id("transfer"),
+            identifier: "transfer".into(),
             data: Box::new(Some(data().into())),
             return_data: Box::new(Some(IntegerTypeNode::le(U64).into())),
             ..InstructionNode::default()
@@ -111,7 +110,7 @@ mod tests {
         assert_eq!(
             node,
             InstructionNode {
-                identifier: id("transfer"),
+                identifier: "transfer".into(),
                 data: Box::new(Some(data().into())),
                 return_data: Box::new(Some(IntegerTypeNode::le(U64).into())),
                 ..InstructionNode::default()
@@ -122,15 +121,15 @@ mod tests {
     #[test]
     fn to_json_with_provides() {
         let bump = StructFieldTypeNode {
-            default_value: Box::new(Some(InjectedValueNode::new(id("bump")).into())),
-            ..StructFieldTypeNode::new(id("bump"), IntegerTypeNode::le(U8))
+            default_value: Box::new(Some(InjectedValueNode::new("bump").into())),
+            ..StructFieldTypeNode::new("bump", IntegerTypeNode::le(U8))
         };
         let node = InstructionNode {
-            identifier: id("createCounter"),
+            identifier: "createCounter".into(),
             data: Box::new(Some(StructTypeNode::new(vec![bump]).into())),
             provides: vec![ProvidedNode::new(
-                id("bump"),
-                AccountBumpValueNode::new(id("counter")),
+                "bump",
+                AccountBumpValueNode::new("counter"),
             )],
             ..InstructionNode::default()
         };
@@ -148,8 +147,8 @@ mod tests {
         assert_eq!(
             node.provides,
             vec![ProvidedNode::new(
-                id("bump"),
-                AccountBumpValueNode::new(id("counter"))
+                "bump",
+                AccountBumpValueNode::new("counter")
             )]
         );
     }

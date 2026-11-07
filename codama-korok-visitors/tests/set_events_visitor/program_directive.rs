@@ -1,9 +1,8 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetEventsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    EventNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, PublicKeyTypeNode,
+    EventNode, Identifier, IntegerFormat::U64, IntegerTypeNode, ProgramNode, PublicKeyTypeNode,
     StructFieldTypeNode, StructTypeNode,
 };
 
@@ -25,13 +24,13 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: id("externalProgram"),
+                identifier: "externalProgram".into(),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 events: vec![EventNode::new(
-                    id("transfer_event"),
+                    "transfer_event",
                     StructTypeNode::new(vec![
-                        StructFieldTypeNode::new(id("authority"), PublicKeyTypeNode::new()),
-                        StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64)),
+                        StructFieldTypeNode::new("authority", PublicKeyTypeNode::new()),
+                        StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64)),
                     ])
                 )],
                 ..ProgramNode::default()
@@ -59,12 +58,12 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         Some(codama_nodes::Node::Program(p)) => p,
         _ => panic!("expected ProgramNode"),
     };
-    assert_eq!(program.identifier, id("externalProgram"));
+    assert_eq!(program.identifier, Identifier::from("externalProgram"));
     assert_eq!(
         program.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(program.events.len(), 1);
-    assert_eq!(program.events[0].identifier, id("transfer"));
+    assert_eq!(program.events[0].identifier, Identifier::from("transfer"));
     Ok(())
 }

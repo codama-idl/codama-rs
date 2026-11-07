@@ -1,7 +1,6 @@
 use super::utils::{
     combine_modules, get_plugin, get_type, try_combine_modules, CombineModulesInput,
 };
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     IntegerFormat::U32, IntegerTypeNode, PluginNode, ProgramNode, RootNode, StringValueNode,
 };
@@ -14,17 +13,17 @@ fn roots_with_plugins() {
             CombineModulesInput::new()
                 .add_node(RootNode {
                     plugins: vec![get_plugin("namespace.a")],
-                    ..RootNode::new(ProgramNode::new(id("programA"), "1234"))
+                    ..RootNode::new(ProgramNode::new("programA", "1234"))
                 })
                 .add_node(RootNode {
                     plugins: vec![get_plugin("namespace.b")],
-                    ..RootNode::new(ProgramNode::new(id("programB"), "1234"))
+                    ..RootNode::new(ProgramNode::new("programB", "1234"))
                 })
         ),
         Some(
             RootNode {
                 plugins: vec![get_plugin("namespace.a"), get_plugin("namespace.b")],
-                ..RootNode::new(ProgramNode::new(id("programA"), "1234"))
+                ..RootNode::new(ProgramNode::new("programA", "1234"))
             }
             .into()
         )
@@ -42,17 +41,17 @@ fn roots_with_equal_plugins() {
             CombineModulesInput::new()
                 .add_node(RootNode {
                     plugins: vec![plugin.clone()],
-                    ..RootNode::new(ProgramNode::new(id("programA"), "1234"))
+                    ..RootNode::new(ProgramNode::new("programA", "1234"))
                 })
                 .add_node(RootNode {
                     plugins: vec![plugin.clone()],
-                    ..RootNode::new(ProgramNode::new(id("programB"), "1234"))
+                    ..RootNode::new(ProgramNode::new("programB", "1234"))
                 })
         ),
         Some(
             RootNode {
                 plugins: vec![plugin],
-                ..RootNode::new(ProgramNode::new(id("programA"), "1234"))
+                ..RootNode::new(ProgramNode::new("programA", "1234"))
             }
             .into()
         )
@@ -68,14 +67,14 @@ fn roots_with_conflicting_plugins() {
                     payload: Some(json!({ "from": "a" })),
                     ..get_plugin("namespace.shared")
                 }],
-                ..RootNode::new(ProgramNode::new(id("programA"), "1234"))
+                ..RootNode::new(ProgramNode::new("programA", "1234"))
             })
             .add_node(RootNode {
                 plugins: vec![PluginNode {
                     payload: Some(json!({ "from": "b" })),
                     ..get_plugin("namespace.shared")
                 }],
-                ..RootNode::new(ProgramNode::new(id("programB"), "1234"))
+                ..RootNode::new(ProgramNode::new("programB", "1234"))
             }),
     )
     .unwrap_err();
@@ -131,15 +130,15 @@ fn roots_with_same_pubkey_programs() {
         combine_modules(
             CombineModulesInput::new()
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programA"), "1234").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("programA", "1234").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "1234").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "1234").add_defined_type(get_type("type_2"))
                 ))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1234")
+                ProgramNode::new("programA", "1234")
                     .add_defined_type(get_type("type_1"))
                     .add_defined_type(get_type("type_2"))
             )
@@ -154,19 +153,17 @@ fn roots_with_different_pubkey_programs() {
         combine_modules(
             CombineModulesInput::new()
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programA"), "1111").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("programA", "1111").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2"))
                 ))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1111").add_defined_type(get_type("type_1"))
+                ProgramNode::new("programA", "1111").add_defined_type(get_type("type_1"))
             )
-            .add_program(
-                ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
-            )
+            .add_program(ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2")))
             .into()
         )
     );
@@ -179,49 +176,43 @@ fn roots_with_additional_programs() {
             CombineModulesInput::new()
                 .add_node(
                     RootNode::new(
-                        ProgramNode::new(id("programA"), "1111")
-                            .add_defined_type(get_type("type_a_1"))
+                        ProgramNode::new("programA", "1111").add_defined_type(get_type("type_a_1"))
                     )
                     .add_program(
-                        ProgramNode::new(id("programB"), "2222")
-                            .add_defined_type(get_type("type_b_1"))
+                        ProgramNode::new("programB", "2222").add_defined_type(get_type("type_b_1"))
                     )
                     .add_program(
-                        ProgramNode::new(id("programC"), "3333")
-                            .add_defined_type(get_type("type_c_1"))
+                        ProgramNode::new("programC", "3333").add_defined_type(get_type("type_c_1"))
                     )
                 )
                 .add_node(
                     RootNode::new(
-                        ProgramNode::new(id("programB"), "2222")
-                            .add_defined_type(get_type("type_b_2"))
+                        ProgramNode::new("programB", "2222").add_defined_type(get_type("type_b_2"))
                     )
                     .add_program(
-                        ProgramNode::new(id("programD"), "4444")
-                            .add_defined_type(get_type("type_d_2"))
+                        ProgramNode::new("programD", "4444").add_defined_type(get_type("type_d_2"))
                     )
                     .add_program(
-                        ProgramNode::new(id("programA"), "1111")
-                            .add_defined_type(get_type("type_a_2"))
+                        ProgramNode::new("programA", "1111").add_defined_type(get_type("type_a_2"))
                     )
                 )
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1111")
+                ProgramNode::new("programA", "1111")
                     .add_defined_type(get_type("type_a_1"))
                     .add_defined_type(get_type("type_a_2"))
             )
             .add_program(
-                ProgramNode::new(id("programB"), "2222")
+                ProgramNode::new("programB", "2222")
                     .add_defined_type(get_type("type_b_1"))
                     .add_defined_type(get_type("type_b_2"))
             )
             .add_program(
-                ProgramNode::new(id("programC"), "3333").add_defined_type(get_type("type_c_1"))
+                ProgramNode::new("programC", "3333").add_defined_type(get_type("type_c_1"))
             )
             .add_program(
-                ProgramNode::new(id("programD"), "4444").add_defined_type(get_type("type_d_2"))
+                ProgramNode::new("programD", "4444").add_defined_type(get_type("type_d_2"))
             )
             .into()
         )
@@ -235,13 +226,13 @@ fn defined_root_within_scraps() {
             CombineModulesInput::new()
                 .add_node(get_type("scraps_1"))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("myProgram"), "1234").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("myProgram", "1234").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(get_type("scraps_2"))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("myProgram"), "1234").add_defined_type(get_type("type_1"))
+                ProgramNode::new("myProgram", "1234").add_defined_type(get_type("type_1"))
             )
             .add_program(
                 ProgramNode::default()
@@ -279,8 +270,8 @@ fn exisiting_irrelevant_node() {
         combine_modules(
             CombineModulesInput::new()
                 .set_initial_node(StringValueNode::new("hello"))
-                .add_node(ProgramNode::new(id("foo"), "1111"))
-                .add_node(ProgramNode::new(id("bar"), "2222"))
+                .add_node(ProgramNode::new("foo", "1111"))
+                .add_node(ProgramNode::new("bar", "2222"))
         ),
         Some(StringValueNode::new("hello").into())
     );
@@ -319,18 +310,18 @@ fn exisiting_roots_with_same_pubkeys() {
         combine_modules(
             CombineModulesInput::new()
                 .set_initial_node(RootNode::new(
-                    ProgramNode::new(id("programA"), "1234").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("programA", "1234").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "1234").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "1234").add_defined_type(get_type("type_2"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programC"), "1234").add_defined_type(get_type("type_3"))
+                    ProgramNode::new("programC", "1234").add_defined_type(get_type("type_3"))
                 ))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1234")
+                ProgramNode::new("programA", "1234")
                     .add_defined_type(get_type("type_1"))
                     .add_defined_type(get_type("type_2"))
                     .add_defined_type(get_type("type_3"))
@@ -346,25 +337,21 @@ fn exisiting_roots_with_different_pubkeys() {
         combine_modules(
             CombineModulesInput::new()
                 .set_initial_node(RootNode::new(
-                    ProgramNode::new(id("programA"), "1111").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("programA", "1111").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2"))
                 ))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programC"), "3333").add_defined_type(get_type("type_3"))
+                    ProgramNode::new("programC", "3333").add_defined_type(get_type("type_3"))
                 ))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1111").add_defined_type(get_type("type_1"))
+                ProgramNode::new("programA", "1111").add_defined_type(get_type("type_1"))
             )
-            .add_program(
-                ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
-            )
-            .add_program(
-                ProgramNode::new(id("programC"), "3333").add_defined_type(get_type("type_3"))
-            )
+            .add_program(ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2")))
+            .add_program(ProgramNode::new("programC", "3333").add_defined_type(get_type("type_3")))
             .into()
         )
     );
@@ -376,7 +363,7 @@ fn exisiting_root_with_pubkey_less_child_root() {
         combine_modules(
             CombineModulesInput::new()
                 .set_initial_node(RootNode::new(
-                    ProgramNode::new(id("myProgram"), "1234").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("myProgram", "1234").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(RootNode::new(
                     ProgramNode::default().add_defined_type(get_type("type_2"))
@@ -387,7 +374,7 @@ fn exisiting_root_with_pubkey_less_child_root() {
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("myProgram"), "1234")
+                ProgramNode::new("myProgram", "1234")
                     .add_defined_type(get_type("type_1"))
                     .add_defined_type(get_type("type_2"))
                     .add_defined_type(get_type("type_3"))
@@ -403,24 +390,22 @@ fn existing_defined_root_with_scraps() {
         combine_modules(
             CombineModulesInput::new()
                 .set_initial_node(RootNode::new(
-                    ProgramNode::new(id("programA"), "1111").add_defined_type(get_type("type_1"))
+                    ProgramNode::new("programA", "1111").add_defined_type(get_type("type_1"))
                 ))
                 .add_node(get_type("scraps_1"))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2"))
                 ))
                 .add_node(get_type("scraps_2"))
         ),
         Some(
             RootNode::new(
-                ProgramNode::new(id("programA"), "1111")
+                ProgramNode::new("programA", "1111")
                     .add_defined_type(get_type("type_1"))
                     .add_defined_type(get_type("scraps_1"))
                     .add_defined_type(get_type("scraps_2"))
             )
-            .add_program(
-                ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
-            )
+            .add_program(ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2")))
             .into()
         )
     );
@@ -434,7 +419,7 @@ fn existing_default_root_with_scraps() {
                 .set_initial_node(RootNode::default())
                 .add_node(get_type("scraps_1"))
                 .add_node(RootNode::new(
-                    ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
+                    ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2"))
                 ))
                 .add_node(get_type("scraps_2"))
         ),
@@ -444,9 +429,7 @@ fn existing_default_root_with_scraps() {
                     .add_defined_type(get_type("scraps_1"))
                     .add_defined_type(get_type("scraps_2"))
             )
-            .add_program(
-                ProgramNode::new(id("programB"), "2222").add_defined_type(get_type("type_2"))
-            )
+            .add_program(ProgramNode::new("programB", "2222").add_defined_type(get_type("type_2")))
             .into()
         )
     );

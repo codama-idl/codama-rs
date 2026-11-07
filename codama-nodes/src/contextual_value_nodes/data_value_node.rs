@@ -15,17 +15,16 @@ impl DataValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::path;
 
     #[test]
     fn new() {
-        let node = DataValueNode::new(path("config.fees[0]"));
+        let node = DataValueNode::new("config.fees[0]");
         assert_eq!(node.path.as_str(), "config.fees[0]");
     }
 
     #[test]
     fn to_json() {
-        let node = DataValueNode::new(path("amount"));
+        let node = DataValueNode::new("amount");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"dataValueNode","path":"amount"}"#);
     }
@@ -34,7 +33,7 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"dataValueNode","path":"amount"}"#;
         let node: DataValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, DataValueNode::new(path("amount")));
+        assert_eq!(node, DataValueNode::new("amount"));
     }
 
     #[test]

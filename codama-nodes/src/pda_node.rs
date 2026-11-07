@@ -18,41 +18,34 @@ impl PdaNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
     use crate::{
-        ConstantPdaSeedNode, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode,
+        ConstantPdaSeedNode, Identifier, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode,
         VariablePdaSeedNode, U8,
     };
 
     #[test]
     fn new() {
         let node = PdaNode::new(
-            id("associatedToken"),
+            "associatedToken",
             vec![
-                VariablePdaSeedNode::new(id("owner"), PublicKeyTypeNode::new()).into(),
+                VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new()).into(),
                 ConstantPdaSeedNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(42u8))
                     .into(),
-                VariablePdaSeedNode::new(id("mint"), PublicKeyTypeNode::new()).into(),
+                VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new()).into(),
             ],
         );
-        assert_eq!(node.identifier, id("associatedToken"));
+        assert_eq!(node.identifier, Identifier::from("associatedToken"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.program_id, None);
         assert_eq!(
             node.seeds,
             vec![
-                PdaSeedNode::Variable(VariablePdaSeedNode::new(
-                    id("owner"),
-                    PublicKeyTypeNode::new()
-                )),
+                PdaSeedNode::Variable(VariablePdaSeedNode::new("owner", PublicKeyTypeNode::new())),
                 PdaSeedNode::Constant(ConstantPdaSeedNode::new(
                     IntegerTypeNode::le(U8),
                     IntegerValueNode::new(42u8)
                 )),
-                PdaSeedNode::Variable(VariablePdaSeedNode::new(
-                    id("mint"),
-                    PublicKeyTypeNode::new()
-                )),
+                PdaSeedNode::Variable(VariablePdaSeedNode::new("mint", PublicKeyTypeNode::new())),
             ]
         );
     }
@@ -60,13 +53,13 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = PdaNode {
-            identifier: id("myPda"),
+            identifier: "myPda".into(),
             docs: Docs::default(),
             program_id: Some("1234..5678".into()),
             seeds: vec![],
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("myPda"));
+        assert_eq!(node.identifier, Identifier::from("myPda"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(node.program_id, Some("1234..5678".into()));
         assert_eq!(node.seeds, vec![]);
@@ -74,7 +67,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = PdaNode::new(id("myPda"), vec![]);
+        let node = PdaNode::new("myPda", vec![]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"pdaNode","identifier":"myPda"}"#);
     }
@@ -83,6 +76,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"pdaNode","identifier":"myPda"}"#;
         let node: PdaNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, PdaNode::new(id("myPda"), vec![]));
+        assert_eq!(node, PdaNode::new("myPda", vec![]));
     }
 }

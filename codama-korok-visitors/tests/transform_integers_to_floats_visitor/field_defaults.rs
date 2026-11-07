@@ -1,9 +1,8 @@
 use super::utils::{
     account_with_field, field, float, integer, root_with_account, transform_integers_to_floats,
 };
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    AccountNode, ArrayTypeNode, ArrayValueNode, DateTimeTypeNode, Decimal, DefinedTypeNode,
+    AccountNode, ArrayTypeNode, ArrayValueNode, DateTimeTypeNode, DefinedTypeNode,
     DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, EventNode, FixedPointTypeNode,
     FixedSizeTransformNode,
     FloatFormat::{F32, F64},
@@ -21,7 +20,7 @@ fn data(value: ValueNode) -> StructTypeNode {
 
 fn instruction(data: StructTypeNode) -> InstructionNode {
     InstructionNode {
-        identifier: id("update"),
+        identifier: "update".into(),
         data: Box::new(Some(data.into())),
         ..InstructionNode::default()
     }
@@ -62,7 +61,7 @@ fn floats_keep_every_digit_of_the_integer() {
                 account_with_field(FloatTypeNode::le(F64), value),
             )
         };
-        let float = FloatValueNode::new(Decimal::try_from(digits).unwrap());
+        let float = FloatValueNode::new(digits);
         assert_eq!(
             transform_integers_to_floats(root(integer.into())),
             root(float.into())
@@ -119,12 +118,11 @@ fn other_defaults_keep_their_kind() {
 #[test]
 fn defaults_in_every_type_tree_become_floats() {
     let programs_with_data: [fn(ValueNode) -> ProgramNode; 6] = [
-        |value| ProgramNode::default().add_account(AccountNode::new(id("config"), data(value))),
+        |value| ProgramNode::default().add_account(AccountNode::new("config", data(value))),
         |value| {
-            ProgramNode::default()
-                .add_defined_type(DefinedTypeNode::new(id("settings"), data(value)))
+            ProgramNode::default().add_defined_type(DefinedTypeNode::new("settings", data(value)))
         },
-        |value| ProgramNode::default().add_event(EventNode::new(id("updated"), data(value))),
+        |value| ProgramNode::default().add_event(EventNode::new("updated", data(value))),
         |value| ProgramNode::default().add_instruction(instruction(data(value))),
         |value| {
             ProgramNode::default().add_instruction(InstructionNode {
@@ -150,9 +148,7 @@ fn defaults_in_every_type_tree_become_floats() {
 #[test]
 fn defaults_at_any_depth_become_floats() {
     let types_with_nested_data: [fn(ValueNode) -> TypeNode; 10] = [
-        |value| {
-            StructTypeNode::new(vec![StructFieldTypeNode::new(id("inner"), data(value))]).into()
-        },
+        |value| StructTypeNode::new(vec![StructFieldTypeNode::new("inner", data(value))]).into(),
         |value| TupleTypeNode::new(vec![data(value).into()]).into(),
         |value| ArrayTypeNode::fixed(data(value), 2).into(),
         |value| SetTypeNode::fixed(data(value), 2).into(),
@@ -161,17 +157,13 @@ fn defaults_at_any_depth_become_floats() {
         |value| OptionTypeNode::new(data(value)).into(),
         |value| RemainderOptionTypeNode::new(data(value)).into(),
         |value| ZeroableOptionTypeNode::new(data(value)).into(),
-        |value| {
-            EnumTypeNode::new(vec![EnumVariantTypeNode::with_data(id("a"), data(value))]).into()
-        },
+        |value| EnumTypeNode::new(vec![EnumVariantTypeNode::with_data("a", data(value))]).into(),
     ];
     for type_with_nested_data in types_with_nested_data {
         let root = |value| {
             RootNode::new(
-                ProgramNode::default().add_defined_type(DefinedTypeNode::new(
-                    id("holder"),
-                    type_with_nested_data(value),
-                )),
+                ProgramNode::default()
+                    .add_defined_type(DefinedTypeNode::new("holder", type_with_nested_data(value))),
             )
         };
         assert_eq!(transform_integers_to_floats(root(integer())), root(float()));

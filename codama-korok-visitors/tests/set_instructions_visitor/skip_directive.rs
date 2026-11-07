@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::EnumKorok;
-use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode, InstructionNode,
     IntegerFormat::{U64, U8},
@@ -34,11 +33,11 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: id("initialize"),
+                        identifier: "initialize".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: id("discriminator"),
+                                    identifier: "discriminator".into(),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -50,21 +49,21 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: id("update"),
+                        identifier: "update".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![
                                 StructFieldTypeNode {
-                                    identifier: id("discriminator"),
+                                    identifier: "discriminator".into(),
                                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                     docs: Docs::default(),
                                     r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -76,12 +75,12 @@ fn skip_variant_in_enum() -> CodamaResult<()> {
                                     )),
                                     plugins: vec![],
                                 },
-                                StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
+                                StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
                             ])
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     }
@@ -116,10 +115,10 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: id("initialize"),
+                        identifier: "initialize".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -130,15 +129,15 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: id("update"),
+                        identifier: "update".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -149,7 +148,7 @@ fn skip_variant_with_explicit_discriminator() -> CodamaResult<()> {
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     }
@@ -185,10 +184,10 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
             ProgramNode {
                 instructions: vec![
                     InstructionNode {
-                        identifier: id("first"),
+                        identifier: "first".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -199,15 +198,15 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     },
                     InstructionNode {
-                        identifier: id("third"),
+                        identifier: "third".into(),
                         data: Box::new(Some(
                             StructTypeNode::new(vec![StructFieldTypeNode {
-                                identifier: id("discriminator"),
+                                identifier: "discriminator".into(),
                                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
                                 docs: Docs::default(),
                                 r#type: Box::new(IntegerTypeNode::le(U8).into()),
@@ -218,7 +217,7 @@ fn skip_preserves_sibling_discriminator_counting() -> CodamaResult<()> {
                             .into()
                         )),
                         discriminators: vec![
-                            FieldDiscriminatorNode::new(path("discriminator"), 0).into()
+                            FieldDiscriminatorNode::new("discriminator", 0).into()
                         ],
                         ..InstructionNode::default()
                     }

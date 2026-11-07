@@ -57,14 +57,13 @@ impl ProgramNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::Docs;
+    use crate::{Docs, Identifier};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
-        let node = ProgramNode::new(id("myProgram"), "1234..5678");
-        assert_eq!(node.identifier, id("myProgram"));
+        let node = ProgramNode::new("myProgram", "1234..5678");
+        assert_eq!(node.identifier, Identifier::from("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "0.0.0".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -96,12 +95,12 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ProgramNode {
-            identifier: id("myProgram"),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
         };
-        assert_eq!(node.identifier, id("myProgram"));
+        assert_eq!(node.identifier, Identifier::from("myProgram"));
         assert_eq!(node.public_key, "1234..5678".to_string());
         assert_eq!(node.version, "1.2.3".to_string());
         assert_eq!(node.docs, Docs::default());
@@ -117,7 +116,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ProgramNode {
-            identifier: id("myProgram"),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
@@ -136,7 +135,7 @@ mod tests {
         assert_eq!(
             node,
             ProgramNode {
-                identifier: id("myProgram"),
+                identifier: "myProgram".into(),
                 public_key: "1234..5678".into(),
                 version: "1.2.3".into(),
                 ..ProgramNode::default()

@@ -16,18 +16,17 @@ impl FieldDiscriminatorNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::path;
 
     #[test]
     fn new() {
-        let node = FieldDiscriminatorNode::new(path("header.kind"), 4);
+        let node = FieldDiscriminatorNode::new("header.kind", 4);
         assert_eq!(node.path.as_str(), "header.kind");
         assert_eq!(node.offset, 4);
     }
 
     #[test]
     fn to_json() {
-        let node = FieldDiscriminatorNode::new(path("myField"), 0);
+        let node = FieldDiscriminatorNode::new("myField", 0);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -39,7 +38,7 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"fieldDiscriminatorNode","path":"myField","offset":0}"#;
         let node: FieldDiscriminatorNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, FieldDiscriminatorNode::new(path("myField"), 0));
+        assert_eq!(node, FieldDiscriminatorNode::new("myField", 0));
     }
 
     #[test]

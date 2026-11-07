@@ -2,7 +2,6 @@ use super::utils::{
     account_with_type, constant_with_defined_type_link, float, integer,
     program_with_float_defined_type, root_with_account, transform_integers_to_floats,
 };
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     AccountNode, ArrayTypeNode, BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode,
     ConstantNode, ConstantValueNode, DateTimeTypeNode, DefinedTypeLinkNode, DiscriminatorNode,
@@ -11,7 +10,7 @@ use codama_nodes::{
     FloatTypeNode, FloatValueNode, HasTransforms, HiddenPrefixTransformNode,
     HiddenSuffixTransformNode, InstructionNode,
     IntegerFormat::{U64, U8},
-    IntegerTypeNode, IntegerValueNode, MapTypeNode, OptionTypeNode, Path, ProgramNode, RootNode,
+    IntegerTypeNode, IntegerValueNode, MapTypeNode, OptionTypeNode, ProgramNode, RootNode,
     SentinelCountNode, SentinelTransformNode, SetTypeNode, SizeDiscriminatorNode,
     SizePrefixTransformNode, StringTypeNode, StringValueNode, StructTypeNode, TypeNode, ValueNode,
     ZeroableOptionTypeNode,
@@ -34,13 +33,13 @@ fn constant_discriminator(r#type: TypeNode, value: ValueNode) -> DiscriminatorNo
 fn account_with_discriminator(discriminator: DiscriminatorNode) -> AccountNode {
     AccountNode {
         discriminators: vec![discriminator],
-        ..AccountNode::new(id("config"), StructTypeNode::new(vec![]))
+        ..AccountNode::new("config", StructTypeNode::new(vec![]))
     }
 }
 
 fn instruction_with_discriminator(discriminator: DiscriminatorNode) -> InstructionNode {
     InstructionNode {
-        identifier: id("update"),
+        identifier: "update".into(),
         discriminators: vec![discriminator],
         ..InstructionNode::default()
     }
@@ -78,7 +77,7 @@ fn constants_in_transforms_become_floats() {
                 .into()
         },
         |value| {
-            DefinedTypeLinkNode::new(id("rate"))
+            DefinedTypeLinkNode::new("rate")
                 .add_transform(SentinelTransformNode::new(constant_with_defined_type_link(
                     "rate", value,
                 )))
@@ -172,12 +171,12 @@ fn constants_in_nested_integer_types_become_floats() {
 fn program_constants_become_floats() {
     for r#type in [
         TypeNode::from(FloatTypeNode::le(F64)),
-        DefinedTypeLinkNode::new(id("rate")).into(),
+        DefinedTypeLinkNode::new("rate").into(),
     ] {
         let root = |value| {
             RootNode::new(
                 program_with_float_defined_type("rate").add_constant(ConstantNode::new(
-                    id("fee"),
+                    "fee",
                     r#type.clone(),
                     value,
                 )),
@@ -197,7 +196,7 @@ fn constant_discriminators_become_floats() {
         |discriminator| {
             program_with_float_defined_type("rate").add_event(EventNode {
                 discriminators: vec![discriminator],
-                ..EventNode::new(id("updated"), StructTypeNode::new(vec![]))
+                ..EventNode::new("updated", StructTypeNode::new(vec![]))
             })
         },
         |discriminator| {
@@ -206,7 +205,7 @@ fn constant_discriminators_become_floats() {
         },
         |discriminator| {
             program_with_float_defined_type("rate").add_instruction(InstructionNode {
-                identifier: id("batch"),
+                identifier: "batch".into(),
                 sub_instructions: vec![instruction_with_discriminator(discriminator)],
                 ..InstructionNode::default()
             })
@@ -215,7 +214,7 @@ fn constant_discriminators_become_floats() {
     for program_with_discriminator in programs_with_discriminator {
         for r#type in [
             TypeNode::from(FloatTypeNode::le(F64)),
-            DefinedTypeLinkNode::new(id("rate")).into(),
+            DefinedTypeLinkNode::new("rate").into(),
         ] {
             let root = |value| {
                 RootNode::new(program_with_discriminator(constant_discriminator(
@@ -237,8 +236,8 @@ fn discriminators_at_other_types_keep_their_value() {
         )
         .into(),
         constant_discriminator(IntegerTypeNode::le(U8).into(), integer()),
-        constant_discriminator(DefinedTypeLinkNode::new(id("missing")).into(), integer()),
-        FieldDiscriminatorNode::new(Path::try_from("kind").unwrap(), 0).into(),
+        constant_discriminator(DefinedTypeLinkNode::new("missing").into(), integer()),
+        FieldDiscriminatorNode::new("kind", 0).into(),
         SizeDiscriminatorNode::new(8).into(),
     ] {
         let root = RootNode::new(
@@ -257,14 +256,14 @@ fn constants_at_other_types_keep_their_value() {
             IntegerTypeNode::le(U64).into(),
             FloatValueNode::new(2.0).into(),
         ),
-        (DefinedTypeLinkNode::new(id("missing")).into(), integer()),
+        (DefinedTypeLinkNode::new("missing").into(), integer()),
         (string().into(), StringValueNode::new("1").into()),
     ] {
         let constant = ConstantValueNode::new(r#type.clone(), value.clone());
         let string_with_sentinel = string().add_transform(SentinelTransformNode::new(constant));
         let root = RootNode::new(
             program_with_float_defined_type("rate")
-                .add_constant(ConstantNode::new(id("fee"), r#type, value))
+                .add_constant(ConstantNode::new("fee", r#type, value))
                 .add_account(account_with_type(string_with_sentinel)),
         );
         assert_eq!(transform_integers_to_floats(root.clone()), root);

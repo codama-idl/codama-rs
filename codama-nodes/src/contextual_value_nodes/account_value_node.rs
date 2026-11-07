@@ -15,17 +15,17 @@ impl AccountValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+    use crate::Identifier;
 
     #[test]
     fn new() {
-        let node = AccountValueNode::new(id("myAccount"));
-        assert_eq!(node.identifier, id("myAccount"));
+        let node = AccountValueNode::new("myAccount");
+        assert_eq!(node.identifier, Identifier::from("myAccount"));
     }
 
     #[test]
     fn to_json() {
-        let node = AccountValueNode::new(id("myAccount"));
+        let node = AccountValueNode::new("myAccount");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -37,6 +37,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"accountValueNode","identifier":"myAccount"}"#;
         let node: AccountValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, AccountValueNode::new(id("myAccount")));
+        assert_eq!(node, AccountValueNode::new("myAccount"));
     }
 }

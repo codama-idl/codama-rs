@@ -4,8 +4,7 @@ use codama_korok_visitors::{
     SetInstructionsVisitor, SetProgramMetadataVisitor,
 };
 use codama_koroks::CrateKorok;
-use codama_nodes::test_utils::id;
-use codama_nodes::Node;
+use codama_nodes::{Identifier, Node};
 use codama_stores::CrateStore;
 use quote::quote;
 
@@ -44,13 +43,16 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
+    assert_eq!(
+        root.program.accounts[0].identifier,
+        Identifier::from("my_account")
+    );
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        id("externalProgram")
+        Identifier::from("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -59,7 +61,7 @@ fn it_separates_items_with_program_directive_from_main_program() -> CodamaResult
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
         root.additional_programs[0].accounts[0].identifier,
-        id("external_account")
+        Identifier::from("external_account")
     );
 
     Ok(())
@@ -100,13 +102,16 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
+    assert_eq!(
+        root.program.accounts[0].identifier,
+        Identifier::from("my_account")
+    );
 
     // ExternalAccount is in an additional program.
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        id("externalProgram")
+        Identifier::from("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -115,7 +120,7 @@ fn it_separates_items_with_program_directive_regardless_of_order() -> CodamaResu
     assert_eq!(root.additional_programs[0].accounts.len(), 1);
     assert_eq!(
         root.additional_programs[0].accounts[0].identifier,
-        id("external_account")
+        Identifier::from("external_account")
     );
 
     Ok(())
@@ -163,7 +168,7 @@ fn it_merges_multiple_items_with_same_program_directive() -> CodamaResult<()> {
     assert_eq!(root.additional_programs.len(), 1);
     assert_eq!(
         root.additional_programs[0].identifier,
-        id("externalProgram")
+        Identifier::from("externalProgram")
     );
     assert_eq!(
         root.additional_programs[0].public_key,
@@ -225,27 +230,33 @@ fn it_applies_program_directive_on_mod_block() -> CodamaResult<()> {
         "MainProg1111111111111111111111111111111111111"
     );
     assert_eq!(root.program.accounts.len(), 1);
-    assert_eq!(root.program.accounts[0].identifier, id("my_account"));
+    assert_eq!(
+        root.program.accounts[0].identifier,
+        Identifier::from("my_account")
+    );
     assert_eq!(root.program.instructions.len(), 1);
     assert_eq!(
         root.program.instructions[0].identifier,
-        id("my_instruction")
+        Identifier::from("my_instruction")
     );
 
     // The external program should be an additional program with its items.
     assert_eq!(root.additional_programs.len(), 1);
     let ext = &root.additional_programs[0];
-    assert_eq!(ext.identifier, id("externalProgram"));
+    assert_eq!(ext.identifier, Identifier::from("externalProgram"));
     assert_eq!(
         ext.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(ext.accounts.len(), 1);
-    assert_eq!(ext.accounts[0].identifier, id("some_external_account"));
+    assert_eq!(
+        ext.accounts[0].identifier,
+        Identifier::from("some_external_account")
+    );
     assert_eq!(ext.instructions.len(), 1);
     assert_eq!(
         ext.instructions[0].identifier,
-        id("some_external_instruction")
+        Identifier::from("some_external_instruction")
     );
 
     Ok(())

@@ -15,17 +15,17 @@ impl AccountBumpValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+    use crate::Identifier;
 
     #[test]
     fn new() {
-        let node = AccountBumpValueNode::new(id("myAccount"));
-        assert_eq!(node.identifier, id("myAccount"));
+        let node = AccountBumpValueNode::new("myAccount");
+        assert_eq!(node.identifier, Identifier::from("myAccount"));
     }
 
     #[test]
     fn to_json() {
-        let node = AccountBumpValueNode::new(id("myAccount"));
+        let node = AccountBumpValueNode::new("myAccount");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -37,6 +37,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"accountBumpValueNode","identifier":"myAccount"}"#;
         let node: AccountBumpValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, AccountBumpValueNode::new(id("myAccount")));
+        assert_eq!(node, AccountBumpValueNode::new("myAccount"));
     }
 }

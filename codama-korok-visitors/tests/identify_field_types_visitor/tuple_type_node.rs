@@ -1,5 +1,4 @@
 use crate::identify_field_types_visitor::utils::get_node_from_item;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, DefinedTypeNode, HasTransforms, IntegerFormat::U64, IntegerTypeNode, Node,
     SizePrefixTransformNode, StringTypeNode, TupleTypeNode, U32, U8,
@@ -13,7 +12,7 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
             pub struct Person(String, u8, bool);
         }),
         Some(Node::DefinedType(DefinedTypeNode::new(
-            id("person"),
+            "person",
             TupleTypeNode::new(vec![
                 StringTypeNode::utf8()
                     .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
@@ -29,6 +28,6 @@ fn it_wraps_all_unnamed_fields_in_a_defined_tuple() {
 fn it_uses_the_inner_type_directly_on_single_unnamed_fields() {
     assert_eq!(
         get_node_from_item(quote! { struct Slot(u64); }),
-        Some(DefinedTypeNode::new(id("slot"), IntegerTypeNode::le(U64)).into())
+        Some(DefinedTypeNode::new("slot", IntegerTypeNode::le(U64)).into())
     );
 }

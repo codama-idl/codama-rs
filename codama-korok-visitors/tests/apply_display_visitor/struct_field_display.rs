@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{ApplyDisplayVisitor, IdentifyFieldTypesVisitor, KorokVisitable};
 use codama_koroks::{FieldKorok, KorokTrait};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     DisplaySkip, IntegerFormat::U64, IntegerTypeNode, StringValueNode, StructFieldDisplayNode,
     StructFieldTypeNode,
@@ -34,7 +33,7 @@ fn it_applies_struct_field_displays() -> CodamaResult<()> {
                     flatten_prefix: Some("Inner ".into()),
                     ..Default::default()
                 }),
-                ..StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
             }
             .into()
         )
@@ -64,7 +63,7 @@ fn it_overlays_multiple_displays_in_source_order() -> CodamaResult<()> {
                     flatten: Some(false),
                     ..Default::default()
                 }),
-                ..StructFieldTypeNode::new(id("amount"), IntegerTypeNode::le(U64))
+                ..StructFieldTypeNode::new("amount", IntegerTypeNode::le(U64))
             }
             .into()
         )

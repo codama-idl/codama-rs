@@ -41,7 +41,7 @@ impl StructFieldMetaConsumer {
             "identifier" => {
                 let value = meta.as_value()?.as_expr()?.as_string()?;
                 this.name.set(
-                    Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                    value.parse::<Identifier>().map_err(|e| meta.error(e))?,
                     meta,
                 )?;
                 Ok(None)
@@ -59,7 +59,7 @@ impl StructFieldMetaConsumer {
             _ => {
                 if let Ok(value) = meta.as_expr().and_then(|e| e.as_string()) {
                     this.name.set(
-                        Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                        value.parse::<Identifier>().map_err(|e| meta.error(e))?,
                         meta,
                     )?;
                     return Ok(None);

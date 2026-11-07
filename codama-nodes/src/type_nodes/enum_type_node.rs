@@ -14,24 +14,24 @@ impl EnumTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+
     use crate::{StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32};
 
     #[test]
     fn new() {
         let r#enum = EnumTypeNode::new(vec![
-            EnumVariantTypeNode::new(id("quit")),
+            EnumVariantTypeNode::new("quit"),
             EnumVariantTypeNode::with_data(
-                id("move"),
+                "move",
                 TupleTypeNode::new(vec![
                     IntegerTypeNode::le(U8).into(),
                     IntegerTypeNode::le(U8).into(),
                 ]),
             ),
             EnumVariantTypeNode::with_data(
-                id("write"),
+                "write",
                 StructTypeNode::new(vec![StructFieldTypeNode::new(
-                    id("message"),
+                    "message",
                     StringTypeNode::utf8(),
                 )]),
             ),
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("myVariant"))]);
+        let node = EnumTypeNode::new(vec![EnumVariantTypeNode::new("myVariant")]);
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -67,7 +67,7 @@ mod tests {
         let node: EnumTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("myVariant"))])
+            EnumTypeNode::new(vec![EnumVariantTypeNode::new("myVariant")])
         );
     }
 }

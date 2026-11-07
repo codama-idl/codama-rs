@@ -1,7 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetErrorsVisitor};
 use codama_koroks::EnumKorok;
-use codama_nodes::test_utils::id;
 use codama_nodes::{ErrorNode, ProgramNode};
 
 #[test]
@@ -21,9 +20,9 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: id("externalProgram"),
+                identifier: "externalProgram".into(),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
-                errors: vec![ErrorNode::new(id("some_error"), 0, "Something went wrong")],
+                errors: vec![ErrorNode::new("some_error", 0, "Something went wrong")],
                 ..ProgramNode::default()
             }
             .into()
