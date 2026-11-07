@@ -1,4 +1,4 @@
-use super::utils::{combine_modules, get_plugin, CombineModulesInput};
+use super::utils::{combine_modules, get_plugin, try_combine_modules, CombineModulesInput};
 use codama_nodes::{
     AccountNode, ConstantNode, DefinedTypeNode, ErrorNode, EventNode, InstructionNode,
     IntegerTypeNode, IntegerValueNode, Node, PdaNode, PluginNode, ProgramNode, RootNode,
@@ -32,7 +32,7 @@ fn it_merges_plugins_together() {
 }
 
 #[test]
-fn it_does_not_override_a_plugin_with_the_same_namespace() {
+fn it_fails_on_plugins_with_the_same_namespace_and_different_payloads() {
     let plugin_a = PluginNode {
         payload: Some(json!({ "from": "a" })),
         ..get_plugin("namespace.shared")
@@ -42,11 +42,37 @@ fn it_does_not_override_a_plugin_with_the_same_namespace() {
         ..get_plugin("namespace.shared")
     };
     let program_a = ProgramNode {
-        plugins: vec![plugin_a.clone()],
+        plugins: vec![plugin_a],
         ..get_mock_program("a", "1234")
     };
     let program_b = ProgramNode {
         plugins: vec![plugin_b, get_plugin("namespace.b")],
+        ..get_mock_program("b", "1234")
+    };
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different plugins share the namespace `namespace.shared` in program `programA`"
+    );
+}
+
+#[test]
+fn it_keeps_a_single_plugin_when_namespaces_have_equal_payloads() {
+    let plugin = PluginNode {
+        payload: Some(json!({ "from": "a" })),
+        ..get_plugin("namespace.shared")
+    };
+    let program_a = ProgramNode {
+        plugins: vec![plugin.clone()],
+        ..get_mock_program("a", "1234")
+    };
+    let program_b = ProgramNode {
+        plugins: vec![plugin.clone(), get_plugin("namespace.b")],
         ..get_mock_program("b", "1234")
     };
     let result = combine_modules(
@@ -58,7 +84,53 @@ fn it_does_not_override_a_plugin_with_the_same_namespace() {
         panic!("Expected a RootNode");
     };
 
-    assert_eq!(program.plugins, vec![plugin_a, get_plugin("namespace.b")]);
+    assert_eq!(program.plugins, vec![plugin, get_plugin("namespace.b")]);
+}
+
+#[test]
+fn it_names_the_program_of_conflicting_nodes_by_identifier() {
+    let program_a = get_mock_program("a", "1234");
+    let program_b = ProgramNode {
+        defined_types: vec![DefinedTypeNode::new(
+            "defined_type_a",
+            IntegerTypeNode::le(U8),
+        )],
+        ..get_mock_program("b", "1234")
+    };
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `definedTypeNode` share the identifier `definedTypeA` in program `programA`"
+    );
+}
+
+#[test]
+fn it_names_the_program_of_conflicting_nodes_by_public_key() {
+    let program_a = ProgramNode {
+        public_key: "1234".into(),
+        ..ProgramNode::default()
+    }
+    .add_error(ErrorNode::new("duplicated", 1, "first"));
+    let program_b = ProgramNode {
+        public_key: "1234".into(),
+        ..ProgramNode::default()
+    }
+    .add_error(ErrorNode::new("duplicated", 2, "second"));
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `errorNode` share the identifier `duplicated` in program `1234`"
+    );
 }
 
 #[test]

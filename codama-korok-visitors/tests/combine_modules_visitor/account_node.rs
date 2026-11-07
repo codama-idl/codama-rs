@@ -1,4 +1,4 @@
-use super::utils::{combine_modules, CombineModulesInput};
+use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
 use codama_nodes::{
     AccountNode, BooleanTypeNode, IntegerTypeNode, ProgramNode, RootNode, StringTypeNode,
     StructFieldTypeNode, StructTypeNode, U32,
@@ -70,49 +70,69 @@ fn it_merges_accounts_inside_programs_into_root_nodes() {
 }
 
 #[test]
-fn it_deduplicates_accounts_with_identical_names_by_using_the_last_one() {
+fn it_fails_on_accounts_with_identical_names() {
     let first_counter = create_account_with_single_field("counter", "first");
     let second_counter = create_account_with_single_field("counter", "second");
-    let third_counter = create_account_with_single_field("counter", "third");
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(first_counter)
+            .add_node(second_counter),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(first_counter)
-                .add_node(second_counter)
-                .add_node(third_counter.clone())
-        ),
-        Some(RootNode::new(ProgramNode::default().add_account(third_counter)).into())
+        error.to_string(),
+        "Two different `accountNode` share the identifier `counter` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_accounts_with_identical_names_inside_programs() {
+fn it_fails_on_accounts_with_identical_names_inside_programs() {
     let first_counter = create_account_with_single_field("counter", "first");
     let second_counter = create_account_with_single_field("counter", "second");
     let program_a = ProgramNode::default().add_account(first_counter);
-    let program_b = ProgramNode::default().add_account(second_counter.clone());
+    let program_b = ProgramNode::default().add_account(second_counter);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
     assert_eq!(
-        combine_modules(
-            CombineModulesInput::new()
-                .add_node(program_a)
-                .add_node(program_b)
-        ),
-        Some(RootNode::new(ProgramNode::default().add_account(second_counter)).into())
+        error.to_string(),
+        "Two different `accountNode` share the identifier `counter` in module `my_module`"
     );
 }
 
 #[test]
-fn it_deduplicates_accounts_with_identical_names_with_an_initial_program_node() {
+fn it_fails_on_accounts_with_identical_names_with_an_initial_program_node() {
     let first_counter = create_account_with_single_field("counter", "first");
     let second_counter = create_account_with_single_field("counter", "second");
     let program_a = ProgramNode::default().add_account(first_counter);
-    let program_b = ProgramNode::default().add_account(second_counter.clone());
+    let program_b = ProgramNode::default().add_account(second_counter);
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .set_initial_node(program_a)
+            .add_node(program_b),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `accountNode` share the identifier `counter` in module `my_module`"
+    );
+}
+
+#[test]
+fn it_keeps_a_single_account_when_identical_names_have_equal_content() {
+    let first_counter = create_account_with_single_field("counter", "first");
+    let program = ProgramNode::default().add_account(first_counter.clone());
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
-                .set_initial_node(program_a)
-                .add_node(program_b)
+                .set_initial_node(program.clone())
+                .add_node(first_counter.clone())
+                .add_node(first_counter.clone())
+                .add_node(program.clone())
         ),
-        Some(RootNode::new(ProgramNode::default().add_account(second_counter)).into())
+        Some(RootNode::new(program).into())
     );
 }

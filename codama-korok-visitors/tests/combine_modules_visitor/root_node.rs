@@ -1,5 +1,10 @@
-use super::utils::{combine_modules, get_plugin, get_type, CombineModulesInput};
-use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, ProgramNode, RootNode, StringValueNode};
+use super::utils::{
+    combine_modules, get_plugin, get_type, try_combine_modules, CombineModulesInput,
+};
+use codama_nodes::{
+    IntegerFormat::U32, IntegerTypeNode, PluginNode, ProgramNode, RootNode, StringValueNode,
+};
+use serde_json::json;
 
 #[test]
 fn roots_with_plugins() {
@@ -22,6 +27,60 @@ fn roots_with_plugins() {
             }
             .into()
         )
+    );
+}
+
+#[test]
+fn roots_with_equal_plugins() {
+    let plugin = PluginNode {
+        payload: Some(json!({ "from": "a" })),
+        ..get_plugin("namespace.shared")
+    };
+    assert_eq!(
+        combine_modules(
+            CombineModulesInput::new()
+                .add_node(RootNode {
+                    plugins: vec![plugin.clone()],
+                    ..RootNode::new(ProgramNode::new("program_a", "1234"))
+                })
+                .add_node(RootNode {
+                    plugins: vec![plugin.clone()],
+                    ..RootNode::new(ProgramNode::new("program_b", "1234"))
+                })
+        ),
+        Some(
+            RootNode {
+                plugins: vec![plugin],
+                ..RootNode::new(ProgramNode::new("program_a", "1234"))
+            }
+            .into()
+        )
+    );
+}
+
+#[test]
+fn roots_with_conflicting_plugins() {
+    let error = try_combine_modules(
+        CombineModulesInput::new()
+            .add_node(RootNode {
+                plugins: vec![PluginNode {
+                    payload: Some(json!({ "from": "a" })),
+                    ..get_plugin("namespace.shared")
+                }],
+                ..RootNode::new(ProgramNode::new("program_a", "1234"))
+            })
+            .add_node(RootNode {
+                plugins: vec![PluginNode {
+                    payload: Some(json!({ "from": "b" })),
+                    ..get_plugin("namespace.shared")
+                }],
+                ..RootNode::new(ProgramNode::new("program_b", "1234"))
+            }),
+    )
+    .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different plugins share the namespace `namespace.shared` in the root node"
     );
 }
 
