@@ -1,1 +1,2 @@
 mod validate_identifier_collision_visitor;
+mod validate_links_visitor;

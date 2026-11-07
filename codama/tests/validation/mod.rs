@@ -214,6 +214,26 @@ fn it_rejects_a_program_without_an_identifier() {
 }
 
 #[test]
+fn it_rejects_a_link_to_a_missing_node() {
+    let account_with_pda_link = |pda: &str| {
+        hydrate(quote! {
+            #[derive(CodamaPda)]
+            #[codama(seed(identifier = "authority", type = public_key))]
+            struct CounterPda;
+
+            #[derive(CodamaAccount)]
+            #[codama(pda = #pda)]
+            struct Counter;
+        })
+    };
+    assert!(account_with_pda_link("counter_pda").get_idl().is_ok());
+    assert_eq!(
+        errors(account_with_pda_link("counterPda")),
+        ["Pointing to a missing PDA named \"counterPda\" in program \"token\" > account \"counter\" > pdaLink \"counterPda\"."]
+    );
+}
+
+#[test]
 fn it_accepts_enum_accounts_of_another_program_that_share_a_pda() {
     let idl = hydrate(quote! {
         #[derive(CodamaAccounts)]
