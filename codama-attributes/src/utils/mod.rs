@@ -9,7 +9,7 @@ mod unit_display;
 
 pub use camel_case_path::*;
 pub use from_meta::*;
-pub use integer::*;
+pub(crate) use integer::*;
 pub use meta_consumer::*;
 pub use removed_syntax::*;
 pub use set_once::*;

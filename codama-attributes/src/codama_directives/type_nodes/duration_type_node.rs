@@ -1,6 +1,4 @@
-use crate::utils::{
-    hoist_integer_transforms, parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce,
-};
+use crate::utils::{parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce};
 use codama_nodes::{DurationTypeNode, IntegerTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -22,12 +20,10 @@ impl FromMeta for DurationTypeNode {
             }
         })?;
 
-        Ok(hoist_integer_transforms(number.take(meta)?, |number| {
-            DurationTypeNode {
-                ticks_per_second: ticks_per_second.option(),
-                ..DurationTypeNode::new(number)
-            }
-        }))
+        Ok(DurationTypeNode {
+            ticks_per_second: ticks_per_second.option(),
+            ..DurationTypeNode::new(number.take(meta)?)
+        })
     }
 }
 
@@ -73,25 +69,22 @@ mod tests {
 
     #[test]
     fn nested_number() {
+        let integer = || IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8));
         for (meta, expected) in [
             (
                 syn::parse_quote! { duration(fixed_size(integer(u64), 8)) },
-                DurationTypeNode::new(IntegerTypeNode::le(U64))
-                    .add_transform(FixedSizeTransformNode::new(8)),
+                DurationTypeNode::new(integer()),
             ),
             (
                 syn::parse_quote! { duration(number = fixed_size(integer(u64), 8), ticks_per_second = 1000) },
                 DurationTypeNode {
                     ticks_per_second: Some(1000),
-                    ..DurationTypeNode::new(IntegerTypeNode::le(U64))
-                }
-                .add_transform(FixedSizeTransformNode::new(8)),
+                    ..DurationTypeNode::new(integer())
+                },
             ),
             (
                 syn::parse_quote! { duration(pre_offset(fixed_size(integer(u64), 8), 4, relative)) },
-                DurationTypeNode::new(IntegerTypeNode::le(U64))
-                    .add_transform(FixedSizeTransformNode::new(8))
-                    .add_transform(PreOffsetTransformNode::relative(4)),
+                DurationTypeNode::new(integer().add_transform(PreOffsetTransformNode::relative(4))),
             ),
         ] {
             assert_eq!(DurationTypeNode::from_meta(&meta).unwrap(), expected);
@@ -102,10 +95,11 @@ mod tests {
     fn wrapped() {
         assert_type!(
             { fixed_size(duration(fixed_size(integer(u64), 8)), 16) },
-            DurationTypeNode::new(IntegerTypeNode::le(U64))
-                .add_transform(FixedSizeTransformNode::new(8))
-                .add_transform(FixedSizeTransformNode::new(16))
-                .into()
+            DurationTypeNode::new(
+                IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8))
+            )
+            .add_transform(FixedSizeTransformNode::new(16))
+            .into()
         );
     }
 

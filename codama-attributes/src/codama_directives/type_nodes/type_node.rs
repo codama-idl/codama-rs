@@ -189,16 +189,20 @@ mod tests {
             ),
             (
                 syn::parse_quote! { fixed_point(fixed_size(integer(u64), 8), scale = 6, unit = "USDC") },
-                fixed_point()
-                    .add_transform(FixedSizeTransformNode::new(8))
-                    .into(),
+                FixedPointTypeNode {
+                    number: IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8)),
+                    ..fixed_point()
+                }
+                .into(),
             ),
             (
                 syn::parse_quote! { fixed_size(duration(fixed_size(integer(u64), 8), ticks_per_second = 1000), 16) },
-                duration()
-                    .add_transform(FixedSizeTransformNode::new(8))
-                    .add_transform(FixedSizeTransformNode::new(16))
-                    .into(),
+                DurationTypeNode {
+                    number: IntegerTypeNode::le(U64).add_transform(FixedSizeTransformNode::new(8)),
+                    ..duration()
+                }
+                .add_transform(FixedSizeTransformNode::new(16))
+                .into(),
             ),
         ] {
             assert_eq!(TypeNode::from_meta(&meta).unwrap(), expected);
