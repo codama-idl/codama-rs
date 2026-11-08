@@ -28,7 +28,6 @@ impl InstructionByteDeltaNode {
 
 #[cfg(test)]
 mod tests {
-
     use crate::{
         AccountLinkNode, DataValueNode, InstructionByteDeltaNode, InstructionByteDeltaValue,
         IntegerValueNode,

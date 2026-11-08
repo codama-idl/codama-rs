@@ -26,9 +26,8 @@ impl InstructionAccountLinkNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Identifier, ProgramLinkNode};
-
     use super::*;
+    use crate::{Identifier, ProgramLinkNode};
 
     #[test]
     fn new() {

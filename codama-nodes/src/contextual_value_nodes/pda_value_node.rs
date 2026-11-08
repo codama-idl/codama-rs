@@ -30,7 +30,6 @@ impl PdaValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{
         AccountValueNode, IntegerTypeNode, IntegerValueNode, PdaLinkNode, PdaNode,
         PublicKeyValueNode, VariablePdaSeedNode, U32,

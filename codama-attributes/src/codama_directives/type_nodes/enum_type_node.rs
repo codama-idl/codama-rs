@@ -40,7 +40,6 @@ impl FromMeta for EnumTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-
     use codama_nodes::{
         IntegerFormat::{U16, U8},
         TupleTypeNode,

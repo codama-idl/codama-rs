@@ -108,7 +108,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a TypeDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::{
         ArrayTypeNode, BooleanTypeNode, ConstantValueNode, DateTimeTypeNode, EnumTypeNode,
         EnumVariantTypeNode, FixedSizeTransformNode, HasTransforms, HiddenPrefixTransformNode,

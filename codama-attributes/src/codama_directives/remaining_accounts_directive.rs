@@ -109,7 +109,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a RemainingAccountsDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::DisplaySkip;
 
     #[test]

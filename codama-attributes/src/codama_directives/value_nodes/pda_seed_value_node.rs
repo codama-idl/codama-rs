@@ -80,10 +80,8 @@ impl FromMeta for PdaSeedValueNode {
 
 #[cfg(test)]
 mod tests {
-
-    use codama_nodes::IntegerValueNode;
-
     use super::*;
+    use codama_nodes::IntegerValueNode;
 
     #[test]
     fn explicit() {

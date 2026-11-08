@@ -4,7 +4,8 @@
 /// `$is_valid` checks the grammar and `$error` wraps a rejected string.
 /// A string literal converts with `From`, which panics when the literal breaks the grammar, as the JS
 /// factories throw: an invalid literal is a bug in the code that wrote it. Any other string goes through
-/// `TryFrom<String>` or `FromStr`, which return the error instead.
+/// `TryFrom<String>` or `FromStr`, which return the error instead. Note that `try_from` on a literal goes
+/// through the standard blanket impl over `From`, so it panics too: use `str::parse` when the error matters.
 /// `Deserialize` goes through `TryFrom`, so a JSON string must match the same grammar.
 /// `$expecting` completes the serde message "expected ..." for a rejected JSON string.
 macro_rules! impl_constrained_string {

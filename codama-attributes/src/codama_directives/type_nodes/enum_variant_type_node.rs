@@ -46,7 +46,6 @@ impl FromMeta for EnumVariantTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::{
         ArrayTypeNode, DefinedTypeLinkNode, FixedCountNode,
         IntegerFormat::{U64, U8},

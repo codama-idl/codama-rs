@@ -44,7 +44,6 @@ impl FromMeta for StructFieldTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-
     use codama_nodes::{
         DefaultValueStrategy, IntegerFormat::U32, IntegerTypeNode, IntegerValueNode,
     };

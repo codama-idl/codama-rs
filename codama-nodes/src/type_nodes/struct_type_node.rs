@@ -13,7 +13,6 @@ impl StructTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{IntegerTypeNode, StringTypeNode, U32};
 
     #[test]

@@ -14,7 +14,6 @@ impl EnumTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, U32};
 
     #[test]

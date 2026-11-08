@@ -68,7 +68,7 @@ mod tests {
     fn new() {
         let node = EnumValueNode::new(
             DefinedTypeLinkNode::new("command"),
-            Identifier::from("move"),
+            "move",
             StructValueNode::new(vec![
                 StructFieldValueNode::new("x", IntegerValueNode::new(10)),
                 StructFieldValueNode::new("y", IntegerValueNode::new(20)),
@@ -89,7 +89,7 @@ mod tests {
     fn new_with_any_value() {
         let node = EnumValueNode::new(
             DefinedTypeLinkNode::new("command"),
-            Identifier::from("write"),
+            "write",
             StringValueNode::new("Hello World"),
         );
         assert_eq!(
@@ -100,10 +100,7 @@ mod tests {
 
     #[test]
     fn empty() {
-        let node = EnumValueNode::empty(
-            DefinedTypeLinkNode::new("command"),
-            Identifier::from("exit"),
-        );
+        let node = EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit");
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, Identifier::from("exit"));
         assert_eq!(*node.value, None);
@@ -113,7 +110,7 @@ mod tests {
     fn fields() {
         let node = EnumValueNode::fields(
             DefinedTypeLinkNode::new("command"),
-            Identifier::from("move"),
+            "move",
             vec![
                 StructFieldValueNode::new("x", IntegerValueNode::new(10)),
                 StructFieldValueNode::new("y", IntegerValueNode::new(20)),
@@ -134,7 +131,7 @@ mod tests {
     fn tuple() {
         let node = EnumValueNode::tuple(
             DefinedTypeLinkNode::new("command"),
-            Identifier::from("write"),
+            "write",
             vec![StringValueNode::new("Hello World").into()],
         );
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
@@ -149,10 +146,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = EnumValueNode::empty(
-            DefinedTypeLinkNode::new("command"),
-            Identifier::from("exit"),
-        );
+        let node = EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -166,10 +160,7 @@ mod tests {
         let node: EnumValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumValueNode::empty(
-                DefinedTypeLinkNode::new("command"),
-                Identifier::from("exit")
-            )
+            EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit")
         );
     }
 
@@ -177,7 +168,7 @@ mod tests {
     fn to_json_with_value() {
         let node = EnumValueNode::new(
             DefinedTypeLinkNode::new("command"),
-            Identifier::from("move"),
+            "move",
             IntegerValueNode::new(42),
         );
         let json = serde_json::to_string(&node).unwrap();
@@ -195,7 +186,7 @@ mod tests {
             node,
             EnumValueNode::new(
                 DefinedTypeLinkNode::new("command"),
-                Identifier::from("move"),
+                "move",
                 IntegerValueNode::new(42)
             )
         );

@@ -95,7 +95,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a FieldDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms, IntegerFormat::U8, IntegerTypeNode,
         IntegerValueNode, PayerValueNode, PublicKeyTypeNode, StringTypeNode,

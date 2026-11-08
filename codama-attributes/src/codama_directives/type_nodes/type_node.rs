@@ -61,7 +61,6 @@ impl FromMeta for TypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::{
         Base, FixedSizeTransformNode,
         FloatFormat::F64,

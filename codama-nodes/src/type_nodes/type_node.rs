@@ -208,7 +208,6 @@ impl HasTransforms for TypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{FixedSizeTransformNode, SizePrefixTransformNode, U32};
 
     #[test]

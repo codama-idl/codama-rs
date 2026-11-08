@@ -18,7 +18,6 @@ impl From<Vec<StructFieldValueNode>> for StructValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{IntegerValueNode, StringValueNode, ValueNode};
 
     #[test]

@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-
     use crate::{
         AccountValueNode, ConditionalValueCondition, ConditionalValueNode, DataValueNode,
         InstructionInputValueNode, IntegerValueNode, ValueNode,

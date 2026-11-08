@@ -108,7 +108,6 @@ impl HasKind for Option<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{FixedSizeTransformNode, IntegerValueNode, StringTypeNode};
 
     #[test]

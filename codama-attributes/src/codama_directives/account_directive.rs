@@ -120,7 +120,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use codama_nodes::{DisplaySkip, PayerValueNode};
 
     #[test]

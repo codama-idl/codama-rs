@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-
     use crate::{HasKind, LinkNode, ProgramLinkNode};
 
     #[test]

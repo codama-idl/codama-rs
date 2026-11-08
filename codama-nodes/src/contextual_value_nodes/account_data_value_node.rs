@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn with_path() {
-        let node = AccountDataValueNode::with_path("myAccount", Path::from("my_field"));
+        let node = AccountDataValueNode::with_path("myAccount", "my_field");
         assert_eq!(node.account, Identifier::from("myAccount"));
         assert_eq!(node.path, Some(Path::from("my_field")));
     }
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn to_json_with_path() {
-        let node = AccountDataValueNode::with_path("vault", Path::from("state.balances[0]"));
+        let node = AccountDataValueNode::with_path("vault", "state.balances[0]");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -75,7 +75,7 @@ mod tests {
         let node: AccountDataValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            AccountDataValueNode::with_path("vault", Path::from("state.balances[0]"))
+            AccountDataValueNode::with_path("vault", "state.balances[0]")
         );
     }
 

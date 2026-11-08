@@ -48,7 +48,6 @@ fn check_duplicate_identifiers(metas: &[Meta], fields: &[StructFieldTypeNode]) -
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-
     use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StringTypeNode};
 
     #[test]

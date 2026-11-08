@@ -98,7 +98,6 @@ impl From<InstructionInputValueNode> for Node {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{
         IntegerValueNode, LinkNode, PayerValueNode, ProgramLinkNode, RegisteredContextualValueNode,
         RegisteredValueNode,
