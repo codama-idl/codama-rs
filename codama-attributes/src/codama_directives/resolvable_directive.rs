@@ -282,7 +282,7 @@ mod tests {
         let item = syn::parse_quote! { struct Foo; };
         let ctx = crate::AttributeContext::Item(&item);
         let directive = crate::AccountDirective::parse(&meta, &ctx).unwrap();
-        assert_eq!(directive.name, codama_nodes::test_utils::id("vault"));
+        assert_eq!(directive.name, codama_nodes::Identifier::from("vault"));
         assert!(directive.is_writable);
         assert!(directive.default_value.as_ref().unwrap().is_unresolved());
     }

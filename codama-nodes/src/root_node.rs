@@ -35,19 +35,18 @@ impl From<ProgramNode> for RootNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
         let node = RootNode::new(ProgramNode {
-            identifier: id("myProgram"),
+            identifier: "myProgram".into(),
             ..ProgramNode::default()
         });
         assert_eq!(
             node.program,
             ProgramNode {
-                identifier: id("myProgram"),
+                identifier: "myProgram".into(),
                 ..ProgramNode::default()
             }
         );
@@ -57,14 +56,14 @@ mod tests {
     #[test]
     fn from_program() {
         let node: RootNode = ProgramNode {
-            identifier: id("myProgram"),
+            identifier: "myProgram".into(),
             ..ProgramNode::default()
         }
         .into();
         assert_eq!(
             node.program,
             ProgramNode {
-                identifier: id("myProgram"),
+                identifier: "myProgram".into(),
                 ..ProgramNode::default()
             }
         );
@@ -76,19 +75,19 @@ mod tests {
         let node = RootNode {
             standard: "codama".into(),
             version: "1.7.0".into(),
-            program: ProgramNode::new(id("myProgram"), "1111"),
+            program: ProgramNode::new("myProgram", "1111"),
             additional_programs: vec![
-                ProgramNode::new(id("myProgramDependencyA"), "2222"),
-                ProgramNode::new(id("myProgramDependencyB"), "3333"),
+                ProgramNode::new("myProgramDependencyA", "2222"),
+                ProgramNode::new("myProgramDependencyB", "3333"),
             ],
             plugins: vec![],
         };
-        assert_eq!(node.program, ProgramNode::new(id("myProgram"), "1111"));
+        assert_eq!(node.program, ProgramNode::new("myProgram", "1111"));
         assert_eq!(
             node.additional_programs,
             vec![
-                ProgramNode::new(id("myProgramDependencyA"), "2222"),
-                ProgramNode::new(id("myProgramDependencyB"), "3333"),
+                ProgramNode::new("myProgramDependencyA", "2222"),
+                ProgramNode::new("myProgramDependencyB", "3333"),
             ]
         );
     }
@@ -96,7 +95,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = RootNode::new(ProgramNode {
-            identifier: id("myProgram"),
+            identifier: "myProgram".into(),
             public_key: "1234..5678".into(),
             version: "1.2.3".into(),
             ..ProgramNode::default()
@@ -115,7 +114,7 @@ mod tests {
         assert_eq!(
             node,
             RootNode::new(ProgramNode {
-                identifier: id("myProgram"),
+                identifier: "myProgram".into(),
                 public_key: "1234..5678".into(),
                 version: "1.2.3".into(),
                 ..ProgramNode::default()

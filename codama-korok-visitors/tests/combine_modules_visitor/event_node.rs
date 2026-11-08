@@ -1,5 +1,4 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     EventNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, RootNode, StructFieldTypeNode,
     StructTypeNode,
@@ -7,8 +6,8 @@ use codama_nodes::{
 
 #[test]
 fn it_merges_events_into_root_nodes() {
-    let transfer = EventNode::new(id("transfer"), StructTypeNode::default());
-    let burn = EventNode::new(id("burn"), StructTypeNode::default());
+    let transfer = EventNode::new("transfer", StructTypeNode::default());
+    let burn = EventNode::new("burn", StructTypeNode::default());
     assert_eq!(
         combine_modules(
             CombineModulesInput::new()
@@ -21,8 +20,8 @@ fn it_merges_events_into_root_nodes() {
 
 #[test]
 fn it_merges_events_inside_programs_into_root_nodes() {
-    let event_a = EventNode::new(id("foo"), StructTypeNode::default());
-    let event_b = EventNode::new(id("bar"), StructTypeNode::default());
+    let event_a = EventNode::new("foo", StructTypeNode::default());
+    let event_b = EventNode::new("bar", StructTypeNode::default());
     let program_a = ProgramNode::default().add_event(event_a.clone());
     let program_b = ProgramNode::default().add_event(event_b.clone());
     assert_eq!(
@@ -37,11 +36,11 @@ fn it_merges_events_inside_programs_into_root_nodes() {
 
 #[test]
 fn it_fails_on_events_with_identical_names() {
-    let first = EventNode::new(id("duplicated"), StructTypeNode::default());
+    let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
-        id("duplicated"),
+        "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
-            id("amount"),
+            "amount",
             IntegerTypeNode::le(U64),
         )]),
     );
@@ -55,11 +54,11 @@ fn it_fails_on_events_with_identical_names() {
 
 #[test]
 fn it_fails_on_events_with_identical_names_inside_programs() {
-    let first = EventNode::new(id("duplicated"), StructTypeNode::default());
+    let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
-        id("duplicated"),
+        "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
-            id("amount"),
+            "amount",
             IntegerTypeNode::le(U64),
         )]),
     );
@@ -79,11 +78,11 @@ fn it_fails_on_events_with_identical_names_inside_programs() {
 
 #[test]
 fn it_fails_on_events_with_identical_names_with_an_initial_program_node() {
-    let first = EventNode::new(id("duplicated"), StructTypeNode::default());
+    let first = EventNode::new("duplicated", StructTypeNode::default());
     let second = EventNode::new(
-        id("duplicated"),
+        "duplicated",
         StructTypeNode::new(vec![StructFieldTypeNode::new(
-            id("amount"),
+            "amount",
             IntegerTypeNode::le(U64),
         )]),
     );
@@ -103,7 +102,7 @@ fn it_fails_on_events_with_identical_names_with_an_initial_program_node() {
 
 #[test]
 fn it_keeps_a_single_event_when_identical_names_have_equal_content() {
-    let first = EventNode::new(id("duplicated"), StructTypeNode::default());
+    let first = EventNode::new("duplicated", StructTypeNode::default());
     let program = ProgramNode::default().add_event(first.clone());
     assert_eq!(
         combine_modules(

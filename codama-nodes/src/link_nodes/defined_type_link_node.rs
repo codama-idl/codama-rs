@@ -29,28 +29,25 @@ impl DefinedTypeLinkNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{FixedSizeTransformNode, HasTransforms, TransformNode};
+    use crate::{FixedSizeTransformNode, HasTransforms, Identifier, TransformNode};
 
     #[test]
     fn new() {
-        let node = DefinedTypeLinkNode::new(id("myType"));
-        assert_eq!(node.identifier, id("myType"));
+        let node = DefinedTypeLinkNode::new("myType");
+        assert_eq!(node.identifier, Identifier::from("myType"));
     }
 
     #[test]
     fn new_from_program() {
-        let node = DefinedTypeLinkNode::new_from_program(
-            id("myType"),
-            ProgramLinkNode::new(id("myProgram")),
-        );
-        assert_eq!(node.identifier, id("myType"));
-        assert_eq!(node.program, Some(ProgramLinkNode::new(id("myProgram"))));
+        let node =
+            DefinedTypeLinkNode::new_from_program("myType", ProgramLinkNode::new("myProgram"));
+        assert_eq!(node.identifier, Identifier::from("myType"));
+        assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn to_json() {
-        let node = DefinedTypeLinkNode::new(id("myType"));
+        let node = DefinedTypeLinkNode::new("myType");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -62,13 +59,13 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"definedTypeLinkNode","identifier":"myType"}"#;
         let node: DefinedTypeLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, DefinedTypeLinkNode::new(id("myType")));
+        assert_eq!(node, DefinedTypeLinkNode::new("myType"));
     }
 
     #[test]
     fn add_transform() {
         let node =
-            DefinedTypeLinkNode::new(id("myType")).add_transform(FixedSizeTransformNode::new(32));
+            DefinedTypeLinkNode::new("myType").add_transform(FixedSizeTransformNode::new(32));
         assert_eq!(
             node.transforms(),
             [TransformNode::FixedSize(FixedSizeTransformNode::new(32))]
@@ -78,7 +75,7 @@ mod tests {
     #[test]
     fn to_json_with_transforms() {
         let node =
-            DefinedTypeLinkNode::new(id("myType")).add_transform(FixedSizeTransformNode::new(32));
+            DefinedTypeLinkNode::new("myType").add_transform(FixedSizeTransformNode::new(32));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,

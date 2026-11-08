@@ -20,7 +20,7 @@ impl FromMeta for DefinedTypeLinkNode {
 
         let name = name.take(meta)?;
         Ok(Self::new(
-            Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?,
+            name.parse::<Identifier>().map_err(|e| meta.error(e))?,
         ))
     }
 }
@@ -29,14 +29,13 @@ impl FromMeta for DefinedTypeLinkNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::test_utils::id;
     use codama_nodes::OptionTypeNode;
 
     #[test]
     fn implicit() {
         assert_type!(
             { link("customString") },
-            DefinedTypeLinkNode::new(id("customString")).into()
+            DefinedTypeLinkNode::new("customString").into()
         );
     }
 
@@ -44,7 +43,7 @@ mod tests {
     fn explicit() {
         assert_type!(
             { link(identifier = "customString") },
-            DefinedTypeLinkNode::new(id("customString")).into()
+            DefinedTypeLinkNode::new("customString").into()
         );
     }
 
@@ -52,11 +51,11 @@ mod tests {
     fn as_option_item() {
         assert_type!(
             { option(link("customString")) },
-            OptionTypeNode::new(DefinedTypeLinkNode::new(id("customString"))).into()
+            OptionTypeNode::new(DefinedTypeLinkNode::new("customString")).into()
         );
         assert_type!(
             { option(link("customString"), fixed) },
-            OptionTypeNode::fixed(DefinedTypeLinkNode::new(id("customString"))).into()
+            OptionTypeNode::fixed(DefinedTypeLinkNode::new("customString")).into()
         );
     }
 

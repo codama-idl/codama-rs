@@ -27,25 +27,24 @@ impl PdaLinkNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
+    use crate::Identifier;
 
     #[test]
     fn new() {
-        let node = PdaLinkNode::new(id("myPda"));
-        assert_eq!(node.identifier, id("myPda"));
+        let node = PdaLinkNode::new("myPda");
+        assert_eq!(node.identifier, Identifier::from("myPda"));
     }
 
     #[test]
     fn new_from_program() {
-        let node =
-            PdaLinkNode::new_from_program(id("myPda"), ProgramLinkNode::new(id("myProgram")));
-        assert_eq!(node.identifier, id("myPda"));
-        assert_eq!(node.program, Some(ProgramLinkNode::new(id("myProgram"))));
+        let node = PdaLinkNode::new_from_program("myPda", ProgramLinkNode::new("myProgram"));
+        assert_eq!(node.identifier, Identifier::from("myPda"));
+        assert_eq!(node.program, Some(ProgramLinkNode::new("myProgram")));
     }
 
     #[test]
     fn to_json() {
-        let node = PdaLinkNode::new(id("myPda"));
+        let node = PdaLinkNode::new("myPda");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"pdaLinkNode","identifier":"myPda"}"#);
     }
@@ -54,6 +53,6 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"pdaLinkNode","identifier":"myPda"}"#;
         let node: PdaLinkNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, PdaLinkNode::new(id("myPda")));
+        assert_eq!(node, PdaLinkNode::new("myPda"));
     }
 }

@@ -3,7 +3,6 @@ use codama_korok_visitors::{
     ApplyDisplayVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
 use codama_koroks::{FieldKorok, KorokTrait};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     AmountNumberDisplayNode, ArrayTypeNode, BooleanTypeNode, ConstantValueNode, DateTimeTypeNode,
     DefinedTypeLinkNode, DurationTypeNode, FixedPointTypeNode, FixedSizeTransformNode,
@@ -31,7 +30,7 @@ fn it_applies_number_displays_without_creating_field_displays() -> CodamaResult<
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("amount"),
+                "amount",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
@@ -94,7 +93,7 @@ fn it_applies_unit_displays_to_numbers() -> CodamaResult<()> {
 
         assert_eq!(
             korok.node,
-            Some(StructFieldTypeNode::new(id("value"), expected).into())
+            Some(StructFieldTypeNode::new("value", expected).into())
         );
     }
     Ok(())
@@ -140,7 +139,7 @@ fn it_applies_address_units() -> CodamaResult<()> {
 
         assert_eq!(
             korok.node,
-            Some(StructFieldTypeNode::new(id("value"), expected).into())
+            Some(StructFieldTypeNode::new("value", expected).into())
         );
     }
     Ok(())
@@ -197,7 +196,7 @@ fn it_replaces_existing_number_displays() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("amount"),
+                "amount",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
@@ -230,7 +229,7 @@ fn it_applies_multiple_number_displays_in_source_order() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("amount"),
+                "amount",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
@@ -260,7 +259,7 @@ fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
     ));
     korok.set_node(Some(
         StructFieldTypeNode::new(
-            id("values"),
+            "values",
             OptionTypeNode::new(ArrayTypeNode::fixed(IntegerTypeNode::le(U64), 2))
                 .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
                 .add_transform(FixedSizeTransformNode::new(42)),
@@ -274,7 +273,7 @@ fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("values"),
+                "values",
                 OptionTypeNode::new(ArrayTypeNode::fixed(
                     IntegerTypeNode {
                         display: Box::new(Some(display)),
@@ -303,7 +302,7 @@ fn it_traverses_nodes_with_transforms() -> CodamaResult<()> {
     let sentinel = ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(255u8));
     korok.set_node(Some(
         StructFieldTypeNode::new(
-            id("value"),
+            "value",
             RemainderOptionTypeNode::new(IntegerTypeNode::le(U64))
                 .add_transform(SentinelTransformNode::new(sentinel.clone()))
                 .add_transform(HiddenSuffixTransformNode::new(vec![hidden_suffix.clone()]))
@@ -320,7 +319,7 @@ fn it_traverses_nodes_with_transforms() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("value"),
+                "value",
                 RemainderOptionTypeNode::new(IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
@@ -356,7 +355,7 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
     let mut remainder_korok = FieldKorok::parse(&ast)?;
     remainder_korok.set_node(Some(
         StructFieldTypeNode::new(
-            id("value"),
+            "value",
             RemainderOptionTypeNode::new(IntegerTypeNode::le(U64)),
         )
         .into(),
@@ -368,7 +367,7 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
         remainder_korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("value"),
+                "value",
                 RemainderOptionTypeNode::new(IntegerTypeNode {
                     display: Box::new(Some(display.clone())),
                     ..IntegerTypeNode::le(U64)
@@ -382,7 +381,7 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
     let zero_value = ConstantValueNode::new(IntegerTypeNode::le(U64), IntegerValueNode::new(0u64));
     zeroable_korok.set_node(Some(
         StructFieldTypeNode::new(
-            id("value"),
+            "value",
             ZeroableOptionTypeNode::custom(IntegerTypeNode::le(U64), zero_value.clone()),
         )
         .into(),
@@ -394,7 +393,7 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
         zeroable_korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("value"),
+                "value",
                 ZeroableOptionTypeNode::custom(
                     IntegerTypeNode {
                         display: Box::new(Some(display)),
@@ -425,7 +424,7 @@ fn it_keeps_transforms_from_type_overrides() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("value"),
+                "value",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(
@@ -458,9 +457,7 @@ fn it_reports_errors_at_the_logical_leaf() -> CodamaResult<()> {
 
     for wrapped_type in wrapped_types {
         let mut korok = FieldKorok::parse(&ast)?;
-        korok.set_node(Some(
-            StructFieldTypeNode::new(id("value"), wrapped_type).into(),
-        ));
+        korok.set_node(Some(StructFieldTypeNode::new("value", wrapped_type).into()));
 
         let error = korok.accept(&mut ApplyDisplayVisitor::new()).unwrap_err();
         assert_eq!(
@@ -530,16 +527,14 @@ fn it_does_not_traverse_composite_type_nodes() -> CodamaResult<()> {
             "tupleTypeNode",
         ),
         (
-            DefinedTypeLinkNode::new(id("externalNumber")).into(),
+            DefinedTypeLinkNode::new("externalNumber").into(),
             "definedTypeLinkNode",
         ),
     ];
 
     for (type_node, kind) in unsupported {
         let mut korok = FieldKorok::parse(&ast)?;
-        korok.set_node(Some(
-            StructFieldTypeNode::new(id("value"), type_node).into(),
-        ));
+        korok.set_node(Some(StructFieldTypeNode::new("value", type_node).into()));
 
         let error = korok.accept(&mut ApplyDisplayVisitor::new()).unwrap_err();
         assert_eq!(
@@ -571,9 +566,7 @@ fn it_does_not_traverse_semantic_number_types() -> CodamaResult<()> {
 
     for (type_node, kind) in unsupported {
         let mut korok = FieldKorok::parse(&ast)?;
-        korok.set_node(Some(
-            StructFieldTypeNode::new(id("value"), type_node).into(),
-        ));
+        korok.set_node(Some(StructFieldTypeNode::new("value", type_node).into()));
 
         let error = korok.accept(&mut ApplyDisplayVisitor::new()).unwrap_err();
         assert_eq!(
@@ -595,7 +588,7 @@ fn it_does_not_update_transform_metadata() -> CodamaResult<()> {
     let mut korok = FieldKorok::parse(&ast)?;
     korok.set_node(Some(
         StructFieldTypeNode::new(
-            id("value"),
+            "value",
             IntegerTypeNode::le(U64)
                 .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32))),
         )
@@ -608,7 +601,7 @@ fn it_does_not_update_transform_metadata() -> CodamaResult<()> {
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("value"),
+                "value",
                 IntegerTypeNode {
                     display: Box::new(Some(NumberDisplayNode::Amount(
                         AmountNumberDisplayNode::new(

@@ -28,20 +28,19 @@ impl InjectedValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::IntegerValueNode;
+    use crate::{Identifier, IntegerValueNode};
 
     #[test]
     fn new() {
-        let node = InjectedValueNode::new(id("myKey"));
-        assert_eq!(node.key, id("myKey"));
+        let node = InjectedValueNode::new("myKey");
+        assert_eq!(node.key, Identifier::from("myKey"));
         assert_eq!(*node.fallback, None);
     }
 
     #[test]
     fn with_fallback() {
-        let node = InjectedValueNode::with_fallback(id("myKey"), IntegerValueNode::new(42));
-        assert_eq!(node.key, id("myKey"));
+        let node = InjectedValueNode::with_fallback("myKey", IntegerValueNode::new(42));
+        assert_eq!(node.key, Identifier::from("myKey"));
         assert_eq!(
             *node.fallback,
             Some(ValueNode::Integer(IntegerValueNode::new(42)))
@@ -50,7 +49,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = InjectedValueNode::new(id("myKey"));
+        let node = InjectedValueNode::new("myKey");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(json, r#"{"kind":"injectedValueNode","key":"myKey"}"#);
     }
@@ -59,12 +58,12 @@ mod tests {
     fn from_json() {
         let json = r#"{"kind":"injectedValueNode","key":"myKey"}"#;
         let node: InjectedValueNode = serde_json::from_str(json).unwrap();
-        assert_eq!(node, InjectedValueNode::new(id("myKey")));
+        assert_eq!(node, InjectedValueNode::new("myKey"));
     }
 
     #[test]
     fn to_json_with_fallback() {
-        let node = InjectedValueNode::with_fallback(id("myKey"), IntegerValueNode::new(42));
+        let node = InjectedValueNode::with_fallback("myKey", IntegerValueNode::new(42));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -78,7 +77,7 @@ mod tests {
         let node: InjectedValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            InjectedValueNode::with_fallback(id("myKey"), IntegerValueNode::new(42u32))
+            InjectedValueNode::with_fallback("myKey", IntegerValueNode::new(42u32))
         );
     }
 }

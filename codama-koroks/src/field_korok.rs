@@ -90,8 +90,8 @@ impl KorokTrait for FieldKorok<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
+        Identifier,
         IntegerFormat::{U32, U64},
         IntegerTypeNode,
     };
@@ -107,7 +107,7 @@ mod tests {
             korok
                 .get_updated_type_node(IntegerTypeNode::le(U32).into())
                 .unwrap(),
-            Some(StructFieldTypeNode::new(id("my_field"), IntegerTypeNode::le(U32)).into())
+            Some(StructFieldTypeNode::new("my_field", IntegerTypeNode::le(U32)).into())
         );
     }
 
@@ -131,13 +131,13 @@ mod tests {
         let korok = FieldKorok {
             ast: &syn::parse_quote! { pub my_field: u32 },
             attributes: Attributes(vec![]),
-            node: Some(StructFieldTypeNode::new(id("myNodeName"), IntegerTypeNode::le(U32)).into()),
+            node: Some(StructFieldTypeNode::new("myNodeName", IntegerTypeNode::le(U32)).into()),
         };
         assert_eq!(
             korok
                 .get_updated_type_node(IntegerTypeNode::le(U64).into())
                 .unwrap(),
-            Some(StructFieldTypeNode::new(id("myNodeName"), IntegerTypeNode::le(U64)).into())
+            Some(StructFieldTypeNode::new("myNodeName", IntegerTypeNode::le(U64)).into())
         );
     }
 
@@ -148,7 +148,7 @@ mod tests {
             attributes: Attributes(vec![]),
             node: None,
         };
-        assert_eq!(korok.name().unwrap(), Some(id("my_field")));
+        assert_eq!(korok.name().unwrap(), Some(Identifier::from("my_field")));
     }
 
     #[test]
@@ -177,7 +177,10 @@ mod tests {
                 attributes: Attributes(vec![]),
                 node: None,
             };
-            assert_eq!(korok.name().unwrap(), Some(id(expected)));
+            assert_eq!(
+                korok.name().unwrap(),
+                Some(expected.parse::<Identifier>().unwrap())
+            );
         }
     }
 

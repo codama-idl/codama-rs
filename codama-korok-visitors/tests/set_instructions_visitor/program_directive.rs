@@ -1,10 +1,9 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{IdentifyFieldTypesVisitor, KorokVisitable, SetInstructionsVisitor};
 use codama_koroks::{EnumKorok, StructKorok};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    InstructionNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode, StructFieldTypeNode,
-    StructTypeNode,
+    Identifier, InstructionNode, IntegerFormat::U64, IntegerTypeNode, ProgramNode,
+    StructFieldTypeNode, StructTypeNode,
 };
 
 #[test]
@@ -24,13 +23,13 @@ fn from_struct_with_program_directive() -> CodamaResult<()> {
         korok.node,
         Some(
             ProgramNode {
-                identifier: id("externalProgram"),
+                identifier: "externalProgram".into(),
                 public_key: "ExtProg111111111111111111111111111111111111".to_string(),
                 instructions: vec![InstructionNode {
-                    identifier: id("transfer"),
+                    identifier: "transfer".into(),
                     data: Box::new(Some(
                         StructTypeNode::new(vec![StructFieldTypeNode::new(
-                            id("amount"),
+                            "amount",
                             IntegerTypeNode::le(U64)
                         )])
                         .into()
@@ -63,12 +62,15 @@ fn from_enum_with_program_directive() -> CodamaResult<()> {
         Some(codama_nodes::Node::Program(p)) => p,
         _ => panic!("expected ProgramNode"),
     };
-    assert_eq!(program.identifier, id("externalProgram"));
+    assert_eq!(program.identifier, Identifier::from("externalProgram"));
     assert_eq!(
         program.public_key,
         "ExtProg111111111111111111111111111111111111"
     );
     assert_eq!(program.instructions.len(), 1);
-    assert_eq!(program.instructions[0].identifier, id("transfer"));
+    assert_eq!(
+        program.instructions[0].identifier,
+        Identifier::from("transfer")
+    );
     Ok(())
 }

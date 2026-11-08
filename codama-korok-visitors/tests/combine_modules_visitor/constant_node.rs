@@ -1,16 +1,15 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{ConstantNode, IntegerTypeNode, IntegerValueNode, ProgramNode, RootNode, U64};
 
 #[test]
 fn it_merges_constants_into_root_nodes() {
     let max_items = ConstantNode::new(
-        id("maxItems"),
+        "maxItems",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(10u64),
     );
     let max_size = ConstantNode::new(
-        id("maxSize"),
+        "maxSize",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(20u64),
     );
@@ -33,16 +32,10 @@ fn it_merges_constants_into_root_nodes() {
 
 #[test]
 fn it_merges_constants_inside_programs_into_root_nodes() {
-    let constant_a = ConstantNode::new(
-        id("foo"),
-        IntegerTypeNode::le(U64),
-        IntegerValueNode::new(1u64),
-    );
-    let constant_b = ConstantNode::new(
-        id("bar"),
-        IntegerTypeNode::le(U64),
-        IntegerValueNode::new(2u64),
-    );
+    let constant_a =
+        ConstantNode::new("foo", IntegerTypeNode::le(U64), IntegerValueNode::new(1u64));
+    let constant_b =
+        ConstantNode::new("bar", IntegerTypeNode::le(U64), IntegerValueNode::new(2u64));
     let program_a = ProgramNode::default().add_constant(constant_a.clone());
     let program_b = ProgramNode::default().add_constant(constant_b.clone());
     assert_eq!(
@@ -65,12 +58,12 @@ fn it_merges_constants_inside_programs_into_root_nodes() {
 #[test]
 fn it_fails_on_constants_with_identical_names() {
     let first_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(2u64),
     );
@@ -89,12 +82,12 @@ fn it_fails_on_constants_with_identical_names() {
 #[test]
 fn it_fails_on_constants_with_identical_names_inside_programs() {
     let first_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(2u64),
     );
@@ -115,12 +108,12 @@ fn it_fails_on_constants_with_identical_names_inside_programs() {
 #[test]
 fn it_fails_on_constants_with_identical_names_with_an_initial_program_node() {
     let first_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(1u64),
     );
     let second_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(2u64),
     );
@@ -141,7 +134,7 @@ fn it_fails_on_constants_with_identical_names_with_an_initial_program_node() {
 #[test]
 fn it_keeps_a_single_constant_when_identical_names_have_equal_content() {
     let first_constant = ConstantNode::new(
-        id("duplicated"),
+        "duplicated",
         IntegerTypeNode::le(U64),
         IntegerValueNode::new(1u64),
     );

@@ -44,7 +44,6 @@ impl FromMeta for StructFieldTypeNode {
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
         DefaultValueStrategy, IntegerFormat::U32, IntegerTypeNode, IntegerValueNode,
     };
@@ -53,7 +52,7 @@ mod tests {
     fn implicit_minimum() {
         assert_type!(
             { field("age", integer(u32)) },
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)).into()
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
         );
     }
 
@@ -61,7 +60,7 @@ mod tests {
     fn explicit_minimum() {
         assert_type!(
             { field(identifier = "age", type = integer(u32)) },
-            StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)).into()
+            StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
         );
     }
 
@@ -71,7 +70,7 @@ mod tests {
             { field("age", integer(u32), default_value = 42) },
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
-                ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
+                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             }
             .into()
         );
@@ -84,7 +83,7 @@ mod tests {
             StructFieldTypeNode {
                 default_value: Box::new(Some(IntegerValueNode::new(42u32).into())),
                 default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
+                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             }
             .into()
         );

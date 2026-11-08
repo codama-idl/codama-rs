@@ -21,20 +21,19 @@ impl StructFieldTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{DefaultValueStrategy, StringTypeNode, StringValueNode};
+    use crate::{DefaultValueStrategy, Identifier, StringTypeNode, StringValueNode};
 
     #[test]
     fn new() {
-        let node = StructFieldTypeNode::new(id("myField"), StringTypeNode::utf8());
-        assert_eq!(node.identifier, id("myField"));
+        let node = StructFieldTypeNode::new("myField", StringTypeNode::utf8());
+        assert_eq!(node.identifier, Identifier::from("myField"));
         assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
     }
 
     #[test]
     fn direct_instantiation() {
         let node = StructFieldTypeNode {
-            identifier: id("myField"),
+            identifier: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(StringTypeNode::utf8().into()),
@@ -43,7 +42,7 @@ mod tests {
             plugins: vec![],
         };
 
-        assert_eq!(node.identifier, id("myField"));
+        assert_eq!(node.identifier, Identifier::from("myField"));
         assert_eq!(
             node.default_value_strategy,
             Some(DefaultValueStrategy::Optional)
@@ -58,7 +57,7 @@ mod tests {
 
     #[test]
     fn to_json() {
-        let node = StructFieldTypeNode::new(id("myField"), StringTypeNode::utf8());
+        let node = StructFieldTypeNode::new("myField", StringTypeNode::utf8());
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -72,14 +71,14 @@ mod tests {
         let node: StructFieldTypeNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            StructFieldTypeNode::new(id("myField"), StringTypeNode::utf8())
+            StructFieldTypeNode::new("myField", StringTypeNode::utf8())
         );
     }
 
     #[test]
     fn to_json_full() {
         let node = StructFieldTypeNode {
-            identifier: id("myField"),
+            identifier: "myField".into(),
             default_value_strategy: Some(DefaultValueStrategy::Optional),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(StringTypeNode::utf8().into()),
@@ -101,7 +100,7 @@ mod tests {
         assert_eq!(
             node,
             StructFieldTypeNode {
-                identifier: id("myField"),
+                identifier: "myField".into(),
                 default_value_strategy: Some(DefaultValueStrategy::Optional),
                 docs: vec!["Hello".to_string()].into(),
                 r#type: Box::new(StringTypeNode::utf8().into()),

@@ -34,7 +34,7 @@ impl FromMeta for PdaSeedValueNode {
                         r#"a nested path needs a seed name, use seed("name", data("{path}"))"#
                     )));
                 }
-                let identifier = Identifier::try_from(path.as_str()).map_err(|e| meta.error(e))?;
+                let identifier = path.parse::<Identifier>().map_err(|e| meta.error(e))?;
                 return Ok(PdaSeedValueNode::new(identifier, value));
             }
             _ => {}
@@ -57,8 +57,8 @@ impl FromMeta for PdaSeedValueNode {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     match name.is_set() {
                         false => {
-                            let identifier = Identifier::try_from(seed_name.as_str())
-                                .map_err(|e| meta.error(e))?;
+                            let identifier =
+                                seed_name.parse::<Identifier>().map_err(|e| meta.error(e))?;
                             return name.set(identifier, meta);
                         }
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
@@ -80,10 +80,8 @@ impl FromMeta for PdaSeedValueNode {
 
 #[cfg(test)]
 mod tests {
-    use codama_nodes::test_utils::id;
-    use codama_nodes::{IntegerValueNode, Path};
-
     use super::*;
+    use codama_nodes::IntegerValueNode;
 
     #[test]
     fn explicit() {
@@ -91,7 +89,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(id("identifier"), IntegerValueNode::new(42u8))
+            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
         );
     }
 
@@ -101,7 +99,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(id("identifier"), IntegerValueNode::new(42u8))
+            PdaSeedValueNode::new("identifier", IntegerValueNode::new(42u8))
         );
     }
 
@@ -111,7 +109,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(id("authority"), AccountValueNode::new(id("authority")))
+            PdaSeedValueNode::new("authority", AccountValueNode::new("authority"))
         );
     }
 
@@ -121,10 +119,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(
-                id("identifier"),
-                DataValueNode::new(Path::try_from("identifier").unwrap())
-            )
+            PdaSeedValueNode::new("identifier", DataValueNode::new("identifier"))
         );
     }
 
@@ -134,7 +129,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(id("authority"), AccountValueNode::new(id("authority")))
+            PdaSeedValueNode::new("authority", AccountValueNode::new("authority"))
         );
     }
 
@@ -144,10 +139,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(
-                id("identifier"),
-                DataValueNode::new(Path::try_from("identifier").unwrap())
-            )
+            PdaSeedValueNode::new("identifier", DataValueNode::new("identifier"))
         );
     }
 
@@ -178,10 +170,7 @@ mod tests {
         let node = PdaSeedValueNode::from_meta(&meta).unwrap();
         assert_eq!(
             node,
-            PdaSeedValueNode::new(
-                id("mint"),
-                DataValueNode::new(Path::try_from("config.mint").unwrap())
-            )
+            PdaSeedValueNode::new("mint", DataValueNode::new("config.mint"))
         );
     }
 

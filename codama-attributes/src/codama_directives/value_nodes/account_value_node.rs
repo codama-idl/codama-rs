@@ -21,7 +21,7 @@ impl FromMeta for AccountValueNode {
 
         let name = name.take(meta)?;
         Ok(AccountValueNode::new(
-            Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?,
+            name.parse::<Identifier>().map_err(|e| meta.error(e))?,
         ))
     }
 }
@@ -30,17 +30,16 @@ impl FromMeta for AccountValueNode {
 mod tests {
     use super::*;
     use crate::{assert_value, assert_value_err};
-    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
         assert_value!(
             { account("authority") },
-            AccountValueNode::new(id("authority")).into()
+            AccountValueNode::new("authority").into()
         );
         assert_value!(
             { account(identifier = "authority") },
-            AccountValueNode::new(id("authority")).into()
+            AccountValueNode::new("authority").into()
         );
     }
 

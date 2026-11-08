@@ -51,7 +51,7 @@ impl CodamaProgramMacro {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
+    use codama_nodes::Identifier;
     use quote::quote;
 
     #[test]
@@ -60,7 +60,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(id("associatedToken")),
+                name: Some(Identifier::from("associatedToken")),
                 address: None,
             }
         );
@@ -90,7 +90,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(id("associatedToken")),
+                name: Some(Identifier::from("associatedToken")),
                 address: Some("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string()),
             }
         );

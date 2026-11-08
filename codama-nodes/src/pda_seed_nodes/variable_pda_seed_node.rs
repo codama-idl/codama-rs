@@ -18,32 +18,31 @@ impl VariablePdaSeedNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{IntegerTypeNode, Text, U32};
+    use crate::{Identifier, IntegerTypeNode, Text, U32};
 
     #[test]
     fn new() {
-        let node = VariablePdaSeedNode::new(id("mySeed"), IntegerTypeNode::le(U32));
-        assert_eq!(node.identifier, id("mySeed"));
+        let node = VariablePdaSeedNode::new("mySeed", IntegerTypeNode::le(U32));
+        assert_eq!(node.identifier, Identifier::from("mySeed"));
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U32)));
     }
 
     #[test]
     fn direct_instantiation() {
         let node = VariablePdaSeedNode {
-            identifier: id("mySeed"),
+            identifier: "mySeed".into(),
             docs: vec!["Hello".to_string()].into(),
             r#type: Box::new(IntegerTypeNode::le(U32).into()),
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("mySeed"));
+        assert_eq!(node.identifier, Identifier::from("mySeed"));
         assert_eq!(*node.docs, Some(Text::from("Hello")));
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U32)));
     }
 
     #[test]
     fn to_json() {
-        let node = VariablePdaSeedNode::new(id("mySeed"), IntegerTypeNode::le(U32));
+        let node = VariablePdaSeedNode::new("mySeed", IntegerTypeNode::le(U32));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -57,7 +56,7 @@ mod tests {
         let node: VariablePdaSeedNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            VariablePdaSeedNode::new(id("mySeed"), IntegerTypeNode::le(U32))
+            VariablePdaSeedNode::new("mySeed", IntegerTypeNode::le(U32))
         );
     }
 }

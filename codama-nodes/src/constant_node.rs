@@ -20,18 +20,19 @@ impl ConstantNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::{IntegerTypeNode, IntegerValueNode, StringTypeNode, StringValueNode, U64};
+    use crate::{
+        Identifier, IntegerTypeNode, IntegerValueNode, StringTypeNode, StringValueNode, U64,
+    };
     use pretty_assertions::assert_eq;
 
     #[test]
     fn new() {
         let node = ConstantNode::new(
-            id("maxItems"),
+            "maxItems",
             IntegerTypeNode::le(U64),
             IntegerValueNode::new(100u64),
         );
-        assert_eq!(node.identifier, id("maxItems"));
+        assert_eq!(node.identifier, Identifier::from("maxItems"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(
@@ -43,13 +44,13 @@ mod tests {
     #[test]
     fn direct_instantiation() {
         let node = ConstantNode {
-            identifier: id("appName"),
+            identifier: "appName".into(),
             docs: Docs::default(),
             r#type: Box::new(StringTypeNode::utf8().into()),
             value: Box::new(StringValueNode::new("MyApp").into()),
             plugins: vec![],
         };
-        assert_eq!(node.identifier, id("appName"));
+        assert_eq!(node.identifier, Identifier::from("appName"));
         assert_eq!(node.docs, Docs::default());
         assert_eq!(*node.r#type, TypeNode::String(StringTypeNode::utf8()));
         assert_eq!(
@@ -61,7 +62,7 @@ mod tests {
     #[test]
     fn to_json() {
         let node = ConstantNode::new(
-            id("maxItems"),
+            "maxItems",
             IntegerTypeNode::le(U64),
             IntegerValueNode::new(100u64),
         );
@@ -79,7 +80,7 @@ mod tests {
         assert_eq!(
             node,
             ConstantNode::new(
-                id("maxItems"),
+                "maxItems",
                 IntegerTypeNode::le(U64),
                 IntegerValueNode::new(100u64)
             )
@@ -89,7 +90,7 @@ mod tests {
     #[test]
     fn to_json_with_docs() {
         let mut node = ConstantNode::new(
-            id("maxItems"),
+            "maxItems",
             IntegerTypeNode::le(U64),
             IntegerValueNode::new(100u64),
         );

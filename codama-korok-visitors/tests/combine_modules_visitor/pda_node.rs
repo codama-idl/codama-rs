@@ -1,31 +1,34 @@
 use super::utils::{combine_modules, try_combine_modules, CombineModulesInput};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
-    ConstantPdaSeedNode, PdaNode, ProgramNode, RootNode, StringTypeNode, StringValueNode,
-    VariablePdaSeedNode,
+    ConstantPdaSeedNode, Identifier, PdaNode, ProgramNode, RootNode, StringTypeNode,
+    StringValueNode, VariablePdaSeedNode,
 };
 
 fn create_pda_with_single_seed(name: &str, seed_name: &str) -> PdaNode {
     PdaNode::new(
-        id(name),
-        vec![VariablePdaSeedNode::new(id(seed_name), StringTypeNode::utf8()).into()],
+        name.parse::<Identifier>().unwrap(),
+        vec![VariablePdaSeedNode::new(
+            seed_name.parse::<Identifier>().unwrap(),
+            StringTypeNode::utf8(),
+        )
+        .into()],
     )
 }
 
 #[test]
 fn it_merges_pdas_into_root_nodes() {
     let member_pda = PdaNode::new(
-        id("member"),
+        "member",
         vec![
             ConstantPdaSeedNode::new(StringTypeNode::utf8(), StringValueNode::new("member")).into(),
-            VariablePdaSeedNode::new(id("identifier"), StringTypeNode::utf8()).into(),
+            VariablePdaSeedNode::new("identifier", StringTypeNode::utf8()).into(),
         ],
     );
     let person_pda = PdaNode::new(
-        id("person"),
+        "person",
         vec![
             ConstantPdaSeedNode::new(StringTypeNode::utf8(), StringValueNode::new("person")).into(),
-            VariablePdaSeedNode::new(id("firstname"), StringTypeNode::utf8()).into(),
+            VariablePdaSeedNode::new("firstname", StringTypeNode::utf8()).into(),
         ],
     );
     assert_eq!(

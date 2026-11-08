@@ -2,11 +2,11 @@ use super::utils::{
     constant_with_defined_type_link, float, instruction_with_account_default, integer,
     pda_link_with_program, root_with_programs, transform_integers_to_floats,
 };
-use codama_nodes::test_utils::{id, path};
 use codama_nodes::{
     AccountValueNode, ConstantPdaSeedNode, DataValueNode, DefinedTypeLinkNode, DefinedTypeNode,
     FloatFormat::{F32, F64},
-    FloatTypeNode, FloatValueNode, HasTransforms, HiddenPrefixTransformNode, InstructionNode,
+    FloatTypeNode, FloatValueNode, HasTransforms, HiddenPrefixTransformNode, Identifier,
+    InstructionNode,
     IntegerFormat::U64,
     IntegerTypeNode, PdaLinkNode, PdaNode, PdaSeedValueNode, PdaSeedValueValue, PdaValueNode,
     PdaValuePda, ProgramNode, ProvidedNode, StringTypeNode, StringValueNode, ValueNode,
@@ -14,45 +14,49 @@ use codama_nodes::{
 };
 
 fn main_program() -> ProgramNode {
-    ProgramNode::new(id("main"), "Main111111111111111111111111111111111111111")
-        .add_defined_type(DefinedTypeNode::new(id("rate"), FloatTypeNode::le(F64)))
+    ProgramNode::new("main", "Main111111111111111111111111111111111111111")
+        .add_defined_type(DefinedTypeNode::new("rate", FloatTypeNode::le(F64)))
         .add_pda(PdaNode::new(
-            id("ratePda"),
-            vec![VariablePdaSeedNode::new(id("rate"), FloatTypeNode::le(F64)).into()],
+            "ratePda",
+            vec![VariablePdaSeedNode::new("rate", FloatTypeNode::le(F64)).into()],
         ))
         .add_pda(PdaNode::new(
-            id("linkedRatePda"),
-            vec![VariablePdaSeedNode::new(id("rate"), DefinedTypeLinkNode::new(id("rate"))).into()],
+            "linkedRatePda",
+            vec![VariablePdaSeedNode::new("rate", DefinedTypeLinkNode::new("rate")).into()],
         ))
         .add_pda(PdaNode::new(
-            id("countPda"),
-            vec![VariablePdaSeedNode::new(id("count"), IntegerTypeNode::le(U64)).into()],
+            "countPda",
+            vec![VariablePdaSeedNode::new("count", IntegerTypeNode::le(U64)).into()],
         ))
 }
 
 fn other_program() -> ProgramNode {
-    ProgramNode::new(id("other"), "Other11111111111111111111111111111111111111")
-        .add_defined_type(DefinedTypeNode::new(id("price"), FloatTypeNode::le(F64)))
+    ProgramNode::new("other", "Other11111111111111111111111111111111111111")
+        .add_defined_type(DefinedTypeNode::new("price", FloatTypeNode::le(F64)))
         .add_pda(PdaNode::new(
-            id("pricePda"),
-            vec![
-                VariablePdaSeedNode::new(id("price"), DefinedTypeLinkNode::new(id("price"))).into(),
-            ],
+            "pricePda",
+            vec![VariablePdaSeedNode::new("price", DefinedTypeLinkNode::new("price")).into()],
         ))
         .add_pda(PdaNode::new(
-            id("mainRatePda"),
-            vec![VariablePdaSeedNode::new(id("rate"), DefinedTypeLinkNode::new(id("rate"))).into()],
+            "mainRatePda",
+            vec![VariablePdaSeedNode::new("rate", DefinedTypeLinkNode::new("rate")).into()],
         ))
 }
 
 fn pda_value<T: Into<PdaSeedValueValue>>(pda: PdaValuePda, seed: &str, value: T) -> PdaValueNode {
-    PdaValueNode::new(pda, vec![PdaSeedValueNode::new(id(seed), value)])
+    PdaValueNode::new(
+        pda,
+        vec![PdaSeedValueNode::new(
+            seed.parse::<Identifier>().unwrap(),
+            value,
+        )],
+    )
 }
 
 fn constant_seed_types() -> [fn(ValueNode) -> ConstantPdaSeedNode; 3] {
     [
         |value| ConstantPdaSeedNode::new(FloatTypeNode::le(F32), value),
-        |value| ConstantPdaSeedNode::new(DefinedTypeLinkNode::new(id("rate")), value),
+        |value| ConstantPdaSeedNode::new(DefinedTypeLinkNode::new("rate"), value),
         |value| {
             let r#type =
                 StringTypeNode::utf8().add_transform(HiddenPrefixTransformNode::new(vec![
@@ -68,7 +72,7 @@ fn constant_seeds_become_floats() {
     for seed in constant_seed_types() {
         let root = |value| {
             root_with_programs(
-                main_program().add_pda(PdaNode::new(id("constantPda"), vec![seed(value).into()])),
+                main_program().add_pda(PdaNode::new("constantPda", vec![seed(value).into()])),
                 other_program(),
             )
         };
@@ -80,7 +84,7 @@ fn constant_seeds_become_floats() {
 fn constant_seeds_of_inline_pdas_become_floats() {
     for seed in constant_seed_types() {
         let root = |value| {
-            let pda = PdaNode::new(id("inlinePda"), vec![seed(value).into()]);
+            let pda = PdaNode::new("inlinePda", vec![seed(value).into()]);
             let value = PdaValueNode::new(pda, vec![]);
             root_with_programs(
                 main_program().add_instruction(instruction_with_account_default(value)),
@@ -98,8 +102,8 @@ fn variable_seed_types_hold_constants_that_become_floats() {
             constant_with_defined_type_link("rate", value),
         ]));
         let pda = PdaNode::new(
-            id("namePda"),
-            vec![VariablePdaSeedNode::new(id("name"), r#type).into()],
+            "namePda",
+            vec![VariablePdaSeedNode::new("name", r#type).into()],
         );
         root_with_programs(main_program().add_pda(pda), other_program())
     };
@@ -109,17 +113,14 @@ fn variable_seed_types_hold_constants_that_become_floats() {
 #[test]
 fn seed_values_of_account_defaults_become_floats() {
     for (pda, seed) in [
-        (PdaValuePda::from(PdaLinkNode::new(id("ratePda"))), "rate"),
-        (PdaLinkNode::new(id("linkedRatePda")).into(), "rate"),
+        (PdaValuePda::from(PdaLinkNode::new("ratePda")), "rate"),
+        (PdaLinkNode::new("linkedRatePda").into(), "rate"),
         (pda_link_with_program("ratePda", "main").into(), "rate"),
         (pda_link_with_program("pricePda", "other").into(), "price"),
         (
             PdaNode::new(
-                id("inlinePda"),
-                vec![
-                    VariablePdaSeedNode::new(id("rate"), DefinedTypeLinkNode::new(id("rate")))
-                        .into(),
-                ],
+                "inlinePda",
+                vec![VariablePdaSeedNode::new("rate", DefinedTypeLinkNode::new("rate")).into()],
             )
             .into(),
             "rate",
@@ -139,10 +140,10 @@ fn seed_values_of_account_defaults_become_floats() {
 #[test]
 fn seed_values_of_provided_values_become_floats() {
     let root = |value: ValueNode| {
-        let value = pda_value(PdaLinkNode::new(id("ratePda")).into(), "rate", value);
+        let value = pda_value(PdaLinkNode::new("ratePda").into(), "rate", value);
         let instruction = InstructionNode {
-            identifier: id("update"),
-            provides: vec![ProvidedNode::new(id("target"), value)],
+            identifier: "update".into(),
+            provides: vec![ProvidedNode::new("target", value)],
             ..InstructionNode::default()
         };
         root_with_programs(main_program().add_instruction(instruction), other_program())
@@ -153,7 +154,7 @@ fn seed_values_of_provided_values_become_floats() {
 #[test]
 fn pda_links_without_program_resolve_in_the_program_of_the_instruction() {
     let root = |value: ValueNode| {
-        let value = pda_value(PdaLinkNode::new(id("pricePda")).into(), "price", value);
+        let value = pda_value(PdaLinkNode::new("pricePda").into(), "price", value);
         root_with_programs(
             main_program(),
             other_program().add_instruction(instruction_with_account_default(value)),
@@ -166,7 +167,7 @@ fn pda_links_without_program_resolve_in_the_program_of_the_instruction() {
 fn other_seed_values_keep_their_value() {
     for (pda, seed, value) in [
         (
-            PdaValuePda::from(PdaLinkNode::new(id("missingPda"))),
+            PdaValuePda::from(PdaLinkNode::new("missingPda")),
             "rate",
             PdaSeedValueValue::from(integer()),
         ),
@@ -176,7 +177,7 @@ fn other_seed_values_keep_their_value() {
             integer().into(),
         ),
         (
-            PdaLinkNode::new(id("pricePda")).into(),
+            PdaLinkNode::new("pricePda").into(),
             "price",
             integer().into(),
         ),
@@ -186,29 +187,29 @@ fn other_seed_values_keep_their_value() {
             integer().into(),
         ),
         (
-            PdaLinkNode::new(id("ratePda")).into(),
+            PdaLinkNode::new("ratePda").into(),
             "unknown",
             integer().into(),
         ),
         (
-            PdaLinkNode::new(id("countPda")).into(),
+            PdaLinkNode::new("countPda").into(),
             "count",
             integer().into(),
         ),
         (
-            PdaLinkNode::new(id("countPda")).into(),
+            PdaLinkNode::new("countPda").into(),
             "count",
             ValueNode::from(FloatValueNode::new(2.0)).into(),
         ),
         (
-            PdaLinkNode::new(id("ratePda")).into(),
+            PdaLinkNode::new("ratePda").into(),
             "rate",
-            AccountValueNode::new(id("authority")).into(),
+            AccountValueNode::new("authority").into(),
         ),
         (
-            PdaLinkNode::new(id("ratePda")).into(),
+            PdaLinkNode::new("ratePda").into(),
             "rate",
-            DataValueNode::new(path("rate")).into(),
+            DataValueNode::new("rate").into(),
         ),
     ] {
         let value = pda_value(pda, seed, value);
@@ -224,7 +225,7 @@ fn other_seed_values_keep_their_value() {
 fn constant_seeds_at_integer_types_keep_their_value() {
     for value in [integer(), FloatValueNode::new(2.0).into()] {
         let seed = ConstantPdaSeedNode::new(IntegerTypeNode::le(U64), value);
-        let pda = PdaNode::new(id("constantPda"), vec![seed.into()]);
+        let pda = PdaNode::new("constantPda", vec![seed.into()]);
         let root = root_with_programs(main_program().add_pda(pda), other_program());
         assert_eq!(transform_integers_to_floats(root.clone()), root);
     }

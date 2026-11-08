@@ -44,7 +44,7 @@ impl Deref for Docs {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Namespace, PluginNode, TextNode};
+    use crate::{PluginNode, TextNode};
 
     #[test]
     fn default() {
@@ -116,7 +116,7 @@ mod tests {
     fn empty_text_node_with_plugins() {
         let docs = Docs::from(Text::from(TextNode {
             content: String::new(),
-            plugins: vec![PluginNode::new(Namespace::try_from("anchor").unwrap())],
+            plugins: vec![PluginNode::new("anchor")],
         }));
         assert!(!docs.is_empty());
     }

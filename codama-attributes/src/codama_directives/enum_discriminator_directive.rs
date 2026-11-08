@@ -27,7 +27,7 @@ impl EnumDiscriminatorDirective {
             "identifier" => {
                 let expr = meta.as_value()?.as_expr()?;
                 let value = expr.as_string()?;
-                let identifier = Identifier::try_from(value.as_str()).map_err(|_| {
+                let identifier = value.parse::<Identifier>().map_err(|_| {
                     expr.error(format!("Invalid enum discriminator identifier: {value}"))
                 })?;
                 name.set(identifier, meta)
@@ -60,7 +60,7 @@ impl EnumDiscriminatorDirective {
     fn identifier(&self) -> Identifier {
         self.name
             .clone()
-            .unwrap_or_else(|| Identifier::try_from("discriminator").expect("a valid identifier"))
+            .unwrap_or_else(|| Identifier::from("discriminator"))
     }
 }
 
@@ -118,12 +118,14 @@ impl TryFrom<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
     type Error = CodamaError;
 
     fn try_from(directive: &EnumDiscriminatorDirective) -> Result<Self, Self::Error> {
-        let path = Path::try_from(directive.identifier().as_str()).map_err(|_| {
-            CodamaError::InvalidNodeConversion {
+        let path = directive
+            .identifier()
+            .as_str()
+            .parse::<Path>()
+            .map_err(|_| CodamaError::InvalidNodeConversion {
                 from: "enumDiscriminatorDirective".to_string(),
                 into: "fieldDiscriminatorNode".to_string(),
-            }
-        })?;
+            })?;
         Ok(FieldDiscriminatorNode::new(path, 0))
     }
 }
@@ -131,8 +133,10 @@ impl TryFrom<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
-    use codama_nodes::IntegerFormat::{U16, U32};
+    use codama_nodes::{
+        Identifier,
+        IntegerFormat::{U16, U32},
+    };
 
     #[test]
     fn enum_discriminator_with_name() {
@@ -141,7 +145,7 @@ mod tests {
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some(id("banana")),
+                name: Some(Identifier::from("banana")),
                 size: None,
             }
         );
@@ -168,7 +172,7 @@ mod tests {
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some(id("banana")),
+                name: Some(Identifier::from("banana")),
                 size: Some(IntegerTypeNode::le(U16)),
             }
         );
@@ -209,7 +213,7 @@ mod tests {
             let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
             assert_eq!(
                 FieldDiscriminatorNode::try_from(&directive).unwrap(),
-                FieldDiscriminatorNode::new(Path::try_from(expected).unwrap(), 0)
+                FieldDiscriminatorNode::new(expected, 0)
             );
         }
     }

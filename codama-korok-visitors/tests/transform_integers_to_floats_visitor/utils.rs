@@ -1,11 +1,10 @@
 use codama_korok_visitors::{KorokVisitable, TransformIntegersToFloatsVisitor};
 use codama_koroks::RootKorok;
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     AccountNode, ConstantValueNode, DefinedTypeLinkNode, DefinedTypeNode, FloatFormat::F64,
-    FloatTypeNode, FloatValueNode, InstructionAccountNode, InstructionNode, IntegerValueNode, Node,
-    PdaLinkNode, PdaValueNode, ProgramLinkNode, ProgramNode, RootNode, StructFieldTypeNode,
-    StructTypeNode, TypeNode, ValueNode,
+    FloatTypeNode, FloatValueNode, Identifier, InstructionAccountNode, InstructionNode,
+    IntegerValueNode, Node, PdaLinkNode, PdaValueNode, ProgramLinkNode, ProgramNode, RootNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_stores::RootStore;
 
@@ -36,21 +35,18 @@ pub fn float() -> ValueNode {
 pub fn field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> StructFieldTypeNode {
     StructFieldTypeNode {
         default_value: Box::new(Some(value)),
-        ..StructFieldTypeNode::new(id("value"), r#type)
+        ..StructFieldTypeNode::new("value", r#type)
     }
 }
 
 pub fn account_with_field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> AccountNode {
-    AccountNode::new(
-        id("config"),
-        StructTypeNode::new(vec![field(r#type, value)]),
-    )
+    AccountNode::new("config", StructTypeNode::new(vec![field(r#type, value)]))
 }
 
 pub fn account_with_type<T: Into<TypeNode>>(r#type: T) -> AccountNode {
     AccountNode::new(
-        id("config"),
-        StructTypeNode::new(vec![StructFieldTypeNode::new(id("value"), r#type)]),
+        "config",
+        StructTypeNode::new(vec![StructFieldTypeNode::new("value", r#type)]),
     )
 }
 
@@ -63,28 +59,39 @@ pub fn root_with_programs(main: ProgramNode, other: ProgramNode) -> RootNode {
 }
 
 pub fn program_with_float_defined_type(identifier: &str) -> ProgramNode {
-    ProgramNode::default()
-        .add_defined_type(DefinedTypeNode::new(id(identifier), FloatTypeNode::le(F64)))
+    ProgramNode::default().add_defined_type(DefinedTypeNode::new(
+        identifier.parse::<Identifier>().unwrap(),
+        FloatTypeNode::le(F64),
+    ))
 }
 
 pub fn constant_with_defined_type_link(identifier: &str, value: ValueNode) -> ConstantValueNode {
-    ConstantValueNode::new(DefinedTypeLinkNode::new(id(identifier)), value)
+    ConstantValueNode::new(
+        DefinedTypeLinkNode::new(identifier.parse::<Identifier>().unwrap()),
+        value,
+    )
 }
 
 pub fn type_link_with_program(identifier: &str, program: &str) -> DefinedTypeLinkNode {
-    DefinedTypeLinkNode::new_from_program(id(identifier), ProgramLinkNode::new(id(program)))
+    DefinedTypeLinkNode::new_from_program(
+        identifier.parse::<Identifier>().unwrap(),
+        ProgramLinkNode::new(program.parse::<Identifier>().unwrap()),
+    )
 }
 
 pub fn pda_link_with_program(identifier: &str, program: &str) -> PdaLinkNode {
-    PdaLinkNode::new_from_program(id(identifier), ProgramLinkNode::new(id(program)))
+    PdaLinkNode::new_from_program(
+        identifier.parse::<Identifier>().unwrap(),
+        ProgramLinkNode::new(program.parse::<Identifier>().unwrap()),
+    )
 }
 
 pub fn instruction_with_account_default(value: PdaValueNode) -> InstructionNode {
     InstructionNode {
-        identifier: id("update"),
+        identifier: "update".into(),
         accounts: vec![InstructionAccountNode {
             default_value: Box::new(Some(value.into())),
-            ..InstructionAccountNode::new(id("target"), true, false)
+            ..InstructionAccountNode::new("target", true, false)
         }],
         ..InstructionNode::default()
     }

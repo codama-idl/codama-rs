@@ -121,9 +121,8 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a SeedDirective {
 
 #[cfg(test)]
 mod tests {
-    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode};
-
     use super::*;
+    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, PublicKeyTypeNode};
 
     #[test]
     fn defined_constant() {

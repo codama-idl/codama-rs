@@ -1,5 +1,7 @@
-use super::casing::snake_case;
-use super::string::{impl_constrained_string, strip_identifier};
+use super::{
+    casing::snake_case,
+    string::{impl_constrained_string, strip_identifier},
+};
 use codama_errors::{CodamaError, CodamaResult};
 use serde::Serialize;
 
@@ -100,11 +102,18 @@ mod tests {
     }
 
     #[test]
-    fn try_from() {
-        assert_eq!(
-            Identifier::try_from("my_value").unwrap().as_str(),
-            "my_value"
-        );
+    fn from_static_str() {
+        assert_eq!(Identifier::from("my_value").as_str(), "my_value");
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid identifier: my value")]
+    fn from_static_str_panics_on_an_invalid_identifier() {
+        let _ = Identifier::from("my value");
+    }
+
+    #[test]
+    fn try_from_string() {
         assert_eq!(
             Identifier::try_from("myValue".to_string())
                 .unwrap()
@@ -171,12 +180,12 @@ mod tests {
         let identifier = Identifier::default();
         assert!(identifier.is_empty());
         assert_eq!(identifier.as_str(), "");
-        assert!(!Identifier::try_from("a").unwrap().is_empty());
+        assert!(!Identifier::from("a").is_empty());
     }
 
     #[test]
     fn as_ref() {
-        let identifier = Identifier::try_from("helloWorld").unwrap();
+        let identifier = Identifier::from("helloWorld");
         assert_eq!(identifier.as_ref(), "helloWorld");
     }
 

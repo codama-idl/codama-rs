@@ -120,7 +120,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a AccountDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{DisplaySkip, PayerValueNode};
 
     #[test]
@@ -132,7 +131,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: id("payer"),
+                name: "payer".into(),
                 is_writable: true,
                 is_signer: IsSigner::True,
                 is_optional: true,
@@ -158,7 +157,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: id("payer"),
+                name: "payer".into(),
                 is_writable: true,
                 is_signer: IsSigner::Either,
                 is_optional: false,
@@ -178,7 +177,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: id("authority"),
+                name: "authority".into(),
                 is_writable: false,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -207,7 +206,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: id("stake"),
+                name: "stake".into(),
                 is_writable: true,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -227,7 +226,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: id("authority"),
+                name: "authority".into(),
                 is_writable: false,
                 is_signer: IsSigner::True,
                 is_optional: false,

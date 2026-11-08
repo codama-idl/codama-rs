@@ -33,7 +33,6 @@ pub(crate) fn fixed_size_type_node_from_meta(meta: &Meta) -> syn::Result<TypeNod
 mod tests {
     use super::*;
     use crate::assert_type;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
         BooleanTypeNode, DefinedTypeLinkNode, IntegerFormat::U32, IntegerTypeNode,
         SizePrefixTransformNode, StringTypeNode,
@@ -71,7 +70,7 @@ mod tests {
     fn link() {
         assert_type!(
             { fixed_size(link("foo"), 8) },
-            DefinedTypeLinkNode::new(id("foo"))
+            DefinedTypeLinkNode::new("foo")
                 .add_transform(FixedSizeTransformNode::new(8))
                 .into()
         );

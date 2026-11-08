@@ -95,7 +95,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a FieldDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms, IntegerFormat::U8, IntegerTypeNode,
         IntegerValueNode, PayerValueNode, PublicKeyTypeNode, StringTypeNode,
@@ -109,7 +108,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: id("age"),
+                name: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -126,7 +125,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: true,
-                name: id("age"),
+                name: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -143,7 +142,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: id("name"),
+                name: "name".into(),
                 r#type: Resolvable::Resolved(
                     StringTypeNode::utf8()
                         .add_transform(FixedSizeTransformNode::new(4))
@@ -164,7 +163,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: id("age"),
+                name: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: Some(Resolvable::Resolved(IntegerValueNode::new(42u8).into())),
@@ -190,7 +189,7 @@ mod tests {
                 directive,
                 FieldDirective {
                     after: false,
-                    name: id("owner"),
+                    name: "owner".into(),
                     r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
                     docs: Docs::default(),
                     default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),
@@ -208,12 +207,12 @@ mod tests {
                 StructFieldTypeNode {
                     default_value: Box::new(Some(IntegerValueNode::new(42u8).into())),
                     default_value_strategy: Some(DefaultValueStrategy::Omitted),
-                    ..StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U8))
+                    ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U8))
                 },
             ),
             (
                 syn::parse_quote! { field("owner", public_key, value = payer) },
-                StructFieldTypeNode::new(id("owner"), PublicKeyTypeNode::new()),
+                StructFieldTypeNode::new("owner", PublicKeyTypeNode::new()),
             ),
         ] {
             let directive = FieldDirective::parse(&meta).unwrap();

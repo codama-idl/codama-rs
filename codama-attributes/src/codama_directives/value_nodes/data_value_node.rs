@@ -24,21 +24,18 @@ mod tests {
 
     #[test]
     fn ok() {
-        assert_value!(
-            { data("amount") },
-            DataValueNode::new(Path::try_from("amount").unwrap()).into()
-        );
+        assert_value!({ data("amount") }, DataValueNode::new("amount").into());
     }
 
     #[test]
     fn path_as_written() {
         assert_value!(
             { data("max_amount") },
-            DataValueNode::new(Path::try_from("max_amount").unwrap()).into()
+            DataValueNode::new("max_amount").into()
         );
         assert_value!(
             { data("maxAmount") },
-            DataValueNode::new(Path::try_from("maxAmount").unwrap()).into()
+            DataValueNode::new("maxAmount").into()
         );
     }
 
@@ -46,11 +43,11 @@ mod tests {
     fn path_segments_as_written() {
         assert_value!(
             { data("config.fees[0]") },
-            DataValueNode::new(Path::try_from("config.fees[0]").unwrap()).into()
+            DataValueNode::new("config.fees[0]").into()
         );
         assert_value!(
             { data("[0].my_field") },
-            DataValueNode::new(Path::try_from("[0].my_field").unwrap()).into()
+            DataValueNode::new("[0].my_field").into()
         );
     }
 

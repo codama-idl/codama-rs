@@ -98,7 +98,6 @@ impl From<InstructionInputValueNode> for Node {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
     use crate::{
         IntegerValueNode, LinkNode, PayerValueNode, ProgramLinkNode, RegisteredContextualValueNode,
         RegisteredValueNode,
@@ -116,8 +115,8 @@ mod tests {
                 Node::Value(RegisteredValueNode::Integer(IntegerValueNode::new(42))),
             ),
             (
-                ProgramLinkNode::new(id("system")).into(),
-                Node::Link(LinkNode::Program(ProgramLinkNode::new(id("system")))),
+                ProgramLinkNode::new("system").into(),
+                Node::Link(LinkNode::Program(ProgramLinkNode::new("system"))),
             ),
         ] {
             assert_eq!(Node::from(value), expected);

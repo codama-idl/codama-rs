@@ -44,7 +44,7 @@ impl RemainingAccountsDirective {
             "display" => display.set(InstructionAccountDisplayNode::from_meta(meta)?, meta),
             _ => match meta.as_expr().and_then(|expr| expr.as_string()) {
                 Ok(value) => identifier.set(
-                    Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                    value.parse::<Identifier>().map_err(|e| meta.error(e))?,
                     meta,
                 ),
                 Err(_) => Err(meta.error("unrecognized attribute")),
@@ -109,7 +109,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a RemainingAccountsDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::DisplaySkip;
 
     #[test]
@@ -119,7 +118,7 @@ mod tests {
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                identifier: id("signers"),
+                identifier: "signers".into(),
                 is_signer: None,
                 is_writable: None,
                 is_optional: None,
@@ -142,7 +141,7 @@ mod tests {
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                identifier: id("signers"),
+                identifier: "signers".into(),
                 is_signer: Some(IsSigner::True),
                 is_writable: Some(true),
                 is_optional: Some(true),
@@ -165,7 +164,7 @@ mod tests {
         assert_eq!(
             directive,
             RemainingAccountsDirective {
-                identifier: id("signers"),
+                identifier: "signers".into(),
                 is_signer: Some(IsSigner::Either),
                 is_writable: Some(false),
                 is_optional: Some(true),
@@ -244,7 +243,7 @@ mod tests {
         assert_eq!(
             directive.to_instruction_remaining_accounts_node(),
             InstructionRemainingAccountsNode {
-                identifier: id("signers"),
+                identifier: "signers".into(),
                 is_optional: Some(true),
                 is_signer: Some(IsSigner::Either),
                 is_writable: None,

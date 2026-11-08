@@ -25,7 +25,7 @@ impl FromMeta for EnumVariantTypeNode {
                 }
                 if let Ok(value) = meta.as_expr().and_then(|expr| expr.as_string()) {
                     return name.set(
-                        Identifier::try_from(value.as_str()).map_err(|e| meta.error(e))?,
+                        value.parse::<Identifier>().map_err(|e| meta.error(e))?,
                         meta,
                     );
                 }
@@ -46,7 +46,6 @@ impl FromMeta for EnumVariantTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
         ArrayTypeNode, DefinedTypeLinkNode, FixedCountNode,
         IntegerFormat::{U64, U8},
@@ -61,7 +60,7 @@ mod tests {
     fn empty_variant() {
         assert_eq!(
             parse(syn::parse_quote! { variant("pending") }).unwrap(),
-            EnumVariantTypeNode::new(id("pending"))
+            EnumVariantTypeNode::new("pending")
         );
     }
 
@@ -70,11 +69,8 @@ mod tests {
         assert_eq!(
             parse(syn::parse_quote! { variant("point", struct(field("x", integer(u8)))) }).unwrap(),
             EnumVariantTypeNode::with_data(
-                id("point"),
-                StructTypeNode::new(vec![StructFieldTypeNode::new(
-                    id("x"),
-                    IntegerTypeNode::le(U8)
-                )])
+                "point",
+                StructTypeNode::new(vec![StructFieldTypeNode::new("x", IntegerTypeNode::le(U8))])
             )
         );
     }
@@ -84,7 +80,7 @@ mod tests {
         assert_eq!(
             parse(syn::parse_quote! { variant("pair", tuple(integer(u8))) }).unwrap(),
             EnumVariantTypeNode::with_data(
-                id("pair"),
+                "pair",
                 TupleTypeNode::new(vec![IntegerTypeNode::le(U8).into()])
             )
         );
@@ -94,7 +90,7 @@ mod tests {
     fn explicit_name() {
         assert_eq!(
             parse(syn::parse_quote! { variant(identifier = "pending") }).unwrap(),
-            EnumVariantTypeNode::new(id("pending"))
+            EnumVariantTypeNode::new("pending")
         );
     }
 
@@ -105,7 +101,7 @@ mod tests {
             node,
             EnumVariantTypeNode {
                 discriminator: Some(3),
-                ..EnumVariantTypeNode::new(id("pending"))
+                ..EnumVariantTypeNode::new("pending")
             }
         );
     }
@@ -120,22 +116,22 @@ mod tests {
     fn any_payload() {
         assert_eq!(
             parse(syn::parse_quote! { variant("amount", integer(u64)) }).unwrap(),
-            EnumVariantTypeNode::with_data(id("amount"), IntegerTypeNode::le(U64))
+            EnumVariantTypeNode::with_data("amount", IntegerTypeNode::le(U64))
         );
         assert_eq!(
             parse(syn::parse_quote! { variant("owner", public_key) }).unwrap(),
-            EnumVariantTypeNode::with_data(id("owner"), PublicKeyTypeNode::new())
+            EnumVariantTypeNode::with_data("owner", PublicKeyTypeNode::new())
         );
         assert_eq!(
             parse(syn::parse_quote! { variant("items", array(integer(u8), 4)) }).unwrap(),
             EnumVariantTypeNode::with_data(
-                id("items"),
+                "items",
                 ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(4))
             )
         );
         assert_eq!(
             parse(syn::parse_quote! { variant("target", link("pubkey")) }).unwrap(),
-            EnumVariantTypeNode::with_data(id("target"), DefinedTypeLinkNode::new(id("pubkey")))
+            EnumVariantTypeNode::with_data("target", DefinedTypeLinkNode::new("pubkey"))
         );
     }
 

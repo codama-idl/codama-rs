@@ -17,19 +17,18 @@ impl StructFieldValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::id;
-    use crate::IntegerValueNode;
+    use crate::{Identifier, IntegerValueNode};
 
     #[test]
     fn new() {
-        let node = StructFieldValueNode::new(id("answer"), IntegerValueNode::new(42));
-        assert_eq!(node.identifier, id("answer"));
+        let node = StructFieldValueNode::new("answer", IntegerValueNode::new(42));
+        assert_eq!(node.identifier, Identifier::from("answer"));
         assert_eq!(*node.value, ValueNode::Integer(IntegerValueNode::new(42)));
     }
 
     #[test]
     fn to_json() {
-        let node = StructFieldValueNode::new(id("answer"), IntegerValueNode::new(42));
+        let node = StructFieldValueNode::new("answer", IntegerValueNode::new(42));
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -43,7 +42,7 @@ mod tests {
         let node: StructFieldValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            StructFieldValueNode::new(id("answer"), IntegerValueNode::new(42u32))
+            StructFieldValueNode::new("answer", IntegerValueNode::new(42u32))
         );
     }
 }

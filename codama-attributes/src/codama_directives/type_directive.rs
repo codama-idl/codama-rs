@@ -108,7 +108,6 @@ impl<'a> TryFrom<&'a Attribute<'a>> for &'a TypeDirective {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::test_utils::id;
     use codama_nodes::{
         ArrayTypeNode, BooleanTypeNode, ConstantValueNode, DateTimeTypeNode, EnumTypeNode,
         EnumVariantTypeNode, FixedSizeTransformNode, HasTransforms, HiddenPrefixTransformNode,
@@ -137,7 +136,7 @@ mod tests {
         let directive = TypeDirective::parse(&meta).unwrap();
         assert_eq!(
             directive.node,
-            Resolvable::Resolved(DefinedTypeLinkNode::new(id("customString")).into())
+            Resolvable::Resolved(DefinedTypeLinkNode::new("customString").into())
         );
     }
 
@@ -182,7 +181,7 @@ mod tests {
         assert_eq!(
             directive.node,
             Resolvable::Resolved(
-                DefinedTypeLinkNode::new(id("customString"))
+                DefinedTypeLinkNode::new("customString")
                     .add_transform(FixedSizeTransformNode::new(8))
                     .into()
             )
@@ -239,18 +238,17 @@ mod tests {
             ),
             (
                 parse_quote! { struct(field("name", fixed_size(string, 4))) },
-                StructTypeNode::new(vec![StructFieldTypeNode::new(id("name"), string())]).into(),
+                StructTypeNode::new(vec![StructFieldTypeNode::new("name", string())]).into(),
             ),
             (
                 parse_quote! { enum(variant("name", fixed_size(string, 4))) },
-                EnumTypeNode::new(vec![EnumVariantTypeNode::with_data(id("name"), string())])
-                    .into(),
+                EnumTypeNode::new(vec![EnumVariantTypeNode::with_data("name", string())]).into(),
             ),
             (
                 parse_quote! { enum(variant("a"), size = fixed_size(integer(u32), 4)) },
                 EnumTypeNode {
                     size: integer(),
-                    ..EnumTypeNode::new(vec![EnumVariantTypeNode::new(id("a"))])
+                    ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("a")])
                 }
                 .into(),
             ),
@@ -270,7 +268,7 @@ mod tests {
             ),
             (
                 parse_quote! { fixed_size(link("foo"), 4) },
-                DefinedTypeLinkNode::new(id("foo"))
+                DefinedTypeLinkNode::new("foo")
                     .add_transform(FixedSizeTransformNode::new(4))
                     .into(),
             ),

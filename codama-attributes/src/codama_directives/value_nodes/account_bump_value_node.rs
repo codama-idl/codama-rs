@@ -21,7 +21,7 @@ impl FromMeta for AccountBumpValueNode {
 
         let name = name.take(meta)?;
         Ok(AccountBumpValueNode::new(
-            Identifier::try_from(name.as_str()).map_err(|e| meta.error(e))?,
+            name.parse::<Identifier>().map_err(|e| meta.error(e))?,
         ))
     }
 }
@@ -30,17 +30,16 @@ impl FromMeta for AccountBumpValueNode {
 mod tests {
     use super::*;
     use crate::{assert_value, assert_value_err};
-    use codama_nodes::test_utils::id;
 
     #[test]
     fn ok() {
         assert_value!(
             { account_bump("escrow") },
-            AccountBumpValueNode::new(id("escrow")).into()
+            AccountBumpValueNode::new("escrow").into()
         );
         assert_value!(
             { account_bump(identifier = "escrow") },
-            AccountBumpValueNode::new(id("escrow")).into()
+            AccountBumpValueNode::new("escrow").into()
         );
     }
 

@@ -3,7 +3,6 @@ use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
 use codama_koroks::{FieldKorok, KorokTrait};
-use codama_nodes::test_utils::id;
 use codama_nodes::{
     BooleanTypeNode, FixedSizeTransformNode, HasTransforms, IntegerFormat::U32, IntegerTypeNode,
     SizePrefixTransformNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
@@ -68,7 +67,7 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
     korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
     assert_eq!(
         korok.node,
-        Some(StructFieldTypeNode::new(id("field"), StringTypeNode::base16()).into())
+        Some(StructFieldTypeNode::new("field", StringTypeNode::base16()).into())
     );
     Ok(())
 }
@@ -86,7 +85,7 @@ fn it_keeps_the_type_with_transforms_wrapped_in_a_struct_field_type_node() -> Co
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("field"),
+                "field",
                 StringTypeNode::utf8()
                     .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
             )
@@ -98,7 +97,7 @@ fn it_keeps_the_type_with_transforms_wrapped_in_a_struct_field_type_node() -> Co
         korok.node,
         Some(
             StructFieldTypeNode::new(
-                id("field"),
+                "field",
                 StringTypeNode::base16()
                     .add_transform(SizePrefixTransformNode::new(IntegerTypeNode::le(U32)))
             )

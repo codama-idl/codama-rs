@@ -48,7 +48,6 @@ fn check_duplicate_identifiers(metas: &[Meta], fields: &[StructFieldTypeNode]) -
 mod tests {
     use super::*;
     use crate::{assert_type, assert_type_err};
-    use codama_nodes::test_utils::id;
     use codama_nodes::{IntegerFormat::U32, IntegerTypeNode, StringTypeNode};
 
     #[test]
@@ -72,7 +71,7 @@ mod tests {
         assert_type!(
             { struct(field("age", integer(u32))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32))
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
             ]).into()
         );
     }
@@ -82,8 +81,8 @@ mod tests {
         assert_type!(
             { struct(field("age", integer(u32)), field("name", string(utf8))) },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8())
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new("name", StringTypeNode::utf8())
             ]).into()
         );
     }
@@ -93,8 +92,8 @@ mod tests {
         assert_type!(
             { struct[field("age", integer(u32)), field("name", string(utf8))] },
             StructTypeNode::new(vec![
-                StructFieldTypeNode::new(id("age"), IntegerTypeNode::le(U32)),
-                StructFieldTypeNode::new(id("name"), StringTypeNode::utf8())
+                StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)),
+                StructFieldTypeNode::new("name", StringTypeNode::utf8())
             ]).into()
         );
     }
