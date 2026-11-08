@@ -36,7 +36,7 @@ impl Identifier {
         let snake_cased = snake_case(unraw);
         match snake_cased.as_str() {
             "" => Err(invalid("it has no letters or digits".to_string())),
-            _ => Self::try_from(snake_cased.clone()).map_err(|_| {
+            _ => snake_cased.parse::<Self>().map_err(|_| {
                 invalid(format!(
                     "it becomes `{snake_cased}`, and an identifier cannot start with a digit"
                 ))

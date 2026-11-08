@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 use codama::CodamaAccount;
 
 #[derive(CodamaAccount)]

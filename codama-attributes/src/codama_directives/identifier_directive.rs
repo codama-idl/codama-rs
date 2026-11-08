@@ -11,9 +11,9 @@ pub struct IdentifierDirective {
 impl IdentifierDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("identifier")?;
+        let expr = meta.as_value()?.as_expr()?;
         Ok(Self {
-            identifier: Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                .map_err(|e| meta.error(e))?,
+            identifier: Identifier::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
         })
     }
 }
