@@ -108,15 +108,15 @@ mod tests {
         for (meta, expected) in [
             (
                 syn::parse_quote! { duration(string) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { duration(float(f64)) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { duration(fixed_size(string, 4)) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { duration(integer(u64, unit = "ms")) },
@@ -138,6 +138,10 @@ mod tests {
             (
                 syn::parse_quote! { duration(integer(u64), ticks_per_second = 0) },
                 "ticks_per_second must be greater than zero",
+            ),
+            (
+                syn::parse_quote! { duration(integer(u64), ticks_per_second = 4294967296) },
+                "ticks_per_second must be at most 4294967295",
             ),
             (
                 syn::parse_quote! { duration(integer(u64), ticks_per_second = 1000, ticks_per_second = 1) },

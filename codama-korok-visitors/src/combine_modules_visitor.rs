@@ -127,36 +127,35 @@ fn get_root_nodes_to_merge(nodes: Vec<Node>, location: &str) -> CodamaResult<Vec
 fn get_scraps_root_node(nodes: Vec<Node>, location: &str) -> CodamaResult<Option<RootNode>> {
     let mut has_scraps = false;
     let mut root = RootNode::default();
-    let location = program_location(&root.program, location);
 
     for node in nodes {
         match node {
             Node::Account(node) => {
-                add_node_with_identifier(&mut root.program.accounts, node, &location)?;
+                add_node_with_identifier(&mut root.program.accounts, node, location)?;
                 has_scraps = true
             }
             Node::Constant(node) => {
-                add_node_with_identifier(&mut root.program.constants, node, &location)?;
+                add_node_with_identifier(&mut root.program.constants, node, location)?;
                 has_scraps = true
             }
             Node::Instruction(node) => {
-                add_node_with_identifier(&mut root.program.instructions, node, &location)?;
+                add_node_with_identifier(&mut root.program.instructions, node, location)?;
                 has_scraps = true
             }
             Node::DefinedType(node) => {
-                add_node_with_identifier(&mut root.program.defined_types, node, &location)?;
+                add_node_with_identifier(&mut root.program.defined_types, node, location)?;
                 has_scraps = true
             }
             Node::Error(node) => {
-                add_node_with_identifier(&mut root.program.errors, node, &location)?;
+                add_node_with_identifier(&mut root.program.errors, node, location)?;
                 has_scraps = true
             }
             Node::Pda(node) => {
-                add_node_with_identifier(&mut root.program.pdas, node, &location)?;
+                add_node_with_identifier(&mut root.program.pdas, node, location)?;
                 has_scraps = true
             }
             Node::Event(node) => {
-                add_node_with_identifier(&mut root.program.events, node, &location)?;
+                add_node_with_identifier(&mut root.program.events, node, location)?;
                 has_scraps = true
             }
             _ => (),
@@ -179,7 +178,7 @@ fn merge_root_nodes(
         return Ok(());
     };
 
-    merge_plugins(&mut this.plugins, that.plugins, "the root node")?;
+    merge_plugins(&mut this.plugins, that.plugins, location)?;
 
     // Get an array of all programs to merge.
     let mut those_programs = Vec::new();

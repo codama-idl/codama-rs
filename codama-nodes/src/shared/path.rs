@@ -1,4 +1,5 @@
 use super::string::{impl_constrained_string, strip_identifier, strip_index};
+use crate::Identifier;
 use codama_errors::CodamaError;
 use serde::Serialize;
 
@@ -14,6 +15,13 @@ impl_constrained_string!(
     CodamaError::InvalidPath,
     "a path expression string"
 );
+
+/// An identifier is a path with a single segment, which reads the field of that identifier.
+impl From<Identifier> for Path {
+    fn from(identifier: Identifier) -> Self {
+        Self(identifier.as_str().to_string())
+    }
+}
 
 impl Path {
     /// The path has a `.` segment or an `[n]` index, such as `header.kind`, `fees[0]` or `[0]`.
@@ -128,6 +136,13 @@ mod tests {
             Path::try_from("header..kind".to_string()),
             Err(CodamaError::InvalidPath(value)) if value == "header..kind"
         ));
+    }
+
+    #[test]
+    fn from_identifier() {
+        let path = Path::from(Identifier::from("account_type"));
+        assert_eq!(path.as_str(), "account_type");
+        assert!(!path.is_nested());
     }
 
     #[test]

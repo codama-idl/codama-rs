@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn invalid_prefix() {
         let error = parse(syn::parse_quote! { prefixed_count(string) }).unwrap_err();
-        assert_eq!(error.to_string(), "prefix must be an IntegerTypeNode");
+        assert_eq!(error.to_string(), "prefix must be an integer(...) type");
     }
 
     #[test]

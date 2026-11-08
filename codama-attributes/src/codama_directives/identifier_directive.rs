@@ -11,9 +11,9 @@ pub struct IdentifierDirective {
 impl IdentifierDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("identifier")?;
+        let expr = meta.as_value()?.as_expr()?;
         Ok(Self {
-            identifier: Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                .map_err(|e| meta.error(e))?,
+            identifier: Identifier::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
         })
     }
 }
@@ -71,7 +71,7 @@ mod tests {
         for value in ["1st", "my banana", "my-banana"] {
             let meta: Meta = syn::parse_quote! { identifier = #value };
             let error = IdentifierDirective::parse(&meta).unwrap_err();
-            assert_eq!(error.to_string(), format!("Invalid identifier: {value}"));
+            assert_eq!(error.to_string(), format!("Invalid identifier `{value}`: use letters, digits and underscores, not starting with a digit"));
         }
     }
 }

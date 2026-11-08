@@ -14,7 +14,7 @@ impl SizePrefixDirective {
         let node = TypeNode::from_meta(value)?;
         let prefix = match IntegerTypeNode::try_from_type_node(node) {
             Ok(node) => node,
-            Err(_) => return Err(value.error("prefix must be an IntegerTypeNode")),
+            Err(_) => return Err(value.error("prefix must be an integer(...) type")),
         };
         Ok(Self { prefix })
     }

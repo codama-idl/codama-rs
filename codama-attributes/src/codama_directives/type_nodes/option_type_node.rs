@@ -15,7 +15,7 @@ impl FromMeta for OptionTypeNode {
                 let value = meta.as_value()?;
                 match IntegerTypeNode::try_from_type_node(TypeNode::from_meta(value)?) {
                     Ok(node) => prefix.set(node, meta),
-                    Err(_) => Err(value.error("prefix must be an IntegerTypeNode")),
+                    Err(_) => Err(value.error("prefix must be an integer(...) type")),
                 }
             }
             // `fixed` (bare flag) or `fixed = true/false`.
@@ -95,11 +95,11 @@ mod tests {
     fn invalid_prefix() {
         assert_type_err!(
             { option(integer(u8), prefix = string) },
-            "prefix must be an IntegerTypeNode"
+            "prefix must be an integer(...) type"
         );
         assert_type_err!(
             { option(integer(u8), prefix = float(f32)) },
-            "prefix must be an IntegerTypeNode"
+            "prefix must be an integer(...) type"
         );
     }
 

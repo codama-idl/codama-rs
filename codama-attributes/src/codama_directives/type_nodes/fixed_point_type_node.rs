@@ -1,4 +1,6 @@
-use crate::utils::{parse_encoding_integer, parse_unit_display, FromMeta, SetOnce};
+use crate::utils::{
+    parse_encoding_integer, parse_non_zero_u32, parse_unit_display, FromMeta, SetOnce,
+};
 use codama_nodes::{
     Base, FixedPointTypeNode, IntegerFormat, IntegerTypeNode, UnitNumberDisplayNode,
 };
@@ -20,13 +22,7 @@ impl FromMeta for FixedPointTypeNode {
             }
             match meta.path_str().as_str() {
                 "number" => number.set(parse_fixed_width_integer(meta.as_value()?)?, meta),
-                "scale" => {
-                    let value = meta.as_value()?;
-                    match value.as_expr()?.as_unsigned_integer()? {
-                        0 => Err(value.error("scale must be greater than zero")),
-                        value => scale.set(value, meta),
-                    }
-                }
+                "scale" => scale.set(parse_non_zero_u32(meta, "scale")?, meta),
                 "base" => {
                     let value = meta.as_value()?;
                     match Base::try_from(value.as_expr()?.as_unsigned_integer::<u64>()?) {
@@ -201,11 +197,11 @@ mod tests {
         for (meta, expected) in [
             (
                 syn::parse_quote! { fixed_point(string, scale = 6) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { fixed_point(float(f64), scale = 6) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { fixed_point(integer(short_u16), scale = 2) },
@@ -238,6 +234,10 @@ mod tests {
             (
                 syn::parse_quote! { fixed_point(integer(u64), scale = -6) },
                 "expected an unsigned integer",
+            ),
+            (
+                syn::parse_quote! { fixed_point(integer(u64), scale = 4294967296) },
+                "scale must be at most 4294967295",
             ),
             (
                 syn::parse_quote! { fixed_point(integer(u64), scale = 6, base = 16) },

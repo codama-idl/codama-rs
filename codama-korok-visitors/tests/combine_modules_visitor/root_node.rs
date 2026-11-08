@@ -80,7 +80,7 @@ fn roots_with_conflicting_plugins() {
     .unwrap_err();
     assert_eq!(
         error.to_string(),
-        "Two different plugins share the namespace `namespace.shared` in the root node"
+        "Two different plugins share the namespace `namespace.shared` in module `my_module`"
     );
 }
 

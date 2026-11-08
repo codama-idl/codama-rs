@@ -183,7 +183,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         let fields = std::iter::once(&discriminator).chain(&data.fields);
         assert_unique_field_identifiers(fields, &parent, korok.ast)?;
 
-        let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
+        let discriminator_node = FieldDiscriminatorNode::from(&self.enum_discriminator);
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
         discriminators.insert(0, discriminator_node.into());
         let (data, provides) =

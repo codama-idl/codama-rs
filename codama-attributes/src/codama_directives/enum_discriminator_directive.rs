@@ -5,7 +5,7 @@ use crate::{
 use codama_errors::CodamaError;
 use codama_nodes::{
     DisplaySkip, FieldDiscriminatorNode, Identifier, IntegerFormat::U8, IntegerTypeNode, Node,
-    Path, StructFieldDisplayNode, StructFieldTypeNode, TypeNode, TypeNodeTrait,
+    StructFieldDisplayNode, StructFieldTypeNode, TypeNode, TypeNodeTrait,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -27,9 +27,7 @@ impl EnumDiscriminatorDirective {
             "identifier" => {
                 let expr = meta.as_value()?.as_expr()?;
                 let value = expr.as_string()?;
-                let identifier = value.parse::<Identifier>().map_err(|_| {
-                    expr.error(format!("Invalid enum discriminator identifier: {value}"))
-                })?;
+                let identifier = value.parse::<Identifier>().map_err(|e| expr.error(e))?;
                 name.set(identifier, meta)
             }
             "name" => removed_name_key(meta),
@@ -37,7 +35,7 @@ impl EnumDiscriminatorDirective {
                 let node = TypeNode::from_meta(meta.as_value()?)?;
                 match IntegerTypeNode::try_from_type_node(node) {
                     Ok(node) => size.set(node, meta),
-                    _ => Err(meta.error("size must be an IntegerTypeNode")),
+                    _ => Err(meta.error("size must be an integer(...) type")),
                 }
             }
             _ => Err(meta.error("unrecognized attribute")),
@@ -114,19 +112,9 @@ impl From<&EnumDiscriminatorDirective> for StructFieldTypeNode {
     }
 }
 
-impl TryFrom<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
-    type Error = CodamaError;
-
-    fn try_from(directive: &EnumDiscriminatorDirective) -> Result<Self, Self::Error> {
-        let path = directive
-            .identifier()
-            .as_str()
-            .parse::<Path>()
-            .map_err(|_| CodamaError::InvalidNodeConversion {
-                from: "enumDiscriminatorDirective".to_string(),
-                into: "fieldDiscriminatorNode".to_string(),
-            })?;
-        Ok(FieldDiscriminatorNode::new(path, 0))
+impl From<&EnumDiscriminatorDirective> for FieldDiscriminatorNode {
+    fn from(directive: &EnumDiscriminatorDirective) -> Self {
+        FieldDiscriminatorNode::new(directive.identifier(), 0)
     }
 }
 
@@ -194,7 +182,7 @@ mod tests {
         let error = EnumDiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),
-            "Invalid enum discriminator identifier: 1st"
+            "Invalid identifier `1st`: use letters, digits and underscores, not starting with a digit"
         );
     }
 
@@ -212,7 +200,7 @@ mod tests {
         ] {
             let directive = EnumDiscriminatorDirective::parse(&meta).unwrap();
             assert_eq!(
-                FieldDiscriminatorNode::try_from(&directive).unwrap(),
+                FieldDiscriminatorNode::from(&directive),
                 FieldDiscriminatorNode::new(expected, 0)
             );
         }

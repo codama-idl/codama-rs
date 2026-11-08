@@ -1,0 +1,17 @@
+error: Invalid identifier `my-type`: use letters, digits and underscores, not starting with a digit
+ --> tests/codama_attribute/identifier_directive/grammar.fail.rs:3:23
+  |
+3 | #[codama(identifier = "my-type")]
+  |                       ^^^^^^^^^
+
+error: Invalid identifier `1st`: use letters, digits and underscores, not starting with a digit
+ --> tests/codama_attribute/identifier_directive/grammar.fail.rs:6:23
+  |
+6 | #[codama(identifier = "1st")]
+  |                       ^^^^^
+
+error: An identifier cannot be empty: use letters, digits and underscores, not starting with a digit
+ --> tests/codama_attribute/identifier_directive/grammar.fail.rs:9:23
+  |
+9 | #[codama(identifier = "")]
+  |                       ^^

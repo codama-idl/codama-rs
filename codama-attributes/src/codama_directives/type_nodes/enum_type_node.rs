@@ -16,7 +16,7 @@ impl FromMeta for EnumTypeNode {
                         let node = TypeNode::from_meta(value)?;
                         let size_node = match IntegerTypeNode::try_from_type_node(node) {
                             Ok(node) => node,
-                            Err(_) => return Err(value.error("size must be an IntegerTypeNode")),
+                            Err(_) => return Err(value.error("size must be an integer(...) type")),
                         };
                         size.set(size_node, meta)
                     }
@@ -103,7 +103,7 @@ mod tests {
     fn invalid_size() {
         assert_type_err!(
             { enum(size = string) },
-            "size must be an IntegerTypeNode"
+            "size must be an integer(...) type"
         );
     }
 

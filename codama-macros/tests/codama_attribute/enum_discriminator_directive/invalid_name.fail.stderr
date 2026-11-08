@@ -1,4 +1,4 @@
-error: Invalid enum discriminator identifier: 1st
+error: Invalid identifier `1st`: use letters, digits and underscores, not starting with a digit
  --> tests/codama_attribute/enum_discriminator_directive/invalid_name.fail.rs:3:42
   |
 3 | #[codama(enum_discriminator(identifier = "1st"))]
