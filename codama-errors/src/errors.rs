@@ -32,8 +32,11 @@ pub enum CodamaError {
     #[error("Invalid decimal: {0}")]
     InvalidDecimal(String),
 
-    #[error("Invalid identifier: {0}")]
+    #[error("{}", invalid_identifier_message(.0))]
     InvalidIdentifier(String),
+
+    #[error("Cannot derive an identifier from `{name}`: {reason}. Set one explicitly with `identifier = \"...\"`")]
+    InvalidRustName { name: String, reason: String },
 
     #[error("Invalid namespace: {0}")]
     InvalidNamespace(String),
@@ -71,6 +74,15 @@ pub enum CodamaError {
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
+
+/// The message of `CodamaError::InvalidIdentifier`, which names an empty identifier rather than quoting it.
+fn invalid_identifier_message(value: &str) -> String {
+    const RULE: &str = "use letters, digits and underscores, not starting with a digit";
+    match value {
+        "" => format!("An identifier cannot be empty: {RULE}"),
+        _ => format!("Invalid identifier `{value}`: {RULE}"),
+    }
+}
 
 impl CodamaError {
     pub fn to_compile_error(&self) -> TokenStream {

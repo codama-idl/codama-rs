@@ -27,14 +27,15 @@ impl FromMeta for FloatValueNode {
             return Err(expr.error("expected a float"));
         };
         // The digits come without `_` and the type suffix, so `1_000.5f64` gives `1000.5`.
+        // A float literal is always well formed, so the only rejection left is the range.
         Decimal::from_literal(&format!("{sign}{}", float.base10_digits()))
             .map(FloatValueNode::new)
-            .map_err(|error| expr.error(error.to_string()))
+            .map_err(|_| expr.error("number out of the range of an f64"))
     }
 }
 
 /// A literal with an optional leading minus sign, so `-42` gives `("-", 42)` and `42` gives `("", 42)`.
-fn signed_literal(expr: &Expr) -> Option<(&str, &Lit)> {
+pub(crate) fn signed_literal(expr: &Expr) -> Option<(&str, &Lit)> {
     let (sign, expr) = match expr {
         Expr::Unary(ExprUnary {
             op: UnOp::Neg(_),

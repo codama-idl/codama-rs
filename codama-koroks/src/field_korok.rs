@@ -159,7 +159,10 @@ mod tests {
             node: None,
         };
         let error = korok.name().unwrap_err();
-        assert_eq!(error.to_string(), "Invalid identifier: __");
+        assert_eq!(
+            error.to_string(),
+            "Cannot derive an identifier from `__`: it has no letters or digits. Set one explicitly with `identifier = \"...\"`"
+        );
     }
 
     #[test]
@@ -192,6 +195,9 @@ mod tests {
             node: None,
         };
         let error = korok.name().unwrap_err();
-        assert_eq!(error.to_string(), "Invalid identifier: \u{e9}t\u{e9}");
+        assert_eq!(
+            error.to_string(),
+            "Cannot derive an identifier from `\u{e9}t\u{e9}`: identifiers only take ASCII letters. Set one explicitly with `identifier = \"...\"`"
+        );
     }
 }

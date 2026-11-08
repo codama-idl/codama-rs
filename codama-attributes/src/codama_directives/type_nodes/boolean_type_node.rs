@@ -23,7 +23,7 @@ impl FromMeta for BooleanTypeNode {
 
         let size = match IntegerTypeNode::try_from_type_node(size.take(meta)?) {
             Ok(node) => node,
-            Err(_) => return Err(meta.error("size must be an IntegerTypeNode")),
+            Err(_) => return Err(meta.error("size must be an integer(...) type")),
         };
         Ok(BooleanTypeNode::new(size))
     }

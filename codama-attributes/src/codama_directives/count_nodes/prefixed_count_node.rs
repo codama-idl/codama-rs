@@ -24,5 +24,5 @@ impl FromMeta for PrefixedCountNode {
 fn parse_prefix(meta: &Meta) -> syn::Result<IntegerTypeNode> {
     let node = TypeNode::from_meta(meta)?;
     IntegerTypeNode::try_from_type_node(node)
-        .map_err(|_| meta.error("prefix must be an IntegerTypeNode"))
+        .map_err(|_| meta.error("prefix must be an integer(...) type"))
 }

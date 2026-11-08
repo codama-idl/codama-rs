@@ -31,7 +31,7 @@ pub(crate) fn size_prefix_type_node_from_meta(meta: &Meta) -> syn::Result<TypeNo
 
 fn parse_prefix(meta: &Meta) -> syn::Result<IntegerTypeNode> {
     IntegerTypeNode::try_from_type_node(TypeNode::from_meta(meta)?)
-        .map_err(|_| meta.error("prefix must be an IntegerTypeNode"))
+        .map_err(|_| meta.error("prefix must be an integer(...) type"))
 }
 
 #[cfg(test)]
@@ -122,19 +122,19 @@ mod tests {
         for (meta, expected) in [
             (
                 syn::parse_quote! { size_prefix(string, public_key) },
-                "prefix must be an IntegerTypeNode",
+                "prefix must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { size_prefix(type = string, prefix = public_key) },
-                "prefix must be an IntegerTypeNode",
+                "prefix must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { size_prefix(string, float(f32)) },
-                "prefix must be an IntegerTypeNode",
+                "prefix must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { size_prefix(integer(u32), string) },
-                "prefix must be an IntegerTypeNode",
+                "prefix must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { size_prefix(prefix = integer(u32)) },

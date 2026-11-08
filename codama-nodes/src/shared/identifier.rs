@@ -24,13 +24,24 @@ impl Identifier {
     /// The name is snake_cased with the spec word rule (`MyAccount` -> `my_account`, `my-program` -> `my_program`).
     /// A raw identifier loses its prefix (`r#type` -> `type`).
     pub fn from_rust_name(name: &str) -> CodamaResult<Self> {
+        let invalid = |reason: String| CodamaError::InvalidRustName {
+            name: name.to_string(),
+            reason,
+        };
         let unraw = name.strip_prefix("r#").unwrap_or(name);
         // The word split drops non-ASCII letters, so `été` would give `t` with no error.
         if !unraw.is_ascii() {
-            return Err(CodamaError::InvalidIdentifier(name.to_string()));
+            return Err(invalid("identifiers only take ASCII letters".to_string()));
         }
-        Self::try_from(snake_case(unraw))
-            .map_err(|_| CodamaError::InvalidIdentifier(name.to_string()))
+        let snake_cased = snake_case(unraw);
+        match snake_cased.as_str() {
+            "" => Err(invalid("it has no letters or digits".to_string())),
+            _ => Self::try_from(snake_cased.clone()).map_err(|_| {
+                invalid(format!(
+                    "it becomes `{snake_cased}`, and an identifier cannot start with a digit"
+                ))
+            }),
+        }
     }
 
     /// Only the default value is empty, since `TryFrom` rejects an empty string.
@@ -95,10 +106,22 @@ mod tests {
 
     #[test]
     fn from_str_rejects_invalid_identifiers() {
-        for value in INVALID {
+        for value in INVALID.into_iter().filter(|value| !value.is_empty()) {
             let error = value.parse::<Identifier>().unwrap_err();
-            assert_eq!(error.to_string(), format!("Invalid identifier: {value}"));
+            assert_eq!(
+                error.to_string(),
+                format!("Invalid identifier `{value}`: use letters, digits and underscores, not starting with a digit")
+            );
         }
+    }
+
+    #[test]
+    fn from_str_rejects_an_empty_identifier() {
+        let error = "".parse::<Identifier>().unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "An identifier cannot be empty: use letters, digits and underscores, not starting with a digit"
+        );
     }
 
     #[test]
@@ -107,7 +130,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Invalid identifier: my value")]
+    #[should_panic(expected = "Invalid identifier `my value`")]
     fn from_static_str_panics_on_an_invalid_identifier() {
         let _ = Identifier::from("my value");
     }
@@ -161,17 +184,27 @@ mod tests {
 
     #[test]
     fn from_rust_name_rejects_names_without_a_valid_identifier() {
-        for name in [
-            "",
-            "__",
-            "1st",
-            "_1st",
-            "\u{e9}t\u{e9}",
-            "r#\u{e9}t\u{e9}",
-            "caf\u{e9}",
+        let hint = "Set one explicitly with `identifier = \"...\"`";
+        for (name, reason) in [
+            ("", "it has no letters or digits"),
+            ("__", "it has no letters or digits"),
+            (
+                "1st",
+                "it becomes `1st`, and an identifier cannot start with a digit",
+            ),
+            (
+                "_1st",
+                "it becomes `1st`, and an identifier cannot start with a digit",
+            ),
+            ("\u{e9}t\u{e9}", "identifiers only take ASCII letters"),
+            ("r#\u{e9}t\u{e9}", "identifiers only take ASCII letters"),
+            ("caf\u{e9}", "identifiers only take ASCII letters"),
         ] {
             let error = Identifier::from_rust_name(name).unwrap_err();
-            assert_eq!(error.to_string(), format!("Invalid identifier: {name}"));
+            assert_eq!(
+                error.to_string(),
+                format!("Cannot derive an identifier from `{name}`: {reason}. {hint}")
+            );
         }
     }
 

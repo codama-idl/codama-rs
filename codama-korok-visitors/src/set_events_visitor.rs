@@ -138,7 +138,7 @@ impl KorokVisitor for SetEventsVisitor {
             ..StructFieldTypeNode::from(&self.enum_discriminator)
         };
 
-        let discriminator_node = FieldDiscriminatorNode::try_from(&self.enum_discriminator)?;
+        let discriminator_node = FieldDiscriminatorNode::from(&self.enum_discriminator);
 
         let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
 

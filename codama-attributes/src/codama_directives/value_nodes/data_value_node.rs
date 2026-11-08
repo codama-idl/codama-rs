@@ -1,4 +1,4 @@
-use crate::utils::{FromMeta, SetOnce};
+use crate::utils::{removed_syntax, FromMeta, SetOnce};
 use codama_nodes::{DataValueNode, Path};
 use codama_syn_helpers::{extensions::*, Meta};
 
@@ -11,6 +11,10 @@ impl FromMeta for DataValueNode {
                 Path::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
                 meta,
             ),
+            // The v1 `argument(name = "x")` spelling, carried over to its v2 replacement.
+            Meta::PathValue(pv) if pv.path.is_strict("name") => {
+                removed_syntax(meta, "name = ...", "data(\"...\")")
+            }
             _ => Err(meta.error("expected a string")),
         })?;
         Ok(DataValueNode::new(path.take(meta)?))
@@ -62,6 +66,14 @@ mod tests {
         assert_value_err!({ data(amount) }, "expected a string");
         assert_value_err!({ data(42) }, "expected a string");
         assert_value_err!({ data(identifier = "amount") }, "expected a string");
+    }
+
+    #[test]
+    fn removed_name_key() {
+        assert_value_err!(
+            { data(name = "amount") },
+            "name = ... is removed in v2, use data(\"...\")"
+        );
     }
 
     #[test]

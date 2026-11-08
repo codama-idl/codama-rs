@@ -105,11 +105,11 @@ mod tests {
         for (meta, expected) in [
             (
                 syn::parse_quote! { date_time(string) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (
                 syn::parse_quote! { date_time(fixed_size(string, 4)) },
-                "number must be an IntegerTypeNode",
+                "number must be an integer(...) type",
             ),
             (syn::parse_quote! { date_time() }, "number is missing"),
             (
@@ -142,7 +142,7 @@ mod tests {
             ),
             (
                 syn::parse_quote! { date_time(integer(i64), ticks_per_second = 4294967296) },
-                "number too large to fit in target type",
+                "ticks_per_second must be at most 4294967295",
             ),
             (
                 syn::parse_quote! { date_time(integer(i64), 1000) },

@@ -71,7 +71,7 @@ mod tests {
         for value in ["1st", "my banana", "my-banana"] {
             let meta: Meta = syn::parse_quote! { identifier = #value };
             let error = IdentifierDirective::parse(&meta).unwrap_err();
-            assert_eq!(error.to_string(), format!("Invalid identifier: {value}"));
+            assert_eq!(error.to_string(), format!("Invalid identifier `{value}`: use letters, digits and underscores, not starting with a digit"));
         }
     }
 }
