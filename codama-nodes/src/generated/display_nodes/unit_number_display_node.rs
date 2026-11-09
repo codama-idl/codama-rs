@@ -7,9 +7,3 @@ pub struct UnitNumberDisplayNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<UnitNumberDisplayNode> for crate::Node {
-    fn from(val: UnitNumberDisplayNode) -> Self {
-        crate::Node::Display(val.into())
-    }
-}

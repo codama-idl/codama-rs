@@ -19,12 +19,6 @@ pub struct FixedPointTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<FixedPointTypeNode> for crate::Node {
-    fn from(val: FixedPointTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for FixedPointTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

@@ -6,8 +6,8 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
 use codama_nodes::{
-    FixedSizeTransformNode, HasKind, HasTransforms, Node, RegisteredTypeNode,
-    SizePrefixTransformNode, TransformNode, TypeNode,
+    FixedSizeTransformNode, HasKind, HasTransforms, Node, SizePrefixTransformNode, TransformNode,
+    TypeNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -181,7 +181,7 @@ fn update_type_node(
             .into());
     };
 
-    if let Node::Type(RegisteredTypeNode::StructField(mut field)) = node {
+    if let Node::StructFieldType(mut field) = node {
         field.r#type = Box::new(update(*field.r#type)?);
         return Ok(Some(field.into()));
     };

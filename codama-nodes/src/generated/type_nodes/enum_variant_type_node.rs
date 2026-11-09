@@ -17,12 +17,6 @@ pub struct EnumVariantTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<EnumVariantTypeNode> for crate::Node {
-    fn from(val: EnumVariantTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasIdentifier for EnumVariantTypeNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

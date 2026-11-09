@@ -8,13 +8,10 @@ use quote::quote;
 fn it_identifies_set_types() {
     assert_eq!(
         get_node_from_type(quote! { HashSet<u64> }),
-        Some(Node::Type(
-            SetTypeNode::new(
-                IntegerTypeNode::le(U64),
-                PrefixedCountNode::new(IntegerTypeNode::le(U32))
-            )
-            .into()
-        ))
+        Some(Node::from(SetTypeNode::new(
+            IntegerTypeNode::le(U64),
+            PrefixedCountNode::new(IntegerTypeNode::le(U32))
+        )))
     );
     assert!(get_node_from_type(quote! { std::collections::HashSet<u64> }).is_some());
     assert!(get_node_from_type(quote! { BTreeSet<u64> }).is_some());
@@ -30,12 +27,9 @@ fn it_identifies_set_types() {
 fn it_identifies_sets_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { HashSet<MyCustomType> }),
-        Some(Node::Type(
-            SetTypeNode::new(
-                DefinedTypeLinkNode::new("my_custom_type"),
-                PrefixedCountNode::new(IntegerTypeNode::le(U32))
-            )
-            .into()
-        ))
+        Some(Node::from(SetTypeNode::new(
+            DefinedTypeLinkNode::new("my_custom_type"),
+            PrefixedCountNode::new(IntegerTypeNode::le(U32))
+        )))
     );
 }

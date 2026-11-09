@@ -11,12 +11,6 @@ pub struct PdaLinkNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<PdaLinkNode> for crate::Node {
-    fn from(val: PdaLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
-
 impl HasIdentifier for PdaLinkNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

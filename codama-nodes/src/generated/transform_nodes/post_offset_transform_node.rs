@@ -8,9 +8,3 @@ pub struct PostOffsetTransformNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<PostOffsetTransformNode> for crate::Node {
-    fn from(val: PostOffsetTransformNode) -> Self {
-        crate::Node::Transform(val.into())
-    }
-}

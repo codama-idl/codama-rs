@@ -12,12 +12,6 @@ pub struct TupleTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<TupleTypeNode> for crate::Node {
-    fn from(val: TupleTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for TupleTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

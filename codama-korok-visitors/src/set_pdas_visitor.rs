@@ -5,8 +5,8 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    ConstantPdaSeedNode, Docs, Identifier, Node, PdaNode, PdaSeedNode, RegisteredTypeNode,
-    TypeNode, VariablePdaSeedNode,
+    ConstantPdaSeedNode, Docs, Identifier, Node, PdaNode, PdaSeedNode, TypeNode,
+    VariablePdaSeedNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -88,7 +88,7 @@ pub fn parse_pda_seed_nodes(
                     return Err(attribute.ast().error(message).into());
                 };
                 let (identifier, type_node) = match &field.node {
-                    Some(Node::Type(RegisteredTypeNode::StructField(struct_field))) => (
+                    Some(Node::StructFieldType(struct_field)) => (
                         struct_field.identifier.clone(),
                         (*struct_field.r#type).clone(),
                     ),

@@ -12,12 +12,6 @@ pub struct ZeroableOptionTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<ZeroableOptionTypeNode> for crate::Node {
-    fn from(val: ZeroableOptionTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for ZeroableOptionTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

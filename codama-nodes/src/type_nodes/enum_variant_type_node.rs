@@ -1,7 +1,4 @@
-use crate::{
-    Docs, EnumVariantTypeNode, HasKind, Identifier, Node, NodeTrait, RegisteredTypeNode, TypeNode,
-};
-use codama_errors::CodamaError;
+use crate::{Docs, EnumVariantTypeNode, Identifier, TypeNode};
 
 impl EnumVariantTypeNode {
     pub fn new<T>(identifier: T) -> Self
@@ -30,27 +27,15 @@ impl EnumVariantTypeNode {
     }
 }
 
-impl TryFrom<Node> for EnumVariantTypeNode {
-    type Error = CodamaError;
-
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
-        match node {
-            Node::Type(RegisteredTypeNode::EnumVariant(node)) => Ok(node),
-            _ => Err(CodamaError::InvalidNodeConversion {
-                from: node.kind().to_string(),
-                into: Self::KIND.to_string(),
-            }),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Node;
     use crate::{
         Identifier, IntegerTypeNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
         TupleTypeNode, U32, U64,
     };
+    use codama_errors::CodamaError;
 
     #[test]
     fn new() {

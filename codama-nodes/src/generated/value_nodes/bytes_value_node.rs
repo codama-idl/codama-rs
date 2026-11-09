@@ -8,9 +8,3 @@ pub struct BytesValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<BytesValueNode> for crate::Node {
-    fn from(val: BytesValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

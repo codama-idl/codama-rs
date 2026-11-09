@@ -12,9 +12,10 @@ const contextualValueCategory = spec.categories.find(c => c.name === 'contextual
 const pdaValuePdaUnion = contextualValueCategory.unions.find(u => u.name === 'pdaValuePda')!;
 
 describe('getUnionPageFragment', () => {
-    it('emits #[node_union] and a PascalCase enum name', () => {
+    it('emits #[derive(NodeConversions)], #[node_union] and a PascalCase enum name', () => {
         const result = getUnionPageFragment(linkUnion, spec);
-        expect(result.content).toContain('#[node_union]');
+        expect(result.content).toContain('#[derive(NodeConversions)]\n#[node_union]');
+        expect([...result.imports.keys()]).toContain('codama_nodes_derive::NodeConversions');
         expect(result.content).toContain('pub enum LinkNode {');
     });
 

@@ -8,9 +8,3 @@ pub struct SizeDiscriminatorNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<SizeDiscriminatorNode> for crate::Node {
-    fn from(val: SizeDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}

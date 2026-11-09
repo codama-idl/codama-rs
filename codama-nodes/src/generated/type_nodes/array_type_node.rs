@@ -11,12 +11,6 @@ pub struct ArrayTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<ArrayTypeNode> for crate::Node {
-    fn from(val: ArrayTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for ArrayTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

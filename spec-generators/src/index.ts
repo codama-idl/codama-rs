@@ -12,12 +12,13 @@ import { type Fragment } from '@codama/fragments/rust';
 import { getSpec, type Spec } from '@codama/spec';
 
 import { withBaseAttributes } from './baseAttributes';
-import { CATEGORY_ROUTING } from './defaults';
+import { CATEGORY_OPTIONS } from './defaults';
 import {
     getCodamaVersionPageFragment,
     getEnumPageFragment,
     getLiteralUnionPageFragment,
     getModPagesRenderMap,
+    getNodeEnumPageFragment,
     getNodePageFragment,
     getPageFragment,
     getRegisteredUnionPageFragment,
@@ -34,7 +35,7 @@ import {
 import { getRepoDirectory } from './repoDirectory';
 import { getEmittableUnions, isRegisteredCategoryUnion } from './unions';
 
-export { CATEGORY_DIRECTORIES, type CategoryRouting, CATEGORY_ROUTING } from './defaults';
+export { CATEGORY_DIRECTORIES, CATEGORY_OPTIONS, type CategoryOptions } from './defaults';
 export {
     buildRenderScope,
     type GenerateOptions,
@@ -108,20 +109,20 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             }
         }
 
-        const routing = CATEGORY_ROUTING.get(category.name);
-        if (!routing) continue;
+        const categoryOptions = CATEGORY_OPTIONS.get(category.name);
+        if (!categoryOptions) continue;
         if (folder === undefined) {
             throw new Error(`categoryDirectories has no entry for category "${category.name}".`);
         }
 
         for (const node of category.nodes) {
             const path = joinPath(folder, `${snakeCase(node.kind)}.rs`);
-            entries[path] = getPageFragment(getNodePageFragment(node, routing, spec));
+            entries[path] = getPageFragment(getNodePageFragment(node, spec));
         }
         // `emitUnions: false` keeps a category's unions entirely
         // hand-written (currently `type`: `typeNode` holds the
         // cross-category `definedTypeLinkNode`, which `registeredTypeNode` lacks).
-        if (routing.emitUnions === false) continue;
+        if (categoryOptions.emitUnions === false) continue;
         for (const union of getEmittableUnions(category, spec)) {
             const path = joinPath(folder, `${snakeCase(union.name)}.rs`);
             const fragment = isRegisteredCategoryUnion(union, spec)
@@ -148,6 +149,10 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
             entries[path] = getPageFragment(getLiteralUnionPageFragment(ref));
         }
     }
+
+    // The flat `Node` and borrowed `NodeRef` enums over every emitted node.
+    const nodes = spec.categories.filter(c => CATEGORY_OPTIONS.has(c.name)).flatMap(c => c.nodes);
+    entries['node.rs'] = getPageFragment(getNodeEnumPageFragment(nodes));
 
     // `CODAMA_VERSION` constant pinned to the spec version at
     // generation time, mirroring the JS `CODAMA_VERSION`. Used by the

@@ -9,12 +9,6 @@ pub struct StructFieldValueNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<StructFieldValueNode> for crate::Node {
-    fn from(val: StructFieldValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}
-
 impl HasIdentifier for StructFieldValueNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

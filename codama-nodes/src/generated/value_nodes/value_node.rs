@@ -4,10 +4,11 @@ use crate::{
     NoneValueNode, PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode,
     StructFieldValueNode, StructValueNode, TupleValueNode,
 };
-use codama_nodes_derive::{node_union, RegisteredNodes};
+use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};
 
 #[derive(RegisteredNodes)]
 #[node_union]
+#[derive(NodeConversions)]
 pub enum RegisteredValueNode {
     Array(ArrayValueNode),
     Boolean(BooleanValueNode),

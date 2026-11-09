@@ -8,9 +8,3 @@ pub struct MapEntryValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<MapEntryValueNode> for crate::Node {
-    fn from(val: MapEntryValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

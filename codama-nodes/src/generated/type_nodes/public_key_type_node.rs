@@ -12,12 +12,6 @@ pub struct PublicKeyTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<PublicKeyTypeNode> for crate::Node {
-    fn from(val: PublicKeyTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for PublicKeyTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

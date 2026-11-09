@@ -9,9 +9,3 @@ pub struct SentinelCountNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<SentinelCountNode> for crate::Node {
-    fn from(val: SentinelCountNode) -> Self {
-        crate::Node::Count(val.into())
-    }
-}

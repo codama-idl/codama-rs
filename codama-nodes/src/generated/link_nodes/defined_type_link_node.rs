@@ -13,12 +13,6 @@ pub struct DefinedTypeLinkNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<DefinedTypeLinkNode> for crate::Node {
-    fn from(val: DefinedTypeLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
-
 impl HasIdentifier for DefinedTypeLinkNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

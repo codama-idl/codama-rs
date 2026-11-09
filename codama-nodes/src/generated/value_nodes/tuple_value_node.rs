@@ -9,9 +9,3 @@ pub struct TupleValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<TupleValueNode> for crate::Node {
-    fn from(val: TupleValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

@@ -11,9 +11,3 @@ pub struct InstructionDisplayNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<InstructionDisplayNode> for crate::Node {
-    fn from(val: InstructionDisplayNode) -> Self {
-        crate::Node::Display(val.into())
-    }
-}

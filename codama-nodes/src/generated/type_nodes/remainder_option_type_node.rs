@@ -10,12 +10,6 @@ pub struct RemainderOptionTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<RemainderOptionTypeNode> for crate::Node {
-    fn from(val: RemainderOptionTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for RemainderOptionTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

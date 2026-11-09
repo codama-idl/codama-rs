@@ -12,12 +12,6 @@ pub struct StringTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<StringTypeNode> for crate::Node {
-    fn from(val: StringTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for StringTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

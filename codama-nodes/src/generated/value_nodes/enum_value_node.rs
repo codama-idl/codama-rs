@@ -10,9 +10,3 @@ pub struct EnumValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<EnumValueNode> for crate::Node {
-    fn from(val: EnumValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

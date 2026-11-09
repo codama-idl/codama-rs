@@ -8,9 +8,3 @@ pub struct FieldDiscriminatorNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<FieldDiscriminatorNode> for crate::Node {
-    fn from(val: FieldDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}

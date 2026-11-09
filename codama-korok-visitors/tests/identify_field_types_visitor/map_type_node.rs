@@ -9,14 +9,11 @@ use quote::quote;
 fn it_identifies_map_types() {
     assert_eq!(
         get_node_from_type(quote! { HashMap<u64, bool> }),
-        Some(Node::Type(
-            MapTypeNode::new(
-                IntegerTypeNode::le(U64),
-                BooleanTypeNode::default(),
-                PrefixedCountNode::new(IntegerTypeNode::le(U32))
-            )
-            .into()
-        ))
+        Some(Node::from(MapTypeNode::new(
+            IntegerTypeNode::le(U64),
+            BooleanTypeNode::default(),
+            PrefixedCountNode::new(IntegerTypeNode::le(U32))
+        )))
     );
     assert!(get_node_from_type(quote! { std::collections::HashMap<u64, bool> }).is_some());
     assert!(get_node_from_type(quote! { BTreeMap<u64, bool> }).is_some());
@@ -32,13 +29,10 @@ fn it_identifies_map_types() {
 fn it_identifies_maps_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { HashMap<MyCustomType, u64> }),
-        Some(Node::Type(
-            MapTypeNode::new(
-                DefinedTypeLinkNode::new("my_custom_type"),
-                IntegerTypeNode::le(U64),
-                PrefixedCountNode::new(IntegerTypeNode::le(U32))
-            )
-            .into()
-        ))
+        Some(Node::from(MapTypeNode::new(
+            DefinedTypeLinkNode::new("my_custom_type"),
+            IntegerTypeNode::le(U64),
+            PrefixedCountNode::new(IntegerTypeNode::le(U32))
+        )))
     );
 }

@@ -11,12 +11,6 @@ pub struct InstructionLinkNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<InstructionLinkNode> for crate::Node {
-    fn from(val: InstructionLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
-
 impl HasIdentifier for InstructionLinkNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

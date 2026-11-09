@@ -97,6 +97,7 @@ describe('getRenderMap', () => {
             'link_nodes/pda_link_node.rs',
             'link_nodes/program_link_node.rs',
             'mod.rs',
+            'node.rs',
             'pda_node.rs',
             'pda_seed_nodes/constant_pda_seed_node.rs',
             'pda_seed_nodes/constant_pda_seed_value.rs',
@@ -181,8 +182,8 @@ describe('getRenderMap', () => {
         // Render-map content is pre-format (no indentation); `cargo fmt`
         // restores it on disk.
         const entry = getFromRenderMap(map, 'value_nodes/value_node.rs');
-        expect(entry.content).toContain('use codama_nodes_derive::{node_union, RegisteredNodes};');
-        expect(entry.content).toContain('#[derive(RegisteredNodes)]');
+        expect(entry.content).toContain('use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};');
+        expect(entry.content).toContain('#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]');
         expect(entry.content).toContain('#[node_union]');
         expect(entry.content).toContain('pub enum RegisteredValueNode {');
         // Standalone variants (alphabetical).
@@ -199,18 +200,18 @@ describe('getRenderMap', () => {
         expect(entry.content).toContain('use codama_nodes_derive::node;');
     });
 
-    it('per-node pages declare the struct, the From impl, and the HasIdentifier impl', () => {
+    it('per-node pages declare the struct and the HasIdentifier impl', () => {
         const entry = getFromRenderMap(map, 'link_nodes/account_link_node.rs');
         expect(entry.content).toContain('#[node]');
         expect(entry.content).toContain('pub struct AccountLinkNode {');
         expect(entry.content).toContain('{\npub identifier: Identifier,');
-        expect(entry.content).toContain('impl From<AccountLinkNode> for crate::Node {');
         expect(entry.content).toContain('impl HasIdentifier for AccountLinkNode {');
     });
 
     it('emits the LinkNode union with the node_union macro, every variant, and a HasIdentifier impl', () => {
         const entry = getFromRenderMap(map, 'link_nodes/link_node.rs');
-        expect(entry.content).toContain('use codama_nodes_derive::node_union;');
+        expect(entry.content).toContain('use codama_nodes_derive::{node_union, NodeConversions};');
+        expect(entry.content).toContain('#[derive(NodeConversions)]\n#[node_union]');
         expect(entry.content).toContain('#[node_union]');
         expect(entry.content).toContain('pub enum LinkNode {');
         expect(entry.content).toContain('Account(AccountLinkNode),');
@@ -286,14 +287,12 @@ describe('getRenderMap', () => {
     });
 
     describe('count category', () => {
-        it('routes FixedCountNode through Node::Count and emits the u64 field plus #[derive(Default)]', () => {
+        it('emits FixedCountNode with the u64 field plus #[derive(Default)]', () => {
             const entry = getFromRenderMap(map, 'count_nodes/fixed_count_node.rs');
             expect(entry.content).toContain('#[node]');
             expect(entry.content).toContain('#[derive(Default)]');
             expect(entry.content).toContain('pub struct FixedCountNode {');
             expect(entry.content).toContain('pub value: u64,');
-            expect(entry.content).toContain('impl From<FixedCountNode> for crate::Node {');
-            expect(entry.content).toContain('crate::Node::Count(val.into())');
         });
 
         it('emits RemainderCountNode with the base `plugins` field only and #[derive(Default)]', () => {
@@ -316,10 +315,9 @@ describe('getRenderMap', () => {
     });
 
     describe('discriminator category', () => {
-        it('routes through Node::Discriminator and emits u64 offset/size fields', () => {
+        it('emits u64 offset/size fields', () => {
             const constant = getFromRenderMap(map, 'discriminator_nodes/constant_discriminator_node.rs');
             expect(constant.content).toContain('pub offset: u64,');
-            expect(constant.content).toContain('crate::Node::Discriminator(val.into())');
             const size = getFromRenderMap(map, 'discriminator_nodes/size_discriminator_node.rs');
             expect(size.content).toContain('#[derive(Default)]');
             expect(size.content).toContain('pub size: u64,');
@@ -339,12 +337,6 @@ describe('getRenderMap', () => {
     });
 
     describe('display category', () => {
-        it('routes display nodes through Node::Display', () => {
-            const entry = getFromRenderMap(map, 'display_nodes/string_display_node.rs');
-            expect(entry.content).toContain('pub struct StringDisplayNode {');
-            expect(entry.content).toContain('crate::Node::Display(val.into())');
-        });
-
         it('emits the flattened DisplayNode union over every display node (no registered twin)', () => {
             const entry = getFromRenderMap(map, 'display_nodes/display_node.rs');
             expect(entry.content).toContain('#[node_union]');
@@ -368,7 +360,7 @@ describe('getRenderMap', () => {
     });
 
     describe('pdaSeed category', () => {
-        it('routes through Node::PdaSeed and references the inline ConstantPdaSeedValue enum', () => {
+        it('references the inline ConstantPdaSeedValue enum', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/constant_pda_seed_node.rs');
             expect(entry.content).toContain('pub struct ConstantPdaSeedNode {');
             // Box rule: direct union fields are boxed.
@@ -376,7 +368,6 @@ describe('getRenderMap', () => {
             // The value field type is the generated inline union, NOT the
             // pre-existing ValueNode.
             expect(entry.content).toContain('pub value: Box<ConstantPdaSeedValue>,');
-            expect(entry.content).toContain('crate::Node::PdaSeed(val.into())');
         });
 
         it('emits the ConstantPdaSeedValue inline-union enum with stripped variant names', () => {
@@ -391,7 +382,7 @@ describe('getRenderMap', () => {
             expect(entry.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');
         });
 
-        it('routes VariablePdaSeedNode through Node::PdaSeed with HasIdentifier + a bare Docs field', () => {
+        it('emits VariablePdaSeedNode with HasIdentifier + a bare Docs field', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/variable_pda_seed_node.rs');
             expect(entry.content).toContain('pub struct VariablePdaSeedNode {');
             expect(entry.content).toContain('pub identifier: Identifier,');
@@ -411,11 +402,6 @@ describe('getRenderMap', () => {
     });
 
     describe('value category', () => {
-        it('routes every value node through Node::Value', () => {
-            const entry = getFromRenderMap(map, 'value_nodes/boolean_value_node.rs');
-            expect(entry.content).toContain('crate::Node::Value(val.into())');
-        });
-
         it('applies the box-all-union rule on direct union fields (required → Box<T>)', () => {
             const constant = getFromRenderMap(map, 'value_nodes/constant_value_node.rs');
             expect(constant.content).toContain('pub r#type: Box<TypeNode>,');
@@ -466,14 +452,9 @@ describe('getRenderMap', () => {
     });
 
     describe('contextualValue category', () => {
-        it('routes every contextualValue node through Node::ContextualValue', () => {
-            const entry = getFromRenderMap(map, 'contextual_value_nodes/account_value_node.rs');
-            expect(entry.content).toContain('crate::Node::ContextualValue(val.into())');
-        });
-
         it('emits the RegisteredContextualValueNode union via the RegisteredNodes derive', () => {
             const entry = getFromRenderMap(map, 'contextual_value_nodes/contextual_value_node.rs');
-            expect(entry.content).toContain('#[derive(RegisteredNodes)]');
+            expect(entry.content).toContain('#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]');
             expect(entry.content).toContain('pub enum RegisteredContextualValueNode {');
             // Standalone variants (alphabetical, stripped ValueNode).
             expect(entry.content).toContain('Account(AccountValueNode),');
@@ -520,31 +501,49 @@ describe('getRenderMap', () => {
         });
     });
 
-    describe('topLevel category (direct routing)', () => {
-        it('emits no `impl From<…> for crate::Node` for any topLevel node', () => {
-            for (const file of [
-                'account_node.rs',
-                'constant_node.rs',
-                'defined_type_node.rs',
-                'error_node.rs',
-                'event_node.rs',
-                'instruction_account_node.rs',
-                'instruction_byte_delta_node.rs',
-                'instruction_node.rs',
-                'instruction_remaining_accounts_node.rs',
-                'instruction_status_node.rs',
-                'pda_node.rs',
-                'program_node.rs',
-                'provided_node.rs',
-                'root_node.rs',
-                'text_node.rs',
-            ]) {
-                const entry = getFromRenderMap(map, file);
-                expect(entry.content).not.toContain('impl From<');
-                expect(entry.content).not.toContain('crate::Node::');
-            }
+    describe('node.rs', () => {
+        const entry = getFromRenderMap(map, 'node.rs');
+        const nodeCount = getSpec()
+            .categories.filter(c => c.name !== 'shared')
+            .flatMap(c => c.nodes).length;
+
+        it('emits a flat Node enum with one suffix-stripped variant per node kind', () => {
+            expect(entry.content).toContain(
+                '#[derive(NodeUnion, From, Debug, PartialEq, Clone)]\n#[non_exhaustive]\npub enum Node {',
+            );
+            expect(entry.content).toContain('Account(AccountNode),');
+            expect(entry.content).toContain('StringType(StringTypeNode),');
+            expect(entry.content).toContain('PdaValue(PdaValueNode),');
+            expect(entry.content).toContain('FixedSizeTransform(FixedSizeTransformNode),');
+            expect(entry.content.match(/^impl TryFrom<Node> for /gm)).toHaveLength(nodeCount);
         });
 
+        it('emits a borrowed NodeRef enum with the same variants', () => {
+            expect(entry.content).toContain(
+                "#[derive(Debug, PartialEq, Clone, Copy)]\n#[non_exhaustive]\npub enum NodeRef<'a> {",
+            );
+            expect(entry.content).toContain("StringType(&'a StringTypeNode),");
+            expect(entry.content).toContain("impl<'a> From<&'a Node> for NodeRef<'a> {");
+            expect(entry.content).toContain('Node::StringType(node) => Self::StringType(node),');
+            expect(entry.content).toContain('Self::StringType(node) => Node::StringType(node.clone()),');
+            expect(entry.content.match(/^impl<'a> From<&'a \w+> for NodeRef<'a> \{/gm)).toHaveLength(nodeCount + 1);
+        });
+
+        it('reports the node kind when a Node does not convert into a node struct', () => {
+            expect(entry.content).toContain('impl TryFrom<Node> for StringTypeNode {');
+            expect(entry.content).toContain('Node::StringType(node) => Ok(node),');
+            expect(entry.content).toContain('into: "stringTypeNode".to_string(),');
+        });
+
+        it('leaves the Node conversions out of every per-node page', () => {
+            for (const [path, page] of map) {
+                if (path === 'node.rs') continue;
+                expect(page.content).not.toContain('crate::Node::');
+            }
+        });
+    });
+
+    describe('topLevel category', () => {
         it('renders providedNode.node (an anyNode child) as a boxed `Box<Node>`', () => {
             const entry = getFromRenderMap(map, 'provided_node.rs');
             expect(entry.content).toContain('pub struct ProvidedNode {');
@@ -673,7 +672,6 @@ describe('getRenderMap', () => {
             expect([...map.keys()].filter(k => k.startsWith('transform_nodes/'))).toHaveLength(9);
             const entry = getFromRenderMap(map, 'transform_nodes/fixed_size_transform_node.rs');
             expect(entry.content).toContain('#[node]');
-            expect(entry.content).toContain('crate::Node::Transform(val.into())');
         });
 
         it('emits the TransformNode union with suffix-stripped variants', () => {
@@ -685,13 +683,12 @@ describe('getRenderMap', () => {
     });
 
     describe('type category', () => {
-        it('emits the 18 standalone type nodes with `#[type_node]` and routes through `Node::Type`', () => {
+        it('emits the 18 standalone type nodes with `#[type_node]`', () => {
             const pages = [...map.values()].filter(f => f.content.includes('#[type_node]'));
             expect(pages).toHaveLength(18);
             const entry = getFromRenderMap(map, 'type_nodes/integer_type_node.rs');
             expect(entry.content).toContain('#[type_node]');
             expect(entry.content).toContain('pub struct IntegerTypeNode {');
-            expect(entry.content).toContain('crate::Node::Type(val.into())');
         });
 
         it('emits `enumVariantTypeNode` and `structFieldTypeNode` with `#[node]` (not `#[type_node]`)', () => {

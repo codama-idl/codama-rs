@@ -74,11 +74,11 @@ pnpm generate
 
 ## Scope
 
-The generator emits a source file for every node of the spec categories in `CATEGORY_ROUTING` (`src/defaults.ts`), plus their unions, the `shared` enumerations and literal unions, and `CODAMA_VERSION`. Each generated per-node file contains the struct definition wrapped in `#[node]` or `#[type_node]`, a `From<Self> for crate::Node` impl routing through the category's union variant (except `topLevel` nodes, which are direct `Node` variants), and a `HasIdentifier` impl when the node has a required `identifier: stringIdentifier()` attribute. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasIdentifier` impl when every member node has one.
+The generator emits a source file for every node of the spec categories in `CATEGORY_OPTIONS` (`src/defaults.ts`), plus their unions, the `shared` enumerations and literal unions, `CODAMA_VERSION`, and `node.rs`. Each generated per-node file contains the struct definition wrapped in `#[node]` or `#[type_node]`, and a `HasIdentifier` impl when the node has a required `identifier: stringIdentifier()` attribute. Each generated per-union file contains the union enum wrapped in `#[derive(NodeConversions)]` and `#[node_union]`, plus a `HasIdentifier` impl when every member node has one. `node.rs` holds the flat `Node` enum and its borrowed twin `NodeRef<'a>`, with one variant per node kind, and the conversions between them and every node struct.
 
 Per-node constructors (`AccountLinkNode::new`, etc.), bespoke `TryFrom` impls, and `#[cfg(test)] mod tests` blocks stay hand-written. They live in `codama-nodes/src/`, at the path of the generated file without `generated/` (for example `codama-nodes/src/link_nodes/account_link_node.rs`), and `use` the generated struct.
 
-The `type` category unions, the top-level `Node` registry, and the bespoke impls of enumerations and literal unions (`Default`, custom serde) stay hand-written.
+The `type` category unions and the bespoke impls of enumerations and literal unions (`Default`, custom serde) stay hand-written.
 
 ## Bumping `@codama/spec`
 

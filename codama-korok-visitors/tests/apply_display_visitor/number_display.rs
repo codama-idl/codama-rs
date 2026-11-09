@@ -484,9 +484,7 @@ fn it_traverses_rust_arrays_and_vectors() -> CodamaResult<()> {
         korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
         korok.accept(&mut ApplyDisplayVisitor::new())?;
 
-        let Some(codama_nodes::Node::Type(codama_nodes::RegisteredTypeNode::StructField(field))) =
-            korok.node
-        else {
+        let Some(codama_nodes::Node::StructFieldType(field)) = korok.node else {
             panic!("Expected a struct field type node");
         };
         let TypeNode::Array(array) = *field.r#type else {

@@ -10,12 +10,6 @@ pub struct BytesTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<BytesTypeNode> for crate::Node {
-    fn from(val: BytesTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for BytesTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

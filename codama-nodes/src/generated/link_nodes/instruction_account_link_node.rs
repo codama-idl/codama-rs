@@ -11,12 +11,6 @@ pub struct InstructionAccountLinkNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<InstructionAccountLinkNode> for crate::Node {
-    fn from(val: InstructionAccountLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
-
 impl HasIdentifier for InstructionAccountLinkNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

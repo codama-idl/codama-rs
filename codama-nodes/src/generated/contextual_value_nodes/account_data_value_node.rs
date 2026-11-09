@@ -10,9 +10,3 @@ pub struct AccountDataValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<AccountDataValueNode> for crate::Node {
-    fn from(val: AccountDataValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}

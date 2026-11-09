@@ -18,12 +18,6 @@ pub struct FloatTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<FloatTypeNode> for crate::Node {
-    fn from(val: FloatTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for FloatTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms
