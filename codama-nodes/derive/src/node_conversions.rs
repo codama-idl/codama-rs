@@ -1,4 +1,3 @@
-use crate::lowercase_first_letter;
 use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
@@ -33,14 +32,20 @@ pub fn expand_derive_node_conversions(input: &syn::DeriveInput) -> CodamaResult<
         false => quote! { #item_name::#name(node) => crate::NodeRef::from(node), },
     });
 
+    // A `FooBarNode` struct is the `Node::FooBar` variant, so a type off that convention fails to compile.
     let from_node_patterns = variants
         .iter()
         .map(|(name, ty, boxed)| -> CodamaResult<TokenStream> {
-            let kind = lowercase_first_letter(&ty.as_path()?.last_str());
-            let node = quote! { <#ty>::try_from(node)? };
+            let type_name = ty.as_path()?.last_str();
+            let variant = syn::Ident::new(
+                type_name.strip_suffix("Node").unwrap_or(&type_name),
+                proc_macro2::Span::call_site(),
+            );
             Ok(match boxed {
-                true => quote! { #kind => Ok(#item_name::#name(Box::new(#node))), },
-                false => quote! { #kind => Ok(#item_name::#name(#node)), },
+                true => {
+                    quote! { crate::Node::#variant(node) => Ok(#item_name::#name(Box::new(node))), }
+                }
+                false => quote! { crate::Node::#variant(node) => Ok(#item_name::#name(node)), },
             })
         })
         .collect_and_combine_errors()?;
@@ -66,10 +71,10 @@ pub fn expand_derive_node_conversions(input: &syn::DeriveInput) -> CodamaResult<
             type Error = codama_errors::CodamaError;
 
             fn try_from(node: crate::Node) -> core::result::Result<Self, Self::Error> {
-                match crate::HasKind::kind(&node) {
+                match node {
                     #(#from_node_patterns)*
-                    kind => Err(codama_errors::CodamaError::InvalidNodeConversion {
-                        from: kind.to_string(),
+                    node => Err(codama_errors::CodamaError::InvalidNodeConversion {
+                        from: crate::HasKind::kind(&node).to_string(),
                         into: #item_name_str.to_string(),
                     }),
                 }

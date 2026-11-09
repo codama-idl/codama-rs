@@ -14,7 +14,7 @@ mod tests {
     use super::*;
     use crate::{
         DefinedTypeLinkNode, DefinedTypeNode, FixedSizeTransformNode, IntegerValueNode, NodeRef,
-        ProgramNode, StringTypeNode, TextNode, TypeNode, ValueNode,
+        PayerValueNode, ProgramNode, StringTypeNode, TextNode, TypeNode, ValueNode,
     };
 
     #[test]
@@ -138,14 +138,24 @@ mod tests {
     }
 
     #[test]
-    fn node_ref_borrows_each_variant() {
+    fn node_ref_borrows_and_clones_each_variant() {
+        let nodes: [Node; 6] = [
+            StringTypeNode::utf8().into(),
+            IntegerValueNode::new(42).into(),
+            DefinedTypeLinkNode::new("myType").into(),
+            FixedSizeTransformNode::new(4).into(),
+            PayerValueNode::new().into(),
+            ProgramNode::default().into(),
+        ];
+        for node in nodes {
+            let node_ref = NodeRef::from(&node);
+            assert_eq!(node_ref.kind(), node.kind());
+            assert_eq!(node_ref.to_node(), node);
+        }
         let node: Node = StringTypeNode::utf8().into();
-        let node_ref = NodeRef::from(&node);
         assert!(
-            matches!(node_ref, NodeRef::StringType(string) if *string == StringTypeNode::utf8())
+            matches!(NodeRef::from(&node), NodeRef::StringType(string) if *string == StringTypeNode::utf8())
         );
-        assert_eq!(node_ref.kind(), "stringTypeNode");
-        assert_eq!(node_ref.to_node(), node);
     }
 
     #[test]
