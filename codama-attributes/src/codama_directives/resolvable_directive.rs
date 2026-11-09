@@ -296,7 +296,7 @@ mod tests {
         let directive = crate::SeedDirective::parse(&meta, &ctx).unwrap();
         match &directive.seed {
             crate::SeedDirectiveType::Variable { name, r#type } => {
-                assert_eq!(name, "authority");
+                assert_eq!(name, &codama_nodes::Identifier::from("authority"));
                 assert!(r#type.is_unresolved());
             }
             _ => panic!("expected Variable seed"),

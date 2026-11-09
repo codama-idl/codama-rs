@@ -1,9 +1,9 @@
 use crate::{
-    utils::{removed_name_key, SetOnce},
+    utils::{removed_name_key, FromMeta, SetOnce},
     Attribute, AttributeContext, CodamaAttribute, CodamaDirective, Resolvable,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{TypeNode, ValueNode};
+use codama_nodes::{Identifier, TypeNode, ValueNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
@@ -13,11 +13,11 @@ pub struct SeedDirective {
 
 #[derive(Debug, PartialEq)]
 pub enum SeedDirectiveType {
-    /// A seed that references a field by name. The type is inferred from the field.
+    /// A seed that references a field by its Rust name. The type is inferred from the field.
     Linked(String),
-    /// A variable seed with a name and type (which may be a plugin directive).
+    /// A variable seed with an identifier and type (which may be a plugin directive).
     Variable {
-        name: String,
+        name: Identifier,
         r#type: Resolvable<TypeNode>,
     },
     /// A constant seed with a type and value (which may be plugin directives).
@@ -41,14 +41,14 @@ impl SeedDirective {
             })
             .ok_or_else(|| meta.error("seed must at least specify `identifier` for variable seeds or `type` and `value` for constant seeds"))?;
 
-        let mut name = SetOnce::<String>::new("identifier");
+        let mut name = SetOnce::<Meta>::new("identifier");
         let mut r#type = SetOnce::<Resolvable<TypeNode>>::new("type");
         let mut value = SetOnce::<Resolvable<ValueNode>>::new("value");
 
         pl.each(|ref meta| match (meta.path_str().as_str(), constant_seed) {
             ("name", _) => removed_name_key(meta),
             ("identifier", true) => Err(meta.error("constant seeds cannot specify identifier")),
-            ("identifier", false) => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            ("identifier", false) => name.set(meta.as_value()?.clone(), meta),
             ("value", true) => {
                 value.set(Resolvable::<ValueNode>::from_meta(meta.as_value()?)?, meta)
             }
@@ -59,7 +59,7 @@ impl SeedDirective {
 
         // Resolve linked seed if possible.
         if !constant_seed && !r#type.is_set() {
-            let name = name.take(meta)?;
+            let name = name.take(meta)?.as_expr()?.as_string()?;
             if !has_matching_field(ctx, &name) {
                 let message = format!("Could not find field \"{name}\". Either specify a `type` for the seed or use a name that matches a struct or variant field.");
                 return Err(meta.error(message));
@@ -78,7 +78,7 @@ impl SeedDirective {
             }),
             false => Ok(Self {
                 seed: SeedDirectiveType::Variable {
-                    name: name.take(meta)?,
+                    name: Identifier::from_meta(&name.take(meta)?)?,
                     r#type: r#type.take(meta)?,
                 },
             }),
@@ -151,10 +151,22 @@ mod tests {
             directive,
             SeedDirective {
                 seed: SeedDirectiveType::Variable {
-                    name: "authority".to_string(),
+                    name: Identifier::from("authority"),
                     r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
                 },
             }
+        );
+    }
+
+    #[test]
+    fn variable_with_an_invalid_identifier() {
+        let meta: Meta = syn::parse_quote! { seed(identifier = "1st", type = public_key) };
+        let item = syn::parse_quote! { struct Foo; };
+        let ctx = AttributeContext::Item(&item);
+        let error = SeedDirective::parse(&meta, &ctx).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "Invalid identifier `1st`: use letters, digits and underscores, not starting with a digit"
         );
     }
 
