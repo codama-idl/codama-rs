@@ -1,7 +1,7 @@
 use crate::KorokTrait;
 use codama_attributes::{Attributes, IdentifierDirective, TryFromFilter};
 use codama_errors::{CodamaResult, IteratorCombineErrors};
-use codama_nodes::{Identifier, Node, RegisteredTypeNode, StructFieldTypeNode, TypeNode};
+use codama_nodes::{Identifier, Node, StructFieldTypeNode, TypeNode};
 use codama_syn_helpers::extensions::*;
 
 #[derive(Debug, PartialEq)]
@@ -48,7 +48,7 @@ impl<'a> FieldKorok<'a> {
 
     pub fn get_updated_type_node(&self, node: TypeNode) -> CodamaResult<Option<Node>> {
         Ok(match &self.node {
-            Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(
+            Some(Node::StructFieldType(field)) => Some(
                 StructFieldTypeNode {
                     r#type: Box::new(node),
                     ..field.clone()

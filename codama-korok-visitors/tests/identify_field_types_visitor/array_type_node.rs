@@ -10,15 +10,17 @@ fn it_identifies_vec_types() {
     let u32_prefix = PrefixedCountNode::new(IntegerTypeNode::le(U32));
     assert_eq!(
         get_node_from_type(quote! { Vec<u8> }),
-        Some(Node::Type(
-            ArrayTypeNode::new(IntegerTypeNode::le(U8), u32_prefix.clone()).into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            IntegerTypeNode::le(U8),
+            u32_prefix.clone()
+        )))
     );
     assert_eq!(
         get_node_from_type(quote! { std::vec::Vec<bool> }),
-        Some(Node::Type(
-            ArrayTypeNode::new(BooleanTypeNode::default(), u32_prefix.clone()).into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            BooleanTypeNode::default(),
+            u32_prefix.clone()
+        )))
     );
     assert_eq!(get_node_from_type(quote! { some::wrong::Vec<bool> }), None);
 }
@@ -27,13 +29,10 @@ fn it_identifies_vec_types() {
 fn it_identifies_vecs_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { Vec<MyCustomType> }),
-        Some(Node::Type(
-            ArrayTypeNode::new(
-                DefinedTypeLinkNode::new("my_custom_type"),
-                PrefixedCountNode::new(IntegerTypeNode::le(U32))
-            )
-            .into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            DefinedTypeLinkNode::new("my_custom_type"),
+            PrefixedCountNode::new(IntegerTypeNode::le(U32))
+        )))
     );
 }
 
@@ -41,15 +40,17 @@ fn it_identifies_vecs_of_custom_types() {
 fn it_identifies_fixed_array_types() {
     assert_eq!(
         get_node_from_type(quote! { [u8; 5] }),
-        Some(Node::Type(
-            ArrayTypeNode::new(IntegerTypeNode::le(U8), FixedCountNode::new(5)).into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            IntegerTypeNode::le(U8),
+            FixedCountNode::new(5)
+        )))
     );
     assert_eq!(
         get_node_from_type(quote! { [bool; 42] }),
-        Some(Node::Type(
-            ArrayTypeNode::new(BooleanTypeNode::default(), FixedCountNode::new(42)).into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            BooleanTypeNode::default(),
+            FixedCountNode::new(42)
+        )))
     );
     assert_eq!(get_node_from_type(quote! { [bool; 1 + 2 * 4] }), None);
 }
@@ -58,12 +59,9 @@ fn it_identifies_fixed_array_types() {
 fn it_identifies_fixed_arrays_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { [MyCustomType; 5] }),
-        Some(Node::Type(
-            ArrayTypeNode::new(
-                DefinedTypeLinkNode::new("my_custom_type"),
-                FixedCountNode::new(5)
-            )
-            .into()
-        ))
+        Some(Node::from(ArrayTypeNode::new(
+            DefinedTypeLinkNode::new("my_custom_type"),
+            FixedCountNode::new(5)
+        )))
     );
 }

@@ -8,15 +8,11 @@ use quote::quote;
 fn it_identifies_option_types() {
     assert_eq!(
         get_node_from_type(quote! { Option<u64> }),
-        Some(Node::Type(
-            OptionTypeNode::new(IntegerTypeNode::le(U64)).into()
-        ))
+        Some(Node::from(OptionTypeNode::new(IntegerTypeNode::le(U64))))
     );
     assert_eq!(
         get_node_from_type(quote! { std::option::Option<bool> }),
-        Some(Node::Type(
-            OptionTypeNode::new(BooleanTypeNode::default()).into()
-        ))
+        Some(Node::from(OptionTypeNode::new(BooleanTypeNode::default())))
     );
     assert_eq!(
         get_node_from_type(quote! { some::wrong::Option<bool> }),
@@ -40,8 +36,8 @@ fn it_fallsback_to_defined_type_link_nodes() {
 fn it_identifies_option_of_custom_types() {
     assert_eq!(
         get_node_from_type(quote! { Option<MyCustomType> }),
-        Some(Node::Type(
-            OptionTypeNode::new(DefinedTypeLinkNode::new("my_custom_type")).into()
-        ))
+        Some(Node::from(OptionTypeNode::new(DefinedTypeLinkNode::new(
+            "my_custom_type"
+        ))))
     );
 }

@@ -11,12 +11,6 @@ pub struct SetTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<SetTypeNode> for crate::Node {
-    fn from(val: SetTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for SetTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

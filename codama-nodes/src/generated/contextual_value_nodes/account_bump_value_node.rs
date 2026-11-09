@@ -9,12 +9,6 @@ pub struct AccountBumpValueNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<AccountBumpValueNode> for crate::Node {
-    fn from(val: AccountBumpValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
-
 impl HasIdentifier for AccountBumpValueNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

@@ -3,10 +3,11 @@ use crate::{
     DataValueNode, HasKind, IdentityValueNode, PayerValueNode, PdaSeedValueNode, PdaValueNode,
     ProgramIdValueNode,
 };
-use codama_nodes_derive::{node_union, RegisteredNodes};
+use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};
 
 #[derive(RegisteredNodes)]
 #[node_union]
+#[derive(NodeConversions)]
 pub enum RegisteredContextualValueNode {
     Account(AccountValueNode),
     AccountBump(AccountBumpValueNode),

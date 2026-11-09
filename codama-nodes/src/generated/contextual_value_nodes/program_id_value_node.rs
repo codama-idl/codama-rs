@@ -7,9 +7,3 @@ pub struct ProgramIdValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<ProgramIdValueNode> for crate::Node {
-    fn from(val: ProgramIdValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}

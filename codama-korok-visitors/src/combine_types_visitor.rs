@@ -7,8 +7,7 @@ use codama_errors::{CodamaResult, IteratorCombineErrors};
 use codama_koroks::{EnumVariantKorok, FieldKorok, KorokTrait};
 use codama_nodes::{
     DefinedTypeNode, EnumTypeNode, EnumVariantTypeNode, HasKind, IntegerFormat::U8,
-    IntegerTypeNode, Node, RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode,
-    TypeNode, ValueNode,
+    IntegerTypeNode, Node, StructFieldTypeNode, StructTypeNode, TupleTypeNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::*;
 use syn::spanned::Spanned;
@@ -66,7 +65,7 @@ impl CombineTypesVisitor {
         field: &FieldKorok,
     ) -> Option<CodamaResult<StructFieldTypeNode>> {
         match &field.node {
-            Some(Node::Type(RegisteredTypeNode::StructField(field))) => Some(Ok(field.clone())),
+            Some(Node::StructFieldType(field)) => Some(Ok(field.clone())),
             _ => None,
         }
     }

@@ -7,9 +7,3 @@ pub struct SizePrefixTransformNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<SizePrefixTransformNode> for crate::Node {
-    fn from(val: SizePrefixTransformNode) -> Self {
-        crate::Node::Transform(val.into())
-    }
-}

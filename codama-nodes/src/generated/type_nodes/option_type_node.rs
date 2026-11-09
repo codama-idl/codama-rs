@@ -13,12 +13,6 @@ pub struct OptionTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<OptionTypeNode> for crate::Node {
-    fn from(val: OptionTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for OptionTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

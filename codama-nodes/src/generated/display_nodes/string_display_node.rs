@@ -11,9 +11,3 @@ pub struct StringDisplayNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<StringDisplayNode> for crate::Node {
-    fn from(val: StringDisplayNode) -> Self {
-        crate::Node::Display(val.into())
-    }
-}

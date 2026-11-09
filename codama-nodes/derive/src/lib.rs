@@ -3,6 +3,7 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
 mod node;
+mod node_conversions;
 mod node_union;
 mod registered_nodes;
 mod type_node;
@@ -53,6 +54,15 @@ pub fn node_union(_attr: TokenStream, input: TokenStream) -> TokenStream {
 pub fn derive_node_union(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     node_union::expand_derive_node_union(&input)
+        .unwrap_or_else(CodamaError::into_compile_error)
+        .into()
+}
+
+/// Converts a node union to and from `crate::Node`, and borrows it as a `crate::NodeRef`.
+#[proc_macro_derive(NodeConversions)]
+pub fn derive_node_conversions(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    node_conversions::expand_derive_node_conversions(&input)
         .unwrap_or_else(CodamaError::into_compile_error)
         .into()
 }

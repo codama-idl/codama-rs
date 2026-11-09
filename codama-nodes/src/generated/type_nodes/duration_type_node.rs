@@ -12,12 +12,6 @@ pub struct DurationTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<DurationTypeNode> for crate::Node {
-    fn from(val: DurationTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for DurationTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

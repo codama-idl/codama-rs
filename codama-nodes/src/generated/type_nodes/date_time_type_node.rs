@@ -12,12 +12,6 @@ pub struct DateTimeTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<DateTimeTypeNode> for crate::Node {
-    fn from(val: DateTimeTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for DateTimeTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

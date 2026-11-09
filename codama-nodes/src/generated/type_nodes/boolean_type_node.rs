@@ -10,12 +10,6 @@ pub struct BooleanTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<BooleanTypeNode> for crate::Node {
-    fn from(val: BooleanTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for BooleanTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

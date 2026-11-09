@@ -2,7 +2,7 @@ use crate::KorokVisitor;
 use codama_attributes::{Attributes, DefaultValueDirective, TryFromFilter};
 use codama_errors::CodamaResult;
 use codama_koroks::{KorokMut, KorokTrait};
-use codama_nodes::{Node, RegisteredTypeNode, StructFieldTypeNode, ValueNode};
+use codama_nodes::{Node, StructFieldTypeNode, ValueNode};
 
 #[derive(Default)]
 pub struct SetDefaultValuesVisitor;
@@ -95,7 +95,7 @@ fn get_node_with_default_value(
 
     match node {
         // Handle struct fields.
-        Some(Node::Type(RegisteredTypeNode::StructField(field))) => {
+        Some(Node::StructFieldType(field)) => {
             let value = ValueNode::try_from(resolved_node.clone()).ok();
             Ok(value.map(|value| {
                 StructFieldTypeNode {

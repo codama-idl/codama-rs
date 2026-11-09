@@ -9,9 +9,3 @@ pub struct HiddenSuffixTransformNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<HiddenSuffixTransformNode> for crate::Node {
-    fn from(val: HiddenSuffixTransformNode) -> Self {
-        crate::Node::Transform(val.into())
-    }
-}

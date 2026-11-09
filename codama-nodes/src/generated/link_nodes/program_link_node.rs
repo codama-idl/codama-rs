@@ -9,12 +9,6 @@ pub struct ProgramLinkNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<ProgramLinkNode> for crate::Node {
-    fn from(val: ProgramLinkNode) -> Self {
-        crate::Node::Link(val.into())
-    }
-}
-
 impl HasIdentifier for ProgramLinkNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

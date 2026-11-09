@@ -9,9 +9,3 @@ pub struct HiddenPrefixTransformNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<HiddenPrefixTransformNode> for crate::Node {
-    fn from(val: HiddenPrefixTransformNode) -> Self {
-        crate::Node::Transform(val.into())
-    }
-}

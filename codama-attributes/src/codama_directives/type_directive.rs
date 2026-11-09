@@ -64,7 +64,7 @@ impl TryFrom<TypeNode> for TypeDirectiveNode {
 impl From<TypeDirectiveNode> for Node {
     fn from(node: TypeDirectiveNode) -> Self {
         match node {
-            TypeDirectiveNode::Registered(node) => Self::Type(node),
+            TypeDirectiveNode::Registered(node) => node.into(),
             TypeDirectiveNode::Link(node) => node.into(),
         }
     }

@@ -9,9 +9,3 @@ pub struct SetValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<SetValueNode> for crate::Node {
-    fn from(val: SetValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

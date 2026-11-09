@@ -7,9 +7,3 @@ pub struct IntegerValueNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<IntegerValueNode> for crate::Node {
-    fn from(val: IntegerValueNode) -> Self {
-        crate::Node::Value(val.into())
-    }
-}

@@ -9,9 +9,3 @@ pub struct AmountNumberDisplayNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<AmountNumberDisplayNode> for crate::Node {
-    fn from(val: AmountNumberDisplayNode) -> Self {
-        crate::Node::Display(val.into())
-    }
-}

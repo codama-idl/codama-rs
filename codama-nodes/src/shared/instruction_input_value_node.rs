@@ -1,4 +1,4 @@
-use crate::{HasKind, InstructionInputValueNode, Node, ValueNode};
+use crate::{HasKind, InstructionInputValueNode, ValueNode};
 use codama_errors::CodamaError;
 
 /// Bridge from the value-node union into the broader
@@ -61,62 +61,25 @@ impl TryFrom<InstructionInputValueNode> for ValueNode {
     }
 }
 
-/// Bridge into `Node`, for slots that take any node such as `providedNode.node`.
-impl From<InstructionInputValueNode> for Node {
-    fn from(value: InstructionInputValueNode) -> Self {
-        match value {
-            InstructionInputValueNode::AccountBumpValue(value) => value.into(),
-            InstructionInputValueNode::AccountDataValue(value) => value.into(),
-            InstructionInputValueNode::AccountValue(value) => value.into(),
-            InstructionInputValueNode::ArrayValue(value) => value.into(),
-            InstructionInputValueNode::BooleanValue(value) => value.into(),
-            InstructionInputValueNode::BytesValue(value) => value.into(),
-            InstructionInputValueNode::ConditionalValue(value) => value.into(),
-            InstructionInputValueNode::ConstantValue(value) => value.into(),
-            InstructionInputValueNode::DataValue(value) => value.into(),
-            InstructionInputValueNode::EnumValue(value) => value.into(),
-            InstructionInputValueNode::FloatValue(value) => value.into(),
-            InstructionInputValueNode::IdentityValue(value) => value.into(),
-            InstructionInputValueNode::InjectedValue(value) => value.into(),
-            InstructionInputValueNode::IntegerValue(value) => value.into(),
-            InstructionInputValueNode::MapValue(value) => value.into(),
-            InstructionInputValueNode::NoneValue(value) => value.into(),
-            InstructionInputValueNode::PayerValue(value) => value.into(),
-            InstructionInputValueNode::PdaValue(value) => value.into(),
-            InstructionInputValueNode::ProgramIdValue(value) => value.into(),
-            InstructionInputValueNode::ProgramLink(value) => value.into(),
-            InstructionInputValueNode::PublicKeyValue(value) => value.into(),
-            InstructionInputValueNode::SetValue(value) => value.into(),
-            InstructionInputValueNode::SomeValue(value) => value.into(),
-            InstructionInputValueNode::StringValue(value) => value.into(),
-            InstructionInputValueNode::StructValue(value) => value.into(),
-            InstructionInputValueNode::TupleValue(value) => value.into(),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        IntegerValueNode, LinkNode, PayerValueNode, ProgramLinkNode, RegisteredContextualValueNode,
-        RegisteredValueNode,
-    };
+    use crate::{IntegerValueNode, Node, PayerValueNode, ProgramLinkNode};
 
     #[test]
     fn into_node() {
         for (value, expected) in [
             (
                 InstructionInputValueNode::from(PayerValueNode::new()),
-                Node::ContextualValue(RegisteredContextualValueNode::Payer(PayerValueNode::new())),
+                Node::PayerValue(PayerValueNode::new()),
             ),
             (
                 IntegerValueNode::new(42).into(),
-                Node::Value(RegisteredValueNode::Integer(IntegerValueNode::new(42))),
+                Node::IntegerValue(IntegerValueNode::new(42)),
             ),
             (
                 ProgramLinkNode::new("system").into(),
-                Node::Link(LinkNode::Program(ProgramLinkNode::new("system"))),
+                Node::ProgramLink(ProgramLinkNode::new("system")),
             ),
         ] {
             assert_eq!(Node::from(value), expected);

@@ -1,100 +1,4 @@
-use crate::{
-    AccountNode, ConstantNode, ContextualValueNode, CountNode, DefinedTypeNode, DiscriminatorNode,
-    DisplayNode, ErrorNode, EventNode, HasKind, InstructionAccountNode, InstructionByteDeltaNode,
-    InstructionNode, InstructionRemainingAccountsNode, InstructionStatusNode, LinkNode,
-    NodeUnionTrait, PdaNode, PdaSeedNode, PluginNode, ProgramNode, ProvidedNode,
-    RegisteredContextualValueNode, RegisteredTypeNode, RegisteredValueNode, RootNode, TextNode,
-    TransformNode, TypeNode, ValueNode,
-};
-use derive_more::derive::From;
-use serde::{Deserialize, Serialize};
-
-#[derive(From, Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Node {
-    // Node unions.
-    ContextualValue(RegisteredContextualValueNode),
-    Count(CountNode),
-    Discriminator(DiscriminatorNode),
-    Display(DisplayNode),
-    Link(LinkNode),
-    PdaSeed(PdaSeedNode),
-    Transform(TransformNode),
-    Type(RegisteredTypeNode),
-    Value(RegisteredValueNode),
-
-    // Nodes.
-    Account(AccountNode),
-    Constant(ConstantNode),
-    DefinedType(DefinedTypeNode),
-    Error(ErrorNode),
-    Event(EventNode),
-    Instruction(InstructionNode),
-    InstructionAccount(InstructionAccountNode),
-    InstructionByteDelta(InstructionByteDeltaNode),
-    InstructionRemainingAccounts(InstructionRemainingAccountsNode),
-    InstructionStatus(InstructionStatusNode),
-    Pda(PdaNode),
-    Plugin(PluginNode),
-    Program(ProgramNode),
-    Provided(ProvidedNode),
-    Root(RootNode),
-    Text(TextNode),
-}
-
-impl From<ContextualValueNode> for Node {
-    fn from(node: ContextualValueNode) -> Self {
-        Node::ContextualValue(node.into())
-    }
-}
-
-impl From<TypeNode> for Node {
-    fn from(node: TypeNode) -> Self {
-        match node {
-            TypeNode::Link(link) => link.into(),
-            _ => Node::Type(node.try_into().unwrap()),
-        }
-    }
-}
-
-impl From<ValueNode> for Node {
-    fn from(node: ValueNode) -> Self {
-        Node::Value(node.into())
-    }
-}
-
-impl NodeUnionTrait for Node {}
-impl HasKind for Node {
-    fn kind(&self) -> &'static str {
-        match self {
-            Node::ContextualValue(node) => node.kind(),
-            Node::Count(node) => node.kind(),
-            Node::Discriminator(node) => node.kind(),
-            Node::Display(node) => node.kind(),
-            Node::Link(node) => node.kind(),
-            Node::PdaSeed(node) => node.kind(),
-            Node::Transform(node) => node.kind(),
-            Node::Type(node) => node.kind(),
-            Node::Value(node) => node.kind(),
-            Node::Account(node) => node.kind(),
-            Node::Constant(node) => node.kind(),
-            Node::DefinedType(node) => node.kind(),
-            Node::Error(node) => node.kind(),
-            Node::Event(node) => node.kind(),
-            Node::Instruction(node) => node.kind(),
-            Node::InstructionAccount(node) => node.kind(),
-            Node::InstructionByteDelta(node) => node.kind(),
-            Node::InstructionRemainingAccounts(node) => node.kind(),
-            Node::InstructionStatus(node) => node.kind(),
-            Node::Pda(node) => node.kind(),
-            Node::Plugin(node) => node.kind(),
-            Node::Program(node) => node.kind(),
-            Node::Provided(node) => node.kind(),
-            Node::Root(node) => node.kind(),
-            Node::Text(node) => node.kind(),
-        }
-    }
-}
+use crate::{HasKind, Node};
 
 impl HasKind for Option<Node> {
     fn kind(&self) -> &'static str {
@@ -108,7 +12,10 @@ impl HasKind for Option<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FixedSizeTransformNode, IntegerValueNode, StringTypeNode};
+    use crate::{
+        DefinedTypeLinkNode, DefinedTypeNode, FixedSizeTransformNode, IntegerValueNode, NodeRef,
+        ProgramNode, StringTypeNode, TextNode, TypeNode, ValueNode,
+    };
 
     #[test]
     fn kind() {
@@ -127,10 +34,7 @@ mod tests {
     fn type_node_from_json() {
         let json = r#"{"kind":"stringTypeNode","encoding":"utf8"}"#;
         let node: Node = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            node,
-            Node::Type(RegisteredTypeNode::String(StringTypeNode::utf8()))
-        );
+        assert_eq!(node, Node::StringType(StringTypeNode::utf8()));
     }
 
     #[test]
@@ -150,10 +54,10 @@ mod tests {
         let node: Node = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            Node::Transform(TransformNode::FixedSize(FixedSizeTransformNode {
+            Node::FixedSizeTransform(FixedSizeTransformNode {
                 size: 4,
                 plugins: vec![],
-            }))
+            })
         );
     }
 
@@ -168,10 +72,7 @@ mod tests {
     fn value_node_from_json() {
         let json = r#"{"kind":"integerValueNode","value":"42"}"#;
         let node: Node = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            node,
-            Node::Value(RegisteredValueNode::Integer(IntegerValueNode::new(42)))
-        );
+        assert_eq!(node, Node::IntegerValue(IntegerValueNode::new(42)));
     }
 
     #[test]
@@ -226,6 +127,68 @@ mod tests {
                 r#type: Box::new(StringTypeNode::utf8().into()),
                 plugins: vec![],
             })
+        );
+    }
+
+    #[test]
+    fn from_json_rejects_an_unknown_kind() {
+        let json = r#"{"kind":"bananaNode"}"#;
+        let error = serde_json::from_str::<Node>(json).unwrap_err();
+        assert_eq!(error.to_string(), "unknown kind bananaNode for Node");
+    }
+
+    #[test]
+    fn node_ref_borrows_each_variant() {
+        let node: Node = StringTypeNode::utf8().into();
+        let node_ref = NodeRef::from(&node);
+        assert!(
+            matches!(node_ref, NodeRef::StringType(string) if *string == StringTypeNode::utf8())
+        );
+        assert_eq!(node_ref.kind(), "stringTypeNode");
+        assert_eq!(node_ref.to_node(), node);
+    }
+
+    #[test]
+    fn node_ref_from_a_node_struct() {
+        let program = ProgramNode::default();
+        assert!(
+            matches!(NodeRef::from(&program), NodeRef::Program(p) if std::ptr::eq(p, &program))
+        );
+    }
+
+    #[test]
+    fn node_struct_try_from_node() {
+        let node: Node = IntegerValueNode::new(42).into();
+        assert_eq!(
+            IntegerValueNode::try_from(node.clone()).unwrap(),
+            IntegerValueNode::new(42)
+        );
+        let error = StringTypeNode::try_from(node).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "Could not convert node from `integerValueNode` into `stringTypeNode`"
+        );
+    }
+
+    #[test]
+    fn union_into_node_and_node_ref() {
+        let link = DefinedTypeLinkNode::new("myType");
+        let r#type = TypeNode::Link(link.clone());
+        assert!(matches!(NodeRef::from(&r#type), NodeRef::DefinedTypeLink(l) if *l == link));
+        assert_eq!(Node::from(r#type), Node::DefinedTypeLink(link));
+    }
+
+    #[test]
+    fn union_try_from_node() {
+        let node = Node::DefinedTypeLink(DefinedTypeLinkNode::new("myType"));
+        assert_eq!(
+            TypeNode::try_from(node.clone()).unwrap(),
+            TypeNode::Link(DefinedTypeLinkNode::new("myType"))
+        );
+        let error = ValueNode::try_from(node).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "Could not convert node from `definedTypeLinkNode` into `ValueNode`"
         );
     }
 }

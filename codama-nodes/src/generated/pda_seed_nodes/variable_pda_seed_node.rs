@@ -11,12 +11,6 @@ pub struct VariablePdaSeedNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<VariablePdaSeedNode> for crate::Node {
-    fn from(val: VariablePdaSeedNode) -> Self {
-        crate::Node::PdaSeed(val.into())
-    }
-}
-
 impl HasIdentifier for VariablePdaSeedNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

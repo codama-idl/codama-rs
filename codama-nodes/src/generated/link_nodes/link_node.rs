@@ -2,8 +2,9 @@ use crate::{
     AccountLinkNode, DefinedTypeLinkNode, HasIdentifier, Identifier, InstructionAccountLinkNode,
     InstructionLinkNode, PdaLinkNode, ProgramLinkNode,
 };
-use codama_nodes_derive::node_union;
+use codama_nodes_derive::{node_union, NodeConversions};
 
+#[derive(NodeConversions)]
 #[node_union]
 pub enum LinkNode {
     Account(AccountLinkNode),

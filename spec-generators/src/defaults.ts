@@ -3,37 +3,29 @@
  */
 
 /**
- * How a category's nodes reach the top-level `crate::Node` enum and
- * whether its unions are emitted by the generator.
- *
- *   - `wrapped`: generator emits `impl From<XxxNode> for crate::Node`
- *     routing through the category union (`crate::Node::<variant>(val.into())`).
- *   - `direct`: the node is a direct `Node` variant and `Node`'s
- *     `#[derive(From)]` auto-generates the impl.
+ * Generation options for a spec category whose nodes the generator emits.
  *
  * `emitUnions` defaults to `true`; set to `false` for categories whose
  * unions are too bespoke for the standard renderers (currently `type`).
  */
-export type CategoryRouting = (
-    | { readonly mode: 'wrapped'; readonly nodeVariant: string }
-    | { readonly mode: 'direct' }
-) & { readonly emitUnions?: boolean };
+export type CategoryOptions = { readonly emitUnions?: boolean };
 
 /**
- * Routing table for spec categories whose nodes the generator emits.
+ * The spec categories whose nodes the generator emits. Every emitted node
+ * is a direct variant of the generated `Node` and `NodeRef` enums.
  * Categories absent from this map are not generated.
  */
-export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
-    ['contextualValue', { mode: 'wrapped', nodeVariant: 'ContextualValue' }],
-    ['count', { mode: 'wrapped', nodeVariant: 'Count' }],
-    ['discriminator', { mode: 'wrapped', nodeVariant: 'Discriminator' }],
-    ['display', { mode: 'wrapped', nodeVariant: 'Display' }],
-    ['link', { mode: 'wrapped', nodeVariant: 'Link' }],
-    ['pdaSeed', { mode: 'wrapped', nodeVariant: 'PdaSeed' }],
-    ['topLevel', { mode: 'direct' }],
-    ['transform', { mode: 'wrapped', nodeVariant: 'Transform' }],
-    ['type', { mode: 'wrapped', nodeVariant: 'Type', emitUnions: false }],
-    ['value', { mode: 'wrapped', nodeVariant: 'Value' }],
+export const CATEGORY_OPTIONS: ReadonlyMap<string, CategoryOptions> = new Map([
+    ['contextualValue', {}],
+    ['count', {}],
+    ['discriminator', {}],
+    ['display', {}],
+    ['link', {}],
+    ['pdaSeed', {}],
+    ['topLevel', {}],
+    ['transform', {}],
+    ['type', { emitUnions: false }],
+    ['value', {}],
 ]);
 
 /**
@@ -41,8 +33,8 @@ export const CATEGORY_ROUTING: ReadonlyMap<string, CategoryRouting> = new Map([
  * generator emits its entities into (relative to `generated/`). The
  * empty string places `topLevel` entities at the root.
  *
- * Only categories with a corresponding routing entry in
- * {@link CATEGORY_ROUTING} get node and union pages. `shared` holds
+ * Only categories with an entry in {@link CATEGORY_OPTIONS} get node
+ * and union pages. `shared` holds
  * enumerations and literalUnion shells only.
  */
 export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([

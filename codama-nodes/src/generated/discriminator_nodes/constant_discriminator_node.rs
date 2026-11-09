@@ -8,9 +8,3 @@ pub struct ConstantDiscriminatorNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<ConstantDiscriminatorNode> for crate::Node {
-    fn from(val: ConstantDiscriminatorNode) -> Self {
-        crate::Node::Discriminator(val.into())
-    }
-}

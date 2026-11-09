@@ -12,12 +12,6 @@ pub struct EnumTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<EnumTypeNode> for crate::Node {
-    fn from(val: EnumTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for EnumTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

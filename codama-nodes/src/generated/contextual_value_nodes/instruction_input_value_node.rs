@@ -6,8 +6,9 @@ use crate::{
     PublicKeyValueNode, SetValueNode, SomeValueNode, StringValueNode, StructValueNode,
     TupleValueNode,
 };
-use codama_nodes_derive::node_union;
+use codama_nodes_derive::{node_union, NodeConversions};
 
+#[derive(NodeConversions)]
 #[node_union]
 pub enum InstructionInputValueNode {
     AccountBumpValue(AccountBumpValueNode),

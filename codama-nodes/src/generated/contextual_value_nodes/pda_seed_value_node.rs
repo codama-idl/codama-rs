@@ -9,12 +9,6 @@ pub struct PdaSeedValueNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<PdaSeedValueNode> for crate::Node {
-    fn from(val: PdaSeedValueNode) -> Self {
-        crate::Node::ContextualValue(val.into())
-    }
-}
-
 impl HasIdentifier for PdaSeedValueNode {
     fn identifier(&self) -> &Identifier {
         &self.identifier

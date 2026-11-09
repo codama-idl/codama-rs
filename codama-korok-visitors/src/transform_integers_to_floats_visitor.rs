@@ -5,8 +5,7 @@ use codama_nodes::{
     ConstantPdaSeedValue, ConstantValueNode, CountNode, DiscriminatorNode, FloatValueNode,
     HasTransforms, Identifier, InstructionInputValueNode, InstructionNode, Node, PdaNode,
     PdaSeedNode, PdaSeedValueValue, PdaValueNode, PdaValuePda, ProgramLinkNode, ProgramNode,
-    RegisteredContextualValueNode, RootNode, StructFieldTypeNode, TransformNode, TypeNode,
-    ValueNode,
+    RootNode, StructFieldTypeNode, TransformNode, TypeNode, ValueNode,
 };
 
 /// Turns each integer value whose type resolves to a float type into a float value with the same digits.
@@ -176,9 +175,7 @@ impl<'a> Scope<'a> {
         }
         self.walk_discriminators(&mut instruction.discriminators);
         for provided in &mut instruction.provides {
-            if let Node::ContextualValue(RegisteredContextualValueNode::Pda(value)) =
-                &mut *provided.node
-            {
+            if let Node::PdaValue(value) = &mut *provided.node {
                 self.walk_pda_value(value);
             }
         }

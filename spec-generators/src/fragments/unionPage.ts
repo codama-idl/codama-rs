@@ -9,7 +9,7 @@ import { use } from './helpers';
 /**
  * The body for one spec union's generated source file:
  *
- *   1. `#[node_union] pub enum XxxUnion { Variant(MemberNode), … }` —
+ *   1. `#[derive(NodeConversions)] #[node_union] pub enum XxxUnion { Variant(MemberNode), … }` —
  *      variants are the union's flattened leaf nodes, sorted
  *      alphabetically. Variant name = pascalCase(kind) minus the
  *      union's implied node suffix (e.g. `accountLinkNode` in
@@ -79,5 +79,5 @@ function buildEnumFragment(unionName: string, variants: readonly UnionVariant[])
         variants.map(v => fragment`${v.name}(${use(`crate::${pascalCase(v.node.kind)}`)}),`),
         parts => parts.join('\n'),
     );
-    return fragment`#[${use('codama_nodes_derive::node_union')}]\npub enum ${unionName} {\n${lines}\n}`;
+    return fragment`#[derive(${use('codama_nodes_derive::NodeConversions')})]\n#[${use('codama_nodes_derive::node_union')}]\npub enum ${unionName} {\n${lines}\n}`;
 }

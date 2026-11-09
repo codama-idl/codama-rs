@@ -8,9 +8,3 @@ pub struct ConstantPdaSeedNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<ConstantPdaSeedNode> for crate::Node {
-    fn from(val: ConstantPdaSeedNode) -> Self {
-        crate::Node::PdaSeed(val.into())
-    }
-}

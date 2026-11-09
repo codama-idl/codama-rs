@@ -5,8 +5,7 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::{FieldKorok, KorokMut, KorokTrait};
 use codama_nodes::{
-    HasKind, Node, NumberDisplayNode, RegisteredTypeNode, StructFieldDisplayNode, TypeNode,
-    UnitNumberDisplayNode,
+    HasKind, Node, NumberDisplayNode, StructFieldDisplayNode, TypeNode, UnitNumberDisplayNode,
 };
 use codama_syn_helpers::extensions::ToTokensExtension;
 
@@ -63,7 +62,7 @@ fn apply_display(
     };
 
     match node {
-        Node::Type(RegisteredTypeNode::StructField(mut field)) => {
+        Node::StructFieldType(mut field) => {
             apply_struct_field_display(&mut field.display, directive);
             apply_optional_number_display(&mut field.r#type, directive, attribute)?;
             Ok(Some(field.into()))

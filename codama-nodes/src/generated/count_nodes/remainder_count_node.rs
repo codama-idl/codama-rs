@@ -7,9 +7,3 @@ pub struct RemainderCountNode {
     #[serde(default, skip_serializing_if = "crate::is_default")]
     pub plugins: Vec<PluginNode>,
 }
-
-impl From<RemainderCountNode> for crate::Node {
-    fn from(val: RemainderCountNode) -> Self {
-        crate::Node::Count(val.into())
-    }
-}

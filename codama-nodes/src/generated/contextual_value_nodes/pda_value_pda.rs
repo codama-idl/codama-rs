@@ -1,6 +1,7 @@
 use crate::{HasIdentifier, Identifier, PdaLinkNode, PdaNode};
-use codama_nodes_derive::node_union;
+use codama_nodes_derive::{node_union, NodeConversions};
 
+#[derive(NodeConversions)]
 #[node_union]
 pub enum PdaValuePda {
     Pda(PdaNode),

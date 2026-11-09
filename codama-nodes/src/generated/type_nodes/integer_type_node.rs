@@ -18,12 +18,6 @@ pub struct IntegerTypeNode {
     pub plugins: Vec<PluginNode>,
 }
 
-impl From<IntegerTypeNode> for crate::Node {
-    fn from(val: IntegerTypeNode) -> Self {
-        crate::Node::Type(val.into())
-    }
-}
-
 impl HasTransforms for IntegerTypeNode {
     fn transforms(&self) -> &[TransformNode] {
         &self.transforms

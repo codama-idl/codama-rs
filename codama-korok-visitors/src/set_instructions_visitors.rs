@@ -13,7 +13,7 @@ use codama_nodes::{
     DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode, Identifier,
     InjectedValueNode, InstructionAccountNode, InstructionDisplayNode, InstructionInputValueNode,
     InstructionNode, IntegerValueNode, Node, OptionalAccountStrategy, ProgramNode, ProvidedNode,
-    RegisteredTypeNode, StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
+    StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
 use std::collections::HashMap;
@@ -338,7 +338,7 @@ fn get_data_field_defaults<'a>(
 fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CodamaResult<Identifier> {
     let field = fields.get(index);
     match field.and_then(|field| field.node.as_ref()) {
-        Some(Node::Type(RegisteredTypeNode::StructField(node))) => Ok(node.identifier.clone()),
+        Some(Node::StructFieldType(node)) => Ok(node.identifier.clone()),
         _ => match field.map(|field| field.name()).transpose()? {
             Some(Some(name)) => Ok(name),
             _ => Identifier::from_rust_name(&format!("arg{}", index)),
