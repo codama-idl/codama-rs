@@ -508,7 +508,9 @@ describe('getRenderMap', () => {
             .flatMap(c => c.nodes).length;
 
         it('emits a flat Node enum with one suffix-stripped variant per node kind', () => {
-            expect(entry.content).toContain('#[derive(NodeUnion, From, Debug, PartialEq, Clone)]\n#[non_exhaustive]\npub enum Node {');
+            expect(entry.content).toContain(
+                '#[derive(NodeUnion, From, Debug, PartialEq, Clone)]\n#[non_exhaustive]\npub enum Node {',
+            );
             expect(entry.content).toContain('Account(AccountNode),');
             expect(entry.content).toContain('StringType(StringTypeNode),');
             expect(entry.content).toContain('PdaValue(PdaValueNode),');
@@ -517,7 +519,9 @@ describe('getRenderMap', () => {
         });
 
         it('emits a borrowed NodeRef enum with the same variants', () => {
-            expect(entry.content).toContain("#[derive(Debug, PartialEq, Clone, Copy)]\n#[non_exhaustive]\npub enum NodeRef<'a> {");
+            expect(entry.content).toContain(
+                "#[derive(Debug, PartialEq, Clone, Copy)]\n#[non_exhaustive]\npub enum NodeRef<'a> {",
+            );
             expect(entry.content).toContain("StringType(&'a StringTypeNode),");
             expect(entry.content).toContain("impl<'a> From<&'a Node> for NodeRef<'a> {");
             expect(entry.content).toContain('Node::StringType(node) => Self::StringType(node),');
