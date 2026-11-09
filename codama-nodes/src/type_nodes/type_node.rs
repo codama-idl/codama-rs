@@ -1,9 +1,10 @@
 use crate::{
     ArrayTypeNode, BooleanTypeNode, BytesTypeNode, DateTimeTypeNode, DefinedTypeLinkNode,
     DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, FixedPointTypeNode, FloatTypeNode,
-    HasKind, HasTransforms, IntegerTypeNode, LinkNode, MapTypeNode, Node, OptionTypeNode,
-    PublicKeyTypeNode, RemainderOptionTypeNode, SetTypeNode, StringTypeNode, StructFieldTypeNode,
-    StructTypeNode, TransformNode, TupleTypeNode, ZeroableOptionTypeNode,
+    HasKind, HasTransforms, IntegerTypeNode, LinkNode, MapTypeNode, Node, NodePath, NodeVisitor,
+    OptionTypeNode, PathSegment, PublicKeyTypeNode, RemainderOptionTypeNode, SetTypeNode,
+    StringTypeNode, StructFieldTypeNode, StructTypeNode, TransformNode, TupleTypeNode,
+    ZeroableOptionTypeNode,
 };
 use codama_errors::CodamaError;
 use codama_nodes_derive::node_union;
@@ -57,6 +58,109 @@ pub enum TypeNode {
 
     // Standalone only.
     Link(DefinedTypeLinkNode),
+}
+
+/// Visits the node inside the value, with the path joined to it. See `NodeVisitor::visit_registered_type`.
+pub fn walk_registered_type<'a, V: NodeVisitor + ?Sized>(
+    visitor: &mut V,
+    node: &'a RegisteredTypeNode,
+    path: &NodePath<'a>,
+    segment: PathSegment,
+) {
+    match node {
+        RegisteredTypeNode::Array(node) => {
+            visitor.visit_array_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Boolean(node) => {
+            visitor.visit_boolean_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Bytes(node) => {
+            visitor.visit_bytes_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::DateTime(node) => {
+            visitor.visit_date_time_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Duration(node) => {
+            visitor.visit_duration_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Enum(node) => visitor.visit_enum_type(node, &path.join(segment, node)),
+        RegisteredTypeNode::FixedPoint(node) => {
+            visitor.visit_fixed_point_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Float(node) => {
+            visitor.visit_float_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Integer(node) => {
+            visitor.visit_integer_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Map(node) => visitor.visit_map_type(node, &path.join(segment, node)),
+        RegisteredTypeNode::Option(node) => {
+            visitor.visit_option_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::PublicKey(node) => {
+            visitor.visit_public_key_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::RemainderOption(node) => {
+            visitor.visit_remainder_option_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Set(node) => visitor.visit_set_type(node, &path.join(segment, node)),
+        RegisteredTypeNode::String(node) => {
+            visitor.visit_string_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Struct(node) => {
+            visitor.visit_struct_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::Tuple(node) => {
+            visitor.visit_tuple_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::ZeroableOption(node) => {
+            visitor.visit_zeroable_option_type(node, &path.join(segment, node))
+        }
+        RegisteredTypeNode::EnumVariant(node) => {
+            visitor.visit_enum_variant_type(node, &path.join_named(segment, node))
+        }
+        RegisteredTypeNode::StructField(node) => {
+            visitor.visit_struct_field_type(node, &path.join_named(segment, node))
+        }
+    }
+}
+
+/// Visits the node inside the value, with the path joined to it. See `NodeVisitor::visit_type`.
+pub fn walk_type<'a, V: NodeVisitor + ?Sized>(
+    visitor: &mut V,
+    node: &'a TypeNode,
+    path: &NodePath<'a>,
+    segment: PathSegment,
+) {
+    match node {
+        TypeNode::Array(node) => visitor.visit_array_type(node, &path.join(segment, node)),
+        TypeNode::Boolean(node) => visitor.visit_boolean_type(node, &path.join(segment, node)),
+        TypeNode::Bytes(node) => visitor.visit_bytes_type(node, &path.join(segment, node)),
+        TypeNode::DateTime(node) => visitor.visit_date_time_type(node, &path.join(segment, node)),
+        TypeNode::Duration(node) => visitor.visit_duration_type(node, &path.join(segment, node)),
+        TypeNode::Enum(node) => visitor.visit_enum_type(node, &path.join(segment, node)),
+        TypeNode::FixedPoint(node) => {
+            visitor.visit_fixed_point_type(node, &path.join(segment, node))
+        }
+        TypeNode::Float(node) => visitor.visit_float_type(node, &path.join(segment, node)),
+        TypeNode::Integer(node) => visitor.visit_integer_type(node, &path.join(segment, node)),
+        TypeNode::Map(node) => visitor.visit_map_type(node, &path.join(segment, node)),
+        TypeNode::Option(node) => visitor.visit_option_type(node, &path.join(segment, node)),
+        TypeNode::PublicKey(node) => visitor.visit_public_key_type(node, &path.join(segment, node)),
+        TypeNode::RemainderOption(node) => {
+            visitor.visit_remainder_option_type(node, &path.join(segment, node))
+        }
+        TypeNode::Set(node) => visitor.visit_set_type(node, &path.join(segment, node)),
+        TypeNode::String(node) => visitor.visit_string_type(node, &path.join(segment, node)),
+        TypeNode::Struct(node) => visitor.visit_struct_type(node, &path.join(segment, node)),
+        TypeNode::Tuple(node) => visitor.visit_tuple_type(node, &path.join(segment, node)),
+        TypeNode::ZeroableOption(node) => {
+            visitor.visit_zeroable_option_type(node, &path.join(segment, node))
+        }
+        TypeNode::Link(node) => {
+            visitor.visit_defined_type_link(node, &path.join_named(segment, node))
+        }
+    }
 }
 
 impl TryFrom<Node> for TypeNode {

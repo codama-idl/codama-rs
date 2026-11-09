@@ -21,6 +21,7 @@ src/
 ├── unions.ts           # flattenNodeUnion + getEmittableUnions
 ├── baseAttributes.ts   # withBaseAttributes: appends the spec base attributes (plugins) to every node
 ├── nodeFlavor.ts       # getNodeMacroFlavor: #[node] or #[type_node] per node
+├── nodeWalker.ts       # child attributes (isChildAttribute), walked unions, visit_* / walk_* names
 ├── literalUnions.ts    # getReferencedLiteralUnions + literalUnionVariantName
 └── fragments/
     ├── index.ts            # re-exports every fragment renderer
@@ -36,6 +37,7 @@ src/
     ├── enumPage.ts         # spec enumeration -> Rust enum shell
     ├── literalUnionPage.ts # literalUnion -> Rust enum shell
     ├── codamaVersionPage.ts    # CODAMA_VERSION constant
+    ├── nodeVisitorPage.ts  # NodeVisitor trait + one walk_* function per node and per generated union
     ├── page.ts             # use-block renderer (groups crate::*)
     └── modPage.ts          # Rust mod.rs renderer
 
@@ -47,6 +49,7 @@ test/
 ├── baseAttributes.test.ts
 ├── literalUnions.test.ts
 ├── nodeFlavor.test.ts
+├── nodeWalker.test.ts
 ├── unions.test.ts
 └── scope.test.ts       # buildRenderScope tests
 ```
@@ -76,9 +79,11 @@ pnpm generate
 
 The generator emits a source file for every node of the spec categories in `CATEGORY_ROUTING` (`src/defaults.ts`), plus their unions, the `shared` enumerations and literal unions, and `CODAMA_VERSION`. Each generated per-node file contains the struct definition wrapped in `#[node]` or `#[type_node]`, a `From<Self> for crate::Node` impl routing through the category's union variant (except `topLevel` nodes, which are direct `Node` variants), and a `HasIdentifier` impl when the node has a required `identifier: stringIdentifier()` attribute. Each generated per-union file contains the union enum wrapped in `#[node_union]` plus a `HasIdentifier` impl when every member node has one.
 
+The generator also emits a read-only node walker in the style of `syn::visit`: `node_visitor.rs` holds the `NodeVisitor` trait, with one provided `visit_*` method per node kind and per union enum, and one free `walk_*` function per node kind and per generated union. A node `walk_*` calls `enter_node`, then visits the attributes that `isChildAttribute` from `@codama/spec` marks as children, in declaration order, with the base `plugins` last. A `docs` or `text` value is a child only when it is a `textNode`. A union `walk_*` visits the node inside the value.
+
 Per-node constructors (`AccountLinkNode::new`, etc.), bespoke `TryFrom` impls, and `#[cfg(test)] mod tests` blocks stay hand-written. They live in `codama-nodes/src/`, at the path of the generated file without `generated/` (for example `codama-nodes/src/link_nodes/account_link_node.rs`), and `use` the generated struct.
 
-The `type` category unions, the top-level `Node` registry, and the bespoke impls of enumerations and literal unions (`Default`, custom serde) stay hand-written.
+The `type` category unions, the top-level `Node` registry (with their `walk_*` functions), `NodePath` and `PathSegment`, and the bespoke impls of enumerations and literal unions (`Default`, custom serde) stay hand-written.
 
 ## Bumping `@codama/spec`
 

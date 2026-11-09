@@ -19,7 +19,7 @@ import { use } from './helpers';
  */
 export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const unionName = pascalCase(union.name);
-    const variants = buildVariants(union, spec);
+    const variants = getUnionVariants(union, spec);
 
     const enumFragment = buildEnumFragment(unionName, variants);
     const hasIdentifierFragment = getUnionHasIdentifierImplFragment(unionName, variants);
@@ -28,14 +28,15 @@ export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     return mergeFragments(blocks, parts => parts.join('\n\n'));
 }
 
-interface UnionVariant {
+export interface UnionVariant {
     /** The Rust variant name (PascalCase, stripped suffix). */
     readonly name: string;
     /** The wrapped node spec (for `HasIdentifier` dispatch). */
     readonly node: NodeSpec;
 }
 
-function buildVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
+/** The variants of a generated union enum, sorted by name, as {@link getUnionPageFragment} emits them. */
+export function getUnionVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
     const suffix = variantStripSuffix(union, spec);
     return [...flattenNodeUnion(union, spec)]
         .map(node => ({ name: variantNameForNode(node.kind, suffix), node }))

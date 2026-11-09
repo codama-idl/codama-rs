@@ -9,6 +9,7 @@ export * from './literalUnionPage';
 export * from './modPage';
 export * from './nodePage';
 export * from './nodeStructFragment';
+export * from './nodeVisitorPage';
 export * from './page';
 export * from './registeredUnionPage';
 export * from './typeExpr';

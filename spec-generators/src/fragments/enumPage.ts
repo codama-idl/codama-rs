@@ -47,7 +47,8 @@ export function getEnumPageFragment(enumeration: EnumerationSpec): Fragment {
     return fragment`${docs}${derives}\n#[serde(rename_all = "camelCase")]\npub enum ${enumName} {\n${variantLines}\n}\n`;
 }
 
-function formatDocs(docs: readonly string[] | undefined): string {
+/** Render doc lines as Rust `///` comments, each followed by a newline. Empty or absent docs give an empty string. */
+export function formatDocs(docs: readonly string[] | undefined): string {
     if (!docs || docs.length === 0) return '';
     return docs.map(d => `/// ${d}`).join('\n') + '\n';
 }
