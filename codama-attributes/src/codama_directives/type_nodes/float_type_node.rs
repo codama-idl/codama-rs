@@ -1,49 +1,16 @@
-use crate::utils::{parse_unit_display, FromMeta, SetOnce};
-use codama_nodes::{Endianness, FloatFormat, FloatTypeNode, UnitNumberDisplayNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use crate::utils::{parse_number_type, parse_unit_display, FromMeta};
+use codama_nodes::{FloatFormat, FloatTypeNode};
+use codama_syn_helpers::Meta;
 
 impl FromMeta for FloatTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("float")?.as_path_list()?;
-        let mut format = SetOnce::<FloatFormat>::new("format");
-        let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
-        let mut unit = SetOnce::<String>::new("unit");
-        let mut display = SetOnce::<UnitNumberDisplayNode>::new("display");
-
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "format" => {
-                let path = meta.as_value()?.as_path()?;
-                match FloatFormat::try_from(path.to_string().as_str()) {
-                    Ok(value) => format.set(value, meta),
-                    Err(_) => Err(path.error("invalid format")),
-                }
-            }
-            "endian" => {
-                let path = meta.as_value()?.as_path()?;
-                match Endianness::try_from(path.to_string()) {
-                    Ok(value) => endian.set(value, meta),
-                    _ => Err(path.error("invalid endian")),
-                }
-            }
-            "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
-            "display" => display.set(parse_unit_display(meta.as_value()?, "floats")?, meta),
-            _ => {
-                if let Ok(path) = meta.as_path() {
-                    if let Ok(value) = FloatFormat::try_from(path.to_string().as_str()) {
-                        return format.set(value, meta);
-                    }
-                    if let Ok(value) = Endianness::try_from(path.to_string()) {
-                        return endian.set(value, meta);
-                    }
-                }
-                Err(meta.path()?.error("unrecognized attribute"))
-            }
+        let arguments = parse_number_type::<FloatFormat, _>(meta, "float", |meta| {
+            parse_unit_display(meta, "floats")
         })?;
-
         Ok(FloatTypeNode {
-            unit: unit.option(),
-            display: display.option(),
-            ..FloatTypeNode::new(format.take(meta)?, endian.take(meta)?)
+            unit: arguments.unit,
+            display: arguments.display,
+            ..FloatTypeNode::new(arguments.format, arguments.endian)
         })
     }
 }
@@ -53,7 +20,7 @@ mod tests {
     use super::*;
     use codama_nodes::{
         FloatFormat::{F32, F64},
-        StringValueNode,
+        StringValueNode, UnitNumberDisplayNode,
     };
 
     #[test]

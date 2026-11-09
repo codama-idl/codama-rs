@@ -46,21 +46,13 @@ impl FromMeta for PdaSeedValueNode {
         let mut value: SetOnce<PdaSeedValueValue> = SetOnce::<PdaSeedValueValue>::new("value");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(
-                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                    .map_err(|e| meta.error(e))?,
-                meta,
-            ),
+            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "value" => value.set(PdaSeedValueValue::from_meta(meta.as_value()?)?, meta),
             _ => {
                 if let Ok(seed_name) = meta.as_expr().and_then(|e| e.as_string()) {
                     match name.is_set() {
-                        false => {
-                            let identifier =
-                                seed_name.parse::<Identifier>().map_err(|e| meta.error(e))?;
-                            return name.set(identifier, meta);
-                        }
+                        false => return name.set(Identifier::from_meta(meta)?, meta),
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
                     }
                 }

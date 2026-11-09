@@ -1,0 +1,5 @@
+error: unrecognized attribute
+ --> tests/codama_attribute/transform_nodes/hidden_prefix_transform_node/unrecognized_attribute.fail.rs:3:31
+  |
+3 | #[codama(type = hidden_prefix(foo = 42))]
+  |                               ^^^^^^^^

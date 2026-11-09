@@ -1,7 +1,7 @@
-use crate::{Attribute, CodamaAttribute, CodamaDirective};
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
 use codama_nodes::{Identifier, PdaLinkNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct PdaDirective {
@@ -10,13 +10,9 @@ pub struct PdaDirective {
 
 impl PdaDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        let name = meta
-            .assert_directive("pda")?
-            .as_value()?
-            .as_expr()?
-            .as_string()?;
+        let identifier = Identifier::from_meta(meta.assert_directive("pda")?.as_value()?)?;
         Ok(Self {
-            pda: PdaLinkNode::new(name.parse::<Identifier>().map_err(|e| meta.error(e))?),
+            pda: PdaLinkNode::new(identifier),
         })
     }
 }

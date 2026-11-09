@@ -1,6 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
-    Attribute, Attributes, ErrorDirective, ProgramDirective, TryFromFilter, UnsupportedAttribute,
+    Attribute, Attributes, ErrorDirective, ProgramDirective, SkipDirective, TryFromFilter,
+    UnsupportedAttribute,
 };
 use codama_errors::CodamaResult;
 use codama_nodes::{Docs, ErrorNode, Node, ProgramNode};
@@ -78,7 +79,7 @@ impl KorokVisitor for SetErrorsVisitor {
         self.enum_current_discriminator = current_discriminator + 1;
 
         // Skip variants with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
+        if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 

@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn new() {
-        let r#enum = EnumTypeNode::new(vec![
+        let variants = vec![
             EnumVariantTypeNode::new("quit"),
             EnumVariantTypeNode::with_data(
                 "move",
@@ -34,9 +34,16 @@ mod tests {
                     StringTypeNode::utf8(),
                 )]),
             ),
-        ]);
-        assert_eq!(r#enum.variants.len(), 3);
-        assert_eq!(r#enum.size, IntegerTypeNode::le(U8));
+        ];
+        assert_eq!(
+            EnumTypeNode::new(variants.clone()),
+            EnumTypeNode {
+                variants,
+                size: IntegerTypeNode::le(U8),
+                transforms: vec![],
+                plugins: vec![],
+            }
+        );
     }
 
     #[test]

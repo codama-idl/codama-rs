@@ -1,9 +1,7 @@
 use crate::{
-    codama_directives::type_nodes::{
-        fixed_size_type_node_from_meta, hidden_prefix_type_node_from_meta,
-        hidden_suffix_type_node_from_meta, post_offset_type_node_from_meta,
-        pre_offset_type_node_from_meta, sentinel_type_node_from_meta,
-        size_prefix_type_node_from_meta,
+    codama_directives::transform_nodes::{
+        fixed_size_from_meta, hidden_prefix_from_meta, hidden_suffix_from_meta,
+        post_offset_from_meta, pre_offset_from_meta, sentinel_from_meta, size_prefix_from_meta,
     },
     utils::FromMeta,
     Attribute, CodamaAttribute, CodamaDirective, Resolvable,
@@ -38,13 +36,13 @@ impl FromMeta for TypeDirectiveNode {
         // That type can be a link, so they are dispatched here, not in `RegisteredTypeNode::from_meta`.
         let node = match meta.path_str().as_str() {
             "link" => return DefinedTypeLinkNode::from_meta(meta).map(Self::from),
-            "fixed_size" => fixed_size_type_node_from_meta(meta)?,
-            "hidden_prefix" => hidden_prefix_type_node_from_meta(meta)?,
-            "hidden_suffix" => hidden_suffix_type_node_from_meta(meta)?,
-            "post_offset" => post_offset_type_node_from_meta(meta)?,
-            "pre_offset" => pre_offset_type_node_from_meta(meta)?,
-            "sentinel" => sentinel_type_node_from_meta(meta)?,
-            "size_prefix" => size_prefix_type_node_from_meta(meta)?,
+            "fixed_size" => fixed_size_from_meta(meta)?,
+            "hidden_prefix" => hidden_prefix_from_meta(meta)?,
+            "hidden_suffix" => hidden_suffix_from_meta(meta)?,
+            "post_offset" => post_offset_from_meta(meta)?,
+            "pre_offset" => pre_offset_from_meta(meta)?,
+            "sentinel" => sentinel_from_meta(meta)?,
+            "size_prefix" => size_prefix_from_meta(meta)?,
             _ => return RegisteredTypeNode::from_meta(meta).map(Self::from),
         };
         Self::try_from(node).map_err(|e| meta.error(e.to_string()))

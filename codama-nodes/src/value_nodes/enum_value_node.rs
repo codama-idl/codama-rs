@@ -1,23 +1,8 @@
-use crate::{
-    DefinedTypeLinkNode, EnumValueNode, Identifier, StructValueNode, TupleValueNode, ValueNode,
-};
+use crate::{DefinedTypeLinkNode, EnumValueNode, Identifier, ValueNode};
 
 impl EnumValueNode {
-    pub fn new<T, U, V>(r#enum: T, variant: U, value: V) -> Self
-    where
-        T: Into<DefinedTypeLinkNode>,
-        U: Into<Identifier>,
-        V: Into<ValueNode>,
-    {
-        Self {
-            variant: variant.into(),
-            r#enum: r#enum.into(),
-            value: Box::new(Some(value.into())),
-            plugins: vec![],
-        }
-    }
-
-    pub fn empty<T, U>(r#enum: T, variant: U) -> Self
+    /// A variant without data, such as `Command::Quit`.
+    pub fn new<T, U>(r#enum: T, variant: U) -> Self
     where
         T: Into<DefinedTypeLinkNode>,
         U: Into<Identifier>,
@@ -30,31 +15,16 @@ impl EnumValueNode {
         }
     }
 
-    pub fn fields<T, U, V>(r#enum: T, variant: U, value: V) -> Self
+    /// A variant with data, such as a struct value for `Command::Move { x, y }`.
+    pub fn with_value<T, U, V>(r#enum: T, variant: U, value: V) -> Self
     where
         T: Into<DefinedTypeLinkNode>,
         U: Into<Identifier>,
-        V: Into<StructValueNode>,
+        V: Into<ValueNode>,
     {
         Self {
-            variant: variant.into(),
-            r#enum: r#enum.into(),
-            value: Box::new(Some(ValueNode::Struct(value.into()))),
-            plugins: vec![],
-        }
-    }
-
-    pub fn tuple<T, U, V>(r#enum: T, variant: U, value: V) -> Self
-    where
-        T: Into<DefinedTypeLinkNode>,
-        U: Into<Identifier>,
-        V: Into<TupleValueNode>,
-    {
-        Self {
-            variant: variant.into(),
-            r#enum: r#enum.into(),
-            value: Box::new(Some(ValueNode::Tuple(value.into()))),
-            plugins: vec![],
+            value: Box::new(Some(value.into())),
+            ..Self::new(r#enum, variant)
         }
     }
 }
@@ -62,11 +32,11 @@ impl EnumValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Identifier, IntegerValueNode, StringValueNode, StructFieldValueNode};
+    use crate::{IntegerValueNode, StringValueNode, StructFieldValueNode, StructValueNode};
 
     #[test]
-    fn new() {
-        let node = EnumValueNode::new(
+    fn with_value() {
+        let node = EnumValueNode::with_value(
             DefinedTypeLinkNode::new("command"),
             "move",
             StructValueNode::new(vec![
@@ -86,8 +56,8 @@ mod tests {
     }
 
     #[test]
-    fn new_with_any_value() {
-        let node = EnumValueNode::new(
+    fn with_any_value() {
+        let node = EnumValueNode::with_value(
             DefinedTypeLinkNode::new("command"),
             "write",
             StringValueNode::new("Hello World"),
@@ -99,54 +69,16 @@ mod tests {
     }
 
     #[test]
-    fn empty() {
-        let node = EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit");
+    fn new() {
+        let node = EnumValueNode::new(DefinedTypeLinkNode::new("command"), "exit");
         assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
         assert_eq!(node.variant, Identifier::from("exit"));
         assert_eq!(*node.value, None);
     }
 
     #[test]
-    fn fields() {
-        let node = EnumValueNode::fields(
-            DefinedTypeLinkNode::new("command"),
-            "move",
-            vec![
-                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
-                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
-            ],
-        );
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
-        assert_eq!(node.variant, Identifier::from("move"));
-        assert_eq!(
-            *node.value,
-            Some(ValueNode::Struct(StructValueNode::new(vec![
-                StructFieldValueNode::new("x", IntegerValueNode::new(10)),
-                StructFieldValueNode::new("y", IntegerValueNode::new(20)),
-            ])))
-        );
-    }
-
-    #[test]
-    fn tuple() {
-        let node = EnumValueNode::tuple(
-            DefinedTypeLinkNode::new("command"),
-            "write",
-            vec![StringValueNode::new("Hello World").into()],
-        );
-        assert_eq!(node.r#enum, DefinedTypeLinkNode::new("command"));
-        assert_eq!(node.variant, Identifier::from("write"));
-        assert_eq!(
-            *node.value,
-            Some(ValueNode::Tuple(TupleValueNode::new(vec![
-                StringValueNode::new("Hello World").into()
-            ])))
-        );
-    }
-
-    #[test]
     fn to_json() {
-        let node = EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit");
+        let node = EnumValueNode::new(DefinedTypeLinkNode::new("command"), "exit");
         let json = serde_json::to_string(&node).unwrap();
         assert_eq!(
             json,
@@ -160,13 +92,13 @@ mod tests {
         let node: EnumValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumValueNode::empty(DefinedTypeLinkNode::new("command"), "exit")
+            EnumValueNode::new(DefinedTypeLinkNode::new("command"), "exit")
         );
     }
 
     #[test]
     fn to_json_with_value() {
-        let node = EnumValueNode::new(
+        let node = EnumValueNode::with_value(
             DefinedTypeLinkNode::new("command"),
             "move",
             IntegerValueNode::new(42),
@@ -184,7 +116,7 @@ mod tests {
         let node: EnumValueNode = serde_json::from_str(json).unwrap();
         assert_eq!(
             node,
-            EnumValueNode::new(
+            EnumValueNode::with_value(
                 DefinedTypeLinkNode::new("command"),
                 "move",
                 IntegerValueNode::new(42)

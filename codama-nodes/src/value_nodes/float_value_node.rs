@@ -47,6 +47,10 @@ mod tests {
     #[test]
     fn from_json_rejects_a_number() {
         let json = r#"{"kind":"floatValueNode","value":1.5}"#;
-        assert!(serde_json::from_str::<FloatValueNode>(json).is_err());
+        let error = serde_json::from_str::<FloatValueNode>(json).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "invalid type: floating point `1.5`, expected a canonical decimal string at line 1 column 36"
+        );
     }
 }

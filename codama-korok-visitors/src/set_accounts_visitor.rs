@@ -1,7 +1,7 @@
 use crate::{assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
-    TryFromFilter,
+    SeedDirective, SkipDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -140,7 +140,7 @@ impl KorokVisitor for SetAccountsVisitor {
         self.enum_current_discriminator = current_discriminator + 1;
 
         // Skip variants with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
+        if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 
@@ -231,7 +231,7 @@ fn wrap_account_in_program_node_when_seeds_are_defined(
     fields: &[FieldKorok],
 ) -> CodamaResult<Node> {
     // Return the AccountNode directly if there are no seed directives.
-    if !attributes.has_codama_attribute("seed") {
+    if !attributes.has(SeedDirective::filter) {
         return Ok(account.into());
     }
 
