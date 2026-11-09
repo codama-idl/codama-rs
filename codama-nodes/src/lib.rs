@@ -17,6 +17,7 @@ mod instruction_remaining_accounts_node;
 mod instruction_status_node;
 mod link_nodes;
 mod node;
+mod node_ref;
 mod pda_node;
 mod pda_seed_nodes;
 mod plugin_node;

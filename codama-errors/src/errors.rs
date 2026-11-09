@@ -71,6 +71,16 @@ pub enum CodamaError {
 
     #[error("Two different plugins share the namespace `{namespace}` in {location}")]
     PluginMergeConflict { namespace: String, location: String },
+
+    #[error("Could not find the node that the `{kind}` named `{identifier}` links to, at {path}")]
+    LinkedNodeNotFound {
+        kind: String,
+        identifier: String,
+        path: String,
+    },
+
+    #[error("Expected a node but the `{kind}` was deleted")]
+    DeletedNode { kind: String },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

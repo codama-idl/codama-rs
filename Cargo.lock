@@ -154,6 +154,7 @@ dependencies = [
  "codama-nodes",
  "codama-plugin-core",
  "codama-stores",
+ "codama-visitors-core",
  "proc-macro2",
 ]
 
@@ -320,6 +321,14 @@ dependencies = [
  "quote",
  "syn",
  "trybuild",
+]
+
+[[package]]
+name = "codama-visitors-core"
+version = "1.0.0"
+dependencies = [
+ "codama-errors",
+ "codama-nodes",
 ]
 
 [[package]]

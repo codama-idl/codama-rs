@@ -1,12 +1,10 @@
-import { pascalCase, snakeCase } from '@codama/fragments';
+import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { AttributeSpec, TypeExpr } from '@codama/spec';
 
+import { getRustFieldName } from '../childSlots';
 import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
-
-/** Spec attribute names that collide with Rust keywords and need `r#` escaping. */
-const RUST_KEYWORDS: ReadonlySet<string> = new Set(['enum', 'struct', 'type']);
 
 /**
  * Render one spec attribute as a Rust struct field plus any preceding
@@ -82,7 +80,7 @@ export function getAttributeBodyLineFragment(attr: AttributeSpec): Fragment {
         serdeAttr = '';
     }
 
-    const fieldName = rustFieldName(attr.name);
+    const fieldName = getRustFieldName(attr.name);
     const fieldLine = fragment`pub ${fieldName}: ${typeFragment},`;
     if (serdeAttr === '') return fieldLine;
     return mergeFragments([fragment`${serdeAttr}`, fieldLine], parts => parts.join('\n'));
@@ -100,9 +98,4 @@ function isUnionType(type: TypeExpr): boolean {
 
 function isDocsType(type: TypeExpr): boolean {
     return type.kind === 'docs';
-}
-
-function rustFieldName(specName: string): string {
-    const snake = snakeCase(specName);
-    return RUST_KEYWORDS.has(snake) ? `r#${snake}` : snake;
 }
