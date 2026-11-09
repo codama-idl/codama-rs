@@ -10,8 +10,14 @@ error: expected a string
 6 | #[codama(seed(identifier = 42, type = integer(u8)))]
   |                            ^^
 
-error: unrecognized type
- --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:9:48
+error: Invalid identifier `1st`: use letters, digits and underscores, not starting with a digit
+ --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:9:28
   |
-9 | #[codama(seed(identifier = "authority", type = invalid_type))]
-  |                                                ^^^^^^^^^^^^
+9 | #[codama(seed(identifier = "1st", type = integer(u8)))]
+  |                            ^^^^^
+
+error: unrecognized type
+  --> tests/codama_attribute/seed_directive/invalid_variable_seed.fail.rs:12:48
+   |
+12 | #[codama(seed(identifier = "authority", type = invalid_type))]
+   |                                                ^^^^^^^^^^^^

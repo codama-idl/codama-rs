@@ -10,11 +10,7 @@ impl FromMeta for EnumVariantTypeNode {
         let mut payload: SetOnce<TypeNode> = SetOnce::new("payload");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(
-                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                    .map_err(|e| meta.error(e))?,
-                meta,
-            ),
+            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "discriminator" => {
                 discriminator.set(meta.as_value()?.as_expr()?.as_unsigned_integer()?, meta)
@@ -23,11 +19,8 @@ impl FromMeta for EnumVariantTypeNode {
                 if meta.is_path_or_list() {
                     return payload.set(TypeNode::from_meta(meta)?, meta);
                 }
-                if let Ok(value) = meta.as_expr().and_then(|expr| expr.as_string()) {
-                    return name.set(
-                        value.parse::<Identifier>().map_err(|e| meta.error(e))?,
-                        meta,
-                    );
+                if meta.as_expr().and_then(|expr| expr.as_string()).is_ok() {
+                    return name.set(Identifier::from_meta(meta)?, meta);
                 }
                 Err(meta.error("unrecognized attribute"))
             }

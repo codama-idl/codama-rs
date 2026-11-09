@@ -1,7 +1,7 @@
-use crate::{Attribute, CodamaAttribute, CodamaDirective};
+use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
 use codama_nodes::Identifier;
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct IdentifierDirective {
@@ -10,10 +10,8 @@ pub struct IdentifierDirective {
 
 impl IdentifierDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
-        meta.assert_directive("identifier")?;
-        let expr = meta.as_value()?.as_expr()?;
         Ok(Self {
-            identifier: Identifier::try_from(expr.as_string()?).map_err(|e| expr.error(e))?,
+            identifier: Identifier::from_meta(meta.assert_directive("identifier")?.as_value()?)?,
         })
     }
 }

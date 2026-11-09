@@ -1,49 +1,15 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{Endianness, IntegerFormat, IntegerTypeNode, NumberDisplayNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use crate::utils::{parse_number_type, FromMeta};
+use codama_nodes::{IntegerFormat, IntegerTypeNode, NumberDisplayNode};
+use codama_syn_helpers::Meta;
 
 impl FromMeta for IntegerTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("integer")?.as_path_list()?;
-        let mut format = SetOnce::<IntegerFormat>::new("format");
-        let mut endian = SetOnce::<Endianness>::new("endian").initial_value(Endianness::Le);
-        let mut unit = SetOnce::<String>::new("unit");
-        let mut display = SetOnce::<NumberDisplayNode>::new("display");
-
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "format" => {
-                let path = meta.as_value()?.as_path()?;
-                match IntegerFormat::try_from(path.to_string().as_str()) {
-                    Ok(value) => format.set(value, meta),
-                    Err(_) => Err(path.error("invalid format")),
-                }
-            }
-            "endian" => {
-                let path = meta.as_value()?.as_path()?;
-                match Endianness::try_from(path.to_string()) {
-                    Ok(value) => endian.set(value, meta),
-                    _ => Err(path.error("invalid endian")),
-                }
-            }
-            "unit" => unit.set(meta.as_value()?.as_expr()?.as_string()?, meta),
-            "display" => display.set(NumberDisplayNode::from_meta(meta.as_value()?)?, meta),
-            _ => {
-                if let Ok(path) = meta.as_path() {
-                    if let Ok(value) = IntegerFormat::try_from(path.to_string().as_str()) {
-                        return format.set(value, meta);
-                    }
-                    if let Ok(value) = Endianness::try_from(path.to_string()) {
-                        return endian.set(value, meta);
-                    }
-                }
-                Err(meta.path()?.error("unrecognized attribute"))
-            }
-        })?;
-
+        let arguments =
+            parse_number_type::<IntegerFormat, _>(meta, "integer", NumberDisplayNode::from_meta)?;
         Ok(IntegerTypeNode {
-            unit: unit.option(),
-            display: Box::new(display.option()),
-            ..IntegerTypeNode::new(format.take(meta)?, endian.take(meta)?)
+            unit: arguments.unit,
+            display: Box::new(arguments.display),
+            ..IntegerTypeNode::new(arguments.format, arguments.endian)
         })
     }
 }

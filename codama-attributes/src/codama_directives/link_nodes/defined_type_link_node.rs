@@ -5,23 +5,20 @@ use codama_syn_helpers::{extensions::*, Meta};
 impl FromMeta for DefinedTypeLinkNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("link")?.as_path_list()?;
-        let mut name: SetOnce<String> = SetOnce::new("identifier");
+        let mut name: SetOnce<Identifier> = SetOnce::new("identifier");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(meta.as_value()?.as_expr()?.as_string()?, meta),
+            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             _ => {
-                if let Ok(expr) = meta.as_expr() {
-                    return name.set(expr.as_string()?, meta);
+                if meta.as_expr().is_ok() {
+                    return name.set(Identifier::from_meta(meta)?, meta);
                 }
                 Err(meta.error("unrecognized attribute"))
             }
         })?;
 
-        let name = name.take(meta)?;
-        Ok(Self::new(
-            name.parse::<Identifier>().map_err(|e| meta.error(e))?,
-        ))
+        Ok(Self::new(name.take(meta)?))
     }
 }
 

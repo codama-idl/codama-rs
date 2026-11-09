@@ -2,7 +2,8 @@ use crate::{
     assert_unique_field_identifiers, parse_field_display, CombineTypesVisitor, KorokVisitor,
 };
 use codama_attributes::{
-    DiscriminatorDirective, EnumDiscriminatorDirective, ProgramDirective, TryFromFilter,
+    DiscriminatorDirective, EnumDiscriminatorDirective, ProgramDirective, SkipDirective,
+    TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_nodes::{
@@ -126,7 +127,7 @@ impl KorokVisitor for SetEventsVisitor {
         self.enum_current_discriminator = current_discriminator + 1;
 
         // Skip variants with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
+        if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 

@@ -24,12 +24,8 @@ impl EnumVariantTypeNode {
         U: Into<TypeNode>,
     {
         Self {
-            identifier: identifier.into(),
-            discriminator: None,
-            docs: Docs::default(),
             data: Box::new(Some(data.into())),
-            display: None,
-            plugins: vec![],
+            ..Self::new(identifier)
         }
     }
 }

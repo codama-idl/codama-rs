@@ -24,12 +24,7 @@ impl EnumDiscriminatorDirective {
         let mut name = SetOnce::<Identifier>::new("identifier");
         let mut size: SetOnce<IntegerTypeNode> = SetOnce::<IntegerTypeNode>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => {
-                let expr = meta.as_value()?.as_expr()?;
-                let value = expr.as_string()?;
-                let identifier = value.parse::<Identifier>().map_err(|e| expr.error(e))?;
-                name.set(identifier, meta)
-            }
+            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "size" => {
                 let node = TypeNode::from_meta(meta.as_value()?)?;

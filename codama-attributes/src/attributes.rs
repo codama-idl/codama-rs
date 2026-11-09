@@ -1,6 +1,5 @@
 use crate::{
-    Attribute, AttributeContext, CodamaAttribute, CodamaDirective, DeriveAttribute,
-    ExportDirective, TryFromFilter,
+    Attribute, AttributeContext, CodamaDirective, DeriveAttribute, ExportDirective, TryFromFilter,
 };
 use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
@@ -99,10 +98,12 @@ impl<'a> Attributes<'a> {
             .any(|e| e.derive == derive)
     }
 
-    pub fn has_codama_attribute(&self, name: &str) -> bool {
-        self.iter()
-            .filter_map(CodamaAttribute::filter)
-            .any(|a| a.directive.name() == name)
+    /// Whether any attribute passes the filter, such as `attributes.has(SkipDirective::filter)`.
+    pub fn has<B: 'a, F>(&'a self, f: F) -> bool
+    where
+        F: Fn(&'a Attribute<'a>) -> Option<&'a B>,
+    {
+        self.iter().any(|attribute| f(attribute).is_some())
     }
 
     pub fn get_all<B: 'a, F>(&'a self, f: F) -> Vec<&'a B>
@@ -170,6 +171,7 @@ impl IndexMut<usize> for Attributes<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::CodamaAttribute;
     use syn::parse_quote;
 
     fn file_ctx() -> syn::File {
@@ -286,5 +288,19 @@ mod tests {
         assert!(matches!(&attributes[1], Attribute::Codama(_)));
         assert!(matches!(&attributes[2], Attribute::Codama(_)));
         assert!(matches!(&attributes[3], Attribute::Codama(_)));
+    }
+
+    #[test]
+    fn has_finds_a_directive_by_type() {
+        let file = file_ctx();
+        let attrs: Vec<syn::Attribute> = vec![
+            parse_quote! { #[codama(type = boolean)] },
+            parse_quote! { #[codama(skip)] },
+        ];
+        let attributes = Attributes::parse(&attrs, AttributeContext::File(&file)).unwrap();
+
+        assert!(attributes.has(crate::SkipDirective::filter));
+        assert!(attributes.has(crate::TypeDirective::filter));
+        assert!(!attributes.has(crate::SeedDirective::filter));
     }
 }

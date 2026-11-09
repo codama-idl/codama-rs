@@ -31,11 +31,7 @@ impl RemainingAccountsDirective {
         let mut display = SetOnce::<InstructionAccountDisplayNode>::new("display");
         pl.each(|ref meta| match meta.path_str().as_str() {
             "argument" => removed_syntax(meta, "argument(...)", "remaining_accounts(\"x\", ...)"),
-            "identifier" => identifier.set(
-                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                    .map_err(|e| meta.error(e))?,
-                meta,
-            ),
+            "identifier" => identifier.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),
             "writable" => is_writable.set(bool::from_meta(meta)?, meta),
@@ -43,10 +39,7 @@ impl RemainingAccountsDirective {
             "docs" => docs.set(Docs::from_meta(meta)?, meta),
             "display" => display.set(InstructionAccountDisplayNode::from_meta(meta)?, meta),
             _ => match meta.as_expr().and_then(|expr| expr.as_string()) {
-                Ok(value) => identifier.set(
-                    value.parse::<Identifier>().map_err(|e| meta.error(e))?,
-                    meta,
-                ),
+                Ok(_) => identifier.set(Identifier::from_meta(meta)?, meta),
                 Err(_) => Err(meta.error("unrecognized attribute")),
             },
         })?;

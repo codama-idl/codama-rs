@@ -44,11 +44,7 @@ impl AccountDirective {
             false => meta
                 .as_path_list()?
                 .each(|ref meta| match meta.path_str().as_str() {
-                    "identifier" => name.set(
-                        Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                            .map_err(|e| meta.error(e))?,
-                        meta,
-                    ),
+                    "identifier" => name.set(Identifier::from_meta(meta)?, meta),
                     "name" => removed_name_key(meta),
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
                     "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),

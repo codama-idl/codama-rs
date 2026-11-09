@@ -5,7 +5,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 impl FromMeta for AccountBumpValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("account_bump")?.as_path_list()?;
-        let mut name = SetOnce::<String>::new("identifier");
+        let mut name = SetOnce::<Identifier>::new("identifier");
         pl.each(|ref meta| match meta {
             Meta::PathValue(pv) => {
                 if pv.path.is_strict("name") {
@@ -14,15 +14,12 @@ impl FromMeta for AccountBumpValueNode {
                 if !pv.path.is_strict("identifier") {
                     return Err(pv.path.error("only 'identifier' attribute supported"));
                 };
-                name.set(pv.value.as_expr()?.as_string()?, meta)
+                name.set(Identifier::from_meta(meta)?, meta)
             }
-            _ => name.set(meta.as_expr()?.as_string()?, meta),
+            _ => name.set(Identifier::from_meta(meta)?, meta),
         })?;
 
-        let name = name.take(meta)?;
-        Ok(AccountBumpValueNode::new(
-            name.parse::<Identifier>().map_err(|e| meta.error(e))?,
-        ))
+        Ok(AccountBumpValueNode::new(name.take(meta)?))
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::{
-    utils::{removed_name_key, SetOnce},
+    utils::{removed_name_key, FromMeta, SetOnce},
     Attribute, CodamaAttribute, CodamaDirective, TryFromFilter,
 };
 use codama_errors::CodamaError;
@@ -20,11 +20,7 @@ impl ProgramDirective {
         let mut address = SetOnce::<String>::new("address");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(
-                Identifier::try_from(meta.as_value()?.as_expr()?.as_string()?)
-                    .map_err(|e| meta.error(e))?,
-                meta,
-            ),
+            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "address" => address.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             _ => Err(meta.error("unrecognized attribute")),

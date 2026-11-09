@@ -10,7 +10,7 @@ error: expected a string
 6 | #[codama(identifier = invalid)]
   |                       ^^^^^^^
 
-error: expected a valid expression
+error: expected a string
  --> tests/codama_attribute/identifier_directive/invalid_identifier.fail.rs:9:23
   |
 9 | #[codama(identifier = invalid(1, 2, 3))]

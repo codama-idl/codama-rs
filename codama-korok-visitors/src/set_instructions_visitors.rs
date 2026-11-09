@@ -5,7 +5,7 @@ use codama_attributes::{
     AccountDirective, Attributes, CodamaAttribute, CodamaDirective, DefaultValueDirective,
     DiscriminatorDirective, DisplayDirective, EnumDiscriminatorDirective, FieldDirective,
     OptionalAccountStrategyDirective, ProgramDirective, RemainingAccountsDirective, Resolvable,
-    TryFromFilter,
+    SkipDirective, TryFromFilter,
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
@@ -34,7 +34,7 @@ impl Default for SetInstructionsVisitor {
                 allow_contextual_default_values: true,
                 // Skip fields with the `account` codama directive, but reject a default value on them.
                 get_named_field: |korok, parent| {
-                    if !korok.attributes.has_codama_attribute("account") {
+                    if !korok.attributes.has(AccountDirective::filter) {
                         return CombineTypesVisitor::get_strict_named_field(korok, parent);
                     }
                     // An account field is not data, so a default value on it has no field to apply to.
@@ -166,7 +166,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.enum_current_discriminator = current_discriminator + 1;
 
         // Skip variants with #[codama(skip)] directive.
-        if korok.attributes.has_codama_attribute("skip") {
+        if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 
@@ -318,7 +318,7 @@ fn get_data_field_defaults<'a>(
         .iter()
         .enumerate()
         .filter(|(_, field)| {
-            field.ast.ident.is_none() || !field.attributes.has_codama_attribute("account")
+            field.ast.ident.is_none() || !field.attributes.has(AccountDirective::filter)
         })
         .filter_map(|(index, field)| {
             let directive = field.attributes.get_last(DefaultValueDirective::filter)?;
