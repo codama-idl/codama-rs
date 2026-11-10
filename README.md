@@ -4,6 +4,7 @@ This project is still a work in progress but here's a super rough overview of wh
 
 - `codama-errors`: Defines the Result/Error items for all crates.
 - `codama-nodes`: Implements the Codama IDL in Rust.
+- `codama-visitors-core`: Visits and transforms Codama nodes, like `@codama/visitors-core` in the JavaScript library. A `Visitor` returns a value for each node, and adapters such as `extend` or `record_node_stack` wrap it into new visitors.
 - `codama-syn-helpers`: Helpers that boost `syn` items by using traits.
 - `codama-stores`: A small tree structure that parses crates and files inside crates (recursively) and "owns" the `syn::File` for each traversed file.
 - `codama-koroks`: A higher-level tree structure that represents things in your Rust code (modules, structs, enums, variants, types, etc.) You can think of it like a specialized `syn` tree. We call a "thing in your Rust code", a `Korok` (Japanese tree spirits). Each korok keeps track of a `Option<Node>` which is the currently resolved node for this piece of Rust code. Note that the korok tree uses `syn` references from stores mentioned above. So first you get a store that owns all the `syn` files, then you get a Korok tree that's essentially a parsed "view" of your stores.

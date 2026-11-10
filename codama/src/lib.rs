@@ -10,5 +10,5 @@ mod codama;
 #[cfg(not(target_os = "solana"))]
 pub use {
     codama::*, codama_errors::*, codama_korok_visitors::*, codama_koroks::*, codama_nodes::*,
-    codama_plugin_core::*, codama_stores::*,
+    codama_plugin_core::*, codama_stores::*, codama_visitors_core::*,
 };
