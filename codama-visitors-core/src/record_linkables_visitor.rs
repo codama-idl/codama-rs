@@ -208,6 +208,7 @@ mod tests {
         let result =
             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| visit(&visitor, &root)));
         assert!(result.is_err());
+        // Forget the first recording, so the count below proves that the second visit recorded again.
         linkables.clear();
         visit(&visitor, &root);
         assert_eq!(
