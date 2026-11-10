@@ -77,6 +77,12 @@ pub enum CodamaError {
 
     #[error("Expected a node but the `{kind}` was deleted")]
     DeletedNode { kind: String },
+
+    #[error("Injected value [{key}] is not provided and has no fallback at {path}. Values injected into a defined type are provided by the instruction that uses it.")]
+    InjectedValueNotProvided { key: String, path: String },
+
+    #[error("The value provided at {path} is not one of [{expected}].")]
+    InvalidProvidedValue { expected: String, path: String },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
