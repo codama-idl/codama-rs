@@ -7,6 +7,10 @@ use codama_nodes::NodeRef;
 /// Created by [`VisitorExt::record_provided_scope`](crate::VisitorExt::record_provided_scope). Each
 /// `instructionNode` with `provides` opens a frame for the duration of its visit, so the injections
 /// within it, and within its sub-instructions, resolve against the instructions that enclose them.
+///
+/// Adapters that wrap this one run outside of the frame, so wrap a visitor with it after the extensions
+/// that resolve values from the scope, as they need the frame of the instruction being visited.
+/// Otherwise, their injections resolve as if no instruction provided them.
 #[derive(Debug, Clone, Copy)]
 pub struct RecordProvidedScopeVisitor<'s, 'a, V> {
     visitor: V,

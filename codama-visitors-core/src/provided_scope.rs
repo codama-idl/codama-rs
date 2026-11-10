@@ -69,6 +69,10 @@ impl<'a> ProvidedScope<'a> {
     }
 
     /// The number of open frames.
+    ///
+    /// [`get_provided_scope_from_path`] opens a frame for every instruction of the path, like in the
+    /// JavaScript library, while [`VisitorExt::record_provided_scope`](crate::VisitorExt::record_provided_scope)
+    /// skips the instructions without `provides`. Empty frames never change a resolution.
     pub fn depth(&self) -> usize {
         self.frames.borrow().len()
     }
@@ -142,10 +146,10 @@ impl<'a> ProvidedScope<'a> {
         let root = match (T::try_from(resolution.node.to_node()), resolution.provider) {
             (Ok(root), _) => root,
             (Err(CodamaError::InvalidNodeConversion { into, .. }), Some(provider)) => {
-                // The path ends with the provided value, unless that value is the fallback of an
-                // injection that the provider provides.
+                // The path ends with the provided value, unless the provider provides an injection,
+                // whose fallback the value is, as a resolved node is never an injection.
                 let mut path = vec![NodeRef::from(provider)];
-                if NodeRef::from(&*provider.node) == resolution.node {
+                if !matches!(&*provider.node, Node::InjectedValue(_)) {
                     path.push(resolution.node);
                 }
                 return Err(CodamaError::InvalidProvidedValue {
