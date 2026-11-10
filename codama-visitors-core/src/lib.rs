@@ -8,7 +8,8 @@
 //!
 //! The adapters of [`VisitorExt`] wrap a visitor into a new one, for example to handle some kinds of
 //! nodes with [`VisitorExt::extend`], or to record the path of the visited node into a [`NodeStack`].
-//! A [`LinkableDictionary`] resolves link nodes into the nodes they point to.
+//! A [`LinkableDictionary`] resolves link nodes into the nodes they point to, and a [`ProvidedScope`]
+//! resolves injected values into the values that instructions provide.
 //!
 //! ```
 //! use codama_nodes::{DefinedTypeNode, NodeRef, ProgramNode, RootNode, StringTypeNode};
@@ -42,8 +43,10 @@ mod merge_visitor;
 mod node_path;
 mod node_stack;
 mod non_nullable_visitor;
+mod provided_scope;
 mod record_linkables_visitor;
 mod record_node_stack_visitor;
+mod record_provided_scope_visitor;
 mod tap_visitor;
 mod visitor;
 mod visitor_ext;
@@ -57,8 +60,10 @@ pub use merge_visitor::*;
 pub use node_path::*;
 pub use node_stack::*;
 pub use non_nullable_visitor::*;
+pub use provided_scope::*;
 pub use record_linkables_visitor::*;
 pub use record_node_stack_visitor::*;
+pub use record_provided_scope_visitor::*;
 pub use tap_visitor::*;
 pub use visitor::*;
 pub use visitor_ext::*;

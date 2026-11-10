@@ -1,6 +1,7 @@
 use crate::{
     ExtendScope, ExtendVisitor, LinkableDictionary, MapVisitor, NodeStack, NonNullableVisitor,
-    RecordLinkablesOnFirstVisitVisitor, RecordNodeStackVisitor, TapVisitor, Visitor,
+    ProvidedScope, RecordLinkablesOnFirstVisitVisitor, RecordNodeStackVisitor,
+    RecordProvidedScopeVisitor, TapVisitor, Visitor,
 };
 use codama_errors::CodamaResult;
 use codama_nodes::{Node, NodeRef};
@@ -49,6 +50,15 @@ pub trait VisitorExt<'a, T>: Visitor<'a, T> + Sized {
         stack: &'s NodeStack<'a>,
     ) -> RecordNodeStackVisitor<'s, 'a, Self> {
         RecordNodeStackVisitor::new(self, stack)
+    }
+
+    /// Opens the frame of each instruction with `provides` into `scope` while visiting it.
+    /// See [`RecordProvidedScopeVisitor`].
+    fn record_provided_scope<'s>(
+        self,
+        scope: &'s ProvidedScope<'a>,
+    ) -> RecordProvidedScopeVisitor<'s, 'a, Self> {
+        RecordProvidedScopeVisitor::new(self, scope)
     }
 
     /// Records the tree into `linkables` before visiting it. See [`RecordLinkablesOnFirstVisitVisitor`].
