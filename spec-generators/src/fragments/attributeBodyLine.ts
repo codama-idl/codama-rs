@@ -2,7 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { AttributeSpec, TypeExpr } from '@codama/spec';
 
-import { getRustFieldName } from '../childSlots';
+import { getRustFieldName } from '../naming';
 import { use } from './helpers';
 import { getTypeExprFragment } from './typeExpr';
 

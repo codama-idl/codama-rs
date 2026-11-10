@@ -1,31 +1,38 @@
-use crate::{visit, LinkableDictionary, NodeStack, Visitor, VisitorExt, VoidVisitor};
+use crate::{record_node_stack_visitor::PopOnDrop, visit, LinkableDictionary, NodeStack, Visitor};
 use codama_nodes::NodeRef;
 use std::cell::Cell;
 
 /// Records every node of a tree that links can point to into a [`LinkableDictionary`].
 ///
-/// Most visitors rather use [`VisitorExt::record_linkables_on_first_visit`], which records the whole
+/// Most visitors rather use [`VisitorExt::record_linkables_on_first_visit`](crate::VisitorExt::record_linkables_on_first_visit), which records the whole
 /// tree before visiting it, so the links of any node can be resolved during the visit. To record a tree
 /// once and share the dictionary, use [`get_linkables_from_node`].
-#[derive(Debug, Clone, Copy)]
+///
+/// It keeps the path of the visited node in its own [`NodeStack`] and visits children through
+/// `recurse`, so it composes with adapters like any other visitor.
+#[derive(Debug, Clone)]
 pub struct RecordLinkablesVisitor<'l, 'a> {
     linkables: &'l LinkableDictionary<'a>,
+    stack: NodeStack<'a>,
 }
 
 impl<'l, 'a> RecordLinkablesVisitor<'l, 'a> {
     /// Records into `linkables`.
     pub fn new(linkables: &'l LinkableDictionary<'a>) -> Self {
-        Self { linkables }
+        Self {
+            linkables,
+            stack: NodeStack::default(),
+        }
     }
 }
 
 impl<'a> Visitor<'a, ()> for RecordLinkablesVisitor<'_, 'a> {
-    fn visit(&self, node: NodeRef<'a>, _recurse: &dyn Fn(NodeRef<'a>)) {
-        let stack = NodeStack::default();
-        let visitor = VoidVisitor
-            .tap(|_| self.linkables.record_path(&stack.get_path()))
-            .record_node_stack(&stack);
-        visit(&visitor, node);
+    fn visit(&self, node: NodeRef<'a>, recurse: &dyn Fn(NodeRef<'a>)) {
+        self.stack.push(node);
+        let _pop = PopOnDrop(&self.stack);
+        self.stack
+            .with_current_path(|path| self.linkables.record_path(path));
+        node.children().into_iter().for_each(recurse);
     }
 }
 
@@ -40,7 +47,7 @@ pub fn get_linkables_from_node<'a>(node: impl Into<NodeRef<'a>>) -> LinkableDict
 /// Wraps a visitor so that the first node it visits records the whole tree below it into a
 /// [`LinkableDictionary`] before being visited.
 ///
-/// Created by [`VisitorExt::record_linkables_on_first_visit`]. The dictionary is then complete during
+/// Created by [`VisitorExt::record_linkables_on_first_visit`](crate::VisitorExt::record_linkables_on_first_visit). The dictionary is then complete during
 /// the whole visit, so the extensions of the wrapped visitor can resolve any link. The dictionary is
 /// cleared before recording, so a visitor used on several trees only resolves the links of the tree
 /// it is visiting.
@@ -53,7 +60,7 @@ pub struct RecordLinkablesOnFirstVisitVisitor<'l, 'a, V> {
 
 impl<'l, 'a, V> RecordLinkablesOnFirstVisitVisitor<'l, 'a, V> {
     /// Wraps `visitor` to record into `linkables`.
-    /// Prefer [`VisitorExt::record_linkables_on_first_visit`].
+    /// Prefer [`VisitorExt::record_linkables_on_first_visit`](crate::VisitorExt::record_linkables_on_first_visit).
     pub fn new(visitor: V, linkables: &'l LinkableDictionary<'a>) -> Self {
         Self {
             visitor,
@@ -71,11 +78,19 @@ where
         if !self.is_first_visit.replace(false) {
             return self.visitor.visit(node, recurse);
         }
+        let _rearm = RearmOnDrop(&self.is_first_visit);
         self.linkables.clear();
         visit(&RecordLinkablesVisitor::new(self.linkables), node);
-        let value = self.visitor.visit(node, recurse);
-        self.is_first_visit.set(true);
-        value
+        self.visitor.visit(node, recurse)
+    }
+}
+
+/// Marks the next visit as a first visit when dropped, even when the current visit panics.
+struct RearmOnDrop<'c>(&'c Cell<bool>);
+
+impl Drop for RearmOnDrop<'_> {
+    fn drop(&mut self) {
+        self.0.set(true);
     }
 }
 
@@ -160,6 +175,44 @@ mod tests {
         assert_eq!(
             paths.iter().map(ToString::to_string).collect::<Vec<_>>(),
             ["[programNode]token.[definedTypeNode]config"]
+        );
+    }
+
+    #[test]
+    fn record_linkables_visitor_composes_with_adapters() {
+        let root = RootNode::new(ProgramNode::new("token", "1111"));
+        let linkables = LinkableDictionary::default();
+        let kinds = RefCell::new(vec![]);
+        let visitor = crate::RecordLinkablesVisitor::new(&linkables)
+            .tap(|node| kinds.borrow_mut().push(codama_nodes::HasKind::kind(&node)));
+        visit(&visitor, &root);
+        assert_eq!(*kinds.borrow(), ["rootNode", "programNode"]);
+        assert_eq!(
+            linkables.get_recorded_paths_of_kind::<ProgramNode>().len(),
+            1
+        );
+    }
+
+    #[test]
+    fn records_again_after_a_visit_that_panicked() {
+        let root = RootNode::new(ProgramNode::new("token", "1111"));
+        let linkables = LinkableDictionary::default();
+        let should_panic = std::cell::Cell::new(true);
+        let visitor = VoidVisitor
+            .tap(|_| {
+                if should_panic.replace(false) {
+                    panic!("visit failed");
+                }
+            })
+            .record_linkables_on_first_visit(&linkables);
+        let result =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| visit(&visitor, &root)));
+        assert!(result.is_err());
+        linkables.clear();
+        visit(&visitor, &root);
+        assert_eq!(
+            linkables.get_recorded_paths_of_kind::<ProgramNode>().len(),
+            1
         );
     }
 }

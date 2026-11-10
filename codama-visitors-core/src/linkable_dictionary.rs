@@ -126,9 +126,10 @@ impl<'a> LinkableDictionary<'a> {
         let Some(program_path) = path.until_last::<ProgramNode>() else {
             return;
         };
-        let program = path
-            .find_last::<ProgramNode>()
-            .expect("the path has a program");
+        let program: &ProgramNode = program_path
+            .last()
+            .and_then(|node| node.try_into().ok())
+            .expect("until_last ends with a program");
         let mut programs = self.programs.borrow_mut();
         let program_dictionary =
             programs.get_or_insert_with(&program.identifier, || ProgramDictionary {
@@ -153,9 +154,10 @@ impl<'a> LinkableDictionary<'a> {
                 let Some(instruction_path) = path.until_last::<InstructionNode>() else {
                     return;
                 };
-                let instruction = path
-                    .find_last::<InstructionNode>()
-                    .expect("the path has an instruction");
+                let instruction: &InstructionNode = instruction_path
+                    .last()
+                    .and_then(|node| node.try_into().ok())
+                    .expect("until_last ends with an instruction");
                 let instruction_dictionary = program_dictionary.instructions.get_or_insert_with(
                     &instruction.identifier,
                     || InstructionDictionary {

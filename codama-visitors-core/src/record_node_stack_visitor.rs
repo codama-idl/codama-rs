@@ -33,7 +33,7 @@ where
 }
 
 /// Pops the current node when dropped, so a visited node leaves the stack even when its visit panics.
-struct PopOnDrop<'s, 'a>(&'s NodeStack<'a>);
+pub(crate) struct PopOnDrop<'s, 'a>(pub(crate) &'s NodeStack<'a>);
 
 impl Drop for PopOnDrop<'_, '_> {
     fn drop(&mut self) {

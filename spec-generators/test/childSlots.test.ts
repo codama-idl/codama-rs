@@ -2,17 +2,10 @@ import { getSpec } from '@codama/spec';
 import { describe, expect, it } from 'vitest';
 
 import { withBaseAttributes } from '../src/baseAttributes';
-import { getChildSlots, getNodeFields, getRustFieldName } from '../src/childSlots';
+import { getChildSlots, getNodeFields } from '../src/childSlots';
 
 const spec = withBaseAttributes(getSpec());
 const nodeOf = (kind: string) => spec.categories.flatMap(c => c.nodes).find(n => n.kind === kind)!;
-
-describe('getRustFieldName', () => {
-    it('snake-cases the attribute and escapes Rust keywords', () => {
-        expect(getRustFieldName('defaultValue')).toBe('default_value');
-        expect(getRustFieldName('type')).toBe('r#type');
-    });
-});
 
 describe('getChildSlots', () => {
     it('classifies every shape of child attribute, in spec order', () => {

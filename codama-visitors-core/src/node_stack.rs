@@ -52,12 +52,12 @@ impl<'a> NodeStack<'a> {
 
     /// Adds `node` at the end of the current path.
     pub fn push(&self, node: impl Into<NodeRef<'a>>) {
-        self.with_current_path(|path| path.push(node));
+        self.with_current_path_mut(|path| path.push(node));
     }
 
     /// Removes the last node of the current path and returns it.
     pub fn pop(&self) -> Option<NodeRef<'a>> {
-        self.with_current_path(NodePath::pop)
+        self.with_current_path_mut(NodePath::pop)
     }
 
     /// The last node of the current path.
@@ -135,7 +135,17 @@ impl<'a> NodeStack<'a> {
         self.with_current_path(|path| path.is_empty())
     }
 
-    fn with_current_path<R>(&self, f: impl FnOnce(&mut NodePath<'a>) -> R) -> R {
+    /// Runs `f` on the current path without copying it, unlike [`NodeStack::get_path`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if `f` changes the stack, as the current path is borrowed while `f` runs.
+    pub fn with_current_path<R>(&self, f: impl FnOnce(&NodePath<'a>) -> R) -> R {
+        let paths = self.paths.borrow();
+        f(paths.last().expect("a node stack always has a path"))
+    }
+
+    fn with_current_path_mut<R>(&self, f: impl FnOnce(&mut NodePath<'a>) -> R) -> R {
         let mut paths = self.paths.borrow_mut();
         f(paths.last_mut().expect("a node stack always has a path"))
     }
@@ -154,7 +164,7 @@ impl Drop for PopPathOnDrop<'_, '_> {
 impl fmt::Display for NodeStack<'_> {
     /// Displays the current path.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.get_path().fmt(f)
+        self.with_current_path(|path| path.fmt(f))
     }
 }
 
@@ -198,6 +208,17 @@ mod tests {
         assert_eq!(
             stack.get_path(),
             NodePath::from(vec![NodeRef::from(&program)])
+        );
+    }
+
+    #[test]
+    fn with_current_path_borrows_the_current_path() {
+        let program = ProgramNode::default();
+        let stack = NodeStack::default();
+        stack.push(&program);
+        assert_eq!(
+            stack.with_current_path(|path| path.last()),
+            Some(NodeRef::from(&program))
         );
     }
 

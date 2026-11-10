@@ -11,6 +11,12 @@ use codama_nodes::{Node, NodeRef};
 /// in `visitor.extend(..).record_node_stack(&stack)`, the stack holds a node before the extension
 /// visits it. Every wrapper, except [`VisitorExt::map`] and [`VisitorExt::non_null`], applies to every
 /// node of the tree, as the children of a node are visited through the whole chain.
+///
+/// **[`VisitorExt::map`] and [`VisitorExt::non_null`] only apply to the node that the visit starts
+/// from, so they must come last.** The wrapped visitor visits the rest of the tree on its own, so the
+/// wrappers added after them only see that first node: `IdentityVisitor.non_null().record_node_stack(&stack)`
+/// records the starting node alone, while `IdentityVisitor.record_node_stack(&stack).non_null()`
+/// records every node.
 pub trait VisitorExt<'a, T>: Visitor<'a, T> + Sized {
     /// Runs `extension` on every node, before or instead of this visitor. See [`ExtendVisitor`].
     fn extend<F>(self, extension: F) -> ExtendVisitor<Self, F>
