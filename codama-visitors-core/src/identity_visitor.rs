@@ -15,6 +15,9 @@ use codama_nodes::{Node, NodeRef};
 /// A node returned for an attribute that cannot hold its kind is an error.
 /// Use [`VisitorExt::non_null`](crate::VisitorExt::non_null) when the visited node itself must remain.
 ///
+/// Like `identityVisitor` in the JavaScript library, a `conditionalValueNode` whose `if_true` and
+/// `if_false` values are both gone after visiting its children is deleted, as it would provide nothing.
+///
 /// ```
 /// use codama_nodes::{IntegerTypeNode, Node, NodeRef, StringTypeNode, StructFieldTypeNode, U8};
 /// use codama_visitors_core::{visit, IdentityVisitor, VisitorExt};
@@ -38,7 +41,15 @@ impl<'a> Visitor<'a, CodamaResult<Option<Node>>> for IdentityVisitor {
         node: NodeRef<'a>,
         recurse: &dyn Fn(NodeRef<'a>) -> CodamaResult<Option<Node>>,
     ) -> CodamaResult<Option<Node>> {
-        node.map_children(recurse)
+        let node = node.map_children(recurse)?;
+        match &node {
+            Some(Node::ConditionalValue(value))
+                if value.if_true.is_none() && value.if_false.is_none() =>
+            {
+                Ok(None)
+            }
+            _ => Ok(node),
+        }
     }
 }
 
@@ -47,8 +58,8 @@ mod tests {
     use super::*;
     use crate::{visit, VisitorExt};
     use codama_nodes::{
-        DefinedTypeNode, IntegerTypeNode, ProgramNode, RootNode, StringTypeNode,
-        StructFieldTypeNode, StructTypeNode, U64, U8,
+        AccountValueNode, ConditionalValueNode, DefinedTypeNode, IntegerTypeNode, PayerValueNode,
+        ProgramNode, RootNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U64, U8,
     };
 
     fn root() -> RootNode {
@@ -122,5 +133,44 @@ mod tests {
             node => scope.next(node),
         });
         assert_eq!(visit(&visitor, &root()).unwrap(), None);
+    }
+
+    fn conditional_value() -> ConditionalValueNode {
+        ConditionalValueNode {
+            condition: Box::new(AccountValueNode::new("owner").into()),
+            value: Box::new(None),
+            if_true: Box::new(Some(PayerValueNode::new().into())),
+            if_false: Box::new(Some(AccountValueNode::new("authority").into())),
+            plugins: vec![],
+        }
+    }
+
+    #[test]
+    fn keeps_a_conditional_value_with_one_branch_left() {
+        let visitor = IdentityVisitor.extend(|node, scope| match node {
+            NodeRef::PayerValue(_) => Ok(None),
+            node => scope.next(node),
+        });
+        let Some(Node::ConditionalValue(value)) = visit(&visitor, &conditional_value()).unwrap()
+        else {
+            panic!("expected a conditional value");
+        };
+        assert_eq!(*value.if_true, None);
+        assert_eq!(
+            *value.if_false,
+            Some(AccountValueNode::new("authority").into())
+        );
+    }
+
+    #[test]
+    fn deletes_a_conditional_value_without_branches_left() {
+        let visitor = IdentityVisitor.extend(|node, scope| match node {
+            NodeRef::PayerValue(_) => Ok(None),
+            NodeRef::AccountValue(account) if account.identifier.as_str() == "authority" => {
+                Ok(None)
+            }
+            node => scope.next(node),
+        });
+        assert_eq!(visit(&visitor, &conditional_value()).unwrap(), None);
     }
 }

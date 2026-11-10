@@ -6,9 +6,9 @@ use std::{cell::RefCell, fmt};
 /// [`VisitorExt::record_node_stack`](crate::VisitorExt::record_node_stack) adapter pushes each node
 /// before visiting it and pops it afterwards.
 ///
-/// The stack holds a list of paths, where the last one is the current path. Pushing a new path with
-/// [`NodeStack::push_path`] lets a visitor jump to another part of the tree, such as the node a link
-/// points to, and [`NodeStack::pop_path`] restores the previous path afterwards.
+/// The stack holds a list of paths, where the last one is the current path. A visitor jumps to
+/// another part of the tree, such as the node a link points to, with [`NodeStack::visit_path`] or
+/// [`NodeStack::with_path`], which restore the previous path afterwards.
 ///
 /// Its methods take `&self`, so visitors and their extensions can share it by reference.
 ///
@@ -22,7 +22,7 @@ use std::{cell::RefCell, fmt};
 /// let visitor = VoidVisitor
 ///     .tap(|node| {
 ///         if let NodeRef::IntegerType(_) = node {
-///             assert_eq!(stack.to_string(), "[structFieldTypeNode]amount > [integerTypeNode]");
+///             assert_eq!(stack.to_string(), "[structFieldTypeNode]amount.[integerTypeNode]");
 ///         }
 ///     })
 ///     .record_node_stack(&stack);
@@ -85,6 +85,46 @@ impl<'a> NodeStack<'a> {
         paths.pop().expect("the stack has more than one path")
     }
 
+    /// Runs `f` with `path` as the current path, then restores the previous path, even if `f` panics.
+    pub fn with_path<T>(&self, path: NodePath<'a>, f: impl FnOnce() -> T) -> T {
+        self.push_path(path);
+        let _restore = PopPathOnDrop(self);
+        f()
+    }
+
+    /// Visits the last node of `path` with `visit`, with the rest of `path` as the current path, then
+    /// restores the previous path, like `visitPath` in the JavaScript library.
+    ///
+    /// The visit must record its nodes on this stack, as
+    /// [`VisitorExt::record_node_stack`](crate::VisitorExt::record_node_stack) does, which adds the
+    /// visited node back to the path. Inside an extension, pass `|node| scope.visit(node)`:
+    ///
+    /// ```
+    /// # use codama_nodes::NodeRef;
+    /// # use codama_visitors_core::{LinkableDictionary, MergeVisitor, NodeStack, VisitorExt};
+    /// # let stack = NodeStack::default();
+    /// # let linkables = LinkableDictionary::default();
+    /// let visitor = MergeVisitor::new(|_, values: Vec<usize>| 1 + values.iter().sum::<usize>())
+    ///     .extend(|node, scope| match node {
+    ///         // Counts the nodes of the defined type that a link points to, instead of the link.
+    ///         NodeRef::DefinedTypeLink(_) => match linkables.get_path(&stack.get_path()) {
+    ///             Some(linked) => stack.visit_path(linked, |linked| scope.visit(linked)),
+    ///             None => 0,
+    ///         },
+    ///         node => scope.next(node),
+    ///     })
+    ///     .record_node_stack(&stack)
+    ///     .record_linkables_on_first_visit(&linkables);
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Panics when `path` is empty, as there is no node to visit.
+    pub fn visit_path<T>(&self, mut path: NodePath<'a>, visit: impl FnOnce(NodeRef<'a>) -> T) -> T {
+        let node = path.pop().expect("Cannot visit an empty node path");
+        self.with_path(path, || visit(node))
+    }
+
     /// A copy of the current path.
     pub fn get_path(&self) -> NodePath<'a> {
         self.with_current_path(|path| path.clone())
@@ -98,6 +138,16 @@ impl<'a> NodeStack<'a> {
     fn with_current_path<R>(&self, f: impl FnOnce(&mut NodePath<'a>) -> R) -> R {
         let mut paths = self.paths.borrow_mut();
         f(paths.last_mut().expect("a node stack always has a path"))
+    }
+}
+
+/// Pops the current path when dropped, so a path pushed by [`NodeStack::with_path`] is popped even
+/// when its function panics.
+struct PopPathOnDrop<'s, 'a>(&'s NodeStack<'a>);
+
+impl Drop for PopPathOnDrop<'_, '_> {
+    fn drop(&mut self) {
+        self.0.pop_path();
     }
 }
 
@@ -149,6 +199,47 @@ mod tests {
             stack.get_path(),
             NodePath::from(vec![NodeRef::from(&program)])
         );
+    }
+
+    #[test]
+    fn with_path_restores_the_previous_path() {
+        let program = ProgramNode::default();
+        let instruction = InstructionNode::default();
+        let stack = NodeStack::default();
+        stack.push(&program);
+        let inner = stack.with_path(NodePath::from(vec![NodeRef::from(&instruction)]), || {
+            stack.get_path()
+        });
+        assert_eq!(inner, NodePath::from(vec![NodeRef::from(&instruction)]));
+        assert_eq!(
+            stack.get_path(),
+            NodePath::from(vec![NodeRef::from(&program)])
+        );
+    }
+
+    #[test]
+    fn with_path_restores_the_previous_path_on_panic() {
+        let instruction = InstructionNode::default();
+        let stack = NodeStack::default();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            stack.with_path(NodePath::from(vec![NodeRef::from(&instruction)]), || {
+                panic!("visit failed")
+            })
+        }));
+        assert!(result.is_err());
+        assert!(stack.is_empty());
+    }
+
+    #[test]
+    fn visit_path_visits_the_last_node_from_the_rest_of_the_path() {
+        let program = ProgramNode::default();
+        let instruction = InstructionNode::default();
+        let stack = NodeStack::default();
+        let path = NodePath::from(vec![NodeRef::from(&program), NodeRef::from(&instruction)]);
+        let (visited, current) = stack.visit_path(path, |node| (node, stack.get_path()));
+        assert_eq!(visited, NodeRef::from(&instruction));
+        assert_eq!(current, NodePath::from(vec![NodeRef::from(&program)]));
+        assert!(stack.is_empty());
     }
 
     #[test]

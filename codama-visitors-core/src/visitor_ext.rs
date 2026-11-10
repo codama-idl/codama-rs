@@ -28,10 +28,11 @@ pub trait VisitorExt<'a, T>: Visitor<'a, T> + Sized {
         TapVisitor::new(self, tap)
     }
 
-    /// Maps the value of the node that the visit starts from with `map`. See [`MapVisitor`].
+    /// Maps the value of the node that the visit starts from with `map`, which also receives that node.
+    /// See [`MapVisitor`].
     fn map<U, F>(self, map: F) -> MapVisitor<Self, F, T>
     where
-        F: Fn(T) -> U,
+        F: Fn(T, NodeRef<'a>) -> U,
     {
         MapVisitor::new(self, map)
     }

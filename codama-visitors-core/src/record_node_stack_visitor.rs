@@ -27,9 +27,17 @@ where
 {
     fn visit(&self, node: NodeRef<'a>, recurse: &dyn Fn(NodeRef<'a>) -> T) -> T {
         self.stack.push(node);
-        let value = self.visitor.visit(node, recurse);
-        self.stack.pop();
-        value
+        let _pop = PopOnDrop(self.stack);
+        self.visitor.visit(node, recurse)
+    }
+}
+
+/// Pops the current node when dropped, so a visited node leaves the stack even when its visit panics.
+struct PopOnDrop<'s, 'a>(&'s NodeStack<'a>);
+
+impl Drop for PopOnDrop<'_, '_> {
+    fn drop(&mut self) {
+        self.0.pop();
     }
 }
 
@@ -57,10 +65,10 @@ mod tests {
             *paths.borrow(),
             [
                 "[structTypeNode]",
-                "[structTypeNode] > [structFieldTypeNode]a",
-                "[structTypeNode] > [structFieldTypeNode]a > [integerTypeNode]",
-                "[structTypeNode] > [structFieldTypeNode]b",
-                "[structTypeNode] > [structFieldTypeNode]b > [stringTypeNode]",
+                "[structTypeNode].[structFieldTypeNode]a",
+                "[structTypeNode].[structFieldTypeNode]a.[integerTypeNode]",
+                "[structTypeNode].[structFieldTypeNode]b",
+                "[structTypeNode].[structFieldTypeNode]b.[stringTypeNode]",
             ]
         );
         assert!(stack.is_empty());
@@ -83,7 +91,7 @@ mod tests {
         visit(&visitor, &integer);
         assert_eq!(
             last.borrow().as_deref(),
-            Some("[structTypeNode] > [integerTypeNode]")
+            Some("[structTypeNode].[integerTypeNode]")
         );
         assert_eq!(stack.get_path().len(), 1);
     }

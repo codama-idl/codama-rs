@@ -7,8 +7,9 @@ use std::fmt;
 /// [`LinkableDictionary`](crate::LinkableDictionary) stores the path of each node that a link can
 /// point to. The path only holds references, so it is cheap to clone.
 ///
-/// A path displays as the kind and identifier of each node, like in the JavaScript library:
-/// `[programNode]token > [instructionNode]transfer`.
+/// A path displays like `getNodePathString` in the JavaScript library: the kind and identifier of each
+/// node, joined by `.`, without the root node when other nodes follow it, such as
+/// `[programNode]token.[instructionNode]transfer`.
 ///
 /// ```
 /// use codama_nodes::{InstructionNode, NodeRef, ProgramNode};
@@ -22,7 +23,7 @@ use std::fmt;
 /// let path = NodePath::from(vec![NodeRef::from(&program), NodeRef::from(&instruction)]);
 ///
 /// assert_eq!(path.find_last::<ProgramNode>(), Some(&program));
-/// assert_eq!(path.to_string(), "[programNode]token > [instructionNode]transfer");
+/// assert_eq!(path.to_string(), "[programNode]token.[instructionNode]transfer");
 /// ```
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct NodePath<'a>(Vec<NodeRef<'a>>);
@@ -110,9 +111,13 @@ impl<'a> IntoIterator for NodePath<'a> {
 
 impl fmt::Display for NodePath<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (index, node) in self.0.iter().enumerate() {
+        let nodes = match self.0.as_slice() {
+            [NodeRef::Root(_), rest @ ..] if !rest.is_empty() => rest,
+            nodes => nodes,
+        };
+        for (index, node) in nodes.iter().enumerate() {
             if index > 0 {
-                f.write_str(" > ")?;
+                f.write_str(".")?;
             }
             write!(f, "[{}]", node.kind())?;
             if let Some(identifier) = node.identifier() {
@@ -192,8 +197,18 @@ mod tests {
         ]);
         assert_eq!(
             path.to_string(),
-            "[programNode]token > [structFieldTypeNode]amount > [integerTypeNode]"
+            "[programNode]token.[structFieldTypeNode]amount.[integerTypeNode]"
         );
+    }
+
+    #[test]
+    fn display_drops_the_root_node_unless_it_is_alone() {
+        let root = RootNode::default();
+        let program = ProgramNode::new("token", "1111");
+        let path = NodePath::from(vec![NodeRef::from(&root), NodeRef::from(&program)]);
+        assert_eq!(path.to_string(), "[programNode]token");
+        let path = NodePath::from(vec![NodeRef::from(&root)]);
+        assert_eq!(path.to_string(), "[rootNode]");
         assert_eq!(NodePath::default().to_string(), "");
     }
 }

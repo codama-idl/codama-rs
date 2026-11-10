@@ -2,7 +2,8 @@ use crate::{visit, Visitor};
 use codama_nodes::NodeRef;
 use std::marker::PhantomData;
 
-/// Maps the value that a visitor returns for the visited node.
+/// Maps the value that a visitor returns for the visited node, with a function that also receives that
+/// node, like `mapVisitor` in the JavaScript library.
 ///
 /// Created by [`VisitorExt::map`](crate::VisitorExt::map). Only the value of the node that the visit
 /// starts from is mapped: the wrapped visitor visits the rest of the tree on its own and gets the
@@ -20,7 +21,7 @@ impl<V, F, T> MapVisitor<V, F, T> {
     pub fn new<'a, U>(visitor: V, map: F) -> Self
     where
         V: Visitor<'a, T>,
-        F: Fn(T) -> U,
+        F: Fn(T, NodeRef<'a>) -> U,
     {
         Self {
             visitor,
@@ -33,24 +34,24 @@ impl<V, F, T> MapVisitor<V, F, T> {
 impl<'a, T, U, V, F> Visitor<'a, U> for MapVisitor<V, F, T>
 where
     V: Visitor<'a, T>,
-    F: Fn(T) -> U,
+    F: Fn(T, NodeRef<'a>) -> U,
 {
     /// Visits `node` with the wrapped visitor alone, so `recurse` is not used.
     fn visit(&self, node: NodeRef<'a>, _recurse: &dyn Fn(NodeRef<'a>) -> U) -> U {
-        (self.map)(visit(&self.visitor, node))
+        (self.map)(visit(&self.visitor, node), node)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{visit, MergeVisitor, VisitorExt};
-    use codama_nodes::{IntegerTypeNode, StructFieldTypeNode, U8};
+    use codama_nodes::{HasKind, IntegerTypeNode, StructFieldTypeNode, U8};
 
     #[test]
     fn maps_the_value_of_the_visited_node_only() {
         let visitor = MergeVisitor::new(|_, values: Vec<usize>| 1 + values.iter().sum::<usize>())
-            .map(|count| format!("{count} nodes"));
+            .map(|count, node| format!("{}: {count} nodes", node.kind()));
         let field = StructFieldTypeNode::new("amount", IntegerTypeNode::le(U8));
-        assert_eq!(visit(&visitor, &field), "2 nodes");
+        assert_eq!(visit(&visitor, &field), "structFieldTypeNode: 2 nodes");
     }
 }

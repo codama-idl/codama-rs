@@ -30,7 +30,7 @@
 //!
 //! assert_eq!(
 //!     visit(&visitor, &root),
-//!     ["[rootNode] > [programNode]token > [definedTypeNode]label > [stringTypeNode]"]
+//!     ["[programNode]token.[definedTypeNode]label.[stringTypeNode]"]
 //! );
 //! ```
 

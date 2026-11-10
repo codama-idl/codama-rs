@@ -1,6 +1,6 @@
 use crate::NodePath;
 use codama_errors::{CodamaError, CodamaResult};
-use codama_nodes::{HasKind, Identifier, InstructionNode, NodeRef, ProgramNode};
+use codama_nodes::{Identifier, InstructionNode, NodeRef, ProgramNode};
 use std::{cell::RefCell, collections::HashMap};
 
 /// Finds the nodes that link nodes point to, from the paths of the nodes they can point to.
@@ -36,22 +36,83 @@ use std::{cell::RefCell, collections::HashMap};
 /// ```
 #[derive(Debug, Default)]
 pub struct LinkableDictionary<'a> {
-    programs: RefCell<HashMap<Identifier, ProgramDictionary<'a>>>,
+    programs: RefCell<OrderedMap<ProgramDictionary<'a>>>,
 }
 
 #[derive(Debug)]
 struct ProgramDictionary<'a> {
     program: NodePath<'a>,
-    accounts: HashMap<Identifier, NodePath<'a>>,
-    defined_types: HashMap<Identifier, NodePath<'a>>,
-    instructions: HashMap<Identifier, InstructionDictionary<'a>>,
-    pdas: HashMap<Identifier, NodePath<'a>>,
+    accounts: OrderedMap<NodePath<'a>>,
+    defined_types: OrderedMap<NodePath<'a>>,
+    instructions: OrderedMap<InstructionDictionary<'a>>,
+    pdas: OrderedMap<NodePath<'a>>,
 }
 
 #[derive(Debug)]
 struct InstructionDictionary<'a> {
     instruction: NodePath<'a>,
-    accounts: HashMap<Identifier, NodePath<'a>>,
+    accounts: OrderedMap<NodePath<'a>>,
+}
+
+/// A map by identifier that iterates in insertion order, like a JavaScript `Map`.
+/// Inserting an existing identifier replaces its value and keeps its position.
+#[derive(Debug)]
+struct OrderedMap<V> {
+    indices: HashMap<Identifier, usize>,
+    values: Vec<V>,
+}
+
+impl<V> Default for OrderedMap<V> {
+    fn default() -> Self {
+        Self {
+            indices: HashMap::new(),
+            values: Vec::new(),
+        }
+    }
+}
+
+impl<V> OrderedMap<V> {
+    fn get(&self, identifier: &Identifier) -> Option<&V> {
+        self.indices
+            .get(identifier)
+            .map(|&index| &self.values[index])
+    }
+
+    fn insert(&mut self, identifier: &Identifier, value: V) {
+        match self.indices.get(identifier) {
+            Some(&index) => self.values[index] = value,
+            None => {
+                self.indices.insert(identifier.clone(), self.values.len());
+                self.values.push(value);
+            }
+        }
+    }
+
+    fn get_or_insert_with(&mut self, identifier: &Identifier, value: impl FnOnce() -> V) -> &mut V {
+        let index = match self.indices.get(identifier) {
+            Some(&index) => index,
+            None => {
+                self.indices.insert(identifier.clone(), self.values.len());
+                self.values.push(value());
+                self.values.len() - 1
+            }
+        };
+        &mut self.values[index]
+    }
+
+    fn values(&self) -> impl Iterator<Item = &V> {
+        self.values.iter()
+    }
+
+    fn clear(&mut self) {
+        self.indices.clear();
+        self.values.clear();
+    }
+
+    #[cfg(test)]
+    fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
 }
 
 impl<'a> LinkableDictionary<'a> {
@@ -69,28 +130,25 @@ impl<'a> LinkableDictionary<'a> {
             .find_last::<ProgramNode>()
             .expect("the path has a program");
         let mut programs = self.programs.borrow_mut();
-        let program_dictionary = programs
-            .entry(program.identifier.clone())
-            .or_insert_with(|| ProgramDictionary {
+        let program_dictionary =
+            programs.get_or_insert_with(&program.identifier, || ProgramDictionary {
                 program: program_path,
-                accounts: HashMap::new(),
-                defined_types: HashMap::new(),
-                instructions: HashMap::new(),
-                pdas: HashMap::new(),
+                accounts: OrderedMap::default(),
+                defined_types: OrderedMap::default(),
+                instructions: OrderedMap::default(),
+                pdas: OrderedMap::default(),
             });
 
-        let record = |paths: &mut HashMap<Identifier, NodePath<'a>>, identifier: &Identifier| {
-            paths.insert(identifier.clone(), path.clone());
-        };
         match node {
-            NodeRef::Account(account) => {
-                record(&mut program_dictionary.accounts, &account.identifier)
-            }
-            NodeRef::DefinedType(defined_type) => record(
-                &mut program_dictionary.defined_types,
-                &defined_type.identifier,
-            ),
-            NodeRef::Pda(pda) => record(&mut program_dictionary.pdas, &pda.identifier),
+            NodeRef::Account(account) => program_dictionary
+                .accounts
+                .insert(&account.identifier, path.clone()),
+            NodeRef::DefinedType(defined_type) => program_dictionary
+                .defined_types
+                .insert(&defined_type.identifier, path.clone()),
+            NodeRef::Pda(pda) => program_dictionary
+                .pdas
+                .insert(&pda.identifier, path.clone()),
             NodeRef::Instruction(_) | NodeRef::InstructionAccount(_) => {
                 let Some(instruction_path) = path.until_last::<InstructionNode>() else {
                     return;
@@ -98,19 +156,55 @@ impl<'a> LinkableDictionary<'a> {
                 let instruction = path
                     .find_last::<InstructionNode>()
                     .expect("the path has an instruction");
-                let instruction_dictionary = program_dictionary
-                    .instructions
-                    .entry(instruction.identifier.clone())
-                    .or_insert_with(|| InstructionDictionary {
+                let instruction_dictionary = program_dictionary.instructions.get_or_insert_with(
+                    &instruction.identifier,
+                    || InstructionDictionary {
                         instruction: instruction_path,
-                        accounts: HashMap::new(),
-                    });
+                        accounts: OrderedMap::default(),
+                    },
+                );
                 if let NodeRef::InstructionAccount(account) = node {
-                    record(&mut instruction_dictionary.accounts, &account.identifier);
+                    instruction_dictionary
+                        .accounts
+                        .insert(&account.identifier, path.clone());
                 }
             }
             _ => {}
         }
+    }
+
+    /// Forgets every recorded node, for example before recording the nodes of another tree.
+    pub fn clear(&self) {
+        self.programs.borrow_mut().clear();
+    }
+
+    /// The paths of every recorded node of type `T`, such as `get_recorded_paths_of_kind::<AccountNode>()`,
+    /// across all programs and in the order they were recorded.
+    pub fn get_recorded_paths_of_kind<T: 'a>(&self) -> Vec<NodePath<'a>>
+    where
+        &'a T: TryFrom<NodeRef<'a>>,
+    {
+        let programs = self.programs.borrow();
+        let mut paths = Vec::new();
+        for program in programs.values() {
+            paths.push(&program.program);
+            paths.extend(program.accounts.values());
+            paths.extend(program.defined_types.values());
+            paths.extend(program.pdas.values());
+            for instruction in program.instructions.values() {
+                paths.push(&instruction.instruction);
+                paths.extend(instruction.accounts.values());
+            }
+        }
+        // Each kind of node lives in one map only, so filtering keeps the recording order of its map.
+        paths
+            .into_iter()
+            .filter(|path| {
+                path.last()
+                    .is_some_and(|node| <&'a T>::try_from(node).is_ok())
+            })
+            .cloned()
+            .collect()
     }
 
     /// The path of the node that the link at the end of `link_path` points to, if it is recorded.
@@ -187,17 +281,13 @@ impl<'a> LinkableDictionary<'a> {
     /// Like [`LinkableDictionary::get_path`], with an error naming the link when it points to no
     /// recorded node.
     pub fn get_path_or_err(&self, link_path: &NodePath<'a>) -> CodamaResult<NodePath<'a>> {
-        self.get_path(link_path).ok_or_else(|| {
-            let link = link_path.last();
-            CodamaError::LinkedNodeNotFound {
-                kind: link.map(|link| link.kind()).unwrap_or("None").to_string(),
-                identifier: link
-                    .and_then(|link| link.identifier())
-                    .map(Identifier::to_string)
-                    .unwrap_or_default(),
-                path: link_path.to_string(),
-            }
-        })
+        self.get_path(link_path)
+            .ok_or_else(|| CodamaError::LinkedNodeNotFound {
+                path: match link_path.is_empty() {
+                    true => "none".to_string(),
+                    false => link_path.to_string(),
+                },
+            })
     }
 
     /// Like [`LinkableDictionary::get`], with an error naming the link when it points to no recorded
@@ -274,12 +364,12 @@ mod tests {
         ] {
             assert_eq!(
                 resolved(&linkables, &link_path(token, link)),
-                Some(format!("[rootNode] > [programNode]token > {expected}"))
+                Some(format!("[programNode]token.{expected}"))
             );
         }
         assert_eq!(
             resolved(&linkables, &link_path(token, NodeRef::from(&program))),
-            Some("[rootNode] > [programNode]token".to_string())
+            Some("[programNode]token".to_string())
         );
     }
 
@@ -290,7 +380,7 @@ mod tests {
         let link = DefinedTypeLinkNode::new_from_program("label", ProgramLinkNode::new("system"));
         assert_eq!(
             resolved(&linkables, &link_path(&root.program, NodeRef::from(&link))),
-            Some("[rootNode] > [programNode]system > [definedTypeNode]label".to_string())
+            Some("[programNode]system.[definedTypeNode]label".to_string())
         );
     }
 
@@ -306,7 +396,7 @@ mod tests {
             NodeRef::from(&link),
         ]);
         let expected =
-            "[rootNode] > [programNode]token > [instructionNode]transfer > [instructionAccountNode]source";
+            "[programNode]token.[instructionNode]transfer.[instructionAccountNode]source";
         assert_eq!(resolved(&linkables, &path), Some(expected.to_string()));
 
         let link = InstructionAccountLinkNode::new_from_instruction(
@@ -329,7 +419,7 @@ mod tests {
         assert!(!linkables.has(&path));
         assert_eq!(
             linkables.get_path_or_err(&path).unwrap_err().to_string(),
-            "Could not find the node that the `definedTypeLinkNode` named `missing` links to, at [programNode]token > [definedTypeLinkNode]missing"
+            "Could not find the node linked from [programNode]token.[definedTypeLinkNode]missing."
         );
 
         let other_program =
@@ -347,5 +437,65 @@ mod tests {
         let linkables = LinkableDictionary::default();
         visit(&RecordLinkablesVisitor::new(&linkables), &defined_type);
         assert!(linkables.programs.borrow().is_empty());
+    }
+
+    #[test]
+    fn recorded_paths_of_kind_keep_the_recording_order_across_programs() {
+        let root = root();
+        let linkables = record(&root);
+        let paths =
+            |paths: Vec<NodePath>| paths.iter().map(ToString::to_string).collect::<Vec<_>>();
+        assert_eq!(
+            paths(linkables.get_recorded_paths_of_kind::<AccountNode>()),
+            [
+                "[programNode]token.[accountNode]mint",
+                "[programNode]system.[accountNode]mint"
+            ]
+        );
+        assert_eq!(
+            paths(linkables.get_recorded_paths_of_kind::<ProgramNode>()),
+            ["[programNode]token", "[programNode]system"]
+        );
+        assert_eq!(
+            paths(linkables.get_recorded_paths_of_kind::<InstructionAccountNode>()),
+            [
+                "[programNode]token.[instructionNode]transfer.[instructionAccountNode]source",
+                "[programNode]system.[instructionNode]transfer.[instructionAccountNode]source",
+            ]
+        );
+    }
+
+    #[test]
+    fn recording_an_identifier_again_replaces_its_path_in_place() {
+        let program = ProgramNode {
+            defined_types: vec![
+                DefinedTypeNode::new("a", StringTypeNode::utf8()),
+                DefinedTypeNode::new("b", StringTypeNode::utf8()),
+                DefinedTypeNode::new("a", StructTypeNode::new(vec![])),
+            ],
+            ..ProgramNode::new("token", "1111")
+        };
+        let linkables = LinkableDictionary::default();
+        visit(&RecordLinkablesVisitor::new(&linkables), &program);
+        let paths = linkables.get_recorded_paths_of_kind::<DefinedTypeNode>();
+        let linked: Vec<_> = paths.iter().map(|path| path.last().unwrap()).collect();
+        assert_eq!(
+            linked,
+            [
+                NodeRef::from(&program.defined_types[2]),
+                NodeRef::from(&program.defined_types[1]),
+            ]
+        );
+    }
+
+    #[test]
+    fn clear_forgets_every_recorded_node() {
+        let root = root();
+        let linkables = record(&root);
+        linkables.clear();
+        assert!(linkables.programs.borrow().is_empty());
+        assert!(linkables
+            .get_recorded_paths_of_kind::<ProgramNode>()
+            .is_empty());
     }
 }
