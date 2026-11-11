@@ -32,24 +32,7 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         }
     });
 
-    let deserialize_patterns = variants
-        .iter()
-        .map(|variant| -> CodamaResult<TokenStream> {
-            let variant_name = &variant.ident;
-            let variant_type = &variant.fields.single_unnamed_field()?.ty;
-            let variant_type = variant_type
-                .single_generic_type_from_path("Box")
-                .unwrap_or(variant_type);
-            let kind = lowercase_first_letter(&variant_type.as_path()?.last_str());
-
-            Ok(quote! {
-                #kind => Ok(#item_name::#variant_name(
-                    serde_json::from_value(value).map_err(to_serde_error)?,
-                )),
-            })
-        })
-        .collect_and_combine_errors()?;
-
+    // The kind of each variant, read once so `KINDS` and the `Deserialize` arms cannot drift apart.
     let kinds = variants
         .iter()
         .map(|variant| -> CodamaResult<String> {
@@ -60,6 +43,15 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
             Ok(lowercase_first_letter(&variant_type.as_path()?.last_str()))
         })
         .collect_and_combine_errors()?;
+
+    let deserialize_patterns = variants.iter().zip(&kinds).map(|(variant, kind)| {
+        let variant_name = &variant.ident;
+        quote! {
+            #kind => Ok(#item_name::#variant_name(
+                serde_json::from_value(value).map_err(to_serde_error)?,
+            )),
+        }
+    });
 
     Ok(quote! {
         impl crate::NodeUnionTrait for #item_name {}
