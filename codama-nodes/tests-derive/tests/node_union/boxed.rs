@@ -1,4 +1,4 @@
-use codama_nodes::{HasKind, NodeTrait, NodeUnionTrait};
+use codama_nodes::{HasKind, NodeKinds, NodeTrait, NodeUnionTrait};
 use codama_nodes_derive::{node, NodeUnion};
 
 #[node]
@@ -14,6 +14,7 @@ pub enum TypeNode {
 }
 
 fn main() {
+    assert_eq!(TypeNode::KINDS, ["numberTypeNode", "stringTypeNode"]);
     let node = TypeNode::Number(Box::new(NumberTypeNode {}));
     let json = r#"{"kind":"numberTypeNode"}"#;
     assert_eq!(serde_json::to_string(&node).unwrap(), json);

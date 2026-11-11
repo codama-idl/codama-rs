@@ -201,4 +201,15 @@ mod tests {
             "Could not convert node from `definedTypeLinkNode` into `ValueNode`"
         );
     }
+
+    #[test]
+    fn node_kinds() {
+        use crate::{NodeKinds, RegisteredValueNode};
+        assert_eq!(IntegerValueNode::KINDS, ["integerValueNode"]);
+        assert_eq!(Node::KINDS.len(), 94);
+        assert!(TypeNode::KINDS.contains(&"definedTypeLinkNode"));
+        assert!(!TypeNode::KINDS.contains(&"structFieldTypeNode"));
+        assert!(RegisteredValueNode::KINDS.contains(&"structFieldValueNode"));
+        assert!(!ValueNode::KINDS.contains(&"structFieldValueNode"));
+    }
 }

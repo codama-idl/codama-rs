@@ -29,6 +29,19 @@ pub trait HasKind {
     fn kind(&self) -> &'static str;
 }
 
+/// The node kinds that a node type can hold: its own kind for a node, and the kinds of its variants for
+/// a node union, like the `*_KINDS` constants of the JavaScript library.
+///
+/// ```
+/// use codama_nodes::{IntegerValueNode, NodeKinds, PdaSeedValueValue};
+///
+/// assert_eq!(IntegerValueNode::KINDS, ["integerValueNode"]);
+/// assert!(PdaSeedValueValue::KINDS.contains(&"accountValueNode"));
+/// ```
+pub trait NodeKinds {
+    const KINDS: &'static [&'static str];
+}
+
 pub trait HasIdentifier {
     fn identifier(&self) -> &Identifier;
 }
