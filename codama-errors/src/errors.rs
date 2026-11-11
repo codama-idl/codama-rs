@@ -81,8 +81,17 @@ pub enum CodamaError {
     #[error("Injected value [{key}] is not provided and has no fallback at {path}. Values injected into a defined type are provided by the instruction that uses it.")]
     InjectedValueNotProvided { key: String, path: String },
 
-    #[error("The value provided at {path} is not one of [{expected}].")]
-    InvalidProvidedValue { expected: String, path: String },
+    #[error("The value provided at {path} is not one of [{expected_kinds}].")]
+    InvalidProvidedValue {
+        expected_kinds: String,
+        path: String,
+    },
+
+    #[error("Expected node of kind [{expected_kinds}], got {path}.")]
+    UnexpectedNodeKind {
+        expected_kinds: String,
+        path: String,
+    },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;

@@ -1,7 +1,7 @@
 use crate::{visit, IdentityVisitor, NodePath, VisitorExt};
 use codama_errors::{CodamaError, CodamaResult};
 use codama_nodes::{
-    HasKind, Identifier, InjectedValueNode, Node, NodeRef, ProvidedNode, ValueNode,
+    HasKind, Identifier, InjectedValueNode, Node, NodeKinds, NodeRef, ProvidedNode, ValueNode,
 };
 use std::cell::{Cell, RefCell};
 
@@ -91,13 +91,14 @@ impl<'a> ProvidedScope<'a> {
     /// providers dead-ends. Resolution is all or nothing: if any injection within `node` resolves to
     /// nothing, this returns `None` rather than a partially resolved value.
     ///
-    /// The node that `node` resolves to must convert into `T`, such as `ValueNode`. When it comes from
-    /// a provider, the error is `InvalidProvidedValue` and names that provider. The injections nested
-    /// within it must fit the attributes that hold them.
+    /// The node that `node` resolves to must be one of the kinds of `T`, such as `ValueNode`. When it
+    /// comes from a provider, the error is `InvalidProvidedValue` and names that provider, otherwise
+    /// it is `UnexpectedNodeKind`. The injections nested within it must fit the attributes that hold
+    /// them.
     pub fn resolve<'n, T>(&self, node: impl Into<NodeRef<'n>>) -> CodamaResult<Option<T>>
     where
         'a: 'n,
-        T: TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
     {
         Ok(self.resolve_outcome(node.into())?.ok())
     }
@@ -111,7 +112,7 @@ impl<'a> ProvidedScope<'a> {
     pub fn resolve_or_err<'n, T>(&self, node: impl Into<NodeRef<'n>>) -> CodamaResult<T>
     where
         'a: 'n,
-        T: TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
     {
         self.resolve_outcome(node.into())?.map_err(|missing| {
             CodamaError::InjectedValueNotProvided {
@@ -127,7 +128,7 @@ impl<'a> ProvidedScope<'a> {
     ) -> CodamaResult<Result<T, &'n InjectedValueNode>>
     where
         'a: 'n,
-        T: TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
     {
         let depth = self.frames.borrow().len();
         let resolution = match node {
@@ -142,26 +143,29 @@ impl<'a> ProvidedScope<'a> {
             },
         };
 
-        // The resolved node must convert into `T` before its nested injections are resolved.
-        let root = match (T::try_from(resolution.node.to_node()), resolution.provider) {
-            (Ok(root), _) => root,
-            (Err(CodamaError::InvalidNodeConversion { into, .. }), Some(provider)) => {
-                // The path ends with the provided value, unless the provider provides an injection,
-                // whose fallback the value is, as a resolved node is never an injection.
-                let mut path = vec![NodeRef::from(provider)];
-                if !matches!(&*provider.node, Node::InjectedValue(_)) {
-                    path.push(resolution.node);
-                }
-                return Err(CodamaError::InvalidProvidedValue {
-                    expected: into,
-                    path: NodePath::from(path).to_string(),
+        // The resolved node must be of a kind of `T` before its nested injections are resolved.
+        if !T::KINDS.contains(&resolution.node.kind()) {
+            let expected_kinds = T::KINDS.join(", ");
+            let Some(provider) = resolution.provider else {
+                return Err(CodamaError::UnexpectedNodeKind {
+                    expected_kinds,
+                    path: NodePath::from(vec![resolution.node]).to_string(),
                 });
+            };
+            // The path ends with the provided value, unless the provider provides an injection,
+            // whose fallback the value is, as a resolved node is never an injection.
+            let mut path = vec![NodeRef::from(provider)];
+            if !matches!(&*provider.node, Node::InjectedValue(_)) {
+                path.push(resolution.node);
             }
-            (Err(error), _) => return Err(error),
-        };
+            return Err(CodamaError::InvalidProvidedValue {
+                expected_kinds,
+                path: NodePath::from(path).to_string(),
+            });
+        }
 
         match self.resolve_within(resolution.node, resolution.depth)? {
-            Within::Unchanged => Ok(Ok(root)),
+            Within::Unchanged => T::try_from(resolution.node.to_node()).map(Ok),
             Within::Replaced(node) => T::try_from(*node).map(Ok),
             Within::Missing(missing) => Ok(Err(missing)),
         }
@@ -489,7 +493,7 @@ mod tests {
             .unwrap_err();
         assert_eq!(
             error.to_string(),
-            "Could not convert node from `integerValueNode` into `stringValueNode`"
+            "Expected node of kind [stringValueNode], got [integerValueNode]."
         );
     }
 
@@ -500,7 +504,17 @@ mod tests {
         let error = scope.resolve::<Input>(&inject("decimals")).unwrap_err();
         assert_eq!(
             error.to_string(),
-            "The value provided at [providedNode]decimals.[publicKeyTypeNode] is not one of [InstructionInputValueNode]."
+            format!(
+                "The value provided at [providedNode]decimals.[publicKeyTypeNode] is not one of [{}].",
+                Input::KINDS.join(", ")
+            )
+        );
+        let error = scope
+            .resolve::<IntegerValueNode>(&inject("decimals"))
+            .unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "The value provided at [providedNode]decimals.[publicKeyTypeNode] is not one of [integerValueNode]."
         );
     }
 
@@ -563,11 +577,11 @@ mod tests {
         let frame = [provide("decimals", PublicKeyTypeNode::new())];
         let scope = ProvidedScope::new([frame.as_slice()]);
         let error = scope
-            .resolve_or_err::<Input>(&inject("decimals"))
+            .resolve_or_err::<IntegerValueNode>(&inject("decimals"))
             .unwrap_err();
         assert_eq!(
             error.to_string(),
-            "The value provided at [providedNode]decimals.[publicKeyTypeNode] is not one of [InstructionInputValueNode]."
+            "The value provided at [providedNode]decimals.[publicKeyTypeNode] is not one of [integerValueNode]."
         );
     }
 

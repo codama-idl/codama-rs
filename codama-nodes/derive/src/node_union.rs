@@ -50,8 +50,23 @@ pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenS
         })
         .collect_and_combine_errors()?;
 
+    let kinds = variants
+        .iter()
+        .map(|variant| -> CodamaResult<String> {
+            let variant_type = &variant.fields.single_unnamed_field()?.ty;
+            let variant_type = variant_type
+                .single_generic_type_from_path("Box")
+                .unwrap_or(variant_type);
+            Ok(lowercase_first_letter(&variant_type.as_path()?.last_str()))
+        })
+        .collect_and_combine_errors()?;
+
     Ok(quote! {
         impl crate::NodeUnionTrait for #item_name {}
+
+        impl crate::NodeKinds for #item_name {
+            const KINDS: &'static [&'static str] = &[#(#kinds),*];
+        }
 
         impl crate::HasKind for #item_name {
             fn kind(&self) -> &'static str {
