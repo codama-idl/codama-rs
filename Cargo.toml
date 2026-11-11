@@ -14,6 +14,7 @@ members = [
   "codama-stores",
   "codama-syn-helpers",
   "codama-syn-helpers/tests-macros",
+  "codama-validators",
   "codama-visitors-core",
   "codama-cli",
 ]
@@ -31,6 +32,7 @@ codama-nodes-derive = { version = "1.0.0", path = "codama-nodes/derive" }
 codama-plugin-core = { version = "1.0.0", path = "codama-plugin-core" }
 codama-stores = { version = "1.0.0", path = "codama-stores" }
 codama-syn-helpers = { version = "1.0.0", path = "codama-syn-helpers" }
+codama-validators = { version = "1.0.0", path = "codama-validators" }
 codama-visitors-core = { version = "1.0.0", path = "codama-visitors-core" }
 
 [workspace.package]

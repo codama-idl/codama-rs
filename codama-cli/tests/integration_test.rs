@@ -34,6 +34,25 @@ fn test_generate_idl_simple_account() {
 }
 
 #[test]
+fn test_generate_idl_reports_validation_errors() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    let crate_path =
+        fs::canonicalize(Path::new(manifest_dir).join("tests/fixtures/test-missing-address"))
+            .expect("fixture directory should exist");
+
+    get_cli_command()
+        .arg("generate-idl")
+        .arg(crate_path)
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            "Error: Failed to validate node [rootNode] [errors: 1].\n\
+             - [error] Program has no public key. at [programNode]test_missing_address\n",
+        );
+}
+
+#[test]
 fn test_generate_idl_current_dir_fail() {
     let mut cmd = get_cli_command();
     cmd.arg("generate-idl")

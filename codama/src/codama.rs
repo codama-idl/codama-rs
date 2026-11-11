@@ -3,6 +3,8 @@ use codama_koroks::RootKorok;
 use codama_nodes::{HasKind, Node, NodeTrait, RootNode};
 use codama_plugin_core::{resolve_plugins, DefaultPlugin, KorokPlugin};
 use codama_stores::RootStore;
+use codama_validators::{get_validation_items_visitor, throw_validator_items_visitor, LogLevel};
+use codama_visitors_core::visit;
 use std::path::Path;
 
 pub struct Codama {
@@ -61,9 +63,20 @@ impl Codama {
         Ok(korok)
     }
 
+    /// The node of the visited crates, once every plugin has run.
+    ///
+    /// The node is validated with `get_validation_items_visitor`, and any error-level item fails
+    /// with `CodamaError::FailedToValidateNode`, which lists every item.
     pub fn get_node(&self) -> CodamaResult<Node> {
         let korok = self.get_visited_korok()?;
-        korok.node.clone().ok_or(CodamaError::NodeNotFound)
+        let node = korok.node.clone().ok_or(CodamaError::NodeNotFound)?;
+        {
+            // The validator borrows the node, so it is dropped before the node is returned.
+            let validator =
+                throw_validator_items_visitor(get_validation_items_visitor(), LogLevel::Error);
+            visit(&validator, &node)?;
+        }
+        Ok(node)
     }
 
     pub fn get_idl(&self) -> CodamaResult<RootNode> {

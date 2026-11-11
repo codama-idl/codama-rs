@@ -1,0 +1,12 @@
+[package]
+name = "codama-validators"
+description = "Validate Codama nodes"
+version = "1.0.0"
+repository = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+
+[dependencies]
+codama-errors = { workspace = true }
+codama-nodes = { workspace = true }
+codama-visitors-core = { workspace = true }

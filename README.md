@@ -4,6 +4,7 @@ This project is still a work in progress but here's a super rough overview of wh
 
 - `codama-errors`: Defines the Result/Error items for all crates.
 - `codama-nodes`: Implements the Codama IDL in Rust.
+- `codama-validators`: Validates Codama nodes, like `@codama/validators` in the JavaScript library. `Codama::get_idl` runs it and fails on any error-level item, such as a program without a public key.
 - `codama-visitors-core`: Visits and transforms Codama nodes, like `@codama/visitors-core` in the JavaScript library. A `Visitor` returns a value for each node, and adapters such as `extend` or `record_node_stack` wrap it into new visitors.
 - `codama-syn-helpers`: Helpers that boost `syn` items by using traits.
 - `codama-stores`: A small tree structure that parses crates and files inside crates (recursively) and "owns" the `syn::File` for each traversed file.
