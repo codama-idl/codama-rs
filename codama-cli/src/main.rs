@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use codama::Codama;
 use codama_errors::CodamaResult;
 use std::path::PathBuf;
+use std::process::ExitCode;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,9 +30,18 @@ enum Commands {
     },
 }
 
-fn main() -> CodamaResult<()> {
-    let cli = Cli::parse();
+/// Prints the message of any error, such as the list of validation items, and exits with code 1.
+fn main() -> ExitCode {
+    match run(Cli::parse()) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("Error: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
 
+fn run(cli: Cli) -> CodamaResult<()> {
     match cli.command {
         Commands::GenerateIdl {
             path,

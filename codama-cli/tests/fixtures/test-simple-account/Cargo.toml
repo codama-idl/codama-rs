@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 codama = { path = "../../../codama" }
 solana-pubkey = "1.18"
+
+[package.metadata.solana]
+program-id = "SimpLeAccount1111111111111111111111111111111"

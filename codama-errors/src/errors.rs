@@ -92,9 +92,30 @@ pub enum CodamaError {
         expected_kinds: String,
         path: String,
     },
+
+    #[error("Expected a positive integer number of ticks per second for {path}, got [{ticks_per_second}].")]
+    InvalidTicksPerSecond { path: String, ticks_per_second: u32 },
+
+    #[error("{}", failed_to_validate_node_message(.path, .histogram, .items))]
+    FailedToValidateNode {
+        path: String,
+        histogram: String,
+        items: Vec<String>,
+    },
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
+
+/// The message of `CodamaError::FailedToValidateNode`, which lists its validation items below the summary,
+/// one per line, as they carry the diagnostics that a caller needs to fix the node.
+fn failed_to_validate_node_message(path: &str, histogram: &str, items: &[String]) -> String {
+    let mut message = format!("Failed to validate node {path} [{histogram}].");
+    for item in items {
+        message.push_str("\n- ");
+        message.push_str(item);
+    }
+    message
+}
 
 /// The message of `CodamaError::InvalidIdentifier`, which names an empty identifier rather than quoting it.
 fn invalid_identifier_message(value: &str) -> String {
