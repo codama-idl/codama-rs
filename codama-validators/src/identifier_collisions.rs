@@ -1,7 +1,7 @@
 use crate::{validation_item, LogLevel, ValidationItem};
 use codama_nodes::{casing::camel_case, HasIdentifier, InstructionNode, NodeRef, ProgramNode};
 use codama_visitors_core::NodePath;
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 
 /// Reports the identifiers of a sibling set that are not unique: exact duplicates, and distinct
 /// identifiers sharing the same camelCase form, which is the casing-collision rule of the spec. Each
@@ -27,11 +27,14 @@ where
         if identifier.is_empty() {
             continue;
         }
-        let Some(existing) = identifiers_by_camel_case.get(&camel_case(identifier)) else {
-            identifiers_by_camel_case.insert(camel_case(identifier), identifier);
-            continue;
+        let existing = match identifiers_by_camel_case.entry(camel_case(identifier)) {
+            Entry::Vacant(entry) => {
+                entry.insert(identifier);
+                continue;
+            }
+            Entry::Occupied(entry) => *entry.get(),
         };
-        let message = match *existing == identifier {
+        let message = match existing == identifier {
             true => format!("{label} identifier \"{identifier}\" is not unique{context}."),
             false => format!(
                 "{label} identifier \"{identifier}\" collides with \"{existing}\" once converted to camelCase{context}."
@@ -86,15 +89,12 @@ impl<'a> NestedCollisions<'_, 'a> {
             let identifier = instruction.identifier.as_str();
             if !identifier.is_empty() {
                 let siblings_id = siblings.as_ptr();
-                match self
-                    .identifiers_by_camel_case
-                    .get_mut(&camel_case(identifier))
-                {
-                    None => {
-                        self.identifiers_by_camel_case
-                            .insert(camel_case(identifier), (identifier, vec![siblings_id]));
+                match self.identifiers_by_camel_case.entry(camel_case(identifier)) {
+                    Entry::Vacant(entry) => {
+                        entry.insert((identifier, vec![siblings_id]));
                     }
-                    Some((existing, sibling_sets)) => {
+                    Entry::Occupied(mut entry) => {
+                        let (existing, sibling_sets) = entry.get_mut();
                         if !sibling_sets.contains(&siblings_id) {
                             let context = self.context;
                             let message = match *existing == identifier {

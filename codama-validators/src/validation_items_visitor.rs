@@ -55,6 +55,7 @@ pub fn get_validation_items_visitor<'a>() -> ValidationItemsVisitor<'a> {
 pub struct ValidationItemsVisitor<'a> {
     stack: NodeStack<'a>,
     linkables: LinkableDictionary<'a>,
+    /// Recorded for the checks of injected values and instruction inputs, which a follow-up adds.
     scope: ProvidedScope<'a>,
     is_first_visit: Cell<bool>,
 }
@@ -76,7 +77,9 @@ impl<'a> Visitor<'a, Vec<ValidationItem<'a>>> for ValidationItemsVisitor<'a> {
         node: NodeRef<'a>,
         recurse: &dyn Fn(NodeRef<'a>) -> Vec<ValidationItem<'a>>,
     ) -> Vec<ValidationItem<'a>> {
-        // The first node records the links of its tree, so every check can resolve them.
+        // The first node records the links of its tree, so every check can resolve them. This is what
+        // `record_linkables_on_first_visit` does, but the chain below is rebuilt for every node, so that
+        // adapter would see each node as a first visit. The flag lives on `self` instead.
         let _rearm = match self.is_first_visit.replace(false) {
             true => {
                 self.linkables.clear();
@@ -290,7 +293,8 @@ impl<'a> ValidationItemsVisitor<'a> {
             return vec![];
         };
         let path = self.stack.get_path();
-        // Keep the error that reading the value would raise, so both report it the same way.
+        // Keep the error as the cause, like the JavaScript library, where creating the codec of the
+        // type raises it.
         let cause = CodamaError::InvalidTicksPerSecond {
             path: path.to_string(),
             ticks_per_second: 0,
