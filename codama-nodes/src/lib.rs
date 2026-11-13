@@ -33,6 +33,7 @@ mod transform_nodes;
 mod type_nodes;
 mod value_nodes;
 
+pub use display_nodes::*;
 pub use generated::*;
 pub use shared::*;
 pub use traits::*;

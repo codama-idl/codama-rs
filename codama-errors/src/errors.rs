@@ -93,6 +93,19 @@ pub enum CodamaError {
         path: String,
     },
 
+    #[error("Invalid placeholder [{placeholder}] in interpolated intent [{template}]. Placeholders are `${{data.<path>}}`, `${{accounts.<account>}}` or `${{accounts.<account>.data[.<path>]}}`.")]
+    InvalidInterpolatedIntentPlaceholder {
+        placeholder: String,
+        template: String,
+    },
+
+    #[error("Cannot resolve segment [{segment}] of path [{path_string}] from {path}.")]
+    CannotResolvePath {
+        segment: String,
+        path_string: String,
+        path: String,
+    },
+
     #[error("Expected a positive integer number of ticks per second for {path}, got [{ticks_per_second}].")]
     InvalidTicksPerSecond { path: String, ticks_per_second: u32 },
 

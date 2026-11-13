@@ -37,6 +37,7 @@
 
 mod extend_visitor;
 mod identity_visitor;
+mod is_value_node_of_type;
 mod linkable_dictionary;
 mod map_visitor;
 mod merge_visitor;
@@ -47,6 +48,7 @@ mod provided_scope;
 mod record_linkables_visitor;
 mod record_node_stack_visitor;
 mod record_provided_scope_visitor;
+mod resolve_type_path;
 mod tap_visitor;
 mod visitor;
 mod visitor_ext;
@@ -54,6 +56,7 @@ mod void_visitor;
 
 pub use extend_visitor::*;
 pub use identity_visitor::*;
+pub use is_value_node_of_type::*;
 pub use linkable_dictionary::*;
 pub use map_visitor::*;
 pub use merge_visitor::*;
@@ -64,6 +67,7 @@ pub use provided_scope::*;
 pub use record_linkables_visitor::*;
 pub use record_node_stack_visitor::*;
 pub use record_provided_scope_visitor::*;
+pub use resolve_type_path::*;
 pub use tap_visitor::*;
 pub use visitor::*;
 pub use visitor_ext::*;

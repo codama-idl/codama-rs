@@ -4,6 +4,7 @@
 //! identifier collisions or links to missing nodes, and [`throw_validator_items_visitor`] turns them into
 //! an error from a given [`LogLevel`].
 
+mod contextual_value_items;
 mod identifier_collisions;
 mod throw_validator_items_visitor;
 mod validation_item;
