@@ -23,7 +23,54 @@ impl From<Identifier> for Path {
     }
 }
 
+/// A segment of a [`Path`]: a field identifier such as `config`, or an index such as `[0]`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PathSegment<'p> {
+    Field(&'p str),
+    Index(usize),
+}
+
+impl std::fmt::Display for PathSegment<'_> {
+    /// Displays the segment as written: `config` or `[0]`.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Field(identifier) => f.write_str(identifier),
+            Self::Index(index) => write!(f, "[{index}]"),
+        }
+    }
+}
+
 impl Path {
+    /// The segments of the path, like `parsePath` in the JavaScript library.
+    ///
+    /// ```
+    /// use codama_nodes::{Path, PathSegment};
+    ///
+    /// let path: Path = "config.fees[0]".parse().unwrap();
+    /// assert_eq!(
+    ///     path.segments(),
+    ///     [PathSegment::Field("config"), PathSegment::Field("fees"), PathSegment::Index(0)]
+    /// );
+    /// ```
+    pub fn segments(&self) -> Vec<PathSegment<'_>> {
+        let mut segments = vec![];
+        let mut rest = self.0.as_str();
+        while !rest.is_empty() {
+            rest = rest.strip_prefix('.').unwrap_or(rest);
+            if let Some(after) = strip_index(rest) {
+                let index = &rest[1..rest.len() - after.len() - 1];
+                // The grammar bounds the digits, but an index beyond `usize` cannot select anything.
+                segments.push(PathSegment::Index(index.parse().unwrap_or(usize::MAX)));
+                rest = after;
+            } else {
+                let after = strip_identifier(rest).expect("a path is valid by construction");
+                segments.push(PathSegment::Field(&rest[..rest.len() - after.len()]));
+                rest = after;
+            }
+        }
+        segments
+    }
+
     /// The path has a `.` segment or an `[n]` index, such as `header.kind`, `fees[0]` or `[0]`.
     /// A plain identifier such as `amount` is not nested.
     pub fn is_nested(&self) -> bool {
@@ -136,6 +183,29 @@ mod tests {
             Path::try_from("header..kind".to_string()),
             Err(CodamaError::InvalidPath(value)) if value == "header..kind"
         ));
+    }
+
+    #[test]
+    fn segments() {
+        let segments = |value: &str| {
+            let path: Path = value.parse().unwrap();
+            path.segments()
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            segments("config.fees[0].amount"),
+            ["config", "fees", "[0]", "amount"]
+        );
+        assert_eq!(segments("[12]"), ["[12]"]);
+        assert_eq!(segments("[0][1]"), ["[0]", "[1]"]);
+        assert_eq!(segments("a"), ["a"]);
+        let path: Path = "a[10]".parse().unwrap();
+        assert_eq!(
+            path.segments(),
+            [PathSegment::Field("a"), PathSegment::Index(10)]
+        );
     }
 
     #[test]

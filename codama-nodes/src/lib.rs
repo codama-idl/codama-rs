@@ -7,6 +7,7 @@ mod count_nodes;
 mod defined_type_node;
 mod discriminator_nodes;
 mod display_nodes;
+pub use display_nodes::*;
 mod error_node;
 mod event_node;
 mod generated;

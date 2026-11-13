@@ -1,14 +1,18 @@
 use crate::{
+    contextual_value_items::{get_contextual_value_items, is_linked_public_key, ContextualValue},
     identifier_collisions::{
         child_path, get_identifier_collision_items, get_nested_instruction_collision_items,
     },
     validation_item, LogLevel, ValidationItem,
 };
 use codama_errors::CodamaError;
-use codama_nodes::{NodeRef, PdaSeedNode, Text};
+use codama_nodes::{
+    parse_interpolated_intent, FieldDiscriminatorNode, InterpolatedIntentPart, NodeRef,
+    PdaSeedNode, StructFieldTypeNode, Text, ValueNode,
+};
 use codama_visitors_core::{
-    visit, LinkableDictionary, MergeVisitor, NodeStack, ProvidedScope, RecordLinkablesVisitor,
-    Visitor, VisitorExt,
+    is_value_node_of_type, resolve_type_path, visit, LinkableDictionary, MergeVisitor, NodePath,
+    NodeStack, ProvidedScope, RecordLinkablesVisitor, ResolveTypePathError, Visitor, VisitorExt,
 };
 use std::cell::Cell;
 
@@ -115,6 +119,34 @@ impl<'a> ValidationItemsVisitor<'a> {
             NodeRef::Account(account) if account.identifier.is_empty() => {
                 error("Account has no identifier.")
             }
+            NodeRef::AccountBumpValue(value) => get_contextual_value_items(
+                ContextualValue::Account(&value.identifier),
+                &path,
+                &self.linkables,
+            ),
+            NodeRef::AccountDataValue(value) => get_contextual_value_items(
+                ContextualValue::AccountData(&value.account, value.path.as_ref()),
+                &path,
+                &self.linkables,
+            ),
+            NodeRef::AccountValue(value) => get_contextual_value_items(
+                ContextualValue::Account(&value.identifier),
+                &path,
+                &self.linkables,
+            ),
+            NodeRef::DataValue(value) => get_contextual_value_items(
+                ContextualValue::Data(&value.path),
+                &path,
+                &self.linkables,
+            ),
+            NodeRef::FieldDiscriminator(discriminator) => {
+                self.get_field_discriminator_items(discriminator, &path)
+            }
+            NodeRef::InstructionDisplay(display) => match &display.interpolated_intent {
+                Some(intent) => self.get_interpolated_intent_items(intent, &path),
+                None => vec![],
+            },
+            NodeRef::ValueLabelDisplay(label) => self.get_value_label_items(&label.value, &path),
             NodeRef::AccountLink(link) if !self.linkables.has(&path) => vec![item(
                 LogLevel::Error,
                 format!(
@@ -284,6 +316,138 @@ impl<'a> ValidationItemsVisitor<'a> {
                 vec![item(LogLevel::Warn, "Tuple has no items.".to_string())]
             }
             _ => vec![],
+        }
+    }
+
+    /// The items of a field discriminator whose path does not point to a field of the data it identifies.
+    /// Identification only reads the bytes being identified, so the path must not cross account links.
+    fn get_field_discriminator_items(
+        &self,
+        discriminator: &FieldDiscriminatorNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let owner_index = path.nodes().iter().rposition(|node| {
+            matches!(
+                node,
+                NodeRef::Account(_) | NodeRef::Event(_) | NodeRef::Instruction(_)
+            )
+        });
+        let Some(owner_index) = owner_index else {
+            return vec![];
+        };
+        let data = match path.nodes()[owner_index] {
+            NodeRef::Account(account) => Some(&*account.data),
+            NodeRef::Event(event) => Some(&*event.data),
+            NodeRef::Instruction(instruction) => instruction.data.as_ref().as_ref(),
+            _ => unreachable!("the owner is an account, an event or an instruction"),
+        };
+        let error = |message: String| validation_item(LogLevel::Error, message, path.clone());
+        let Some(data) = data else {
+            return vec![error(format!(
+                "Field discriminator path \"{}\" cannot be resolved as there is no data.",
+                discriminator.path
+            ))];
+        };
+        let mut source: NodePath<'a> = path.nodes()[..=owner_index].iter().copied().collect();
+        source.push(data);
+        match resolve_type_path(
+            &source,
+            &discriminator.path,
+            &self.linkables,
+            Default::default(),
+        ) {
+            Ok(resolved) if matches!(resolved.last(), Some(NodeRef::StructFieldType(_))) => vec![],
+            Ok(_) => vec![error(format!(
+                "Field discriminator path \"{}\" must point to a struct field.",
+                discriminator.path
+            ))],
+            Err(ResolveTypePathError::LinkedNodeNotFound { .. }) => vec![],
+            Err(cause) => {
+                let crosses_account_link = matches!(
+                    &cause,
+                    ResolveTypePathError::CannotResolvePath { path, segment, .. }
+                        if segment == "data" && is_linked_public_key(path.last())
+                );
+                let cause = CodamaError::from(cause);
+                let message = match crosses_account_link {
+                    true => format!(
+                        "Field discriminator path \"{}\" must not cross an account link.",
+                        discriminator.path
+                    ),
+                    false => cause.to_string(),
+                };
+                vec![error(message).with_cause(cause)]
+            }
+        }
+    }
+
+    /// The items of an interpolated intent whose placeholders are invalid or do not resolve.
+    fn get_interpolated_intent_items(
+        &self,
+        intent: &Text,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let parts = match parse_interpolated_intent(intent.content()) {
+            Ok(parts) => parts,
+            Err(cause) => {
+                return vec![
+                    validation_item(LogLevel::Error, cause.to_string(), path.clone())
+                        .with_cause(cause),
+                ]
+            }
+        };
+        parts
+            .iter()
+            .flat_map(|part| {
+                let value = match part {
+                    InterpolatedIntentPart::Text(_) => return vec![],
+                    InterpolatedIntentPart::Data(value) => ContextualValue::Data(&value.path),
+                    InterpolatedIntentPart::Account(value) => {
+                        ContextualValue::Account(&value.identifier)
+                    }
+                    InterpolatedIntentPart::AccountData(value) => {
+                        ContextualValue::AccountData(&value.account, value.path.as_ref())
+                    }
+                };
+                get_contextual_value_items(value, path, &self.linkables)
+            })
+            .collect()
+    }
+
+    /// The items of a value label that is not a concrete value of the type of its field.
+    fn get_value_label_items(
+        &self,
+        value: &ValueNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let Some(mut field_path) = path.until_last::<StructFieldTypeNode>() else {
+            return vec![];
+        };
+        let error = |message: String| vec![validation_item(LogLevel::Error, message, path.clone())];
+        let kind = match value {
+            ValueNode::Injected(_) => Some("an injected"),
+            ValueNode::Constant(_) => Some("a constant"),
+            _ => None,
+        };
+        if let Some(kind) = kind {
+            return error(format!(
+                "Value labels must be concrete values, got {kind} value."
+            ));
+        }
+        let field: &StructFieldTypeNode = field_path
+            .last()
+            .and_then(|node| node.try_into().ok())
+            .expect("until_last ends with a struct field");
+        field_path.push(&*field.r#type);
+        match is_value_node_of_type(value, &field_path, &self.linkables) {
+            Ok(true) | Err(CodamaError::LinkedNodeNotFound { .. }) => vec![],
+            Ok(false) => error(format!(
+                "Value label does not match the type of field \"{}\".",
+                field.identifier
+            )),
+            Err(cause) => vec![
+                validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause),
+            ],
         }
     }
 

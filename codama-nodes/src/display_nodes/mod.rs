@@ -6,3 +6,7 @@ mod string_display_node;
 mod struct_field_display_node;
 mod unit_number_display_node;
 mod value_label_display_node;
+
+pub use instruction_display_node::{
+    parse_interpolated_intent, print_interpolated_intent, InterpolatedIntentPart,
+};
