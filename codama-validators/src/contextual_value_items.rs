@@ -40,7 +40,7 @@ pub(crate) fn get_contextual_value_items<'a>(
     let error =
         |message: String| vec![validation_item(LogLevel::Error, message, item_path.clone())];
 
-    let (account_identifier, account_path) = match value {
+    let (account_identifier, data_path) = match value {
         ContextualValue::Data(path) => {
             let Some(data) = instruction.data.as_ref() else {
                 return error(format!(
@@ -66,15 +66,18 @@ pub(crate) fn get_contextual_value_items<'a>(
             instruction.identifier
         ));
     };
-    let Some(path) = account_path else {
+    // An account value only needs the account to exist.
+    let Some(data_path) = data_path else {
         return vec![];
     };
+    // An account data value also needs a link to read the data of the account from.
     let Some(account_link) = account.account_link.as_ref() else {
         return error(format!(
             "Account \"{account_identifier}\" has no account link, so its data cannot be read."
         ));
     };
-    let Some(path) = path else {
+    // Without a path, it reads the whole data, which always resolves.
+    let Some(path) = data_path else {
         return vec![];
     };
     let mut link_path = instruction_path.clone();

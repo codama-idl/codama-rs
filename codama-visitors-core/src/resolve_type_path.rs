@@ -33,6 +33,8 @@ impl fmt::Display for ResolveTypePathError<'_> {
     }
 }
 
+impl std::error::Error for ResolveTypePathError<'_> {}
+
 impl From<ResolveTypePathError<'_>> for CodamaError {
     fn from(error: ResolveTypePathError<'_>) -> Self {
         match error {

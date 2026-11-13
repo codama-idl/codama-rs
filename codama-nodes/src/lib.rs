@@ -7,7 +7,6 @@ mod count_nodes;
 mod defined_type_node;
 mod discriminator_nodes;
 mod display_nodes;
-pub use display_nodes::*;
 mod error_node;
 mod event_node;
 mod generated;
@@ -34,6 +33,7 @@ mod transform_nodes;
 mod type_nodes;
 mod value_nodes;
 
+pub use display_nodes::*;
 pub use generated::*;
 pub use shared::*;
 pub use traits::*;

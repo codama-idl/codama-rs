@@ -35,15 +35,6 @@ pub fn is_value_node_of_type<'a>(
         child_path.push(child_type);
         is_value_node_of_type(child_value, &child_path, linkables)
     };
-    let all = |checks: &mut dyn Iterator<Item = CodamaResult<bool>>| -> CodamaResult<bool> {
-        for check in checks {
-            if !check? {
-                return Ok(false);
-            }
-        }
-        Ok(true)
-    };
-
     Ok(
         match (resolved.last().expect("a type path is never empty"), value) {
             (NodeRef::BooleanType(_), ValueNode::Boolean(_)) => true,
@@ -58,24 +49,24 @@ pub fn is_value_node_of_type<'a>(
             (NodeRef::FloatType(_), ValueNode::Float(_) | ValueNode::Integer(_)) => true,
             (NodeRef::PublicKeyType(_), ValueNode::PublicKey(_)) => true,
             (NodeRef::StringType(_), ValueNode::String(_)) => true,
-            (NodeRef::ArrayType(r#type), ValueNode::Array(array)) => all(&mut array
+            (NodeRef::ArrayType(r#type), ValueNode::Array(array)) => all(array
                 .items
                 .iter()
                 .map(|item| is_child_of_type(item, &r#type.item)))?,
-            (NodeRef::SetType(r#type), ValueNode::Set(set)) => all(&mut set
+            (NodeRef::SetType(r#type), ValueNode::Set(set)) => all(set
                 .items
                 .iter()
                 .map(|item| is_child_of_type(item, &r#type.item)))?,
             (NodeRef::TupleType(r#type), ValueNode::Tuple(tuple)) => {
                 tuple.items.len() == r#type.items.len()
-                    && all(&mut tuple
+                    && all(tuple
                         .items
                         .iter()
                         .zip(&r#type.items)
                         .map(|(item, item_type)| is_child_of_type(item, item_type)))?
             }
             (NodeRef::MapType(r#type), ValueNode::Map(map)) => {
-                all(&mut map.entries.iter().map(|entry| {
+                all(map.entries.iter().map(|entry| {
                     Ok(is_child_of_type(&entry.key, &r#type.key)?
                         && is_child_of_type(&entry.value, &r#type.value)?)
                 }))?
@@ -96,17 +87,13 @@ pub fn is_value_node_of_type<'a>(
                 is_child_of_type(&some.value, &r#type.item)?
             }
             (NodeRef::StructType(r#type), ValueNode::Struct(r#struct)) => {
-                let has_valid_fields = all(&mut r#struct.fields.iter().map(|field_value| {
-                    match r#type
-                        .fields
-                        .iter()
-                        .find(|field_type| field_type.identifier == field_value.identifier)
-                    {
-                        Some(field_type) => {
-                            is_child_of_type(&field_value.value, &field_type.r#type)
-                        }
-                        None => Ok(false),
-                    }
+                let has_valid_fields = all(r#struct.fields.iter().map(|field_value| match r#type
+                    .fields
+                    .iter()
+                    .find(|field_type| field_type.identifier == field_value.identifier)
+                {
+                    Some(field_type) => is_child_of_type(&field_value.value, &field_type.r#type),
+                    None => Ok(false),
                 }))?;
                 let has_required_fields = r#type.fields.iter().all(|field_type| {
                     field_type.default_value.is_some()
@@ -160,4 +147,14 @@ fn resolve_defined_type_links<'a>(
         current = defined_type_path;
     }
     Ok(Some(current))
+}
+
+/// Whether every check passes, stopping at the first one that fails or errors.
+fn all(checks: impl IntoIterator<Item = CodamaResult<bool>>) -> CodamaResult<bool> {
+    for check in checks {
+        if !check? {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
