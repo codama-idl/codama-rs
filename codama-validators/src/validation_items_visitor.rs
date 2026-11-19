@@ -9,12 +9,13 @@ use codama_errors::CodamaError;
 use codama_nodes::{
     parse_interpolated_intent, FieldDiscriminatorNode, Identifier, InjectedValueNode,
     InstructionInputValueNode, InstructionNode, InterpolatedIntentPart, IsSigner, Node, NodeRef,
-    Path, PdaSeedNode, StructFieldTypeNode, Text, ValueNode,
+    Path, PdaSeedNode, ProgramNode, StructFieldTypeNode, Text, ValueNode,
 };
 use codama_visitors_core::{
-    get_resolved_instruction_inputs, is_value_node_of_type, resolve_type_path, visit,
-    LinkableDictionary, MergeVisitor, NodePath, NodeStack, ProvidedScope, RecordLinkablesVisitor,
-    ResolveTypePathError, ResolvedInstructionInput, Visitor, VisitorExt,
+    get_resolved_instruction_inputs, has_defined_type_finite_value, is_defined_type_cyclic,
+    is_value_node_of_type, resolve_type_path, visit, LinkableDictionary, MergeVisitor, NodePath,
+    NodeStack, ProvidedScope, RecordLinkablesVisitor, ResolveTypePathError,
+    ResolvedInstructionInput, Visitor, VisitorExt,
 };
 use std::cell::Cell;
 
@@ -158,8 +159,16 @@ impl<'a> ValidationItemsVisitor<'a> {
             )],
             NodeRef::DateTimeType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
             NodeRef::DurationType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
-            NodeRef::DefinedType(defined_type) if defined_type.identifier.is_empty() => {
-                error("Defined type has no identifier.")
+            NodeRef::DefinedType(defined_type) => {
+                let mut items = vec![];
+                if defined_type.identifier.is_empty() {
+                    items.push(item(
+                        LogLevel::Error,
+                        "Defined type has no identifier.".to_string(),
+                    ));
+                }
+                items.extend(self.get_finite_value_items(&path));
+                items
             }
             NodeRef::DefinedTypeLink(link) if link.identifier.is_empty() => {
                 error("Pointing to a defined type with no identifier.")
@@ -567,6 +576,32 @@ impl<'a> ValidationItemsVisitor<'a> {
                 validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause),
             ],
         }
+    }
+
+    /// The items of a cyclic defined type whose every value nests another one, which can be neither
+    /// encoded nor decoded.
+    ///
+    /// The cyclic check matches the codecs of the JavaScript library, which only fail for links back to
+    /// their own type: an enum without variants alone is reported by its own warning. Links can only be
+    /// resolved within a program, so types outside one are skipped.
+    fn get_finite_value_items(&self, path: &NodePath<'a>) -> Vec<ValidationItem<'a>> {
+        if path.find_last::<ProgramNode>().is_none() {
+            return vec![];
+        }
+        let is_cyclic = is_defined_type_cyclic(path, &self.linkables)
+            .expect("the path ends with a defined type within a program");
+        if !is_cyclic
+            || has_defined_type_finite_value(path, &self.linkables)
+                .expect("the path ends with a defined type within a program")
+        {
+            return vec![];
+        }
+        // Keep the error that creating its codec raises in the JavaScript library as the cause, so both
+        // report it the same way.
+        let cause = CodamaError::DefinedTypeHasNoFiniteValue {
+            path: path.to_string(),
+        };
+        vec![validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause)]
     }
 
     /// The items of a date-time or a duration whose `ticks_per_second` is not a positive integer.
