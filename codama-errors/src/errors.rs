@@ -99,6 +99,28 @@ pub enum CodamaError {
         template: String,
     },
 
+    #[error("Circular dependency detected when resolving the default values of instruction {path}. Got the following dependency cycle [{formatted_cycle}].")]
+    CyclicDependencyDetectedWhenResolvingInstructionDefaultValues {
+        path: String,
+        formatted_cycle: String,
+        /// The path of each input of the cycle, the first one repeated at the end.
+        cycle: Vec<String>,
+    },
+
+    #[error("Dependency [{dependency_name}] of kind [{dependency_kind}] is not a valid dependency of [{dependent}] in instruction {path}.")]
+    InvalidInstructionDefaultValueDependency {
+        dependency_kind: String,
+        dependency_name: String,
+        dependent: String,
+        path: String,
+    },
+
+    #[error("Cannot use optional account [{seed_value_name}] as PDA seed {path}.")]
+    CannotUseOptionalAccountAsPdaSeedValue {
+        seed_value_name: String,
+        path: String,
+    },
+
     #[error("Cannot resolve segment [{segment}] of path [{path_string}] from {path}.")]
     CannotResolvePath {
         segment: String,
@@ -118,6 +140,13 @@ pub enum CodamaError {
 }
 
 pub type CodamaResult<T> = Result<T, CodamaError>;
+
+/// Lets an infallible conversion, such as a node into itself, fit where a `CodamaError` is expected.
+impl From<std::convert::Infallible> for CodamaError {
+    fn from(error: std::convert::Infallible) -> Self {
+        match error {}
+    }
+}
 
 /// The message of `CodamaError::FailedToValidateNode`, which lists its validation items below the summary,
 /// one per line, as they carry the diagnostics that a caller needs to fix the node.

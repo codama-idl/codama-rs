@@ -98,7 +98,8 @@ impl<'a> ProvidedScope<'a> {
     pub fn resolve<'n, T>(&self, node: impl Into<NodeRef<'n>>) -> CodamaResult<Option<T>>
     where
         'a: 'n,
-        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node>,
+        T::Error: Into<CodamaError>,
     {
         Ok(self.resolve_outcome(node.into())?.ok())
     }
@@ -112,7 +113,8 @@ impl<'a> ProvidedScope<'a> {
     pub fn resolve_or_err<'n, T>(&self, node: impl Into<NodeRef<'n>>) -> CodamaResult<T>
     where
         'a: 'n,
-        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node>,
+        T::Error: Into<CodamaError>,
     {
         self.resolve_outcome(node.into())?.map_err(|missing| {
             CodamaError::InjectedValueNotProvided {
@@ -128,7 +130,8 @@ impl<'a> ProvidedScope<'a> {
     ) -> CodamaResult<Result<T, &'n InjectedValueNode>>
     where
         'a: 'n,
-        T: NodeKinds + TryFrom<Node, Error = CodamaError>,
+        T: NodeKinds + TryFrom<Node>,
+        T::Error: Into<CodamaError>,
     {
         let depth = self.frames.borrow().len();
         let resolution = match node {
@@ -165,8 +168,10 @@ impl<'a> ProvidedScope<'a> {
         }
 
         match self.resolve_within(resolution.node, resolution.depth)? {
-            Within::Unchanged => T::try_from(resolution.node.to_node()).map(Ok),
-            Within::Replaced(node) => T::try_from(*node).map(Ok),
+            Within::Unchanged => T::try_from(resolution.node.to_node())
+                .map(Ok)
+                .map_err(Into::into),
+            Within::Replaced(node) => T::try_from(*node).map(Ok).map_err(Into::into),
             Within::Missing(missing) => Ok(Err(missing)),
         }
     }

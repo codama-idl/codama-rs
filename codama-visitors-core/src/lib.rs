@@ -36,6 +36,8 @@
 //! ```
 
 mod extend_visitor;
+mod get_instruction_data_fields;
+mod get_resolved_instruction_inputs;
 mod identity_visitor;
 mod is_value_node_of_type;
 mod linkable_dictionary;
@@ -55,6 +57,8 @@ mod visitor_ext;
 mod void_visitor;
 
 pub use extend_visitor::*;
+pub use get_instruction_data_fields::*;
+pub use get_resolved_instruction_inputs::*;
 pub use identity_visitor::*;
 pub use is_value_node_of_type::*;
 pub use linkable_dictionary::*;
