@@ -158,6 +158,39 @@ fn sets_the_resolved_signer_to_either_when_signers_differ() {
 }
 
 #[test]
+fn carries_the_resolved_signer_and_optional_flags_along_a_chain_of_defaults() {
+    // `a` and `b` are signers, but `b` defaults to `c`, which is not, so `b` may not sign and nor may `a`.
+    let node = InstructionNode {
+        accounts: vec![
+            defaulting("a", IsSigner::True, AccountValueNode::new("b")),
+            defaulting("b", IsSigner::True, AccountValueNode::new("c")),
+            account("c", IsSigner::False),
+        ],
+        ..instruction("myInstruction")
+    };
+    let inputs = resolve_alone(&node);
+    assert_eq!(identifiers(&inputs), ["c", "b", "a"]);
+    assert_eq!(as_account(&inputs[1]).resolved_is_signer, IsSigner::Either);
+    assert_eq!(as_account(&inputs[2]).resolved_is_signer, IsSigner::Either);
+
+    // `b` is optional, but it defaults to the payer, which is always there, so `a` is not optional.
+    let node = InstructionNode {
+        accounts: vec![
+            defaulting("a", IsSigner::False, AccountValueNode::new("b")),
+            InstructionAccountNode {
+                is_optional: Some(true),
+                ..defaulting("b", IsSigner::False, codama_nodes::PayerValueNode::new())
+            },
+        ],
+        ..instruction("myInstruction")
+    };
+    let inputs = resolve_alone(&node);
+    assert_eq!(identifiers(&inputs), ["b", "a"]);
+    assert!(!as_account(&inputs[0]).resolved_is_optional);
+    assert!(!as_account(&inputs[1]).resolved_is_optional);
+}
+
+#[test]
 fn includes_instruction_data_fields_with_resolvable_default_values() {
     let node = InstructionNode {
         accounts: vec![account("owner", IsSigner::True)],

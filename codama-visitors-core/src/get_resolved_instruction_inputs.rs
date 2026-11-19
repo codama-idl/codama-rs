@@ -321,13 +321,16 @@ impl<'a> Resolver<'_, 'a> {
         };
         match &resolved_default_value {
             Some(InstructionInputValueNode::AccountValue(value)) => {
-                let default_account = self.resolved_account(&value.identifier).node;
-                resolved.resolved_is_signer = match (account.is_signer, default_account.is_signer) {
-                    (IsSigner::False, IsSigner::False) => IsSigner::False,
-                    (IsSigner::True, IsSigner::True) => IsSigner::True,
-                    _ => IsSigner::Either,
-                };
-                resolved.resolved_is_optional = default_account.is_optional.unwrap_or(false);
+                // The default account is resolved first, so its resolved flags carry along a chain of
+                // defaults, such as `a` defaulting to `b` defaulting to `c`.
+                let default_account = self.resolved_account(&value.identifier);
+                resolved.resolved_is_signer =
+                    match (account.is_signer, default_account.resolved_is_signer) {
+                        (IsSigner::False, IsSigner::False) => IsSigner::False,
+                        (IsSigner::True, IsSigner::True) => IsSigner::True,
+                        _ => IsSigner::Either,
+                    };
+                resolved.resolved_is_optional = default_account.resolved_is_optional;
             }
             Some(
                 InstructionInputValueNode::PublicKeyValue(_)

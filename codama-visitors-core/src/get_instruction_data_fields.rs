@@ -77,7 +77,7 @@ struct DataFieldsWalker<'l, 'a> {
     fields: Vec<InstructionDataField<'a>>,
     /// The defined types followed on the current branch, by address rather than identifier, as
     /// same-named types of different programs are distinct.
-    followed_types: Vec<*const DefinedTypeNode>,
+    followed_types: Vec<&'a DefinedTypeNode>,
 }
 
 impl<'a> DataFieldsWalker<'_, 'a> {
@@ -101,11 +101,14 @@ impl<'a> DataFieldsWalker<'_, 'a> {
                     .last()
                     .and_then(|node| node.try_into().ok())
                     .expect("a defined type link resolves to a defined type");
-                let id = defined_type as *const DefinedTypeNode;
-                if self.followed_types.contains(&id) {
+                if self
+                    .followed_types
+                    .iter()
+                    .any(|followed| std::ptr::eq(*followed, defined_type))
+                {
                     return;
                 }
-                self.followed_types.push(id);
+                self.followed_types.push(defined_type);
                 let mut type_path = linked_path.clone();
                 type_path.push(&*defined_type.r#type);
                 self.walk(&defined_type.r#type, prefix, &linked_path, type_path);
