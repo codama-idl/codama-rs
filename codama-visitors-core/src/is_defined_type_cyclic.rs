@@ -78,7 +78,8 @@ pub(crate) fn get_defined_type_in_program<'a>(
     }
 }
 
-fn defined_type_at_end_of<'a>(linked_path: &NodePath<'a>) -> &'a DefinedTypeNode {
+/// The defined type at the end of a path that a defined type link resolves to.
+pub(crate) fn defined_type_at_end_of<'a>(linked_path: &NodePath<'a>) -> &'a DefinedTypeNode {
     match linked_path.last() {
         Some(NodeRef::DefinedType(defined_type)) => defined_type,
         _ => unreachable!("a defined type link resolves to a defined type"),

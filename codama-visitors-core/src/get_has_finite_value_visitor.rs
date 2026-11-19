@@ -1,15 +1,18 @@
-use crate::{LinkableDictionary, MergeVisitor, NodeStack, Visitor, VisitorExt};
-use codama_nodes::{CountNode, DefinedTypeNode, NodeRef};
+use crate::{
+    is_defined_type_cyclic::defined_type_at_end_of, LinkableDictionary, MergeVisitor, NodeStack,
+    Visitor, VisitorExt,
+};
+use codama_nodes::{CountNode, DefinedTypeNode, NodeRef, TransformNode};
 use std::cell::RefCell;
 
 /// Creates a visitor that tells whether the visited type has at least one finite value, following
 /// links, like `getHasFiniteValueVisitor` in the JavaScript library.
 ///
-/// Only the shape of values matters: options may be `None`, enums may pick any variant and
-/// collections without a fixed positive count may be empty, so all of them stop a recursion.
-/// Transforms, prefixes and sizes only prevent a value from existing when their constants link back to
-/// a type being visited, since those constants could then never be created. Links that cannot be
-/// resolved count as finite.
+/// Options may be `None`, enums may pick any variant and collections without a fixed positive count
+/// may be empty, so all of them stop a recursion at their items. The other parts of a type, such as
+/// its transforms, counts, prefixes, sizes and zero values, are part of every value of it, so they
+/// prevent a value from existing when their constants link back to a type being visited, since those
+/// constants could then never be created. Links that cannot be resolved count as finite.
 ///
 /// A link back to a defined type being visited has no finite value on its own: a finite value never
 /// needs to nest a type within itself, so another branch must provide one. Enums without variants have
@@ -71,49 +74,68 @@ pub fn get_has_finite_value_visitor<'s, 'a: 's>(
     };
 
     MergeVisitor::new(|_, values: Vec<bool>| values.into_iter().all(|value| value))
-        .extend(move |node, scope| match node {
-            NodeRef::ArrayType(array) => {
-                !has_fixed_positive_count(&array.count) || scope.visit(&*array.item)
-            }
-            NodeRef::DefinedType(defined_type) => {
-                if contains(&finite, defined_type) {
-                    return true;
+        .extend(move |node, scope| {
+            // The transforms of a type are part of every value of it, even when the recursion may
+            // stop at its item.
+            let transforms = |transforms: &'a [TransformNode]| {
+                transforms.iter().all(|transform| scope.visit(transform))
+            };
+            match node {
+                NodeRef::ArrayType(array) => {
+                    (!has_fixed_positive_count(&array.count) || scope.visit(&*array.item))
+                        && scope.visit(&*array.count)
+                        && transforms(&array.transforms)
                 }
-                visiting.borrow_mut().push(defined_type);
-                let has_finite_value = scope.next(node);
-                visiting.borrow_mut().pop();
-                if has_finite_value {
-                    finite.borrow_mut().push(defined_type);
+                NodeRef::DefinedType(defined_type) => {
+                    if contains(&finite, defined_type) {
+                        return true;
+                    }
+                    visiting.borrow_mut().push(defined_type);
+                    let has_finite_value = scope.next(node);
+                    visiting.borrow_mut().pop();
+                    if has_finite_value {
+                        finite.borrow_mut().push(defined_type);
+                    }
+                    has_finite_value
                 }
-                has_finite_value
-            }
-            NodeRef::DefinedTypeLink(_) => {
-                let Some(linked_path) = linkables.get_path(&stack.get_path()) else {
-                    return true;
-                };
-                let linked = linked_path.last().expect("a linked path is never empty");
-                let NodeRef::DefinedType(linked_type) = linked else {
-                    unreachable!("a defined type link resolves to a defined type");
-                };
-                if contains(&visiting, linked_type) {
-                    return false;
+                // The link itself, such as its transforms, goes through `next`.
+                NodeRef::DefinedTypeLink(_) => {
+                    let Some(linked_path) = linkables.get_path(&stack.get_path()) else {
+                        return scope.next(node);
+                    };
+                    if contains(&visiting, defined_type_at_end_of(&linked_path)) {
+                        return false;
+                    }
+                    stack.visit_path(linked_path, |linked| scope.visit(linked)) && scope.next(node)
                 }
-                stack.visit_path(linked_path, |linked| scope.visit(linked))
+                NodeRef::EnumType(r#enum) => {
+                    r#enum.variants.iter().any(|variant| scope.visit(variant))
+                        && scope.visit(&r#enum.size)
+                        && transforms(&r#enum.transforms)
+                }
+                // The defined type of an enum value only references it.
+                NodeRef::EnumValue(_) => true,
+                NodeRef::MapType(map) => {
+                    (!has_fixed_positive_count(&map.count)
+                        || (scope.visit(&*map.key) && scope.visit(&*map.value)))
+                        && scope.visit(&*map.count)
+                        && transforms(&map.transforms)
+                }
+                NodeRef::OptionType(option) => {
+                    scope.visit(&option.prefix) && transforms(&option.transforms)
+                }
+                NodeRef::RemainderOptionType(option) => transforms(&option.transforms),
+                NodeRef::SetType(set) => {
+                    (!has_fixed_positive_count(&set.count) || scope.visit(&*set.item))
+                        && scope.visit(&*set.count)
+                        && transforms(&set.transforms)
+                }
+                NodeRef::ZeroableOptionType(option) => {
+                    option.zero_value.iter().all(|value| scope.visit(value))
+                        && transforms(&option.transforms)
+                }
+                node => scope.next(node),
             }
-            NodeRef::EnumType(r#enum) => r#enum.variants.iter().any(|variant| scope.visit(variant)),
-            // The defined type of an enum value only references it.
-            NodeRef::EnumValue(_) => true,
-            NodeRef::MapType(map) => {
-                !has_fixed_positive_count(&map.count)
-                    || (scope.visit(&*map.key) && scope.visit(&*map.value))
-            }
-            NodeRef::OptionType(_)
-            | NodeRef::RemainderOptionType(_)
-            | NodeRef::ZeroableOptionType(_) => true,
-            NodeRef::SetType(set) => {
-                !has_fixed_positive_count(&set.count) || scope.visit(&*set.item)
-            }
-            node => scope.next(node),
         })
         .record_node_stack(stack)
 }

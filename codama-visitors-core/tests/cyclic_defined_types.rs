@@ -6,8 +6,8 @@ use codama_nodes::{
     EnumValueNode, EnumVariantTypeNode, FixedCountNode, HasTransforms, HiddenPrefixTransformNode,
     IntegerTypeNode, IntegerValueNode, MapTypeNode, NodeRef, OptionTypeNode, PrefixedCountNode,
     ProgramLinkNode, ProgramNode, RemainderCountNode, RemainderOptionTypeNode, RootNode,
-    SetTypeNode, StringTypeNode, StringValueNode, StructFieldTypeNode, StructTypeNode,
-    TupleTypeNode, TypeNode, ZeroableOptionTypeNode, U32, U64, U8,
+    SentinelCountNode, SetTypeNode, StringTypeNode, StringValueNode, StructFieldTypeNode,
+    StructTypeNode, TupleTypeNode, TypeNode, ZeroableOptionTypeNode, U32, U64, U8,
 };
 use codama_visitors_core::{
     get_defined_type_links_visitor, get_has_finite_value_visitor, get_linkables_from_node,
@@ -357,6 +357,16 @@ fn link_to_self() -> DefinedTypeLinkNode {
     DefinedTypeLinkNode::new("self")
 }
 
+/// A constant of the `self` type, which can only be created from an existing `self` value.
+fn constant_of_self() -> ConstantValueNode {
+    ConstantValueNode::new(link_to_self(), IntegerValueNode::new(0))
+}
+
+/// A transform hiding a constant of the `self` type before the value.
+fn prefix_of_self() -> HiddenPrefixTransformNode {
+    HiddenPrefixTransformNode::new(vec![constant_of_self()])
+}
+
 #[test]
 fn finds_a_finite_value_through_types_that_may_stop_a_recursion() {
     let u8 = || IntegerTypeNode::le(U8);
@@ -400,9 +410,15 @@ fn finds_a_finite_value_through_types_that_may_stop_a_recursion() {
             field(DefinedTypeLinkNode::new("missing")).into(),
         ),
     ];
-    for (case, r#type) in cases {
-        assert!(has_finite_value(&self_root(r#type), "self"), "{case}");
-    }
+    let failures: Vec<_> = cases
+        .into_iter()
+        .filter(|(_, r#type)| !has_finite_value(&self_root(r#type.clone()), "self"))
+        .map(|(case, _)| case)
+        .collect();
+    assert!(
+        failures.is_empty(),
+        "no finite value found through {failures:?}"
+    );
 }
 
 #[test]
@@ -435,10 +451,66 @@ fn finds_no_finite_value_through_types_that_never_stop_a_recursion() {
             "enums without variants",
             field(EnumTypeNode::new(vec![])).into(),
         ),
+        // Constants of the type itself, which are never created, within the parts of a type that a
+        // recursion may otherwise stop at.
+        (
+            "transforms of links",
+            field(DefinedTypeLinkNode::new("missing").add_transform(prefix_of_self())).into(),
+        ),
+        (
+            "transforms of options",
+            field(prefixed_option(link_to_self()).add_transform(prefix_of_self())).into(),
+        ),
+        (
+            "zero values of zeroable options",
+            field(ZeroableOptionTypeNode {
+                zero_value: Some(constant_of_self()),
+                ..ZeroableOptionTypeNode::new(u8())
+            })
+            .into(),
+        ),
+        (
+            "transforms of remainder options",
+            field(RemainderOptionTypeNode::new(u8()).add_transform(prefix_of_self())).into(),
+        ),
+        (
+            "sentinel counts",
+            ArrayTypeNode::new(u8(), SentinelCountNode::new(constant_of_self())).into(),
+        ),
+        (
+            "transforms of prefixed arrays",
+            ArrayTypeNode::new(u8(), PrefixedCountNode::new(u8()))
+                .add_transform(prefix_of_self())
+                .into(),
+        ),
+        (
+            "transforms of sets",
+            SetTypeNode::new(u8(), RemainderCountNode::new())
+                .add_transform(prefix_of_self())
+                .into(),
+        ),
+        (
+            "transforms of maps",
+            MapTypeNode::new(u8(), u8(), PrefixedCountNode::new(u8()))
+                .add_transform(prefix_of_self())
+                .into(),
+        ),
+        (
+            "transforms of enums",
+            EnumTypeNode::new(vec![EnumVariantTypeNode::new("nil")])
+                .add_transform(prefix_of_self())
+                .into(),
+        ),
     ];
-    for (case, r#type) in cases {
-        assert!(!has_finite_value(&self_root(r#type), "self"), "{case}");
-    }
+    let failures: Vec<_> = cases
+        .into_iter()
+        .filter(|(_, r#type)| has_finite_value(&self_root(r#type.clone()), "self"))
+        .map(|(case, _)| case)
+        .collect();
+    assert!(
+        failures.is_empty(),
+        "a finite value found through {failures:?}"
+    );
 }
 
 #[test]

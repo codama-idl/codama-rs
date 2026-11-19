@@ -1,7 +1,8 @@
 //! The validation items of cyclic defined types, ported from the tests of `@codama/validators`.
 
 use codama_nodes::{
-    AccountLinkNode, AccountNode, DefinedTypeLinkNode, DefinedTypeNode, IntegerTypeNode, NodeRef,
+    AccountLinkNode, AccountNode, ConstantValueNode, DefinedTypeLinkNode, DefinedTypeNode,
+    HasTransforms, HiddenPrefixTransformNode, IntegerTypeNode, IntegerValueNode, NodeRef,
     OptionTypeNode, ProgramLinkNode, ProgramNode, PublicKeyTypeNode, RootNode, StructFieldTypeNode,
     StructTypeNode, U32, U8,
 };
@@ -63,6 +64,26 @@ fn reports_defined_types_aliasing_themselves() {
         )],
     ));
     assert_eq!(items(&root), [no_finite_value("alias")]);
+}
+
+#[test]
+fn reports_defined_types_hiding_a_constant_of_themselves_in_a_link_transform() {
+    // Encoding `self` requires a constant `self` value, which can never be created.
+    let prefix = HiddenPrefixTransformNode::new(vec![ConstantValueNode::new(
+        DefinedTypeLinkNode::new("self"),
+        IntegerValueNode::new(0),
+    )]);
+    let root = RootNode::new(program(
+        "myProgram",
+        vec![
+            DefinedTypeNode::new(
+                "self",
+                next(DefinedTypeLinkNode::new("other").add_transform(prefix)),
+            ),
+            DefinedTypeNode::new("other", IntegerTypeNode::le(U8)),
+        ],
+    ));
+    assert_eq!(items(&root), [no_finite_value("self")]);
 }
 
 #[test]
