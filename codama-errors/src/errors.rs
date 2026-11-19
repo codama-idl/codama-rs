@@ -131,6 +131,12 @@ pub enum CodamaError {
     #[error("Expected a positive integer number of ticks per second for {path}, got [{ticks_per_second}].")]
     InvalidTicksPerSecond { path: String, ticks_per_second: u32 },
 
+    #[error("Expected a node path containing a program node, e.g. to resolve the links of its last node, got {path}.")]
+    NodePathProgramMissing { path: String },
+
+    #[error("Defined type {path} has no finite value, so no codec can encode or decode it.")]
+    DefinedTypeHasNoFiniteValue { path: String },
+
     #[error("{}", failed_to_validate_node_message(.path, .histogram, .items))]
     FailedToValidateNode {
         path: String,
