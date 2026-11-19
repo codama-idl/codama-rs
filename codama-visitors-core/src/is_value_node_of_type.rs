@@ -130,7 +130,7 @@ fn resolve_defined_type_links<'a>(
     linkables: &LinkableDictionary<'a>,
 ) -> CodamaResult<Option<NodePath<'a>>> {
     let mut current = type_path.clone();
-    let mut followed_types: Vec<*const DefinedTypeNode> = vec![];
+    let mut followed_types: Vec<&DefinedTypeNode> = vec![];
     while let Some(NodeRef::DefinedTypeLink(_)) = current.last() {
         let mut defined_type_path = linkables.get_path_or_err(&current)?;
         let defined_type: &DefinedTypeNode = defined_type_path
@@ -139,7 +139,10 @@ fn resolve_defined_type_links<'a>(
             .ok_or_else(|| CodamaError::LinkedNodeNotFound {
                 path: current.to_string(),
             })?;
-        if followed_types.contains(&(defined_type as *const _)) {
+        if followed_types
+            .iter()
+            .any(|followed| std::ptr::eq(*followed, defined_type))
+        {
             return Ok(None);
         }
         followed_types.push(defined_type);

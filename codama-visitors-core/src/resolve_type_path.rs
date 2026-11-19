@@ -177,7 +177,7 @@ fn resolve_container<'a>(
     segment: PathSegment,
     linkables: &LinkableDictionary<'a>,
 ) -> Result<NodePath<'a>, ResolveTypePathError<'a>> {
-    let mut followed_types: Vec<*const DefinedTypeNode> = vec![];
+    let mut followed_types: Vec<&DefinedTypeNode> = vec![];
     loop {
         match current.last().expect("a type path is never empty") {
             NodeRef::StructFieldType(field) => current.push(&*field.r#type),
@@ -194,7 +194,10 @@ fn resolve_container<'a>(
                     .and_then(|node| node.try_into().ok())
                     .expect("a defined type link resolves to a defined type");
                 // An alias cycle, such as `a = b` and `b = a`, never reaches a type to apply the segment to.
-                if followed_types.contains(&(defined_type as *const _)) {
+                if followed_types
+                    .iter()
+                    .any(|followed| std::ptr::eq(*followed, defined_type))
+                {
                     return Err(cannot_resolve(current, path, segment));
                 }
                 followed_types.push(defined_type);

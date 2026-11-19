@@ -7,12 +7,14 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    parse_interpolated_intent, FieldDiscriminatorNode, InterpolatedIntentPart, NodeRef,
-    PdaSeedNode, StructFieldTypeNode, Text, ValueNode,
+    parse_interpolated_intent, FieldDiscriminatorNode, Identifier, InjectedValueNode,
+    InstructionInputValueNode, InstructionNode, InterpolatedIntentPart, IsSigner, Node, NodeRef,
+    Path, PdaSeedNode, StructFieldTypeNode, Text, ValueNode,
 };
 use codama_visitors_core::{
-    is_value_node_of_type, resolve_type_path, visit, LinkableDictionary, MergeVisitor, NodePath,
-    NodeStack, ProvidedScope, RecordLinkablesVisitor, ResolveTypePathError, Visitor, VisitorExt,
+    get_resolved_instruction_inputs, is_value_node_of_type, resolve_type_path, visit,
+    LinkableDictionary, MergeVisitor, NodePath, NodeStack, ProvidedScope, RecordLinkablesVisitor,
+    ResolveTypePathError, ResolvedInstructionInput, Visitor, VisitorExt,
 };
 use std::cell::Cell;
 
@@ -59,7 +61,7 @@ pub fn get_validation_items_visitor<'a>() -> ValidationItemsVisitor<'a> {
 pub struct ValidationItemsVisitor<'a> {
     stack: NodeStack<'a>,
     linkables: LinkableDictionary<'a>,
-    /// Recorded for the checks of injected values and instruction inputs, which a follow-up adds.
+    /// The `provides` of the instructions enclosing the node being visited, to resolve injected values.
     scope: ProvidedScope<'a>,
     is_first_visit: Cell<bool>,
 }
@@ -247,8 +249,10 @@ impl<'a> ValidationItemsVisitor<'a> {
                     &context,
                     &path,
                 ));
+                items.extend(self.get_instruction_input_items(instruction, &path));
                 items
             }
+            NodeRef::InjectedValue(injected) => self.get_injected_value_items(injected, &path),
             NodeRef::Pda(pda) => {
                 let seeds = pda.seeds.iter().filter_map(|seed| match seed {
                     PdaSeedNode::Variable(seed) => Some(seed),
@@ -316,6 +320,120 @@ impl<'a> ValidationItemsVisitor<'a> {
                 vec![item(LogLevel::Warn, "Tuple has no items.".to_string())]
             }
             _ => vec![],
+        }
+    }
+
+    /// The items of the default values of the inputs of an instruction: cycles and invalid dependencies,
+    /// and data fields defaulting to the bump of an account that may be a signer.
+    fn get_instruction_input_items(
+        &self,
+        instruction: &InstructionNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let inputs =
+            match get_resolved_instruction_inputs(path, &self.linkables, Default::default()) {
+                Ok(inputs) => inputs,
+                Err(cause) => {
+                    // An invalid dependency stems from a contextual value, such as an unknown account or an
+                    // unresolvable data path, which reports it on its own when it is visited within this
+                    // instruction. Like the JavaScript library, it is not reported when that value sits
+                    // elsewhere, such as in the `provides` of a parent instruction or in a linked defined type.
+                    let is_reported_by_dependency = match &cause {
+                        CodamaError::InvalidInstructionDefaultValueDependency {
+                            dependency_kind,
+                            dependency_name,
+                            ..
+                        } => {
+                            let account = dependency_name.parse::<Identifier>();
+                            let data_path = dependency_name.parse::<Path>();
+                            let value = match (dependency_kind.as_str(), &account, &data_path) {
+                                ("accountValueNode", Ok(account), _) => {
+                                    Some(ContextualValue::Account(account))
+                                }
+                                ("dataValueNode", _, Ok(data_path)) => {
+                                    Some(ContextualValue::Data(data_path))
+                                }
+                                _ => None,
+                            };
+                            value.is_some_and(|value| {
+                                !get_contextual_value_items(value, path, &self.linkables).is_empty()
+                            })
+                        }
+                        _ => false,
+                    };
+                    return match is_reported_by_dependency {
+                        true => vec![],
+                        false => {
+                            vec![
+                                validation_item(LogLevel::Error, cause.to_string(), path.clone())
+                                    .with_cause(cause),
+                            ]
+                        }
+                    };
+                }
+            };
+
+        // A bump can only be derived from an account that is not a signer.
+        inputs
+            .iter()
+            .filter_map(|input| match input {
+                ResolvedInstructionInput::DataField(field) => match &field.resolved_default_value {
+                    Some(InstructionInputValueNode::AccountBumpValue(bump)) => Some((field, bump)),
+                    _ => None,
+                },
+                ResolvedInstructionInput::Account(_) => None,
+            })
+            .filter(|(_, bump)| {
+                instruction.accounts.iter().any(|account| {
+                    account.identifier == bump.identifier && account.is_signer != IsSigner::False
+                })
+            })
+            .map(|(field, bump)| {
+                let message = format!(
+                    "Data field \"{}\" cannot default to the bump of the \"{}\" account as it may be a signer.",
+                    field.path, bump.identifier
+                );
+                validation_item(LogLevel::Error, message, path.clone())
+            })
+            .collect()
+    }
+
+    /// The items of an injected value that is neither provided nor given a fallback.
+    ///
+    /// Only injections consumed within an instruction have a known final context to resolve against.
+    /// Injections within a provided node or the fallback of another injection are resolved as part of
+    /// the value that consumes them, and value labels report injections on their own.
+    fn get_injected_value_items(
+        &self,
+        injected: &InjectedValueNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let ancestors = &path.nodes()[..path.len() - 1];
+        let is_within_instruction = ancestors
+            .iter()
+            .any(|ancestor| matches!(ancestor, NodeRef::Instruction(_)));
+        let is_nested = ancestors.iter().any(|ancestor| {
+            matches!(
+                ancestor,
+                NodeRef::Provided(_) | NodeRef::InjectedValue(_) | NodeRef::ValueLabelDisplay(_)
+            )
+        });
+        if !is_within_instruction || is_nested {
+            return vec![];
+        }
+        match self.scope.resolve::<Node>(injected) {
+            Ok(Some(_)) => vec![],
+            Ok(None) => vec![validation_item(
+                LogLevel::Error,
+                format!(
+                    "Injected value \"{}\" is not provided and has no fallback.",
+                    injected.key
+                ),
+                path.clone(),
+            )],
+            Err(cause) => vec![
+                validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause),
+            ],
         }
     }
 

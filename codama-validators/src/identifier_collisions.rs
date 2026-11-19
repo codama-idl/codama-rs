@@ -78,8 +78,8 @@ pub(crate) fn get_nested_instruction_collision_items<'a>(
 struct NestedCollisions<'c, 'a> {
     context: &'c str,
     items: Vec<ValidationItem<'a>>,
-    /// The first identifier of each camelCase form, with the sibling sets that hold it, by address.
-    identifiers_by_camel_case: HashMap<String, (&'a str, Vec<*const InstructionNode>)>,
+    /// The first identifier of each camelCase form, with the sibling sets that hold it, compared by address.
+    identifiers_by_camel_case: HashMap<String, (&'a str, Vec<&'a [InstructionNode]>)>,
 }
 
 impl<'a> NestedCollisions<'_, 'a> {
@@ -88,14 +88,13 @@ impl<'a> NestedCollisions<'_, 'a> {
             let path = child_path(parent, NodeRef::from(instruction));
             let identifier = instruction.identifier.as_str();
             if !identifier.is_empty() {
-                let siblings_id = siblings.as_ptr();
                 match self.identifiers_by_camel_case.entry(camel_case(identifier)) {
                     Entry::Vacant(entry) => {
-                        entry.insert((identifier, vec![siblings_id]));
+                        entry.insert((identifier, vec![siblings]));
                     }
                     Entry::Occupied(mut entry) => {
                         let (existing, sibling_sets) = entry.get_mut();
-                        if !sibling_sets.contains(&siblings_id) {
+                        if !sibling_sets.iter().any(|set| std::ptr::eq(*set, siblings)) {
                             let context = self.context;
                             let message = match *existing == identifier {
                                 true => format!(
@@ -110,7 +109,7 @@ impl<'a> NestedCollisions<'_, 'a> {
                                 message,
                                 path.clone(),
                             ));
-                            sibling_sets.push(siblings_id);
+                            sibling_sets.push(siblings);
                         }
                     }
                 }
