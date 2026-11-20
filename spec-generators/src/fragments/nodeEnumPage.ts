@@ -240,7 +240,7 @@ function getMapChildrenFunctionFragment(variant: string, type: string, node: Nod
 // type, as the generator does not track which ones are \`Copy\`.
 #[inline(never)]
 #[allow(clippy::clone_on_copy)]
-fn ${getMapChildrenFunctionName(node.kind)}<'a>(this: &'a ${use(`crate::${type}`)}, ${usesF ? 'f' : '_f'}: &mut MapChild<'_, 'a>) -> CodamaResult<Option<Node>> {
+fn ${getMapChildrenFunctionName(node.kind)}<'a>(this: &'a ${use(`crate::${type}`)}, ${usesF ? 'f' : '_f'}: &mut ${use('crate::node_ref::MapChild')}<'_, 'a>) -> ${use('codama_errors::CodamaResult')}<Option<Node>> {
 ${statements.join('\n')}
 Ok(Some(Node::${variant}(${type} {
 ${fields.join(',\n')},
