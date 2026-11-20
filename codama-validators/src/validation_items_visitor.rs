@@ -347,7 +347,8 @@ impl<'a> ValidationItemsVisitor<'a> {
     ///
     /// A link naming a program that is not in the tree points outside of it, e.g. to the PDA of another
     /// program whose client is generated separately, so it cannot be checked and is skipped. Links to
-    /// programs are never reported for the same reason.
+    /// programs are never reported for the same reason. A typo in the name of the program, such as
+    /// `program = "tokne"`, therefore cannot be told apart from an external program and is not reported.
     fn get_missing_link_items(
         &self,
         kind: &str,

@@ -239,3 +239,19 @@ fn reports_only_the_missing_instruction_of_an_instruction_account_link() {
         )]
     );
 }
+
+#[test]
+fn reports_only_the_missing_instruction_of_another_program_in_the_tree() {
+    let instruction =
+        InstructionLinkNode::new_from_program("transfer", ProgramLinkNode::new("other"));
+    let link = InstructionAccountLinkNode::new_from_instruction("authority", instruction);
+    assert_eq!(
+        errors(&root_with_provided(link)),
+        [error(
+            "Pointing to a missing instruction named \"transfer\"",
+            &format!(
+                "{PROVIDED}.[instructionAccountLinkNode]authority.[instructionLinkNode]transfer"
+            )
+        )]
+    );
+}
