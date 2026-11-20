@@ -8,8 +8,9 @@ use crate::{
 use codama_errors::CodamaError;
 use codama_nodes::{
     parse_interpolated_intent, FieldDiscriminatorNode, Identifier, InjectedValueNode,
-    InstructionInputValueNode, InstructionNode, InterpolatedIntentPart, IsSigner, Node, NodeRef,
-    Path, PdaSeedNode, ProgramNode, StructFieldTypeNode, Text, ValueNode,
+    InstructionAccountLinkNode, InstructionInputValueNode, InstructionNode, InterpolatedIntentPart,
+    IsSigner, Node, NodeRef, Path, PdaSeedNode, ProgramLinkNode, ProgramNode, StructFieldTypeNode,
+    Text, ValueNode,
 };
 use codama_visitors_core::{
     get_resolved_instruction_inputs, has_defined_type_finite_value, is_defined_type_cyclic,
@@ -150,13 +151,12 @@ impl<'a> ValidationItemsVisitor<'a> {
                 None => vec![],
             },
             NodeRef::ValueLabelDisplay(label) => self.get_value_label_items(&label.value, &path),
-            NodeRef::AccountLink(link) if !self.linkables.has(&path) => vec![item(
-                LogLevel::Error,
-                format!(
-                    "Pointing to a missing account named \"{}\"",
-                    link.identifier
-                ),
-            )],
+            NodeRef::AccountLink(link) => self.get_missing_link_items(
+                "account",
+                &link.identifier,
+                link.program.as_ref(),
+                &path,
+            ),
             NodeRef::DateTimeType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
             NodeRef::DurationType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
             NodeRef::DefinedType(defined_type) => {
@@ -173,13 +173,24 @@ impl<'a> ValidationItemsVisitor<'a> {
             NodeRef::DefinedTypeLink(link) if link.identifier.is_empty() => {
                 error("Pointing to a defined type with no identifier.")
             }
-            NodeRef::DefinedTypeLink(link) if !self.linkables.has(&path) => vec![item(
-                LogLevel::Error,
-                format!(
-                    "Pointing to a missing defined type named \"{}\"",
-                    link.identifier
-                ),
-            )],
+            NodeRef::DefinedTypeLink(link) => self.get_missing_link_items(
+                "defined type",
+                &link.identifier,
+                link.program.as_ref(),
+                &path,
+            ),
+            NodeRef::PdaLink(link) => {
+                self.get_missing_link_items("PDA", &link.identifier, link.program.as_ref(), &path)
+            }
+            NodeRef::InstructionLink(link) => self.get_missing_link_items(
+                "instruction",
+                &link.identifier,
+                link.program.as_ref(),
+                &path,
+            ),
+            NodeRef::InstructionAccountLink(link) => {
+                self.get_missing_instruction_account_link_items(link, &path)
+            }
             NodeRef::EnumType(r#enum) => {
                 let mut items = vec![];
                 if r#enum.variants.is_empty() {
@@ -330,6 +341,53 @@ impl<'a> ValidationItemsVisitor<'a> {
             }
             _ => vec![],
         }
+    }
+
+    /// The items of a link that points to no node, such as a PDA link with a typo.
+    ///
+    /// A link naming a program that is not in the tree points outside of it, e.g. to the PDA of another
+    /// program whose client is generated separately, so it cannot be checked and is skipped. Links to
+    /// programs are never reported for the same reason.
+    fn get_missing_link_items(
+        &self,
+        kind: &str,
+        identifier: &Identifier,
+        program: Option<&'a ProgramLinkNode>,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        if self.is_external_program(program) || self.linkables.has(path) {
+            return vec![];
+        }
+        let message = format!("Pointing to a missing {kind} named \"{identifier}\"");
+        vec![validation_item(LogLevel::Error, message, path.clone())]
+    }
+
+    /// The items of an instruction account link that points to no account. When the instruction it
+    /// names is missing, only that instruction link is reported, as it is visited on its own.
+    fn get_missing_instruction_account_link_items(
+        &self,
+        link: &'a InstructionAccountLinkNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        if let Some(instruction) = &link.instruction {
+            let mut instruction_path = path.clone();
+            instruction_path.push(instruction);
+            if self.is_external_program(instruction.program.as_ref())
+                || !self.linkables.has(&instruction_path)
+            {
+                return vec![];
+            }
+        }
+        self.get_missing_link_items("instruction account", &link.identifier, None, path)
+    }
+
+    /// Whether `program` names a program that is not in the tree.
+    fn is_external_program(&self, program: Option<&'a ProgramLinkNode>) -> bool {
+        program.is_some_and(|program| {
+            !self
+                .linkables
+                .has(&NodePath::from(vec![NodeRef::from(program)]))
+        })
     }
 
     /// The items of the default values of the inputs of an instruction: cycles and invalid dependencies,
