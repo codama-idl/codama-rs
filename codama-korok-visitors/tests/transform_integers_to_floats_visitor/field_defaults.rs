@@ -2,9 +2,9 @@ use super::utils::{
     account_with_field, field, float, integer, root_with_account, transform_integers_to_floats,
 };
 use codama_nodes::{
-    AccountNode, ArrayTypeNode, ArrayValueNode, DateTimeTypeNode, DefinedTypeNode,
-    DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, EventNode, FixedPointTypeNode,
-    FixedSizeTransformNode,
+    AccountNode, ArrayTypeNode, ArrayValueNode, ConstantValueNode, DateTimeTypeNode,
+    DefinedTypeNode, DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, EventNode,
+    FixedPointTypeNode, FixedSizeTransformNode,
     FloatFormat::{F32, F64},
     FloatTypeNode, FloatValueNode, HasTransforms, InstructionNode,
     IntegerFormat::{I64, U64, U8},
@@ -168,4 +168,17 @@ fn defaults_at_any_depth_become_floats() {
         };
         assert_eq!(transform_integers_to_floats(root(integer())), root(float()));
     }
+}
+
+#[test]
+fn constant_values_used_as_defaults_take_their_own_type() {
+    // An integer field defaulting to a constant of a float type.
+    let root = |value: ValueNode| {
+        let constant = ConstantValueNode::new(FloatTypeNode::le(F64), value);
+        root_with_account(
+            ProgramNode::default(),
+            account_with_field(IntegerTypeNode::le(U64), constant.into()),
+        )
+    };
+    assert_eq!(transform_integers_to_floats(root(integer())), root(float()));
 }

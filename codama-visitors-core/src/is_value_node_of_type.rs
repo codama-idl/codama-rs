@@ -1,6 +1,6 @@
-use crate::{LinkableDictionary, NodePath};
-use codama_errors::{CodamaError, CodamaResult};
-use codama_nodes::{DefinedTypeNode, NodeRef, TypeNode, ValueNode};
+use crate::{resolve_defined_type_links, LinkableDictionary, NodePath};
+use codama_errors::CodamaResult;
+use codama_nodes::{NodeRef, TypeNode, ValueNode};
 
 /// Whether a concrete value is a value of the type at the end of `type_path`, structurally: its kind
 /// fits the type and so do its children, such as the items of an array, the fields of a struct or the
@@ -121,35 +121,6 @@ pub fn is_value_node_of_type<'a>(
             _ => false,
         },
     )
-}
-
-/// Follows links to defined types until a type that is not a link, or `None` for alias cycles, such as
-/// `a = b` and `b = a`, which have no value.
-fn resolve_defined_type_links<'a>(
-    type_path: &NodePath<'a>,
-    linkables: &LinkableDictionary<'a>,
-) -> CodamaResult<Option<NodePath<'a>>> {
-    let mut current = type_path.clone();
-    let mut followed_types: Vec<&DefinedTypeNode> = vec![];
-    while let Some(NodeRef::DefinedTypeLink(_)) = current.last() {
-        let mut defined_type_path = linkables.get_path_or_err(&current)?;
-        let defined_type: &DefinedTypeNode = defined_type_path
-            .last()
-            .and_then(|node| node.try_into().ok())
-            .ok_or_else(|| CodamaError::LinkedNodeNotFound {
-                path: current.to_string(),
-            })?;
-        if followed_types
-            .iter()
-            .any(|followed| std::ptr::eq(*followed, defined_type))
-        {
-            return Ok(None);
-        }
-        followed_types.push(defined_type);
-        defined_type_path.push(&*defined_type.r#type);
-        current = defined_type_path;
-    }
-    Ok(Some(current))
 }
 
 /// Whether every check passes, stopping at the first one that fails or errors.

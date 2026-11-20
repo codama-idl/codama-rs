@@ -3,10 +3,11 @@ use super::utils::{
     pda_link_with_program, root_with_programs, transform_integers_to_floats,
 };
 use codama_nodes::{
-    AccountValueNode, ConstantPdaSeedNode, DataValueNode, DefinedTypeLinkNode, DefinedTypeNode,
+    AccountValueNode, ConditionalValueNode, ConstantPdaSeedNode, DataValueNode,
+    DefinedTypeLinkNode, DefinedTypeNode,
     FloatFormat::{F32, F64},
     FloatTypeNode, FloatValueNode, HasTransforms, HiddenPrefixTransformNode, Identifier,
-    InstructionNode,
+    InstructionAccountNode, InstructionNode,
     IntegerFormat::U64,
     IntegerTypeNode, PdaLinkNode, PdaNode, PdaSeedValueNode, PdaSeedValueValue, PdaValueNode,
     PdaValuePda, ProgramNode, ProvidedNode, StringTypeNode, StringValueNode, ValueNode,
@@ -144,6 +145,32 @@ fn seed_values_of_provided_values_become_floats() {
         let instruction = InstructionNode {
             identifier: "update".into(),
             provides: vec![ProvidedNode::new("target", value)],
+            ..InstructionNode::default()
+        };
+        root_with_programs(main_program().add_instruction(instruction), other_program())
+    };
+    assert_eq!(transform_integers_to_floats(root(integer())), root(float()));
+}
+
+#[test]
+fn seed_values_of_pda_values_nested_in_other_defaults_become_floats() {
+    // A PDA value within a conditional default value.
+    let root = |value: ValueNode| {
+        let conditional = ConditionalValueNode {
+            condition: Box::new(AccountValueNode::new("authority").into()),
+            value: Box::new(None),
+            if_true: Box::new(Some(
+                pda_value(PdaLinkNode::new("ratePda").into(), "rate", value).into(),
+            )),
+            if_false: Box::new(None),
+            plugins: vec![],
+        };
+        let instruction = InstructionNode {
+            identifier: "update".into(),
+            accounts: vec![InstructionAccountNode {
+                default_value: Box::new(Some(conditional.into())),
+                ..InstructionAccountNode::new("target", true, false)
+            }],
             ..InstructionNode::default()
         };
         root_with_programs(main_program().add_instruction(instruction), other_program())
