@@ -145,7 +145,7 @@ checksum = "a1d728cc89cf3aee9ff92b05e62b19ee65a02b5702cff7d5a377e32c6ae29d8d"
 
 [[package]]
 name = "codama"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-korok-visitors",
@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "codama-attributes"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "codama-cli"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "codama-errors"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "cargo_toml",
  "proc-macro2",
@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "codama-korok-visitors"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "cargo_toml",
  "codama-attributes",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "codama-koroks"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "codama-macros"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
@@ -244,7 +244,7 @@ dependencies = [
 
 [[package]]
 name = "codama-nodes"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "codama-nodes-derive"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-syn-helpers",
@@ -282,7 +282,7 @@ dependencies = [
 
 [[package]]
 name = "codama-plugin-core"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-attributes",
  "codama-errors",
@@ -294,7 +294,7 @@ dependencies = [
 
 [[package]]
 name = "codama-stores"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "cargo_toml",
  "codama-errors",
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "codama-syn-helpers"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "derive_more",
@@ -327,7 +327,7 @@ dependencies = [
 
 [[package]]
 name = "codama-validators"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
@@ -336,7 +336,7 @@ dependencies = [
 
 [[package]]
 name = "codama-visitors-core"
-version = "1.0.0"
+version = "2.0.0-rc.0"
 dependencies = [
  "codama-errors",
  "codama-nodes",
