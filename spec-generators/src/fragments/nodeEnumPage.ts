@@ -1,4 +1,4 @@
-import { pascalCase } from '@codama/fragments';
+import { pascalCase, snakeCase } from '@codama/fragments';
 import { addFragmentImports, type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { NodeSpec } from '@codama/spec';
 
@@ -20,6 +20,10 @@ import { use } from './helpers';
  *   - `NodeRef` reads the child nodes of any node (`children`), rebuilds a node from
  *     its mapped children (`map_children`) and reads its identifier (`identifier`).
  *     A child is an attribute the spec marks with `isChildAttribute`, read in spec order.
+ *   - `map_children` dispatches to one function per node kind, kept out of line, so
+ *     its stack frame stays small: identity visits recurse through it once per level
+ *     of the tree, and a single match over every kind would reserve the locals of
+ *     all of them on each call, about 260 KB in debug builds.
  *
  * Variant name = pascalCase(kind) minus the trailing `Node`
  * (`stringTypeNode` → `StringType`, `accountNode` → `Account`).
@@ -87,12 +91,10 @@ children
 /// When \`f\` returns \`None\`, the child is deleted: an item is dropped from its list, an optional
 /// child becomes \`None\`, and a required child deletes this node too, which returns \`None\`.
 /// A mapped child of the wrong kind for its slot is an error.
-// Data fields are cloned whatever their type, as the generator does not track which ones are \`Copy\`.
-#[allow(clippy::clone_on_copy)]
 pub fn map_children(self, mut f: impl FnMut(NodeRef<'a>) -> ${use('codama_errors::CodamaResult')}<Option<Node>>) -> CodamaResult<Option<Node>> {
 let f: &mut ${use('crate::node_ref::MapChild')}<'_, 'a> = &mut f;
 match self {
-${lines(v => getMapChildrenArmFragment(v.name, v.type, v.node))}
+${lines(v => fragment`Self::${v.name}(this) => ${getMapChildrenFunctionName(v.kind)}(this, f),`)}
 }
 }
 }
@@ -144,8 +146,14 @@ into: "${v.kind}".to_string(),
         parts => parts.join('\n\n'),
     );
 
-    return mergeFragments([nodeEnum, nodeRefEnum, nodeRefFromNode, nodeRefImpl, perNodeImpls], parts =>
-        parts.join('\n\n'),
+    const mapChildrenFunctions = mergeFragments(
+        variants.map(v => getMapChildrenFunctionFragment(v.name, v.type, v.node)),
+        parts => parts.join('\n\n'),
+    );
+
+    return mergeFragments(
+        [nodeEnum, nodeRefEnum, nodeRefFromNode, nodeRefImpl, mapChildrenFunctions, perNodeImpls],
+        parts => parts.join('\n\n'),
     );
 }
 
@@ -200,11 +208,16 @@ function getChildReadLine(slot: ChildSlot): string {
 
 const TEXT = 'Text';
 
+/** `accountNode` → `map_account_node_children`. */
+function getMapChildrenFunctionName(kind: string): string {
+    return `map_${snakeCase(kind)}_children`;
+}
+
 /**
- * The match arm that rebuilds one node kind from its mapped children.
+ * The function that rebuilds one node kind from its mapped children, called by `map_children`.
  * The node is bound to `this`, since each mapped child goes into a local named after its field.
  */
-function getMapChildrenArmFragment(variant: string, type: string, node: NodeSpec): Fragment {
+function getMapChildrenFunctionFragment(variant: string, type: string, node: NodeSpec): Fragment {
     const statements: string[] = [];
     const fields: string[] = [];
     const imports = new Set<string>();
@@ -219,12 +232,17 @@ function getMapChildrenArmFragment(variant: string, type: string, node: NodeSpec
         statements.push(statement);
         fields.push(value === field.field ? field.field : `${field.field}: ${value}`);
     }
-    return addFragmentImports(arm(), [...imports]);
+    return addFragmentImports(body(), [...imports]);
 
-    function arm(): Fragment {
-        return fragment`Self::${variant}(this) => {
+    function body(): Fragment {
+        const usesF = statements.length > 0;
+        return fragment`// Out of line, so \`map_children\` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are \`Copy\`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn ${getMapChildrenFunctionName(node.kind)}<'a>(this: &'a ${use(`crate::${type}`)}, ${usesF ? 'f' : '_f'}: &mut MapChild<'_, 'a>) -> CodamaResult<Option<Node>> {
 ${statements.join('\n')}
-Ok(Some(Node::${variant}(${use(`crate::${type}`)} {
+Ok(Some(Node::${variant}(${type} {
 ${fields.join(',\n')},
 })))
 }`;
