@@ -1,4 +1,7 @@
-use crate::{assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor, KorokVisitor};
+use crate::{
+    add_node_with_identifier, assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor,
+    KorokVisitor,
+};
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
     SeedDirective, SkipDirective, TryFromFilter,
@@ -106,16 +109,20 @@ impl KorokVisitor for SetAccountsVisitor {
             })
             .collect::<Vec<_>>();
 
-        // Gather all PDAs the variants.
-        let pdas = korok
-            .variants
-            .iter()
-            .flat_map(|variant| match &variant.node {
+        // Gather all PDAs of the variants. Variants may share a PDA, which is kept once, like when
+        // modules are merged, and different PDAs with the same identifier are an error.
+        let location = format!("enum `{}`", korok.ast.ident);
+        let mut pdas = vec![];
+        for variant in &korok.variants {
+            let variant_pdas = match &variant.node {
                 Some(Node::Pda(pda)) => vec![pda.clone()],
                 Some(Node::Program(program)) => program.pdas.clone(),
                 _ => vec![],
-            })
-            .collect::<Vec<_>>();
+            };
+            for pda in variant_pdas {
+                add_node_with_identifier(&mut pdas, pda, &location)?;
+            }
+        }
 
         let node: Node = ProgramNode {
             accounts,
