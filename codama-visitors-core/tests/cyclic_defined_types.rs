@@ -501,6 +501,12 @@ fn finds_no_finite_value_through_types_that_never_stop_a_recursion() {
                 .into(),
         ),
         (
+            "transforms of enums",
+            EnumTypeNode::new(vec![EnumVariantTypeNode::new("nil")])
+                .add_transform(prefix_of_self())
+                .into(),
+        ),
+        (
             "prefixes of options",
             field(OptionTypeNode {
                 prefix: u8_of_self(),
@@ -519,12 +525,6 @@ fn finds_no_finite_value_through_types_that_never_stop_a_recursion() {
         (
             "prefixed counts",
             ArrayTypeNode::new(u8(), PrefixedCountNode::new(u8_of_self())).into(),
-        ),
-        (
-            "transforms of enums",
-            EnumTypeNode::new(vec![EnumVariantTypeNode::new("nil")])
-                .add_transform(prefix_of_self())
-                .into(),
         ),
     ];
     let failures: Vec<_> = cases
