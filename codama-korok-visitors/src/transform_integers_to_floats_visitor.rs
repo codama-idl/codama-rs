@@ -70,31 +70,33 @@ pub fn transform_integers_to_floats(root: &RootNode) -> CodamaResult<RootNode> {
 
     let visitor = IdentityVisitor
         .extend(|node, scope| {
-            let path = stack.get_path();
+            // The stack still holds `node` after its children are visited, so its path is read lazily,
+            // only by the nodes holding a typed value.
+            let path = || stack.get_path();
             match (node, scope.next(node)?) {
                 (NodeRef::StructFieldType(field), Some(Node::StructFieldType(mut new))) => {
                     if let Some(value) = new.default_value.as_mut() {
-                        if is_float_at(path, &field.r#type)? {
+                        if is_float_at(path(), &field.r#type)? {
                             to_float_value(value);
                         }
                     }
                     Ok(Some(new.into()))
                 }
                 (NodeRef::ConstantValue(constant), Some(Node::ConstantValue(mut new))) => {
-                    if is_float_at(path, &constant.r#type)? {
+                    if is_float_at(path(), &constant.r#type)? {
                         to_float_value(&mut new.value);
                     }
                     Ok(Some(new.into()))
                 }
                 (NodeRef::Constant(constant), Some(Node::Constant(mut new))) => {
-                    if is_float_at(path, &constant.r#type)? {
+                    if is_float_at(path(), &constant.r#type)? {
                         to_float_value(&mut new.value);
                     }
                     Ok(Some(new.into()))
                 }
                 (NodeRef::ConstantPdaSeed(seed), Some(Node::ConstantPdaSeed(mut new))) => {
                     if let ConstantPdaSeedValue::Integer(integer) = new.value.as_ref() {
-                        if is_float_at(path, &seed.r#type)? {
+                        if is_float_at(path(), &seed.r#type)? {
                             *new.value = to_float(integer).into();
                         }
                     }
@@ -103,12 +105,12 @@ pub fn transform_integers_to_floats(root: &RootNode) -> CodamaResult<RootNode> {
                 (NodeRef::PdaValue(value), Some(Node::PdaValue(mut new))) => {
                     let pda_path = match value.pda.as_ref() {
                         PdaValuePda::Pda(pda) => {
-                            let mut pda_path = path;
+                            let mut pda_path = path();
                             pda_path.push(pda);
                             Some(pda_path)
                         }
                         PdaValuePda::PdaLink(link) => {
-                            let mut link_path = path;
+                            let mut link_path = path();
                             link_path.push(link);
                             linkables.get_path(&link_path)
                         }
