@@ -5,7 +5,7 @@ use codama_nodes::{
     AccountNode, BooleanTypeNode, BytesEncoding, ConstantDiscriminatorNode, ConstantPdaSeedNode,
     ConstantValueNode, DefaultValueStrategy, DisplaySkip, Docs, FieldDiscriminatorNode,
     IntegerFormat::{U32, U64, U8},
-    IntegerTypeNode, IntegerValueNode, OptionTypeNode, PdaLinkNode, PdaNode, ProgramNode,
+    IntegerTypeNode, IntegerValueNode, Node, OptionTypeNode, PdaLinkNode, PdaNode, ProgramNode,
     PublicKeyTypeNode, SizeDiscriminatorNode, StringTypeNode, StringValueNode,
     StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, VariablePdaSeedNode,
 };
@@ -741,4 +741,57 @@ fn with_pda_and_seed_directives() -> CodamaResult<()> {
         )
     );
     Ok(())
+}
+
+#[test]
+fn variants_sharing_a_pda_keep_one() -> CodamaResult<()> {
+    // Two accounts derived from the same PDA, declared identically on each variant.
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            #[codama(pda = "vault")]
+            #[codama(seed(identifier = "authority", type = public_key))]
+            Vault { authority: Pubkey },
+            #[codama(pda = "vault")]
+            #[codama(seed(identifier = "authority", type = public_key))]
+            LegacyVault { authority: Pubkey },
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected a program node");
+    };
+    assert_eq!(
+        program.pdas,
+        vec![PdaNode::new(
+            "vault",
+            vec![VariablePdaSeedNode::new("authority", PublicKeyTypeNode::new()).into()]
+        )]
+    );
+    Ok(())
+}
+
+#[test]
+fn variants_with_different_pdas_of_the_same_identifier_fail() {
+    // Two variants describing the `vault` PDA differently.
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            #[codama(pda = "vault")]
+            #[codama(seed(identifier = "authority", type = public_key))]
+            Vault { authority: Pubkey },
+            #[codama(pda = "vault")]
+            #[codama(seed(identifier = "owner", type = public_key))]
+            LegacyVault { owner: Pubkey },
+        }
+    };
+    let mut korok = EnumKorok::parse(&item).unwrap();
+    korok.accept(&mut IdentifyFieldTypesVisitor::new()).unwrap();
+    let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Two different `pdaNode` share the identifier `vault` in enum `MyProgramAccounts`"
+    );
 }

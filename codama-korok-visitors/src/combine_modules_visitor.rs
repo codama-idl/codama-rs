@@ -287,7 +287,11 @@ where
 /// Add `new_node` to `nodes` unless an equal node is already there.
 /// Equal duplicates are expected, as a re-run of this visitor merges each child node again.
 /// Two different nodes with the same identifier are an error, as keeping one would drop the other.
-fn add_node_with_identifier<T>(nodes: &mut Vec<T>, new_node: T, location: &str) -> CodamaResult<()>
+pub(crate) fn add_node_with_identifier<T>(
+    nodes: &mut Vec<T>,
+    new_node: T,
+    location: &str,
+) -> CodamaResult<()>
 where
     T: HasIdentifier + HasKind + PartialEq,
 {
