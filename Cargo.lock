@@ -206,6 +206,7 @@ dependencies = [
  "codama-nodes",
  "codama-stores",
  "codama-syn-helpers",
+ "codama-visitors-core",
  "proc-macro2",
  "quote",
  "serde_json",
