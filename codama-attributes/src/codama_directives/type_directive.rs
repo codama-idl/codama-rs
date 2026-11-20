@@ -50,15 +50,31 @@ impl FromMeta for TypeDirectiveNode {
 }
 
 /// A wrapper keyword returns its inner type with a transform, so the result can be a link. Every other
-/// type node is a registered type node, so the conversion cannot fail.
+/// type node is a registered type node. The match is exhaustive, so a new type node that is not a
+/// registered one fails to compile here rather than at parse time.
 impl From<TypeNode> for TypeDirectiveNode {
     fn from(node: TypeNode) -> Self {
+        use TypeDirectiveNode::{Link, Registered};
         match node {
-            TypeNode::Link(node) => Self::Link(node),
-            node => Self::Registered(
-                RegisteredTypeNode::try_from(node)
-                    .expect("only links are not registered type nodes"),
-            ),
+            TypeNode::Link(node) => Link(node),
+            TypeNode::Array(node) => Registered(node.into()),
+            TypeNode::Boolean(node) => Registered(node.into()),
+            TypeNode::Bytes(node) => Registered(node.into()),
+            TypeNode::DateTime(node) => Registered(node.into()),
+            TypeNode::Duration(node) => Registered(node.into()),
+            TypeNode::Enum(node) => Registered(node.into()),
+            TypeNode::FixedPoint(node) => Registered(node.into()),
+            TypeNode::Float(node) => Registered(node.into()),
+            TypeNode::Integer(node) => Registered(node.into()),
+            TypeNode::Map(node) => Registered(node.into()),
+            TypeNode::Option(node) => Registered(node.into()),
+            TypeNode::PublicKey(node) => Registered(node.into()),
+            TypeNode::RemainderOption(node) => Registered(node.into()),
+            TypeNode::Set(node) => Registered(node.into()),
+            TypeNode::String(node) => Registered(node.into()),
+            TypeNode::Struct(node) => Registered(node.into()),
+            TypeNode::Tuple(node) => Registered(node.into()),
+            TypeNode::ZeroableOption(node) => Registered(node.into()),
         }
     }
 }
