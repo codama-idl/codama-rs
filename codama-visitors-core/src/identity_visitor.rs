@@ -58,8 +58,9 @@ mod tests {
     use super::*;
     use crate::{visit, VisitorExt};
     use codama_nodes::{
-        AccountValueNode, ConditionalValueNode, DefinedTypeNode, IntegerTypeNode, PayerValueNode,
-        ProgramNode, RootNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, U64, U8,
+        AccountValueNode, ConditionalValueNode, DefinedTypeNode, IntegerTypeNode, OptionTypeNode,
+        PayerValueNode, ProgramNode, RootNode, StringTypeNode, StructFieldTypeNode, StructTypeNode,
+        TypeNode, U64, U8,
     };
 
     fn root() -> RootNode {
@@ -73,6 +74,24 @@ mod tests {
             )],
             ..ProgramNode::new("token", "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         })
+    }
+
+    #[test]
+    fn rebuilds_deep_trees_within_a_small_stack() {
+        // Each level of a tree recurses through `map_children`, so its stack frame must stay small. A
+        // single match over every node kind once took about 260 KB per level in debug builds, which
+        // overflowed the 2 MB stack of a test thread at a depth of 8.
+        let mut r#type = TypeNode::from(IntegerTypeNode::le(U8));
+        for _ in 0..64 {
+            r#type = OptionTypeNode::new(r#type).into();
+        }
+        let rebuilt = std::thread::Builder::new()
+            .stack_size(2 * 1024 * 1024)
+            .spawn(move || visit(&IdentityVisitor, &r#type).map(|node| node == Some(r#type.into())))
+            .unwrap()
+            .join()
+            .unwrap();
+        assert!(rebuilt.unwrap());
     }
 
     #[test]

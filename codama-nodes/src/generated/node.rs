@@ -954,1141 +954,112 @@ impl<'a> NodeRef<'a> {
     /// When `f` returns `None`, the child is deleted: an item is dropped from its list, an optional
     /// child becomes `None`, and a required child deletes this node too, which returns `None`.
     /// A mapped child of the wrong kind for its slot is an error.
-    // Data fields are cloned whatever their type, as the generator does not track which ones are `Copy`.
-    #[allow(clippy::clone_on_copy)]
     pub fn map_children(
         self,
         mut f: impl FnMut(NodeRef<'a>) -> CodamaResult<Option<Node>>,
     ) -> CodamaResult<Option<Node>> {
         let f: &mut MapChild<'_, 'a> = &mut f;
         match self {
-            Self::Account(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(data) = map_required::<TypeNode>(NodeRef::from(&*this.data), f)? else {
-                    return Ok(None);
-                };
-                let pda = map_optional::<PdaLinkNode>(this.pda.as_ref().map(NodeRef::from), f)?;
-                let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Account(AccountNode {
-                    identifier: this.identifier.clone(),
-                    size: this.size.clone(),
-                    docs,
-                    data: Box::new(data),
-                    pda,
-                    discriminators,
-                    plugins,
-                })))
-            }
-            Self::AccountBumpValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::AccountBumpValue(AccountBumpValueNode {
-                    identifier: this.identifier.clone(),
-                    plugins,
-                })))
-            }
-            Self::AccountDataValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::AccountDataValue(AccountDataValueNode {
-                    account: this.account.clone(),
-                    path: this.path.clone(),
-                    plugins,
-                })))
-            }
-            Self::AccountLink(this) => {
-                let program =
-                    map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::AccountLink(AccountLinkNode {
-                    identifier: this.identifier.clone(),
-                    program,
-                    plugins,
-                })))
-            }
-            Self::AccountValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::AccountValue(AccountValueNode {
-                    identifier: this.identifier.clone(),
-                    plugins,
-                })))
-            }
-            Self::AmountNumberDisplay(this) => {
-                let Some(decimals) =
-                    map_required::<InjectableIntegerValueNode>(NodeRef::from(&*this.decimals), f)?
-                else {
-                    return Ok(None);
-                };
-                let unit = map_optional::<InjectableUnitValueNode>(
-                    (*this.unit).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::AmountNumberDisplay(AmountNumberDisplayNode {
-                    decimals: Box::new(decimals),
-                    unit: Box::new(unit),
-                    plugins,
-                })))
-            }
-            Self::ArrayType(this) => {
-                let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
-                    return Ok(None);
-                };
-                let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ArrayType(ArrayTypeNode {
-                    item: Box::new(item),
-                    count: Box::new(count),
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::ArrayValue(this) => {
-                let items = map_array::<ValueNode, _>(&this.items, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ArrayValue(ArrayValueNode { items, plugins })))
-            }
-            Self::BooleanType(this) => {
-                let Some(size) = map_required::<IntegerTypeNode>(NodeRef::from(&this.size), f)?
-                else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::BooleanType(BooleanTypeNode {
-                    size,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::BooleanValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::BooleanValue(BooleanValueNode {
-                    boolean: this.boolean.clone(),
-                    plugins,
-                })))
-            }
-            Self::BytesType(this) => {
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::BytesType(BytesTypeNode {
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::BytesValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::BytesValue(BytesValueNode {
-                    data: this.data.clone(),
-                    encoding: this.encoding.clone(),
-                    plugins,
-                })))
-            }
-            Self::ConditionalValue(this) => {
-                let Some(condition) =
-                    map_required::<ConditionalValueCondition>(NodeRef::from(&*this.condition), f)?
-                else {
-                    return Ok(None);
-                };
-                let value =
-                    map_optional::<ValueNode>((*this.value).as_ref().map(NodeRef::from), f)?;
-                let if_true = map_optional::<InstructionInputValueNode>(
-                    (*this.if_true).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let if_false = map_optional::<InstructionInputValueNode>(
-                    (*this.if_false).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ConditionalValue(ConditionalValueNode {
-                    condition: Box::new(condition),
-                    value: Box::new(value),
-                    if_true: Box::new(if_true),
-                    if_false: Box::new(if_false),
-                    plugins,
-                })))
-            }
-            Self::Constant(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Constant(ConstantNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    r#type: Box::new(r#type),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::ConstantDiscriminator(this) => {
-                let Some(constant) =
-                    map_required::<ConstantValueNode>(NodeRef::from(&this.constant), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ConstantDiscriminator(
-                    ConstantDiscriminatorNode {
-                        offset: this.offset.clone(),
-                        constant,
-                        plugins,
-                    },
-                )))
-            }
-            Self::ConstantPdaSeed(this) => {
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let Some(value) =
-                    map_required::<ConstantPdaSeedValue>(NodeRef::from(&*this.value), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ConstantPdaSeed(ConstantPdaSeedNode {
-                    r#type: Box::new(r#type),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::ConstantValue(this) => {
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ConstantValue(ConstantValueNode {
-                    r#type: Box::new(r#type),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::DataValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::DataValue(DataValueNode {
-                    path: this.path.clone(),
-                    plugins,
-                })))
-            }
-            Self::DateTimeType(this) => {
-                let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)?
-                else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::DateTimeType(DateTimeTypeNode {
-                    ticks_per_second: this.ticks_per_second.clone(),
-                    number,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::DefinedType(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::DefinedType(DefinedTypeNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    r#type: Box::new(r#type),
-                    plugins,
-                })))
-            }
-            Self::DefinedTypeLink(this) => {
-                let program =
-                    map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::DefinedTypeLink(DefinedTypeLinkNode {
-                    identifier: this.identifier.clone(),
-                    program,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::DurationType(this) => {
-                let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)?
-                else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::DurationType(DurationTypeNode {
-                    ticks_per_second: this.ticks_per_second.clone(),
-                    number,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::EnumType(this) => {
-                let variants = map_array::<EnumVariantTypeNode, _>(&this.variants, f)?;
-                let Some(size) = map_required::<IntegerTypeNode>(NodeRef::from(&this.size), f)?
-                else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::EnumType(EnumTypeNode {
-                    variants,
-                    size,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::EnumValue(this) => {
-                let Some(r#enum) =
-                    map_required::<DefinedTypeLinkNode>(NodeRef::from(&this.r#enum), f)?
-                else {
-                    return Ok(None);
-                };
-                let value =
-                    map_optional::<ValueNode>((*this.value).as_ref().map(NodeRef::from), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::EnumValue(EnumValueNode {
-                    variant: this.variant.clone(),
-                    r#enum,
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::EnumVariantDisplay(this) => {
-                let label = map_optional_text(this.label.as_ref(), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::EnumVariantDisplay(EnumVariantDisplayNode {
-                    label,
-                    skip_inner_data: this.skip_inner_data.clone(),
-                    plugins,
-                })))
-            }
-            Self::EnumVariantType(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let data = map_optional::<TypeNode>((*this.data).as_ref().map(NodeRef::from), f)?;
-                let display = map_optional::<EnumVariantDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::EnumVariantType(EnumVariantTypeNode {
-                    identifier: this.identifier.clone(),
-                    discriminator: this.discriminator.clone(),
-                    docs,
-                    data: Box::new(data),
-                    display,
-                    plugins,
-                })))
-            }
-            Self::Error(this) => {
-                let Some(message) = map_text(&this.message, f)? else {
-                    return Ok(None);
-                };
-                let docs = map_docs(&this.docs, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Error(ErrorNode {
-                    identifier: this.identifier.clone(),
-                    code: this.code.clone(),
-                    message,
-                    docs,
-                    plugins,
-                })))
-            }
-            Self::Event(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(data) = map_required::<TypeNode>(NodeRef::from(&*this.data), f)? else {
-                    return Ok(None);
-                };
-                let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Event(EventNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    data: Box::new(data),
-                    discriminators,
-                    plugins,
-                })))
-            }
-            Self::FieldDiscriminator(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FieldDiscriminator(FieldDiscriminatorNode {
-                    path: this.path.clone(),
-                    offset: this.offset.clone(),
-                    plugins,
-                })))
-            }
-            Self::FixedCount(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FixedCount(FixedCountNode {
-                    value: this.value.clone(),
-                    plugins,
-                })))
-            }
-            Self::FixedPointType(this) => {
-                let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)?
-                else {
-                    return Ok(None);
-                };
-                let display = map_optional::<UnitNumberDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FixedPointType(FixedPointTypeNode {
-                    scale: this.scale.clone(),
-                    base: this.base.clone(),
-                    unit: this.unit.clone(),
-                    number,
-                    display,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::FixedSizeTransform(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FixedSizeTransform(FixedSizeTransformNode {
-                    size: this.size.clone(),
-                    plugins,
-                })))
-            }
-            Self::FloatType(this) => {
-                let display = map_optional::<UnitNumberDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FloatType(FloatTypeNode {
-                    format: this.format.clone(),
-                    endian: this.endian.clone(),
-                    unit: this.unit.clone(),
-                    display,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::FloatValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::FloatValue(FloatValueNode {
-                    value: this.value.clone(),
-                    plugins,
-                })))
-            }
-            Self::HiddenPrefixTransform(this) => {
-                let prefix = map_array::<ConstantValueNode, _>(&this.prefix, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::HiddenPrefixTransform(
-                    HiddenPrefixTransformNode { prefix, plugins },
-                )))
-            }
-            Self::HiddenSuffixTransform(this) => {
-                let suffix = map_array::<ConstantValueNode, _>(&this.suffix, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::HiddenSuffixTransform(
-                    HiddenSuffixTransformNode { suffix, plugins },
-                )))
-            }
-            Self::IdentityValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::IdentityValue(IdentityValueNode { plugins })))
-            }
-            Self::InjectedValue(this) => {
-                let fallback =
-                    map_optional::<ValueNode>((*this.fallback).as_ref().map(NodeRef::from), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InjectedValue(InjectedValueNode {
-                    key: this.key.clone(),
-                    fallback: Box::new(fallback),
-                    plugins,
-                })))
-            }
-            Self::Instruction(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let accounts = map_array::<InstructionAccountNode, _>(&this.accounts, f)?;
-                let data = map_optional::<TypeNode>((*this.data).as_ref().map(NodeRef::from), f)?;
-                let return_data =
-                    map_optional::<TypeNode>((*this.return_data).as_ref().map(NodeRef::from), f)?;
-                let remaining_accounts =
-                    map_array::<InstructionRemainingAccountsNode, _>(&this.remaining_accounts, f)?;
-                let byte_deltas = map_array::<InstructionByteDeltaNode, _>(&this.byte_deltas, f)?;
-                let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
-                let status = map_optional::<InstructionStatusNode>(
-                    this.status.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let sub_instructions = map_array::<InstructionNode, _>(&this.sub_instructions, f)?;
-                let provides = map_array::<ProvidedNode, _>(&this.provides, f)?;
-                let display = map_optional::<InstructionDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Instruction(InstructionNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    optional_account_strategy: this.optional_account_strategy.clone(),
-                    accounts,
-                    data: Box::new(data),
-                    return_data: Box::new(return_data),
-                    remaining_accounts,
-                    byte_deltas,
-                    discriminators,
-                    status,
-                    sub_instructions,
-                    provides,
-                    display,
-                    plugins,
-                })))
-            }
-            Self::InstructionAccount(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let default_value = map_optional::<InstructionInputValueNode>(
-                    (*this.default_value).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let account_link = map_optional::<AccountLinkNode>(
-                    this.account_link.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let display = map_optional::<InstructionAccountDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionAccount(InstructionAccountNode {
-                    identifier: this.identifier.clone(),
-                    is_writable: this.is_writable.clone(),
-                    is_signer: this.is_signer.clone(),
-                    is_optional: this.is_optional.clone(),
-                    docs,
-                    default_value: Box::new(default_value),
-                    account_link,
-                    display,
-                    plugins,
-                })))
-            }
+            Self::Account(this) => map_account_node_children(this, f),
+            Self::AccountBumpValue(this) => map_account_bump_value_node_children(this, f),
+            Self::AccountDataValue(this) => map_account_data_value_node_children(this, f),
+            Self::AccountLink(this) => map_account_link_node_children(this, f),
+            Self::AccountValue(this) => map_account_value_node_children(this, f),
+            Self::AmountNumberDisplay(this) => map_amount_number_display_node_children(this, f),
+            Self::ArrayType(this) => map_array_type_node_children(this, f),
+            Self::ArrayValue(this) => map_array_value_node_children(this, f),
+            Self::BooleanType(this) => map_boolean_type_node_children(this, f),
+            Self::BooleanValue(this) => map_boolean_value_node_children(this, f),
+            Self::BytesType(this) => map_bytes_type_node_children(this, f),
+            Self::BytesValue(this) => map_bytes_value_node_children(this, f),
+            Self::ConditionalValue(this) => map_conditional_value_node_children(this, f),
+            Self::Constant(this) => map_constant_node_children(this, f),
+            Self::ConstantDiscriminator(this) => map_constant_discriminator_node_children(this, f),
+            Self::ConstantPdaSeed(this) => map_constant_pda_seed_node_children(this, f),
+            Self::ConstantValue(this) => map_constant_value_node_children(this, f),
+            Self::DataValue(this) => map_data_value_node_children(this, f),
+            Self::DateTimeType(this) => map_date_time_type_node_children(this, f),
+            Self::DefinedType(this) => map_defined_type_node_children(this, f),
+            Self::DefinedTypeLink(this) => map_defined_type_link_node_children(this, f),
+            Self::DurationType(this) => map_duration_type_node_children(this, f),
+            Self::EnumType(this) => map_enum_type_node_children(this, f),
+            Self::EnumValue(this) => map_enum_value_node_children(this, f),
+            Self::EnumVariantDisplay(this) => map_enum_variant_display_node_children(this, f),
+            Self::EnumVariantType(this) => map_enum_variant_type_node_children(this, f),
+            Self::Error(this) => map_error_node_children(this, f),
+            Self::Event(this) => map_event_node_children(this, f),
+            Self::FieldDiscriminator(this) => map_field_discriminator_node_children(this, f),
+            Self::FixedCount(this) => map_fixed_count_node_children(this, f),
+            Self::FixedPointType(this) => map_fixed_point_type_node_children(this, f),
+            Self::FixedSizeTransform(this) => map_fixed_size_transform_node_children(this, f),
+            Self::FloatType(this) => map_float_type_node_children(this, f),
+            Self::FloatValue(this) => map_float_value_node_children(this, f),
+            Self::HiddenPrefixTransform(this) => map_hidden_prefix_transform_node_children(this, f),
+            Self::HiddenSuffixTransform(this) => map_hidden_suffix_transform_node_children(this, f),
+            Self::IdentityValue(this) => map_identity_value_node_children(this, f),
+            Self::InjectedValue(this) => map_injected_value_node_children(this, f),
+            Self::Instruction(this) => map_instruction_node_children(this, f),
+            Self::InstructionAccount(this) => map_instruction_account_node_children(this, f),
             Self::InstructionAccountDisplay(this) => {
-                let label = map_optional_text(this.label.as_ref(), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionAccountDisplay(
-                    InstructionAccountDisplayNode {
-                        label,
-                        skip: this.skip.clone(),
-                        plugins,
-                    },
-                )))
+                map_instruction_account_display_node_children(this, f)
             }
             Self::InstructionAccountLink(this) => {
-                let instruction = map_optional::<InstructionLinkNode>(
-                    this.instruction.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionAccountLink(
-                    InstructionAccountLinkNode {
-                        identifier: this.identifier.clone(),
-                        instruction,
-                        plugins,
-                    },
-                )))
+                map_instruction_account_link_node_children(this, f)
             }
-            Self::InstructionByteDelta(this) => {
-                let Some(value) =
-                    map_required::<InstructionByteDeltaValue>(NodeRef::from(&*this.value), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionByteDelta(InstructionByteDeltaNode {
-                    with_header: this.with_header.clone(),
-                    subtract: this.subtract.clone(),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::InstructionDisplay(this) => {
-                let intent = map_optional_text(this.intent.as_ref(), f)?;
-                let interpolated_intent = map_optional_text(this.interpolated_intent.as_ref(), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionDisplay(InstructionDisplayNode {
-                    intent,
-                    interpolated_intent,
-                    plugins,
-                })))
-            }
-            Self::InstructionLink(this) => {
-                let program =
-                    map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionLink(InstructionLinkNode {
-                    identifier: this.identifier.clone(),
-                    program,
-                    plugins,
-                })))
-            }
+            Self::InstructionByteDelta(this) => map_instruction_byte_delta_node_children(this, f),
+            Self::InstructionDisplay(this) => map_instruction_display_node_children(this, f),
+            Self::InstructionLink(this) => map_instruction_link_node_children(this, f),
             Self::InstructionRemainingAccounts(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let display = map_optional::<InstructionAccountDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionRemainingAccounts(
-                    InstructionRemainingAccountsNode {
-                        identifier: this.identifier.clone(),
-                        is_optional: this.is_optional.clone(),
-                        is_signer: this.is_signer.clone(),
-                        is_writable: this.is_writable.clone(),
-                        docs,
-                        display,
-                        plugins,
-                    },
-                )))
+                map_instruction_remaining_accounts_node_children(this, f)
             }
-            Self::InstructionStatus(this) => {
-                let message = map_optional_text(this.message.as_ref(), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::InstructionStatus(InstructionStatusNode {
-                    lifecycle: this.lifecycle.clone(),
-                    message,
-                    plugins,
-                })))
-            }
-            Self::IntegerType(this) => {
-                let display = map_optional::<NumberDisplayNode>(
-                    (*this.display).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::IntegerType(IntegerTypeNode {
-                    format: this.format.clone(),
-                    endian: this.endian.clone(),
-                    unit: this.unit.clone(),
-                    display: Box::new(display),
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::IntegerValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::IntegerValue(IntegerValueNode {
-                    value: this.value.clone(),
-                    plugins,
-                })))
-            }
-            Self::MapEntryValue(this) => {
-                let Some(key) = map_required::<ValueNode>(NodeRef::from(&*this.key), f)? else {
-                    return Ok(None);
-                };
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::MapEntryValue(MapEntryValueNode {
-                    key: Box::new(key),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::MapType(this) => {
-                let Some(key) = map_required::<TypeNode>(NodeRef::from(&*this.key), f)? else {
-                    return Ok(None);
-                };
-                let Some(value) = map_required::<TypeNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::MapType(MapTypeNode {
-                    key: Box::new(key),
-                    value: Box::new(value),
-                    count: Box::new(count),
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::MapValue(this) => {
-                let entries = map_array::<MapEntryValueNode, _>(&this.entries, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::MapValue(MapValueNode { entries, plugins })))
-            }
-            Self::NoneValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::NoneValue(NoneValueNode { plugins })))
-            }
-            Self::OptionType(this) => {
-                let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
-                    return Ok(None);
-                };
-                let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)?
-                else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::OptionType(OptionTypeNode {
-                    fixed: this.fixed.clone(),
-                    item: Box::new(item),
-                    prefix,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::PayerValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PayerValue(PayerValueNode { plugins })))
-            }
-            Self::Pda(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let seeds = map_array::<PdaSeedNode, _>(&this.seeds, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Pda(PdaNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    program_id: this.program_id.clone(),
-                    seeds,
-                    plugins,
-                })))
-            }
-            Self::PdaLink(this) => {
-                let program =
-                    map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PdaLink(PdaLinkNode {
-                    identifier: this.identifier.clone(),
-                    program,
-                    plugins,
-                })))
-            }
-            Self::PdaSeedValue(this) => {
-                let Some(value) =
-                    map_required::<PdaSeedValueValue>(NodeRef::from(&*this.value), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PdaSeedValue(PdaSeedValueNode {
-                    identifier: this.identifier.clone(),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::PdaValue(this) => {
-                let Some(pda) = map_required::<PdaValuePda>(NodeRef::from(&*this.pda), f)? else {
-                    return Ok(None);
-                };
-                let seeds = map_array::<PdaSeedValueNode, _>(&this.seeds, f)?;
-                let program_id = map_optional::<PdaValueProgramId>(
-                    (*this.program_id).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PdaValue(PdaValueNode {
-                    pda: Box::new(pda),
-                    seeds,
-                    program_id: Box::new(program_id),
-                    plugins,
-                })))
-            }
-            Self::Plugin(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Plugin(PluginNode {
-                    namespace: this.namespace.clone(),
-                    payload: this.payload.clone(),
-                    plugins,
-                })))
-            }
-            Self::PostOffsetTransform(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PostOffsetTransform(PostOffsetTransformNode {
-                    offset: this.offset.clone(),
-                    strategy: this.strategy.clone(),
-                    plugins,
-                })))
-            }
-            Self::PrefixedCount(this) => {
-                let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PrefixedCount(PrefixedCountNode {
-                    prefix,
-                    plugins,
-                })))
-            }
-            Self::PreOffsetTransform(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PreOffsetTransform(PreOffsetTransformNode {
-                    offset: this.offset.clone(),
-                    strategy: this.strategy.clone(),
-                    plugins,
-                })))
-            }
-            Self::Program(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let accounts = map_array::<AccountNode, _>(&this.accounts, f)?;
-                let instructions = map_array::<InstructionNode, _>(&this.instructions, f)?;
-                let defined_types = map_array::<DefinedTypeNode, _>(&this.defined_types, f)?;
-                let pdas = map_array::<PdaNode, _>(&this.pdas, f)?;
-                let events = map_array::<EventNode, _>(&this.events, f)?;
-                let errors = map_array::<ErrorNode, _>(&this.errors, f)?;
-                let constants = map_array::<ConstantNode, _>(&this.constants, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Program(ProgramNode {
-                    identifier: this.identifier.clone(),
-                    public_key: this.public_key.clone(),
-                    version: this.version.clone(),
-                    docs,
-                    accounts,
-                    instructions,
-                    defined_types,
-                    pdas,
-                    events,
-                    errors,
-                    constants,
-                    plugins,
-                })))
-            }
-            Self::ProgramIdValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ProgramIdValue(ProgramIdValueNode { plugins })))
-            }
-            Self::ProgramLink(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ProgramLink(ProgramLinkNode {
-                    identifier: this.identifier.clone(),
-                    plugins,
-                })))
-            }
-            Self::Provided(this) => {
-                let Some(node) = f(NodeRef::from(&*this.node))? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Provided(ProvidedNode {
-                    identifier: this.identifier.clone(),
-                    node: Box::new(node),
-                    plugins,
-                })))
-            }
-            Self::PublicKeyType(this) => {
-                let account_link = map_optional::<AccountLinkNode>(
-                    this.account_link.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PublicKeyType(PublicKeyTypeNode {
-                    account_link,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::PublicKeyValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::PublicKeyValue(PublicKeyValueNode {
-                    public_key: this.public_key.clone(),
-                    identifier: this.identifier.clone(),
-                    plugins,
-                })))
-            }
-            Self::RemainderCount(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::RemainderCount(RemainderCountNode { plugins })))
-            }
-            Self::RemainderOptionType(this) => {
-                let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::RemainderOptionType(RemainderOptionTypeNode {
-                    item: Box::new(item),
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::Root(this) => {
-                let Some(program) = map_required::<ProgramNode>(NodeRef::from(&this.program), f)?
-                else {
-                    return Ok(None);
-                };
-                let additional_programs =
-                    map_array::<ProgramNode, _>(&this.additional_programs, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Root(RootNode {
-                    standard: this.standard.clone(),
-                    version: this.version.clone(),
-                    program,
-                    additional_programs,
-                    plugins,
-                })))
-            }
-            Self::SentinelCount(this) => {
-                let Some(sentinel) =
-                    map_required::<ConstantValueNode>(NodeRef::from(&this.sentinel), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SentinelCount(SentinelCountNode {
-                    strategy: this.strategy.clone(),
-                    sentinel,
-                    plugins,
-                })))
-            }
-            Self::SentinelTransform(this) => {
-                let Some(sentinel) =
-                    map_required::<ConstantValueNode>(NodeRef::from(&this.sentinel), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SentinelTransform(SentinelTransformNode {
-                    sentinel,
-                    plugins,
-                })))
-            }
-            Self::SetType(this) => {
-                let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
-                    return Ok(None);
-                };
-                let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
-                    return Ok(None);
-                };
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SetType(SetTypeNode {
-                    item: Box::new(item),
-                    count: Box::new(count),
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::SetValue(this) => {
-                let items = map_array::<ValueNode, _>(&this.items, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SetValue(SetValueNode { items, plugins })))
-            }
-            Self::SizeDiscriminator(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SizeDiscriminator(SizeDiscriminatorNode {
-                    size: this.size.clone(),
-                    plugins,
-                })))
-            }
-            Self::SizePrefixTransform(this) => {
-                let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SizePrefixTransform(SizePrefixTransformNode {
-                    prefix,
-                    plugins,
-                })))
-            }
-            Self::SomeValue(this) => {
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::SomeValue(SomeValueNode {
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::StringDisplay(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StringDisplay(StringDisplayNode {
-                    slice_start: this.slice_start.clone(),
-                    slice_end: this.slice_end.clone(),
-                    plugins,
-                })))
-            }
-            Self::StringType(this) => {
-                let display =
-                    map_optional::<StringDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StringType(StringTypeNode {
-                    encoding: this.encoding.clone(),
-                    display,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::StringValue(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StringValue(StringValueNode {
-                    string: this.string.clone(),
-                    plugins,
-                })))
-            }
-            Self::StructFieldDisplay(this) => {
-                let label = map_optional_text(this.label.as_ref(), f)?;
-                let flatten_prefix = map_optional_text(this.flatten_prefix.as_ref(), f)?;
-                let value_labels = map_array::<ValueLabelDisplayNode, _>(&this.value_labels, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StructFieldDisplay(StructFieldDisplayNode {
-                    label,
-                    skip: this.skip.clone(),
-                    flatten: this.flatten.clone(),
-                    flatten_prefix,
-                    value_labels,
-                    plugins,
-                })))
-            }
-            Self::StructFieldType(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let default_value = map_optional::<ValueNode>(
-                    (*this.default_value).as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let display = map_optional::<StructFieldDisplayNode>(
-                    this.display.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StructFieldType(StructFieldTypeNode {
-                    identifier: this.identifier.clone(),
-                    default_value_strategy: this.default_value_strategy.clone(),
-                    docs,
-                    r#type: Box::new(r#type),
-                    default_value: Box::new(default_value),
-                    display,
-                    plugins,
-                })))
-            }
-            Self::StructFieldValue(this) => {
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StructFieldValue(StructFieldValueNode {
-                    identifier: this.identifier.clone(),
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::StructType(this) => {
-                let fields = map_array::<StructFieldTypeNode, _>(&this.fields, f)?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StructType(StructTypeNode {
-                    fields,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::StructValue(this) => {
-                let fields = map_array::<StructFieldValueNode, _>(&this.fields, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::StructValue(StructValueNode { fields, plugins })))
-            }
-            Self::Text(this) => {
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::Text(TextNode {
-                    content: this.content.clone(),
-                    plugins,
-                })))
-            }
-            Self::TupleType(this) => {
-                let items = map_array::<TypeNode, _>(&this.items, f)?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::TupleType(TupleTypeNode {
-                    items,
-                    transforms,
-                    plugins,
-                })))
-            }
-            Self::TupleValue(this) => {
-                let items = map_array::<ValueNode, _>(&this.items, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::TupleValue(TupleValueNode { items, plugins })))
-            }
-            Self::UnitNumberDisplay(this) => {
-                let Some(unit) =
-                    map_required::<InjectableUnitValueNode>(NodeRef::from(&*this.unit), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::UnitNumberDisplay(UnitNumberDisplayNode {
-                    unit: Box::new(unit),
-                    plugins,
-                })))
-            }
-            Self::ValueLabelDisplay(this) => {
-                let Some(label) = map_text(&this.label, f)? else {
-                    return Ok(None);
-                };
-                let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ValueLabelDisplay(ValueLabelDisplayNode {
-                    label,
-                    value: Box::new(value),
-                    plugins,
-                })))
-            }
-            Self::VariablePdaSeed(this) => {
-                let docs = map_docs(&this.docs, f)?;
-                let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)?
-                else {
-                    return Ok(None);
-                };
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::VariablePdaSeed(VariablePdaSeedNode {
-                    identifier: this.identifier.clone(),
-                    docs,
-                    r#type: Box::new(r#type),
-                    plugins,
-                })))
-            }
-            Self::ZeroableOptionType(this) => {
-                let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
-                    return Ok(None);
-                };
-                let zero_value = map_optional::<ConstantValueNode>(
-                    this.zero_value.as_ref().map(NodeRef::from),
-                    f,
-                )?;
-                let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
-                let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
-                Ok(Some(Node::ZeroableOptionType(ZeroableOptionTypeNode {
-                    item: Box::new(item),
-                    zero_value,
-                    transforms,
-                    plugins,
-                })))
-            }
+            Self::InstructionStatus(this) => map_instruction_status_node_children(this, f),
+            Self::IntegerType(this) => map_integer_type_node_children(this, f),
+            Self::IntegerValue(this) => map_integer_value_node_children(this, f),
+            Self::MapEntryValue(this) => map_map_entry_value_node_children(this, f),
+            Self::MapType(this) => map_map_type_node_children(this, f),
+            Self::MapValue(this) => map_map_value_node_children(this, f),
+            Self::NoneValue(this) => map_none_value_node_children(this, f),
+            Self::OptionType(this) => map_option_type_node_children(this, f),
+            Self::PayerValue(this) => map_payer_value_node_children(this, f),
+            Self::Pda(this) => map_pda_node_children(this, f),
+            Self::PdaLink(this) => map_pda_link_node_children(this, f),
+            Self::PdaSeedValue(this) => map_pda_seed_value_node_children(this, f),
+            Self::PdaValue(this) => map_pda_value_node_children(this, f),
+            Self::Plugin(this) => map_plugin_node_children(this, f),
+            Self::PostOffsetTransform(this) => map_post_offset_transform_node_children(this, f),
+            Self::PrefixedCount(this) => map_prefixed_count_node_children(this, f),
+            Self::PreOffsetTransform(this) => map_pre_offset_transform_node_children(this, f),
+            Self::Program(this) => map_program_node_children(this, f),
+            Self::ProgramIdValue(this) => map_program_id_value_node_children(this, f),
+            Self::ProgramLink(this) => map_program_link_node_children(this, f),
+            Self::Provided(this) => map_provided_node_children(this, f),
+            Self::PublicKeyType(this) => map_public_key_type_node_children(this, f),
+            Self::PublicKeyValue(this) => map_public_key_value_node_children(this, f),
+            Self::RemainderCount(this) => map_remainder_count_node_children(this, f),
+            Self::RemainderOptionType(this) => map_remainder_option_type_node_children(this, f),
+            Self::Root(this) => map_root_node_children(this, f),
+            Self::SentinelCount(this) => map_sentinel_count_node_children(this, f),
+            Self::SentinelTransform(this) => map_sentinel_transform_node_children(this, f),
+            Self::SetType(this) => map_set_type_node_children(this, f),
+            Self::SetValue(this) => map_set_value_node_children(this, f),
+            Self::SizeDiscriminator(this) => map_size_discriminator_node_children(this, f),
+            Self::SizePrefixTransform(this) => map_size_prefix_transform_node_children(this, f),
+            Self::SomeValue(this) => map_some_value_node_children(this, f),
+            Self::StringDisplay(this) => map_string_display_node_children(this, f),
+            Self::StringType(this) => map_string_type_node_children(this, f),
+            Self::StringValue(this) => map_string_value_node_children(this, f),
+            Self::StructFieldDisplay(this) => map_struct_field_display_node_children(this, f),
+            Self::StructFieldType(this) => map_struct_field_type_node_children(this, f),
+            Self::StructFieldValue(this) => map_struct_field_value_node_children(this, f),
+            Self::StructType(this) => map_struct_type_node_children(this, f),
+            Self::StructValue(this) => map_struct_value_node_children(this, f),
+            Self::Text(this) => map_text_node_children(this, f),
+            Self::TupleType(this) => map_tuple_type_node_children(this, f),
+            Self::TupleValue(this) => map_tuple_value_node_children(this, f),
+            Self::UnitNumberDisplay(this) => map_unit_number_display_node_children(this, f),
+            Self::ValueLabelDisplay(this) => map_value_label_display_node_children(this, f),
+            Self::VariablePdaSeed(this) => map_variable_pda_seed_node_children(this, f),
+            Self::ZeroableOptionType(this) => map_zeroable_option_type_node_children(this, f),
         }
     }
 }
@@ -2192,6 +1163,1811 @@ impl HasKind for NodeRef<'_> {
             Self::ZeroableOptionType(node) => node.kind(),
         }
     }
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_account_node_children<'a>(
+    this: &'a AccountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(data) = map_required::<TypeNode>(NodeRef::from(&*this.data), f)? else {
+        return Ok(None);
+    };
+    let pda = map_optional::<PdaLinkNode>(this.pda.as_ref().map(NodeRef::from), f)?;
+    let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Account(AccountNode {
+        identifier: this.identifier.clone(),
+        size: this.size.clone(),
+        docs,
+        data: Box::new(data),
+        pda,
+        discriminators,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_account_bump_value_node_children<'a>(
+    this: &'a AccountBumpValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::AccountBumpValue(AccountBumpValueNode {
+        identifier: this.identifier.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_account_data_value_node_children<'a>(
+    this: &'a AccountDataValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::AccountDataValue(AccountDataValueNode {
+        account: this.account.clone(),
+        path: this.path.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_account_link_node_children<'a>(
+    this: &'a AccountLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let program = map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::AccountLink(AccountLinkNode {
+        identifier: this.identifier.clone(),
+        program,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_account_value_node_children<'a>(
+    this: &'a AccountValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::AccountValue(AccountValueNode {
+        identifier: this.identifier.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_amount_number_display_node_children<'a>(
+    this: &'a AmountNumberDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(decimals) =
+        map_required::<InjectableIntegerValueNode>(NodeRef::from(&*this.decimals), f)?
+    else {
+        return Ok(None);
+    };
+    let unit =
+        map_optional::<InjectableUnitValueNode>((*this.unit).as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::AmountNumberDisplay(AmountNumberDisplayNode {
+        decimals: Box::new(decimals),
+        unit: Box::new(unit),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_array_type_node_children<'a>(
+    this: &'a ArrayTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
+        return Ok(None);
+    };
+    let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ArrayType(ArrayTypeNode {
+        item: Box::new(item),
+        count: Box::new(count),
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_array_value_node_children<'a>(
+    this: &'a ArrayValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let items = map_array::<ValueNode, _>(&this.items, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ArrayValue(ArrayValueNode { items, plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_boolean_type_node_children<'a>(
+    this: &'a BooleanTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(size) = map_required::<IntegerTypeNode>(NodeRef::from(&this.size), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::BooleanType(BooleanTypeNode {
+        size,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_boolean_value_node_children<'a>(
+    this: &'a BooleanValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::BooleanValue(BooleanValueNode {
+        boolean: this.boolean.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_bytes_type_node_children<'a>(
+    this: &'a BytesTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::BytesType(BytesTypeNode {
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_bytes_value_node_children<'a>(
+    this: &'a BytesValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::BytesValue(BytesValueNode {
+        data: this.data.clone(),
+        encoding: this.encoding.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_conditional_value_node_children<'a>(
+    this: &'a ConditionalValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(condition) =
+        map_required::<ConditionalValueCondition>(NodeRef::from(&*this.condition), f)?
+    else {
+        return Ok(None);
+    };
+    let value = map_optional::<ValueNode>((*this.value).as_ref().map(NodeRef::from), f)?;
+    let if_true =
+        map_optional::<InstructionInputValueNode>((*this.if_true).as_ref().map(NodeRef::from), f)?;
+    let if_false =
+        map_optional::<InstructionInputValueNode>((*this.if_false).as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ConditionalValue(ConditionalValueNode {
+        condition: Box::new(condition),
+        value: Box::new(value),
+        if_true: Box::new(if_true),
+        if_false: Box::new(if_false),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_constant_node_children<'a>(
+    this: &'a ConstantNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Constant(ConstantNode {
+        identifier: this.identifier.clone(),
+        docs,
+        r#type: Box::new(r#type),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_constant_discriminator_node_children<'a>(
+    this: &'a ConstantDiscriminatorNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(constant) = map_required::<ConstantValueNode>(NodeRef::from(&this.constant), f)?
+    else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ConstantDiscriminator(
+        ConstantDiscriminatorNode {
+            offset: this.offset.clone(),
+            constant,
+            plugins,
+        },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_constant_pda_seed_node_children<'a>(
+    this: &'a ConstantPdaSeedNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<ConstantPdaSeedValue>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ConstantPdaSeed(ConstantPdaSeedNode {
+        r#type: Box::new(r#type),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_constant_value_node_children<'a>(
+    this: &'a ConstantValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ConstantValue(ConstantValueNode {
+        r#type: Box::new(r#type),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_data_value_node_children<'a>(
+    this: &'a DataValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::DataValue(DataValueNode {
+        path: this.path.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_date_time_type_node_children<'a>(
+    this: &'a DateTimeTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::DateTimeType(DateTimeTypeNode {
+        ticks_per_second: this.ticks_per_second.clone(),
+        number,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_defined_type_node_children<'a>(
+    this: &'a DefinedTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::DefinedType(DefinedTypeNode {
+        identifier: this.identifier.clone(),
+        docs,
+        r#type: Box::new(r#type),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_defined_type_link_node_children<'a>(
+    this: &'a DefinedTypeLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let program = map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::DefinedTypeLink(DefinedTypeLinkNode {
+        identifier: this.identifier.clone(),
+        program,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_duration_type_node_children<'a>(
+    this: &'a DurationTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::DurationType(DurationTypeNode {
+        ticks_per_second: this.ticks_per_second.clone(),
+        number,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_enum_type_node_children<'a>(
+    this: &'a EnumTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let variants = map_array::<EnumVariantTypeNode, _>(&this.variants, f)?;
+    let Some(size) = map_required::<IntegerTypeNode>(NodeRef::from(&this.size), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::EnumType(EnumTypeNode {
+        variants,
+        size,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_enum_value_node_children<'a>(
+    this: &'a EnumValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(r#enum) = map_required::<DefinedTypeLinkNode>(NodeRef::from(&this.r#enum), f)? else {
+        return Ok(None);
+    };
+    let value = map_optional::<ValueNode>((*this.value).as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::EnumValue(EnumValueNode {
+        variant: this.variant.clone(),
+        r#enum,
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_enum_variant_display_node_children<'a>(
+    this: &'a EnumVariantDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let label = map_optional_text(this.label.as_ref(), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::EnumVariantDisplay(EnumVariantDisplayNode {
+        label,
+        skip_inner_data: this.skip_inner_data.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_enum_variant_type_node_children<'a>(
+    this: &'a EnumVariantTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let data = map_optional::<TypeNode>((*this.data).as_ref().map(NodeRef::from), f)?;
+    let display =
+        map_optional::<EnumVariantDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::EnumVariantType(EnumVariantTypeNode {
+        identifier: this.identifier.clone(),
+        discriminator: this.discriminator.clone(),
+        docs,
+        data: Box::new(data),
+        display,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_error_node_children<'a>(
+    this: &'a ErrorNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(message) = map_text(&this.message, f)? else {
+        return Ok(None);
+    };
+    let docs = map_docs(&this.docs, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Error(ErrorNode {
+        identifier: this.identifier.clone(),
+        code: this.code.clone(),
+        message,
+        docs,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_event_node_children<'a>(
+    this: &'a EventNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(data) = map_required::<TypeNode>(NodeRef::from(&*this.data), f)? else {
+        return Ok(None);
+    };
+    let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Event(EventNode {
+        identifier: this.identifier.clone(),
+        docs,
+        data: Box::new(data),
+        discriminators,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_field_discriminator_node_children<'a>(
+    this: &'a FieldDiscriminatorNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FieldDiscriminator(FieldDiscriminatorNode {
+        path: this.path.clone(),
+        offset: this.offset.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_fixed_count_node_children<'a>(
+    this: &'a FixedCountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FixedCount(FixedCountNode {
+        value: this.value.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_fixed_point_type_node_children<'a>(
+    this: &'a FixedPointTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(number) = map_required::<IntegerTypeNode>(NodeRef::from(&this.number), f)? else {
+        return Ok(None);
+    };
+    let display =
+        map_optional::<UnitNumberDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FixedPointType(FixedPointTypeNode {
+        scale: this.scale.clone(),
+        base: this.base.clone(),
+        unit: this.unit.clone(),
+        number,
+        display,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_fixed_size_transform_node_children<'a>(
+    this: &'a FixedSizeTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FixedSizeTransform(FixedSizeTransformNode {
+        size: this.size.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_float_type_node_children<'a>(
+    this: &'a FloatTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let display =
+        map_optional::<UnitNumberDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FloatType(FloatTypeNode {
+        format: this.format.clone(),
+        endian: this.endian.clone(),
+        unit: this.unit.clone(),
+        display,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_float_value_node_children<'a>(
+    this: &'a FloatValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::FloatValue(FloatValueNode {
+        value: this.value.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_hidden_prefix_transform_node_children<'a>(
+    this: &'a HiddenPrefixTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let prefix = map_array::<ConstantValueNode, _>(&this.prefix, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::HiddenPrefixTransform(
+        HiddenPrefixTransformNode { prefix, plugins },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_hidden_suffix_transform_node_children<'a>(
+    this: &'a HiddenSuffixTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let suffix = map_array::<ConstantValueNode, _>(&this.suffix, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::HiddenSuffixTransform(
+        HiddenSuffixTransformNode { suffix, plugins },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_identity_value_node_children<'a>(
+    this: &'a IdentityValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::IdentityValue(IdentityValueNode { plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_injected_value_node_children<'a>(
+    this: &'a InjectedValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let fallback = map_optional::<ValueNode>((*this.fallback).as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InjectedValue(InjectedValueNode {
+        key: this.key.clone(),
+        fallback: Box::new(fallback),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_node_children<'a>(
+    this: &'a InstructionNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let accounts = map_array::<InstructionAccountNode, _>(&this.accounts, f)?;
+    let data = map_optional::<TypeNode>((*this.data).as_ref().map(NodeRef::from), f)?;
+    let return_data = map_optional::<TypeNode>((*this.return_data).as_ref().map(NodeRef::from), f)?;
+    let remaining_accounts =
+        map_array::<InstructionRemainingAccountsNode, _>(&this.remaining_accounts, f)?;
+    let byte_deltas = map_array::<InstructionByteDeltaNode, _>(&this.byte_deltas, f)?;
+    let discriminators = map_array::<DiscriminatorNode, _>(&this.discriminators, f)?;
+    let status = map_optional::<InstructionStatusNode>(this.status.as_ref().map(NodeRef::from), f)?;
+    let sub_instructions = map_array::<InstructionNode, _>(&this.sub_instructions, f)?;
+    let provides = map_array::<ProvidedNode, _>(&this.provides, f)?;
+    let display =
+        map_optional::<InstructionDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Instruction(InstructionNode {
+        identifier: this.identifier.clone(),
+        docs,
+        optional_account_strategy: this.optional_account_strategy.clone(),
+        accounts,
+        data: Box::new(data),
+        return_data: Box::new(return_data),
+        remaining_accounts,
+        byte_deltas,
+        discriminators,
+        status,
+        sub_instructions,
+        provides,
+        display,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_account_node_children<'a>(
+    this: &'a InstructionAccountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let default_value = map_optional::<InstructionInputValueNode>(
+        (*this.default_value).as_ref().map(NodeRef::from),
+        f,
+    )?;
+    let account_link =
+        map_optional::<AccountLinkNode>(this.account_link.as_ref().map(NodeRef::from), f)?;
+    let display =
+        map_optional::<InstructionAccountDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionAccount(InstructionAccountNode {
+        identifier: this.identifier.clone(),
+        is_writable: this.is_writable.clone(),
+        is_signer: this.is_signer.clone(),
+        is_optional: this.is_optional.clone(),
+        docs,
+        default_value: Box::new(default_value),
+        account_link,
+        display,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_account_display_node_children<'a>(
+    this: &'a InstructionAccountDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let label = map_optional_text(this.label.as_ref(), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionAccountDisplay(
+        InstructionAccountDisplayNode {
+            label,
+            skip: this.skip.clone(),
+            plugins,
+        },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_account_link_node_children<'a>(
+    this: &'a InstructionAccountLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let instruction =
+        map_optional::<InstructionLinkNode>(this.instruction.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionAccountLink(
+        InstructionAccountLinkNode {
+            identifier: this.identifier.clone(),
+            instruction,
+            plugins,
+        },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_byte_delta_node_children<'a>(
+    this: &'a InstructionByteDeltaNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(value) = map_required::<InstructionByteDeltaValue>(NodeRef::from(&*this.value), f)?
+    else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionByteDelta(InstructionByteDeltaNode {
+        with_header: this.with_header.clone(),
+        subtract: this.subtract.clone(),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_display_node_children<'a>(
+    this: &'a InstructionDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let intent = map_optional_text(this.intent.as_ref(), f)?;
+    let interpolated_intent = map_optional_text(this.interpolated_intent.as_ref(), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionDisplay(InstructionDisplayNode {
+        intent,
+        interpolated_intent,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_link_node_children<'a>(
+    this: &'a InstructionLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let program = map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionLink(InstructionLinkNode {
+        identifier: this.identifier.clone(),
+        program,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_remaining_accounts_node_children<'a>(
+    this: &'a InstructionRemainingAccountsNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let display =
+        map_optional::<InstructionAccountDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionRemainingAccounts(
+        InstructionRemainingAccountsNode {
+            identifier: this.identifier.clone(),
+            is_optional: this.is_optional.clone(),
+            is_signer: this.is_signer.clone(),
+            is_writable: this.is_writable.clone(),
+            docs,
+            display,
+            plugins,
+        },
+    )))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_instruction_status_node_children<'a>(
+    this: &'a InstructionStatusNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let message = map_optional_text(this.message.as_ref(), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::InstructionStatus(InstructionStatusNode {
+        lifecycle: this.lifecycle.clone(),
+        message,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_integer_type_node_children<'a>(
+    this: &'a IntegerTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let display =
+        map_optional::<NumberDisplayNode>((*this.display).as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::IntegerType(IntegerTypeNode {
+        format: this.format.clone(),
+        endian: this.endian.clone(),
+        unit: this.unit.clone(),
+        display: Box::new(display),
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_integer_value_node_children<'a>(
+    this: &'a IntegerValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::IntegerValue(IntegerValueNode {
+        value: this.value.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_map_entry_value_node_children<'a>(
+    this: &'a MapEntryValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(key) = map_required::<ValueNode>(NodeRef::from(&*this.key), f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::MapEntryValue(MapEntryValueNode {
+        key: Box::new(key),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_map_type_node_children<'a>(
+    this: &'a MapTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(key) = map_required::<TypeNode>(NodeRef::from(&*this.key), f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<TypeNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::MapType(MapTypeNode {
+        key: Box::new(key),
+        value: Box::new(value),
+        count: Box::new(count),
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_map_value_node_children<'a>(
+    this: &'a MapValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let entries = map_array::<MapEntryValueNode, _>(&this.entries, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::MapValue(MapValueNode { entries, plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_none_value_node_children<'a>(
+    this: &'a NoneValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::NoneValue(NoneValueNode { plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_option_type_node_children<'a>(
+    this: &'a OptionTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
+        return Ok(None);
+    };
+    let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::OptionType(OptionTypeNode {
+        fixed: this.fixed.clone(),
+        item: Box::new(item),
+        prefix,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_payer_value_node_children<'a>(
+    this: &'a PayerValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PayerValue(PayerValueNode { plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_pda_node_children<'a>(
+    this: &'a PdaNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let seeds = map_array::<PdaSeedNode, _>(&this.seeds, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Pda(PdaNode {
+        identifier: this.identifier.clone(),
+        docs,
+        program_id: this.program_id.clone(),
+        seeds,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_pda_link_node_children<'a>(
+    this: &'a PdaLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let program = map_optional::<ProgramLinkNode>(this.program.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PdaLink(PdaLinkNode {
+        identifier: this.identifier.clone(),
+        program,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_pda_seed_value_node_children<'a>(
+    this: &'a PdaSeedValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(value) = map_required::<PdaSeedValueValue>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PdaSeedValue(PdaSeedValueNode {
+        identifier: this.identifier.clone(),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_pda_value_node_children<'a>(
+    this: &'a PdaValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(pda) = map_required::<PdaValuePda>(NodeRef::from(&*this.pda), f)? else {
+        return Ok(None);
+    };
+    let seeds = map_array::<PdaSeedValueNode, _>(&this.seeds, f)?;
+    let program_id =
+        map_optional::<PdaValueProgramId>((*this.program_id).as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PdaValue(PdaValueNode {
+        pda: Box::new(pda),
+        seeds,
+        program_id: Box::new(program_id),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_plugin_node_children<'a>(
+    this: &'a PluginNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Plugin(PluginNode {
+        namespace: this.namespace.clone(),
+        payload: this.payload.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_post_offset_transform_node_children<'a>(
+    this: &'a PostOffsetTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PostOffsetTransform(PostOffsetTransformNode {
+        offset: this.offset.clone(),
+        strategy: this.strategy.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_prefixed_count_node_children<'a>(
+    this: &'a PrefixedCountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PrefixedCount(PrefixedCountNode {
+        prefix,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_pre_offset_transform_node_children<'a>(
+    this: &'a PreOffsetTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PreOffsetTransform(PreOffsetTransformNode {
+        offset: this.offset.clone(),
+        strategy: this.strategy.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_program_node_children<'a>(
+    this: &'a ProgramNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let accounts = map_array::<AccountNode, _>(&this.accounts, f)?;
+    let instructions = map_array::<InstructionNode, _>(&this.instructions, f)?;
+    let defined_types = map_array::<DefinedTypeNode, _>(&this.defined_types, f)?;
+    let pdas = map_array::<PdaNode, _>(&this.pdas, f)?;
+    let events = map_array::<EventNode, _>(&this.events, f)?;
+    let errors = map_array::<ErrorNode, _>(&this.errors, f)?;
+    let constants = map_array::<ConstantNode, _>(&this.constants, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Program(ProgramNode {
+        identifier: this.identifier.clone(),
+        public_key: this.public_key.clone(),
+        version: this.version.clone(),
+        docs,
+        accounts,
+        instructions,
+        defined_types,
+        pdas,
+        events,
+        errors,
+        constants,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_program_id_value_node_children<'a>(
+    this: &'a ProgramIdValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ProgramIdValue(ProgramIdValueNode { plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_program_link_node_children<'a>(
+    this: &'a ProgramLinkNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ProgramLink(ProgramLinkNode {
+        identifier: this.identifier.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_provided_node_children<'a>(
+    this: &'a ProvidedNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(node) = f(NodeRef::from(&*this.node))? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Provided(ProvidedNode {
+        identifier: this.identifier.clone(),
+        node: Box::new(node),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_public_key_type_node_children<'a>(
+    this: &'a PublicKeyTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let account_link =
+        map_optional::<AccountLinkNode>(this.account_link.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PublicKeyType(PublicKeyTypeNode {
+        account_link,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_public_key_value_node_children<'a>(
+    this: &'a PublicKeyValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::PublicKeyValue(PublicKeyValueNode {
+        public_key: this.public_key.clone(),
+        identifier: this.identifier.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_remainder_count_node_children<'a>(
+    this: &'a RemainderCountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::RemainderCount(RemainderCountNode { plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_remainder_option_type_node_children<'a>(
+    this: &'a RemainderOptionTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::RemainderOptionType(RemainderOptionTypeNode {
+        item: Box::new(item),
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_root_node_children<'a>(
+    this: &'a RootNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(program) = map_required::<ProgramNode>(NodeRef::from(&this.program), f)? else {
+        return Ok(None);
+    };
+    let additional_programs = map_array::<ProgramNode, _>(&this.additional_programs, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Root(RootNode {
+        standard: this.standard.clone(),
+        version: this.version.clone(),
+        program,
+        additional_programs,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_sentinel_count_node_children<'a>(
+    this: &'a SentinelCountNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(sentinel) = map_required::<ConstantValueNode>(NodeRef::from(&this.sentinel), f)?
+    else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SentinelCount(SentinelCountNode {
+        strategy: this.strategy.clone(),
+        sentinel,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_sentinel_transform_node_children<'a>(
+    this: &'a SentinelTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(sentinel) = map_required::<ConstantValueNode>(NodeRef::from(&this.sentinel), f)?
+    else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SentinelTransform(SentinelTransformNode {
+        sentinel,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_set_type_node_children<'a>(
+    this: &'a SetTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
+        return Ok(None);
+    };
+    let Some(count) = map_required::<CountNode>(NodeRef::from(&*this.count), f)? else {
+        return Ok(None);
+    };
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SetType(SetTypeNode {
+        item: Box::new(item),
+        count: Box::new(count),
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_set_value_node_children<'a>(
+    this: &'a SetValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let items = map_array::<ValueNode, _>(&this.items, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SetValue(SetValueNode { items, plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_size_discriminator_node_children<'a>(
+    this: &'a SizeDiscriminatorNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SizeDiscriminator(SizeDiscriminatorNode {
+        size: this.size.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_size_prefix_transform_node_children<'a>(
+    this: &'a SizePrefixTransformNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(prefix) = map_required::<IntegerTypeNode>(NodeRef::from(&this.prefix), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SizePrefixTransform(SizePrefixTransformNode {
+        prefix,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_some_value_node_children<'a>(
+    this: &'a SomeValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::SomeValue(SomeValueNode {
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_string_display_node_children<'a>(
+    this: &'a StringDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StringDisplay(StringDisplayNode {
+        slice_start: this.slice_start.clone(),
+        slice_end: this.slice_end.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_string_type_node_children<'a>(
+    this: &'a StringTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let display = map_optional::<StringDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StringType(StringTypeNode {
+        encoding: this.encoding.clone(),
+        display,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_string_value_node_children<'a>(
+    this: &'a StringValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StringValue(StringValueNode {
+        string: this.string.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_struct_field_display_node_children<'a>(
+    this: &'a StructFieldDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let label = map_optional_text(this.label.as_ref(), f)?;
+    let flatten_prefix = map_optional_text(this.flatten_prefix.as_ref(), f)?;
+    let value_labels = map_array::<ValueLabelDisplayNode, _>(&this.value_labels, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StructFieldDisplay(StructFieldDisplayNode {
+        label,
+        skip: this.skip.clone(),
+        flatten: this.flatten.clone(),
+        flatten_prefix,
+        value_labels,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_struct_field_type_node_children<'a>(
+    this: &'a StructFieldTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let default_value =
+        map_optional::<ValueNode>((*this.default_value).as_ref().map(NodeRef::from), f)?;
+    let display =
+        map_optional::<StructFieldDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StructFieldType(StructFieldTypeNode {
+        identifier: this.identifier.clone(),
+        default_value_strategy: this.default_value_strategy.clone(),
+        docs,
+        r#type: Box::new(r#type),
+        default_value: Box::new(default_value),
+        display,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_struct_field_value_node_children<'a>(
+    this: &'a StructFieldValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StructFieldValue(StructFieldValueNode {
+        identifier: this.identifier.clone(),
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_struct_type_node_children<'a>(
+    this: &'a StructTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let fields = map_array::<StructFieldTypeNode, _>(&this.fields, f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StructType(StructTypeNode {
+        fields,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_struct_value_node_children<'a>(
+    this: &'a StructValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let fields = map_array::<StructFieldValueNode, _>(&this.fields, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::StructValue(StructValueNode { fields, plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_text_node_children<'a>(
+    this: &'a TextNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::Text(TextNode {
+        content: this.content.clone(),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_tuple_type_node_children<'a>(
+    this: &'a TupleTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let items = map_array::<TypeNode, _>(&this.items, f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::TupleType(TupleTypeNode {
+        items,
+        transforms,
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_tuple_value_node_children<'a>(
+    this: &'a TupleValueNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let items = map_array::<ValueNode, _>(&this.items, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::TupleValue(TupleValueNode { items, plugins })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_unit_number_display_node_children<'a>(
+    this: &'a UnitNumberDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(unit) = map_required::<InjectableUnitValueNode>(NodeRef::from(&*this.unit), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::UnitNumberDisplay(UnitNumberDisplayNode {
+        unit: Box::new(unit),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_value_label_display_node_children<'a>(
+    this: &'a ValueLabelDisplayNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(label) = map_text(&this.label, f)? else {
+        return Ok(None);
+    };
+    let Some(value) = map_required::<ValueNode>(NodeRef::from(&*this.value), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ValueLabelDisplay(ValueLabelDisplayNode {
+        label,
+        value: Box::new(value),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_variable_pda_seed_node_children<'a>(
+    this: &'a VariablePdaSeedNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let docs = map_docs(&this.docs, f)?;
+    let Some(r#type) = map_required::<TypeNode>(NodeRef::from(&*this.r#type), f)? else {
+        return Ok(None);
+    };
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::VariablePdaSeed(VariablePdaSeedNode {
+        identifier: this.identifier.clone(),
+        docs,
+        r#type: Box::new(r#type),
+        plugins,
+    })))
+}
+
+// Out of line, so `map_children` keeps a small stack frame. Data fields are cloned whatever their
+// type, as the generator does not track which ones are `Copy`.
+#[inline(never)]
+#[allow(clippy::clone_on_copy)]
+fn map_zeroable_option_type_node_children<'a>(
+    this: &'a ZeroableOptionTypeNode,
+    f: &mut MapChild<'_, 'a>,
+) -> CodamaResult<Option<Node>> {
+    let Some(item) = map_required::<TypeNode>(NodeRef::from(&*this.item), f)? else {
+        return Ok(None);
+    };
+    let zero_value =
+        map_optional::<ConstantValueNode>(this.zero_value.as_ref().map(NodeRef::from), f)?;
+    let transforms = map_array::<TransformNode, _>(&this.transforms, f)?;
+    let plugins = map_array::<PluginNode, _>(&this.plugins, f)?;
+    Ok(Some(Node::ZeroableOptionType(ZeroableOptionTypeNode {
+        item: Box::new(item),
+        zero_value,
+        transforms,
+        plugins,
+    })))
 }
 
 impl TryFrom<Node> for AccountNode {

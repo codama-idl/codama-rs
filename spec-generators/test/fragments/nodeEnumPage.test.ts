@@ -65,17 +65,24 @@ describe('getNodeEnumPageFragment', () => {
     });
 
     it('rebuilds each node from its mapped children, deleting it when a required child is deleted', () => {
-        const arm = getArm(result.content, 'Self::StringType(this) => {');
+        const arm = getArm(result.content, 'fn map_string_type_node_children<');
         expect(arm).toContain(
             'let display = map_optional::<StringDisplayNode>(this.display.as_ref().map(NodeRef::from), f)?;',
         );
         expect(arm).toContain('encoding: this.encoding.clone(),');
         expect(arm).toContain('display,');
-        const pda = getArm(result.content, 'Self::PdaValue(this) => {');
+        const pda = getArm(result.content, 'fn map_pda_value_node_children<');
         expect(pda).toContain(
             'let Some(pda) = map_required::<PdaValuePda>(NodeRef::from(&*this.pda), f)? else {\nreturn Ok(None);\n};',
         );
         expect(pda).toContain('pda: Box::new(pda),');
+    });
+
+    it('rebuilds each node kind in its own out-of-line function, to keep the frame of map_children small', () => {
+        expect(result.content).toContain('Self::StringType(this) => map_string_type_node_children(this, f),');
+        expect(result.content).toContain(
+            "#[inline(never)]\n#[allow(clippy::clone_on_copy)]\nfn map_string_type_node_children<'a>(this: &'a StringTypeNode, f: &mut MapChild<'_, 'a>)",
+        );
     });
 
     it('imports the helpers and slot types that the rebuild uses', () => {
@@ -99,7 +106,7 @@ describe('getNodeEnumPageFragment', () => {
     });
 });
 
-/** The text of the match arm that starts with `start`, up to the next arm at the same depth. */
+/** The text of the match arm or function that starts with `start`, up to its closing brace. */
 function getArm(content: string, start: string): string {
     const from = content.indexOf(start);
     if (from === -1) throw new Error(`No arm starts with "${start}".`);
