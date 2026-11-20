@@ -790,8 +790,8 @@ fn variants_with_different_pdas_of_the_same_identifier_fail() {
     let mut korok = EnumKorok::parse(&item).unwrap();
     korok.accept(&mut IdentifyFieldTypesVisitor::new()).unwrap();
     let error = korok.accept(&mut SetAccountsVisitor::new()).unwrap_err();
-    assert!(
-        matches!(error, codama_errors::CodamaError::NodeMergeConflict { .. }),
-        "{error}"
+    assert_eq!(
+        error.to_string(),
+        "Two different `pdaNode` share the identifier `vault` in enum `MyProgramAccounts`"
     );
 }
