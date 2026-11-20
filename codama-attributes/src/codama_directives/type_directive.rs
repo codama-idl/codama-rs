@@ -8,7 +8,7 @@ use crate::{
 };
 use codama_errors::CodamaError;
 use codama_nodes::{DefinedTypeLinkNode, Node, RegisteredTypeNode, TypeNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct TypeDirective {
@@ -45,18 +45,20 @@ impl FromMeta for TypeDirectiveNode {
             "size_prefix" => size_prefix_from_meta(meta)?,
             _ => return RegisteredTypeNode::from_meta(meta).map(Self::from),
         };
-        Self::try_from(node).map_err(|e| meta.error(e.to_string()))
+        Ok(node.into())
     }
 }
 
-/// A wrapper keyword returns its inner type with a transform, so the result can be a link.
-impl TryFrom<TypeNode> for TypeDirectiveNode {
-    type Error = CodamaError;
-
-    fn try_from(node: TypeNode) -> Result<Self, Self::Error> {
+/// A wrapper keyword returns its inner type with a transform, so the result can be a link. Every other
+/// type node is a registered type node, so the conversion cannot fail.
+impl From<TypeNode> for TypeDirectiveNode {
+    fn from(node: TypeNode) -> Self {
         match node {
-            TypeNode::Link(node) => Ok(Self::Link(node)),
-            node => RegisteredTypeNode::try_from(node).map(Self::Registered),
+            TypeNode::Link(node) => Self::Link(node),
+            node => Self::Registered(
+                RegisteredTypeNode::try_from(node)
+                    .expect("only links are not registered type nodes"),
+            ),
         }
     }
 }
