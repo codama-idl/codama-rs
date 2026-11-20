@@ -367,6 +367,11 @@ fn prefix_of_self() -> HiddenPrefixTransformNode {
     HiddenPrefixTransformNode::new(vec![constant_of_self()])
 }
 
+/// A `u8` hiding a constant of the `self` type, for the number types of prefixes, sizes and counts.
+fn u8_of_self() -> IntegerTypeNode {
+    IntegerTypeNode::le(U8).add_transform(prefix_of_self())
+}
+
 #[test]
 fn finds_a_finite_value_through_types_that_may_stop_a_recursion() {
     let u8 = || IntegerTypeNode::le(U8);
@@ -494,6 +499,26 @@ fn finds_no_finite_value_through_types_that_never_stop_a_recursion() {
             MapTypeNode::new(u8(), u8(), PrefixedCountNode::new(u8()))
                 .add_transform(prefix_of_self())
                 .into(),
+        ),
+        (
+            "prefixes of options",
+            field(OptionTypeNode {
+                prefix: u8_of_self(),
+                ..OptionTypeNode::new(u8())
+            })
+            .into(),
+        ),
+        (
+            "sizes of enums",
+            EnumTypeNode {
+                size: u8_of_self(),
+                ..EnumTypeNode::new(vec![EnumVariantTypeNode::new("nil")])
+            }
+            .into(),
+        ),
+        (
+            "prefixed counts",
+            ArrayTypeNode::new(u8(), PrefixedCountNode::new(u8_of_self())).into(),
         ),
         (
             "transforms of enums",
