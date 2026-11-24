@@ -4,10 +4,10 @@
 use codama_nodes::{
     AccountBumpValueNode, AccountValueNode, ConditionalValueNode, DataValueNode,
     DefinedTypeLinkNode, DefinedTypeNode, InjectedValueNode, InstructionAccountNode,
-    InstructionInputValueNode, InstructionNode, IntegerTypeNode, IsSigner, Node, NodeRef,
-    PdaLinkNode, PdaSeedValueNode, PdaValueNode, ProgramLinkNode, ProgramNode, ProvidedNode,
-    PublicKeyTypeNode, PublicKeyValueNode, RootNode, StructFieldTypeNode, StructTypeNode, TypeNode,
-    ValueNode, U16, U64, U8,
+    InstructionInputValueNode, InstructionNode, IntegerTypeNode, IntegerValueNode, IsSigner, Node,
+    NodeRef, PdaLinkNode, PdaSeedValueNode, PdaValueNode, ProgramLinkNode, ProgramNode,
+    ProvidedNode, PublicKeyTypeNode, PublicKeyValueNode, RootNode, StructFieldTypeNode,
+    StructTypeNode, TypeNode, ValueNode, U16, U64, U8,
 };
 use codama_visitors_core::{
     get_instruction_data_fields, get_linkables_from_node, get_resolved_instruction_inputs,
@@ -263,6 +263,26 @@ fn resolves_the_seeds_and_the_program_id_of_a_pda_value_first() {
     assert_eq!(
         as_account(&inputs[1]).depends_on,
         [depends_on_account("counterProgram")]
+    );
+
+    // A program id read from a data field is a dependency too, so the field resolves first.
+    let pda = PdaValueNode::new_with_program_id(
+        PdaLinkNode::new("counter"),
+        vec![],
+        DataValueNode::new("program"),
+    );
+    let node = InstructionNode {
+        accounts: vec![defaulting("counter", IsSigner::False, pda)],
+        data: Box::new(Some(
+            StructTypeNode::new(vec![field("program", PublicKeyTypeNode::new())]).into(),
+        )),
+        ..instruction("myInstruction")
+    };
+    let inputs = resolve_alone(&node);
+    assert_eq!(identifiers(&inputs), ["program", "counter"]);
+    assert_eq!(
+        as_account(&inputs[1]).depends_on,
+        [InstructionDependency::Data(DataValueNode::new("program"))]
     );
 }
 
@@ -680,6 +700,41 @@ fn fails_when_a_pda_value_takes_an_optional_account_as_a_seed() {
                 ..account("authority", IsSigner::False)
             },
         ],
+        ..instruction("myInstruction")
+    };
+    let error = resolve_error(
+        &NodePath::from(vec![NodeRef::from(&node)]),
+        &LinkableDictionary::default(),
+    );
+    assert_eq!(
+        error.to_string(),
+        "Cannot use optional account [authority] as PDA seed [instructionNode]myInstruction.[instructionAccountNode]counter.[pdaValueNode].[pdaSeedValueNode]authority."
+    );
+}
+
+#[test]
+fn keeps_the_account_in_the_path_of_an_optional_seed_when_another_seed_is_injected() {
+    // The PDA value is the account's own, so its path starts at the account even though resolving its
+    // injected seed rebuilds it. Only a PDA value injected as a whole starts at the PDA value.
+    let node = InstructionNode {
+        accounts: vec![
+            defaulting(
+                "counter",
+                IsSigner::False,
+                PdaValueNode::new(
+                    PdaLinkNode::new("counter"),
+                    vec![
+                        PdaSeedValueNode::new("authority", AccountValueNode::new("authority")),
+                        PdaSeedValueNode::new("bump", InjectedValueNode::new("bump")),
+                    ],
+                ),
+            ),
+            InstructionAccountNode {
+                is_optional: Some(true),
+                ..account("authority", IsSigner::False)
+            },
+        ],
+        provides: vec![provide("bump", IntegerValueNode::new(255u8))],
         ..instruction("myInstruction")
     };
     let error = resolve_error(
