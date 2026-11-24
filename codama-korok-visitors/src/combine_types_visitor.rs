@@ -361,7 +361,8 @@ impl KorokVisitor for CombineTypesVisitor {
 
 /// Gives each variant the discriminator Rust gives it: the one written, or else one more than the
 /// previous variant. A discriminator equal to the index of the variant is omitted, as the spec reads an
-/// omitted discriminator as the index.
+/// omitted discriminator as the index. `variants` must hold every variant of the enum, in order, which
+/// the strict mode guarantees.
 fn resolve_discriminators(
     variants: Vec<EnumVariantTypeNode>,
     korok: &codama_koroks::EnumKorok,

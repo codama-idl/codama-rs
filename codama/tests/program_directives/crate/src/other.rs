@@ -1,4 +1,4 @@
-#![codama(program(identifier = "other", address = "OtherProg11111111111111111111111111111111111"))]
+#![codama(program(identifier = "other", address = "QtherProg11111111111111111111111111111111111"))]
 
 #[derive(CodamaAccount)]
 pub struct Escrow {

@@ -36,6 +36,11 @@ impl KorokVisitor for CombineModulesVisitor {
         self.visit_children(korok)?;
         let location = with_path("the crate root".to_string(), &korok.store.path);
         korok.node = combine_koroks(&korok.node, &korok.items, &location)?;
+
+        // A `#![codama(program(...))]` at the top of the crate root applies to the combined node.
+        if let Some(node) = korok.node.take() {
+            korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
+        }
         Ok(())
     }
 
@@ -48,7 +53,8 @@ impl KorokVisitor for CombineModulesVisitor {
         korok.node = combine_koroks(&korok.node, &korok.items, &location)?;
 
         // A `program(...)` directive on the `mod` declaration or inside the file (`#![codama(...)]`)
-        // applies to the combined node, like on an inline module.
+        // applies to the combined node, like on an inline module. The declaration is the outer scope,
+        // so it wins when both are given.
         if let Some(node) = korok.node.take() {
             let node = ProgramDirective::apply(&korok.file_attributes, node);
             korok.node = Some(ProgramDirective::apply(&korok.attributes, node));
