@@ -195,4 +195,12 @@ mod tests {
             "name = ... is removed in v2, use identifier = ..."
         );
     }
+
+    #[test]
+    fn unrecognized_values_are_reported_as_such() {
+        // A non-positional meta is a value, so its own error is reported.
+        let meta: Meta = syn::parse_quote! { seed("mint", foo = 42) };
+        let error = PdaSeedValueNode::from_meta(&meta).unwrap_err();
+        assert_eq!(error.to_string(), "unrecognized value");
+    }
 }
