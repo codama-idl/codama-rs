@@ -1,6 +1,6 @@
 use crate::{Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_syn_helpers::Meta;
+use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct SkipDirective;
@@ -8,6 +8,9 @@ pub struct SkipDirective;
 impl SkipDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("skip")?;
+        if !meta.is_path_or_empty_list() {
+            return Err(meta.error("skip takes no argument"));
+        }
         Ok(Self)
     }
 }
@@ -43,5 +46,18 @@ mod tests {
         let meta: Meta = syn::parse_quote! { skip };
         let directive = SkipDirective::parse(&meta).unwrap();
         assert_eq!(directive, SkipDirective);
+    }
+
+    #[test]
+    fn rejects_arguments() {
+        // `skip = false` would otherwise still skip the item.
+        for meta in [
+            syn::parse_quote! { skip = false },
+            syn::parse_quote! { skip(always) },
+        ] {
+            let meta: Meta = meta;
+            let error = SkipDirective::parse(&meta).unwrap_err();
+            assert_eq!(error.to_string(), "skip takes no argument");
+        }
     }
 }

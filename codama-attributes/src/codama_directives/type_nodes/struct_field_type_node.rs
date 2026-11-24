@@ -3,7 +3,7 @@ use crate::{
     utils::{FromMeta, MetaConsumer},
     DefaultValueDirective,
 };
-use codama_nodes::{Docs, StructFieldTypeNode};
+use codama_nodes::StructFieldTypeNode;
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for StructFieldTypeNode {
@@ -33,7 +33,7 @@ impl FromMeta for StructFieldTypeNode {
             r#type: Box::new(r#type),
             default_value: Box::new(default_value),
             default_value_strategy,
-            docs: Docs::default(),
+            docs: consumer.docs.option().unwrap_or_default(),
             display: None,
             plugins: vec![],
         })
@@ -61,6 +61,18 @@ mod tests {
         assert_type!(
             { field(identifier = "age", type = integer(u32)) },
             StructFieldTypeNode::new("age", IntegerTypeNode::le(U32)).into()
+        );
+    }
+
+    #[test]
+    fn with_docs() {
+        assert_type!(
+            { field("age", integer(u32), docs = "The age.") },
+            StructFieldTypeNode {
+                docs: vec!["The age.".to_string()].into(),
+                ..StructFieldTypeNode::new("age", IntegerTypeNode::le(U32))
+            }
+            .into()
         );
     }
 

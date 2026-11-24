@@ -1,16 +1,16 @@
-error: expected a path
+error: expected a seed: seed("name", value), account("name") or data("name")
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:40
   |
 3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
   |                                        ^^
 
-error: expected #[codama(seed)] attribute
+error: expected a seed: seed("name", value), account("name") or data("name")
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:44
   |
 3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
   |                                            ^^^^^^^
 
-error: expected a path
+error: expected a seed: seed("name", value), account("name") or data("name")
  --> tests/codama_attribute/values_nodes/pda_value_node/invalid_seeds.fail.rs:3:53
   |
 3 | #[codama(default_value = pda("token", [42, invalid, "invalid"]))]
