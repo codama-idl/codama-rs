@@ -74,6 +74,11 @@ impl KorokVisitor for ApplyTypeModifiersVisitor {
         self.visit_children(korok)?;
         apply_type_modifiers(korok.into())
     }
+
+    fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
+        self.visit_children(korok)?;
+        apply_type_modifiers(korok.into())
+    }
 }
 
 struct ApplyAttributeInput<'a, 'b> {

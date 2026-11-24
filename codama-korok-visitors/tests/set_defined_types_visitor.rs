@@ -176,7 +176,11 @@ fn it_sets_defined_types_on_enums_with_explicit_discriminators() -> CodamaResult
                         discriminator: Some(42),
                         ..EnumVariantTypeNode::new("move")
                     },
-                    EnumVariantTypeNode::new("run"),
+                    // Rust numbers `Run` after `Move`, i.e. 43, not its index.
+                    EnumVariantTypeNode {
+                        discriminator: Some(43),
+                        ..EnumVariantTypeNode::new("run")
+                    },
                     EnumVariantTypeNode {
                         discriminator: Some(100),
                         ..EnumVariantTypeNode::new("quit")
@@ -430,17 +434,22 @@ fn it_ignores_type_aliases_without_export_directives() -> CodamaResult<()> {
 }
 
 #[test]
-fn it_ignores_type_aliases_with_unresolvable_targets() -> CodamaResult<()> {
+fn it_fails_on_exported_type_aliases_with_unresolvable_targets() -> CodamaResult<()> {
+    // Like a struct field that does not resolve, an explicit export that produces nothing is an error.
     let item: syn::Item = syn::parse_quote! {
         #[codama(export(CodamaType))]
         pub type Callback = fn(u8) -> u8;
     };
     let mut korok = TypeAliasKorok::parse(&item)?;
 
-    assert_eq!(korok.node, None);
     korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
-    korok.accept(&mut SetDefinedTypesVisitor::new())?;
-    assert_eq!(korok.node, None);
+    let error = korok
+        .accept(&mut SetDefinedTypesVisitor::new())
+        .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Type alias `Callback` does not resolve to a `typeNode`"
+    );
     Ok(())
 }
 

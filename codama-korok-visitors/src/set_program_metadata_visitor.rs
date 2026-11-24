@@ -11,6 +11,8 @@ use crate::KorokVisitor;
 /// manifest and the `solana_program::declare_id!` macro (in that precedence).
 #[derive(Default)]
 pub struct SetProgramMetadataVisitor {
+    /// The `declare_id!` address and `codama_program!` macro found in the crate being visited.
+    /// They are reset for each crate, as the macros of one crate say nothing about another.
     identified_public_key: Option<String>,
     identified_program: Option<CodamaProgramMacro>,
 }
@@ -23,6 +25,8 @@ impl SetProgramMetadataVisitor {
 
 impl KorokVisitor for SetProgramMetadataVisitor {
     fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
+        self.identified_public_key = None;
+        self.identified_program = None;
         self.visit_children(korok)?;
 
         // Get a mutable reference to the program to update its metadata.
@@ -105,7 +109,10 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         if let ("" | "solana_program" | "solana_address" | "solana_pubkey", "declare_id") =
             (mac.path.prefix().as_str(), mac.path.last_str().as_str())
         {
-            self.identified_public_key = Some(mac.tokens.to_string().replace("\"", ""));
+            // Only a string literal gives the address; a constant cannot be read from the source.
+            if let Ok(literal) = syn::parse2::<syn::LitStr>(mac.tokens.clone()) {
+                self.identified_public_key = Some(literal.value());
+            }
         };
 
         // Read the primary program override from a `codama_program!` macro.

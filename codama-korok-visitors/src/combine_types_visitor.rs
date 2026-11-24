@@ -283,6 +283,7 @@ impl KorokVisitor for CombineTypesVisitor {
             .iter()
             .filter_map(|variant| (self.get_enum_variant)(variant, &parent))
             .collect_and_combine_errors()?;
+        let variants = resolve_discriminators(variants, korok)?;
 
         let size = korok
             .attributes
@@ -316,11 +317,16 @@ impl KorokVisitor for CombineTypesVisitor {
             "variant `{}` of enum `{}`",
             korok.ast.ident, self.parent_enum
         );
-        let discriminator = korok
-            .ast
-            .discriminant
-            .as_ref()
-            .and_then(|(_, x)| x.as_unsigned_integer::<u32>().ok());
+        // The discriminator written in Rust. The enum fills in the implicit ones once combined.
+        let discriminator = match &korok.ast.discriminant {
+            Some((_, expr)) => Some(expr.as_unsigned_integer::<u32>().map_err(|error| {
+                expr.error(format!(
+                    "the discriminant of `{}` must be an unsigned integer literal fitting a u32: {error}",
+                    korok.ast.ident
+                ))
+            })?),
+            None => None,
+        };
 
         let variant = match korok.ast.fields {
             syn::Fields::Named(_) => {
@@ -351,4 +357,29 @@ impl KorokVisitor for CombineTypesVisitor {
         );
         Ok(())
     }
+}
+
+/// Gives each variant the discriminator Rust gives it: the one written, or else one more than the
+/// previous variant. A discriminator equal to the index of the variant is omitted, as the spec reads an
+/// omitted discriminator as the index.
+fn resolve_discriminators(
+    variants: Vec<EnumVariantTypeNode>,
+    korok: &codama_koroks::EnumKorok,
+) -> CodamaResult<Vec<EnumVariantTypeNode>> {
+    let mut next = 0u32;
+    variants
+        .into_iter()
+        .enumerate()
+        .map(|(index, mut variant)| {
+            let discriminator = variant.discriminator.unwrap_or(next);
+            next = discriminator.checked_add(1).ok_or_else(|| {
+                korok.ast.error(format!(
+                    "the discriminator of the variant following `{}` overflows a u32",
+                    variant.identifier
+                ))
+            })?;
+            variant.discriminator = (discriminator as usize != index).then_some(discriminator);
+            Ok(variant)
+        })
+        .collect()
 }

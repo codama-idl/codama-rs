@@ -5,6 +5,19 @@ use codama_errors::IteratorCombineErrors;
 use codama_syn_helpers::extensions::*;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
+/// The derive macros of `codama-macros` that turn an item into a Codama node.
+const CODAMA_DERIVES: [&str; 9] = [
+    "CodamaAccount",
+    "CodamaAccounts",
+    "CodamaErrors",
+    "CodamaEvent",
+    "CodamaEvents",
+    "CodamaInstruction",
+    "CodamaInstructions",
+    "CodamaPda",
+    "CodamaType",
+];
+
 #[derive(Debug, PartialEq)]
 pub struct Attributes<'a>(pub Vec<Attribute<'a>>);
 
@@ -30,7 +43,29 @@ impl<'a> Attributes<'a> {
                 .collect_and_combine_errors()?,
         );
         attributes.validate_codama_type_attributes()?;
+        attributes.validate_single_codama_derive()?;
         Ok(attributes)
+    }
+
+    /// An item derives at most one Codama item, since each derive decides what the item becomes.
+    /// E.g. `#[derive(CodamaType, CodamaAccount)]` would make it both a defined type and an account.
+    fn validate_single_codama_derive(&self) -> syn::Result<()> {
+        let mut derives = self.codama_derives().into_iter();
+        let Some((first, _)) = derives.next() else {
+            return Ok(());
+        };
+        derives
+            .map(|(derive, ast)| {
+                syn::Error::new_spanned(
+                    ast,
+                    format!("`{derive}` conflicts with `{first}`: an item derives at most one Codama item"),
+                )
+            })
+            .reduce(|mut combined, error| {
+                combined.combine(error);
+                combined
+            })
+            .map_or(Ok(()), Err)
     }
 
     pub fn validate_codama_type_attributes(&self) -> syn::Result<()> {
@@ -68,16 +103,20 @@ impl<'a> Attributes<'a> {
         }
     }
 
-    pub fn has_any_codama_derive(&self) -> bool {
-        self.has_codama_derive("CodamaAccount")
-            || self.has_codama_derive("CodamaAccounts")
-            || self.has_codama_derive("CodamaErrors")
-            || self.has_codama_derive("CodamaEvent")
-            || self.has_codama_derive("CodamaEvents")
-            || self.has_codama_derive("CodamaInstruction")
-            || self.has_codama_derive("CodamaInstructions")
-            || self.has_codama_derive("CodamaPda")
-            || self.has_codama_derive("CodamaType")
+    /// The Codama derives of the item, such as `CodamaAccount`, each with the path that names it,
+    /// in the order they are written.
+    pub fn codama_derives(&self) -> Vec<(&'static str, &syn::Path)> {
+        self.iter()
+            .filter_map(DeriveAttribute::filter)
+            .flat_map(|attr| attr.derives.iter())
+            .filter_map(|path| {
+                let is_codama = ["", "codama", "codama_macros"].contains(&path.prefix().as_str());
+                let derive = CODAMA_DERIVES
+                    .iter()
+                    .find(|derive| path.last_str() == **derive)?;
+                is_codama.then_some((*derive, path))
+            })
+            .collect()
     }
 
     pub fn has_codama_derive(&self, derive: &str) -> bool {
@@ -176,6 +215,33 @@ mod tests {
 
     fn file_ctx() -> syn::File {
         syn::File::empty()
+    }
+
+    #[test]
+    fn rejects_items_deriving_several_codama_items() {
+        let file = file_ctx();
+        let attrs: Vec<syn::Attribute> = vec![
+            parse_quote! { #[derive(Debug, CodamaType)] },
+            parse_quote! { #[derive(codama::CodamaAccount, CodamaPda)] },
+        ];
+        let error = Attributes::parse(&attrs, AttributeContext::File(&file)).unwrap_err();
+        let messages: Vec<_> = error.into_iter().map(|e| e.to_string()).collect();
+        assert_eq!(
+            messages,
+            [
+                "`CodamaAccount` conflicts with `CodamaType`: an item derives at most one Codama item",
+                "`CodamaPda` conflicts with `CodamaType`: an item derives at most one Codama item",
+            ]
+        );
+    }
+
+    #[test]
+    fn accepts_a_single_codama_derive_among_other_derives() {
+        let file = file_ctx();
+        let attrs: Vec<syn::Attribute> =
+            vec![parse_quote! { #[derive(Debug, Clone, CodamaAccount, serde::Serialize)] }];
+        let attributes = Attributes::parse(&attrs, AttributeContext::File(&file)).unwrap();
+        assert_eq!(attributes.codama_derives().len(), 1);
     }
 
     #[test]

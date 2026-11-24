@@ -1,8 +1,8 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{KorokVisitable, SetProgramMetadataVisitor};
-use codama_koroks::CrateKorok;
+use codama_koroks::{CrateKorok, RootKorok};
 use codama_nodes::{Identifier, Node, ProgramNode, RootNode, StringValueNode};
-use codama_stores::CrateStore;
+use codama_stores::{CrateStore, RootStore};
 use quote::quote;
 
 #[test]
@@ -318,4 +318,60 @@ pub fn get_path(relative_path: &str) -> std::path::PathBuf {
         .join("set_program_metadata_visitor")
         .join("fixtures")
         .join(relative_path)
+}
+
+#[test]
+fn it_reads_the_metadata_of_each_crate_on_its_own() -> CodamaResult<()> {
+    // Two crates visited by one visitor: the second one has no address and its own program macro.
+    let store = RootStore {
+        crates: vec![
+            CrateStore::hydrate(quote! {
+                solana_program::declare_id!("MyProgramAddress1111111111111111111111111");
+                codama_program!(identifier = "first");
+            })?,
+            CrateStore::hydrate(quote! {
+                codama_program!(identifier = "second");
+            })?,
+        ],
+    };
+    let mut korok = RootKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let programs: Vec<_> = korok
+        .crates
+        .iter()
+        .map(|crate_korok| match &crate_korok.node {
+            Some(Node::Program(program)) => {
+                (program.identifier.to_string(), program.public_key.clone())
+            }
+            node => panic!("Expected a program node, got {node:?}"),
+        })
+        .collect();
+    assert_eq!(
+        programs,
+        [
+            (
+                "first".to_string(),
+                "MyProgramAddress1111111111111111111111111".to_string()
+            ),
+            ("second".to_string(), String::new()),
+        ]
+    );
+    Ok(())
+}
+
+#[test]
+fn it_ignores_declare_id_macros_that_are_not_given_a_string_literal() -> CodamaResult<()> {
+    // The address is a constant that Codama cannot read, so the public key stays unset.
+    let store = CrateStore::hydrate(quote! {
+        solana_program::declare_id!(MY_PROGRAM_ID);
+    })?;
+    let mut korok = CrateKorok::parse(&store)?;
+    korok.accept(&mut SetProgramMetadataVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected program node");
+    };
+    assert_eq!(program.public_key, "");
+    Ok(())
 }
