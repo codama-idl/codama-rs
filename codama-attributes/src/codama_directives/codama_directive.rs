@@ -68,7 +68,12 @@ impl CodamaDirective {
             "optional_account_strategy" => {
                 Ok(OptionalAccountStrategyDirective::parse(meta)?.into())
             }
-            "program" => Ok(ProgramDirective::parse(meta)?.into()),
+            "program" => match ctx {
+                AttributeContext::Variant(_) | AttributeContext::Field(_) => Err(path.error(
+                    "program directives apply to items, modules and files, not to variants or fields",
+                )),
+                _ => Ok(ProgramDirective::parse(meta)?.into()),
+            },
             "seed" => Ok(SeedDirective::parse(meta, ctx)?.into()),
             "skip" => Ok(SkipDirective::parse(meta)?.into()),
 
@@ -148,5 +153,22 @@ mod tests {
             error.to_string(),
             "name = ... is removed in v2, use identifier = ..."
         );
+    }
+
+    #[test]
+    fn program_is_rejected_on_variants_and_fields() {
+        let meta: Meta = syn::parse_quote! { program(identifier = "other") };
+        let variant: syn::Variant = syn::parse_quote! { Foo };
+        let field: syn::Field = syn::parse_quote! { foo: u8 };
+        for ctx in [
+            AttributeContext::Variant(&variant),
+            AttributeContext::Field(&field),
+        ] {
+            let error = CodamaDirective::parse(&meta, &ctx).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                "program directives apply to items, modules and files, not to variants or fields"
+            );
+        }
     }
 }

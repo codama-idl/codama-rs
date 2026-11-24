@@ -2,7 +2,7 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::{
     ApplyTypeModifiersVisitor, ApplyTypeOverridesVisitor, IdentifyFieldTypesVisitor, KorokVisitable,
 };
-use codama_koroks::FieldKorok;
+use codama_koroks::{FieldKorok, TypeAliasKorok};
 use codama_nodes::{
     FixedSizeTransformNode, HasTransforms, IntegerFormat::U32, IntegerTypeNode, StringTypeNode,
     StructFieldTypeNode,
@@ -118,6 +118,28 @@ fn it_keeps_the_type_wrapped_in_a_struct_field_type_node() -> CodamaResult<()> {
                 IntegerTypeNode::le(U32).add_transform(FixedSizeTransformNode::new(8))
             )
             .into()
+        )
+    );
+    Ok(())
+}
+
+#[test]
+fn it_applies_modifiers_to_type_aliases() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[codama(fixed_size = 32)]
+        pub type Name = String;
+    };
+    let mut korok = TypeAliasKorok::parse(&item)?;
+
+    assert_eq!(korok.node, None);
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut ApplyTypeModifiersVisitor::new())?;
+    assert_eq!(
+        korok.node,
+        Some(
+            StringTypeNode::utf8()
+                .add_transform(FixedSizeTransformNode::new(32))
+                .into()
         )
     );
     Ok(())

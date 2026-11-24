@@ -26,6 +26,18 @@ pub fn get_node_from_enum_variant(tt: TokenStream) -> Option<Node> {
     })
 }
 
+/// The error raised when identifying and combining the types of an enum with the given variant.
+pub fn get_error_from_enum_variant(tt: TokenStream) -> String {
+    let tt = quote! { pub enum Foo { #tt } };
+    let store = RootStore::hydrate(tt).unwrap();
+    let mut korok = RootKorok::parse(&store).unwrap();
+    korok.accept(&mut IdentifyFieldTypesVisitor::new()).unwrap();
+    korok
+        .accept(&mut CombineTypesVisitor::new())
+        .unwrap_err()
+        .to_string()
+}
+
 pub fn get_node_from_type(tt: TokenStream) -> Option<Node> {
     get_node(quote! { pub struct Foo(#tt); }, |k| {
         match &k.crates[0].items[0] {

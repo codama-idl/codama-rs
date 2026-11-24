@@ -21,6 +21,11 @@ impl SetPdasVisitor {
 
 impl KorokVisitor for SetPdasVisitor {
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
+        // No overrides.
+        if korok.node.is_some() {
+            return Ok(());
+        }
+
         // Ensure the struct has the `CodamaPda` attribute.
         if !korok.attributes.has_codama_derive("CodamaPda") {
             return Ok(());
@@ -32,6 +37,11 @@ impl KorokVisitor for SetPdasVisitor {
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
+        // No overrides.
+        if korok.node.is_some() {
+            return Ok(());
+        }
+
         // Ensure the enum has the `CodamaPda` attribute.
         if !korok.attributes.has_codama_derive("CodamaPda") {
             return Ok(());

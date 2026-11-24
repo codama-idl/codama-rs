@@ -2,6 +2,7 @@ mod float_values;
 mod membership;
 mod memo;
 mod module_conflicts;
+mod program_directives;
 mod program_override;
 mod rust_names;
 mod shared_pdas;

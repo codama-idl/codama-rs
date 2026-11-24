@@ -1,6 +1,7 @@
 use crate::{CombineTypesVisitor, KorokVisitor};
 use codama_errors::CodamaResult;
 use codama_nodes::{DefinedTypeNode, TypeNode};
+use codama_syn_helpers::extensions::*;
 
 pub struct SetDefinedTypesVisitor {
     combine_types: CombineTypesVisitor,
@@ -51,7 +52,13 @@ impl KorokVisitor for SetDefinedTypesVisitor {
         };
 
         let Ok(type_node) = TypeNode::try_from(korok.node.clone()) else {
-            return Ok(());
+            return Err(korok
+                .ast
+                .error(format!(
+                    "Type alias `{}` does not resolve to a `typeNode`",
+                    korok.ast.ident
+                ))
+                .into());
         };
 
         korok.node = Some(DefinedTypeNode::new(korok.name()?, type_node).into());
