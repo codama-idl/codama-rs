@@ -11,10 +11,13 @@ pub trait AttributeExtension {
             .map(|metas| metas.into_iter().collect::<Vec<_>>())
     }
 
-    /// Unwrap all inner attributes from a feature-gated `cfg_attr`.
+    /// Unwrap all inner attributes from a `cfg_attr`, whatever its condition.
     /// E.g. `#[cfg_attr(feature = "x", derive(Debug), codama(...))]`
     /// returns `vec![#[derive(Debug)], #[codama(...)]]`.
-    /// Returns an empty Vec if not a feature-gated `cfg_attr`.
+    /// Returns an empty Vec if not a `cfg_attr`.
+    ///
+    /// The condition is not evaluated: the IDL describes the program in every configuration, so an
+    /// attribute behind `not(target_os = "solana")` or `all(...)` counts like one behind a feature.
     fn unfeatured_all(&self) -> Vec<Attribute> {
         let this = self.get_self();
         if !this.path().is_strict("cfg_attr") {
@@ -24,15 +27,10 @@ pub trait AttributeExtension {
             Ok(m) => m,
             Err(_) => return vec![],
         };
+        // The first item is the condition, the rest are the inner attributes.
         if metas.len() < 2 {
             return vec![];
         }
-        // First item should be the feature condition
-        match &metas[0] {
-            syn::Meta::NameValue(m) if m.path.is_strict("feature") => (),
-            _ => return vec![],
-        }
-        // Rest are the inner attributes
         metas[1..]
             .iter()
             .map(|meta| Attribute {
@@ -134,6 +132,24 @@ mod tests {
             all[1].to_token_stream().to_string(),
             quote! { #[codama(account(name = "auth"))] }.to_string()
         );
+    }
+
+    #[test]
+    fn unfeatured_all_any_condition() {
+        // Conditions other than a feature, which were previously dropped with their attributes.
+        for condition in [
+            quote! { not(target_os = "solana") },
+            quote! { all(feature = "x", not(test)) },
+            quote! { test },
+        ] {
+            let attribute: Attribute = parse_quote! { #[cfg_attr(#condition, codama(foo))] };
+            let all = attribute.unfeatured_all();
+            assert_eq!(all.len(), 1, "{condition}");
+            assert_eq!(
+                all[0].to_token_stream().to_string(),
+                quote! { #[codama(foo)] }.to_string()
+            );
+        }
     }
 
     #[test]

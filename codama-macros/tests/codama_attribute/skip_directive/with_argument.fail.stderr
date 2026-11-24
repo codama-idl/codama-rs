@@ -1,0 +1,11 @@
+error: skip takes no argument
+ --> tests/codama_attribute/skip_directive/with_argument.fail.rs:5:14
+  |
+5 |     #[codama(skip = false)]
+  |              ^^^^^^^^^^^^
+
+error: skip takes no argument
+ --> tests/codama_attribute/skip_directive/with_argument.fail.rs:7:14
+  |
+7 |     #[codama(skip(always))]
+  |              ^^^^^^^^^^^^

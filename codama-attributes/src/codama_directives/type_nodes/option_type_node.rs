@@ -18,14 +18,8 @@ impl FromMeta for OptionTypeNode {
                     Err(_) => Err(value.error("prefix must be an integer(...) type")),
                 }
             }
-            // `fixed` (bare flag) or `fixed = true/false`.
-            "fixed" => {
-                let value = match meta.as_value() {
-                    Ok(value) => value.as_expr()?.as_bool()?,
-                    Err(_) => true,
-                };
-                fixed.set(value, meta)
-            }
+            // `fixed` (bare flag) or `fixed = true/false`, like the other boolean flags.
+            "fixed" => fixed.set(bool::from_meta(meta)?, meta),
             _ => {
                 if meta.is_path_or_list() {
                     return item.set(TypeNode::from_meta(meta)?, meta);
@@ -79,6 +73,16 @@ mod tests {
             { option(item = integer(u8), fixed = true) },
             OptionTypeNode::fixed(IntegerTypeNode::le(U8)).into()
         );
+    }
+
+    #[test]
+    fn invalid_fixed_flag() {
+        // `fixed(false)` is neither the bare flag nor `fixed = <bool>`, and must not mean `fixed`.
+        assert_type_err!(
+            { option(integer(u8), fixed(false)) },
+            "expected `=` followed by a single value: `fixed = ...`"
+        );
+        assert_type_err!({ option(integer(u8), fixed = 1) }, "expected a boolean");
     }
 
     #[test]

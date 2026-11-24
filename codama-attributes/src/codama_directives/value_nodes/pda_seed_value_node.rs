@@ -41,7 +41,12 @@ impl FromMeta for PdaSeedValueNode {
         }
 
         // Regular seed parsing.
-        let pl = meta.assert_directive("seed")?.as_path_list()?;
+        if !meta.path().is_ok_and(|path| path.is_strict("seed")) {
+            return Err(meta.error(
+                "expected a seed: seed(\"name\", value), account(\"name\") or data(\"name\")",
+            ));
+        }
+        let pl = meta.as_path_list()?;
         let mut name = SetOnce::<Identifier>::new("identifier");
         let mut value: SetOnce<PdaSeedValueValue> = SetOnce::<PdaSeedValueValue>::new("value");
 
@@ -56,13 +61,8 @@ impl FromMeta for PdaSeedValueNode {
                         true => return value.set(StringValueNode::new(seed_name).into(), meta),
                     }
                 }
-                if meta.is_path_or_list() {
-                    return value.set(PdaSeedValueValue::from_meta(meta)?, meta);
-                }
-                if let Ok(seed_value) = PdaSeedValueValue::from_meta(meta) {
-                    return value.set(seed_value, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
+                // Any other meta is a positional value, whose own error is reported.
+                value.set(PdaSeedValueValue::from_meta(meta)?, meta)
             }
         })?;
 
