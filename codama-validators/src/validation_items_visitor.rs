@@ -403,9 +403,10 @@ impl<'a> ValidationItemsVisitor<'a> {
                 Ok(inputs) => inputs,
                 Err(cause) => {
                     // An invalid dependency stems from a contextual value, such as an unknown account or an
-                    // unresolvable data path, which reports it on its own when it is visited within this
-                    // instruction. Like the JavaScript library, it is not reported when that value sits
-                    // elsewhere, such as in the `provides` of a parent instruction or in a linked defined type.
+                    // unresolvable data path, which reports it on its own where it is written: within this
+                    // instruction, or within the parent instruction providing it. Like the JavaScript
+                    // library, a value provided by a parent whose dependency only holds in the parent is
+                    // not reported at all; sub-instructions are on their way out, so this is left as is.
                     let is_reported_by_dependency = match &cause {
                         CodamaError::InvalidInstructionDefaultValueDependency {
                             dependency_kind,

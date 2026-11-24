@@ -4,8 +4,8 @@
 use codama_errors::CodamaError;
 use codama_nodes::{
     AccountBumpValueNode, AccountValueNode, InjectedValueNode, InstructionAccountNode,
-    InstructionNode, IntegerTypeNode, IntegerValueNode, IsSigner, ProvidedNode,
-    StructFieldTypeNode, StructTypeNode, ValueNode, U8,
+    InstructionNode, IntegerTypeNode, IntegerValueNode, IsSigner, PdaLinkNode, PdaSeedValueNode,
+    PdaValueNode, ProvidedNode, StructFieldTypeNode, StructTypeNode, ValueNode, U8,
 };
 use codama_validators::{get_validation_items_visitor, LogLevel};
 use codama_visitors_core::visit;
@@ -124,4 +124,42 @@ fn reports_injected_values_that_are_neither_provided_nor_given_a_fallback() {
 fn does_not_report_injected_values_outside_of_instructions() {
     let field = u8_field("a", InjectedValueNode::new("missing"));
     assert!(visit(&get_validation_items_visitor(), &field).is_empty());
+}
+
+#[test]
+fn reports_invalid_dependencies_of_provided_values_against_their_provider() {
+    // A parent provides a PDA value whose seed names an account the child does not have. The value
+    // is reported where it is written, in the parent, rather than again in the child consuming it.
+    let pda = PdaValueNode::new(
+        PdaLinkNode::new("vault"),
+        vec![PdaSeedValueNode::new(
+            "authority",
+            AccountValueNode::new("missing"),
+        )],
+    );
+    let child = InstructionNode {
+        accounts: vec![InstructionAccountNode {
+            default_value: Box::new(Some(InjectedValueNode::new("vault").into())),
+            ..InstructionAccountNode::new("vault", false, false)
+        }],
+        ..instruction("child")
+    };
+    let parent = InstructionNode {
+        provides: vec![ProvidedNode::new("vault", pda)],
+        sub_instructions: vec![child],
+        ..instruction("parent")
+    };
+    let items = visit(&get_validation_items_visitor(), &parent);
+    let messages: Vec<_> = items
+        .iter()
+        .filter(|item| !item.message.starts_with("Pointing to a missing PDA"))
+        .map(|item| (item.message.clone(), item.path.to_string()))
+        .collect();
+    assert_eq!(
+        messages,
+        [(
+            "Account \"missing\" is not an account of instruction \"parent\".".to_string(),
+            "[instructionNode]parent.[providedNode]vault.[pdaValueNode].[pdaSeedValueNode]authority.[accountValueNode]missing".to_string()
+        )]
+    );
 }

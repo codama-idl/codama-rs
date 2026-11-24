@@ -353,17 +353,20 @@ impl<'a> Resolver<'_, 'a> {
                     {
                         continue;
                     }
-                    // A default value injected by a provider is not within the account, so its path
-                    // starts at the PDA value.
-                    let mut path = match account.default_value.as_ref().as_ref()
-                        == resolved_default_value.as_ref()
-                    {
-                        true => {
+                    // A PDA value injected by a provider is not within the account, so its path starts
+                    // at the PDA value. The account's own PDA value starts at the account, even when
+                    // resolving an injected seed within it rebuilt it.
+                    let is_injected = matches!(
+                        account.default_value.as_ref(),
+                        Some(InstructionInputValueNode::InjectedValue(_))
+                    );
+                    let mut path = match is_injected {
+                        true => vec![],
+                        false => {
                             let mut path = self.instruction_path.clone();
                             path.push(account);
                             path.nodes().to_vec()
                         }
-                        false => vec![],
                     };
                     path.push(NodeRef::from(pda));
                     path.push(NodeRef::from(seed));
@@ -493,9 +496,12 @@ fn get_dependencies(value: Option<NodeRef>) -> Vec<InstructionDependency> {
                     _ => None,
                 })
                 .collect();
-            // Like the JavaScript library, a program id only adds a dependency on an account.
-            if let Some(PdaValueProgramId::Account(value)) = &*pda.program_id {
-                dependencies.push(account(&value.identifier));
+            match &*pda.program_id {
+                Some(PdaValueProgramId::Account(value)) => {
+                    dependencies.push(account(&value.identifier))
+                }
+                Some(PdaValueProgramId::Data(value)) => dependencies.push(data(&value.path)),
+                None => {}
             }
             deduplicate_dependencies(dependencies)
         }
