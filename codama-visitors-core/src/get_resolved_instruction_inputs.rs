@@ -79,17 +79,19 @@ pub enum InstructionDependency {
 /// into a [`CodamaError`], so `?` works in functions returning a `CodamaResult`.
 #[derive(Debug)]
 pub enum ResolveInstructionInputsError<'a> {
-    /// The default values of the instruction at `path` depend on each other in a cycle, listed as
-    /// each input of the cycle with the first one repeated at the end.
+    /// The default values of the instruction at `path` depend on each other in a cycle. `cycle` is
+    /// the chain of inputs that led to an input already being resolved, that input repeated at the
+    /// end, so it may start with inputs that lead into the cycle without being part of it.
     CyclicDependency {
         path: NodePath<'a>,
-        cycle: Vec<InputPath<'a>>,
+        cycle: Vec<InstructionInputPath<'a>>,
     },
     /// The default value of `dependent` depends on an account or a data field that the instruction at
     /// `path` does not have.
     InvalidDependency {
         path: NodePath<'a>,
-        dependent: InputPath<'a>,
+        dependent: InstructionInputPath<'a>,
+        /// Boxed to keep the error small enough for clippy's `result_large_err`.
         dependency: Box<InstructionDependency>,
     },
     /// The PDA seed at `path` takes the optional account `seed_value` as its value. The path is
@@ -106,7 +108,7 @@ pub enum ResolveInstructionInputsError<'a> {
 /// An input of an instruction as an error names it: its key, i.e. the identifier of an account or the
 /// data path of a field such as `config.bump`, and the path of its node.
 #[derive(Debug, Clone, PartialEq)]
-pub struct InputPath<'a> {
+pub struct InstructionInputPath<'a> {
     pub key: String,
     pub path: NodePath<'a>,
 }
@@ -341,16 +343,13 @@ impl<'a> Input<'a> {
 
     fn path(&self, instruction_path: &NodePath<'a>) -> NodePath<'a> {
         match self {
-            Self::Account(account) => {
-                let path = instruction_path.child(*account);
-                path
-            }
+            Self::Account(account) => instruction_path.child(*account),
             Self::Data(field) => field.path.clone(),
         }
     }
 
-    fn input_path(&self, instruction_path: &NodePath<'a>) -> InputPath<'a> {
-        InputPath {
+    fn input_path(&self, instruction_path: &NodePath<'a>) -> InstructionInputPath<'a> {
+        InstructionInputPath {
             key: self.key().to_string(),
             path: self.path(instruction_path),
         }

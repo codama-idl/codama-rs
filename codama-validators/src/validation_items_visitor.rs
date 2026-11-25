@@ -1,7 +1,7 @@
 use crate::{
     contextual_value_items::{get_contextual_value_items, is_linked_public_key, ContextualValue},
     identifier_collisions::{
-        child_path, get_identifier_collision_items, get_nested_instruction_collision_items,
+        get_identifier_collision_items, get_nested_instruction_collision_items,
     },
     validation_item, LogLevel, ValidationItem,
 };
@@ -241,7 +241,7 @@ impl<'a> ValidationItemsVisitor<'a> {
                         items.push(validation_item(
                             LogLevel::Error,
                             "Instruction account has no identifier.",
-                            child_path(&path, account.into()),
+                            path.child(account),
                         ));
                     }
                 }
