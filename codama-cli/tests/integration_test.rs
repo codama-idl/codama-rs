@@ -54,11 +54,15 @@ fn test_generate_idl_reports_validation_errors() {
 
 #[test]
 fn test_generate_idl_current_dir_fail() {
+    // The error names the path that could not be read.
     let mut cmd = get_cli_command();
     cmd.arg("generate-idl")
         .arg("non_existent_path")
         .assert()
-        .failure();
+        .failure()
+        .stderr(predicate::str::contains(
+            "Error: Could not read `non_existent_path`:",
+        ));
 }
 
 #[test]

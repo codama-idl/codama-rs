@@ -5,11 +5,17 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum CodamaError {
-    #[error("{0}")]
-    Filesystem(#[from] std::io::Error),
+    #[error("Could not read `{path}`: {source}")]
+    Filesystem {
+        path: std::path::PathBuf,
+        source: std::io::Error,
+    },
 
-    #[error("Could not parse Cargo.toml files: {0}")]
-    Manifest(#[from] cargo_toml::Error),
+    #[error("Could not parse the manifest `{path}`: {source}")]
+    Manifest {
+        path: std::path::PathBuf,
+        source: cargo_toml::Error,
+    },
 
     #[error("{0}")]
     Compilation(#[from] syn::Error),
@@ -19,9 +25,6 @@ pub enum CodamaError {
 
     #[error("Could not convert node from `{from}` into `{into}`")]
     InvalidNodeConversion { from: String, into: String },
-
-    #[error("Unexpected node: expected `{expected}`, found `{actual}`")]
-    UnexpectedNode { expected: String, actual: String },
 
     #[error("Node not found")]
     NodeNotFound,
@@ -175,10 +178,12 @@ fn invalid_identifier_message(value: &str) -> String {
 }
 
 impl CodamaError {
+    /// The error as a `compile_error!` invocation, for a macro to emit. An error without a span, such
+    /// as a failed node conversion, points at the call site rather than being dropped silently.
     pub fn to_compile_error(&self) -> TokenStream {
         match self {
             CodamaError::Compilation(error) => error.to_compile_error(),
-            _ => TokenStream::new(),
+            error => syn::Error::new(proc_macro2::Span::call_site(), error).to_compile_error(),
         }
     }
 

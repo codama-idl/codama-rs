@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use codama::Codama;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaError, CodamaResult};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -59,7 +59,12 @@ fn run(cli: Cli) -> CodamaResult<()> {
 
             match output {
                 Some(output_path) => {
-                    std::fs::write(&output_path, &json)?;
+                    std::fs::write(&output_path, &json).map_err(|source| {
+                        CodamaError::Filesystem {
+                            path: output_path.clone(),
+                            source,
+                        }
+                    })?;
                     eprintln!("✓ IDL written to: {}", output_path.display());
                 }
                 None => {

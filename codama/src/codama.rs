@@ -1,10 +1,10 @@
 use codama_errors::{CodamaError, CodamaResult};
 use codama_koroks::RootKorok;
-use codama_nodes::{HasKind, Node, NodeTrait, RootNode};
+use codama_nodes::{Node, NodeKinds, NodeRef, NodeTrait, RootNode};
 use codama_plugin_core::{resolve_plugins, DefaultPlugin, KorokPlugin};
 use codama_stores::RootStore;
 use codama_validators::{get_validation_items_visitor, throw_validator_items_visitor, LogLevel};
-use codama_visitors_core::visit;
+use codama_visitors_core::{visit, NodePath};
 use std::path::Path;
 
 pub struct Codama {
@@ -83,9 +83,9 @@ impl Codama {
         let node = self.get_node()?;
         match node {
             Node::Root(root) => Ok(root),
-            _ => Err(CodamaError::UnexpectedNode {
-                expected: "RootNode".to_string(),
-                actual: node.kind().to_string(),
+            _ => Err(CodamaError::UnexpectedNodeKind {
+                expected_kinds: RootNode::KINDS.join(", "),
+                path: NodePath::from(vec![NodeRef::from(&node)]).to_string(),
             }),
         }
     }
