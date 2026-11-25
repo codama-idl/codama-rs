@@ -9,6 +9,6 @@ fn display_names_the_path() {
     };
     assert_eq!(
         error.to_string(),
-        "Could not read `programs/token/src/lib.rs`: No such file or directory"
+        "Could not access `programs/token/src/lib.rs`: No such file or directory"
     );
 }

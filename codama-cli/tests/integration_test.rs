@@ -61,7 +61,7 @@ fn test_generate_idl_current_dir_fail() {
         .assert()
         .failure()
         .stderr(predicate::str::contains(
-            "Error: Could not read `non_existent_path`:",
+            "Error: Could not access `non_existent_path`:",
         ));
 }
 

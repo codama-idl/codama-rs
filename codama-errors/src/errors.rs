@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum CodamaError {
-    #[error("Could not read `{path}`: {source}")]
+    #[error("Could not access `{path}`: {source}")]
     Filesystem {
         path: std::path::PathBuf,
         source: std::io::Error,
