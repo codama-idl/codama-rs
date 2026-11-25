@@ -377,7 +377,7 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('#[node_union]');
             expect(entry.content).toContain('pub enum ConstantPdaSeedValue {');
             expect(entry.content).toContain('ProgramIdValue(ProgramIdValueNode),');
-            // Sample of value-node variants (suffix `ValueNode` stripped).
+            // Sample of value-node variants, which keep their whole name.
             expect(entry.content).toContain('IntegerValue(IntegerValueNode),');
             expect(entry.content).toContain('StringValue(StringValueNode),');
             expect(entry.content).toContain('BooleanValue(BooleanValueNode),');

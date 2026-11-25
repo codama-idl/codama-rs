@@ -1,6 +1,8 @@
 import { pascalCase } from '@codama/fragments';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
+import { getNodeVariantName } from './fragments/nodeEnumPage';
+
 /**
  * Spec unions starting with `registered` are category-registry unions
  * (e.g. `registeredLinkNode`); the Rust crate exposes one flattened
@@ -124,7 +126,7 @@ export function getReferencedUnionNames(spec: Spec): ReadonlySet<string> {
  * never renames the existing variants.
  */
 export function getUnionVariantName(kind: string, category?: string): string {
-    const name = stripSuffix(pascalCase(kind), 'Node');
+    const name = getNodeVariantName(kind);
     if (category === undefined) return name;
     const stripped = stripSuffix(name, pascalCase(category));
     return stripped === '' ? name : stripped;

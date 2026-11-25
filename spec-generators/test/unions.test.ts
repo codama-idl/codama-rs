@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
     flattenNodeUnion,
     getEmittableUnions,
+    getRegisteredOnlyLeafKinds,
     getUnionCategory,
     getUnionVariantName,
-    getRegisteredOnlyLeafKinds,
     isRegisteredCategoryUnion,
 } from '../src/unions';
 
