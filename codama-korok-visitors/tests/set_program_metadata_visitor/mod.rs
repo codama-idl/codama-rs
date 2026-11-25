@@ -8,7 +8,7 @@ use quote::quote;
 #[test]
 fn it_gets_program_metadata_from_the_manifest() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {})?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;
@@ -50,7 +50,7 @@ fn it_prioritises_the_program_id_from_the_manifest() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
     })?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;
@@ -122,7 +122,7 @@ fn it_does_not_override_existing_values() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {
         solana_program::declare_id!("MyMacroProgramAddress1111111111111111111111111");
     })?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;
@@ -183,7 +183,7 @@ fn it_overrides_the_program_name_over_the_manifest_default() -> CodamaResult<()>
     let mut store = CrateStore::hydrate(quote! {
         codama_program!(identifier = "myOverriddenProgramName");
     })?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;
@@ -237,7 +237,7 @@ fn it_overrides_only_the_program_address_from_a_codama_program_macro() -> Codama
     let mut store = CrateStore::hydrate(quote! {
         codama_program!(address = "MyOverrideAddress11111111111111111111111111");
     })?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;
@@ -280,7 +280,7 @@ fn it_ignores_codama_program_macros_from_other_crates() -> CodamaResult<()> {
     let mut store = CrateStore::hydrate(quote! {
         other_crate::codama_program!(this = "would not parse");
     })?;
-    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml"))?;
+    let manifest = cargo_toml::Manifest::from_path(get_path("full_metadata.toml")).unwrap();
     store.manifest = Some(manifest);
 
     let mut korok = CrateKorok::parse(&store)?;

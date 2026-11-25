@@ -2,13 +2,13 @@ use codama_errors::CodamaError;
 use std::io::ErrorKind::NotFound;
 
 #[test]
-fn from_io_error() {
-    let error: CodamaError = std::io::Error::new(NotFound, "Could not find file `foo.rs`").into();
-    assert!(matches!(error, CodamaError::Filesystem(_)));
-}
-
-#[test]
-fn display() {
-    let error: CodamaError = std::io::Error::new(NotFound, "Could not find file `foo.rs`").into();
-    assert_eq!(error.to_string(), "Could not find file `foo.rs`");
+fn display_names_the_path() {
+    let error = CodamaError::Filesystem {
+        path: "programs/token/src/lib.rs".into(),
+        source: std::io::Error::new(NotFound, "No such file or directory"),
+    };
+    assert_eq!(
+        error.to_string(),
+        "Could not access `programs/token/src/lib.rs`: No such file or directory"
+    );
 }

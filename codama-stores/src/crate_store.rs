@@ -1,5 +1,5 @@
 use cargo_toml::Manifest;
-use codama_errors::CodamaResult;
+use codama_errors::{CodamaError, CodamaResult};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -19,15 +19,25 @@ impl CrateStore {
     pub fn load<P: AsRef<Path>>(path: P) -> CodamaResult<Self> {
         // Find and load the closest Cargo.toml file — a.k.a. the crate's manifest.
         let manifest_path = get_closest_manifest_path(path.as_ref())?;
-        let mut manifest = Manifest::from_path(&manifest_path)?;
-        manifest.complete_from_path(&manifest_path)?;
+        let manifest_error = |source| CodamaError::Manifest {
+            path: manifest_path.clone(),
+            source,
+        };
+        let mut manifest = Manifest::from_path(&manifest_path).map_err(manifest_error)?;
+        manifest
+            .complete_from_path(&manifest_path)
+            .map_err(manifest_error)?;
 
         // Find the crate's content from the manifest.
-        let relative_product_path = get_product_path(&manifest)?;
+        let relative_product_path = get_product_path(&manifest, &manifest_path)?;
         let product_path = manifest_path.parent().unwrap().join(relative_product_path);
 
         // Load the crate's content and parse it.
-        let content = fs::read_to_string(&product_path)?;
+        let content =
+            fs::read_to_string(&product_path).map_err(|source| CodamaError::Filesystem {
+                path: product_path.clone(),
+                source,
+            })?;
         let file = syn::parse_file(&content)?;
 
         // Load all external modules from the crate's content.
@@ -56,7 +66,13 @@ impl CrateStore {
 /// E.g. "my/crate" may return "my/crate/Cargo.toml"
 /// E.g. "my/workspace/crate" may return "my/workspace/Cargo.toml"
 pub fn get_closest_manifest_path<P: AsRef<Path>>(path: P) -> CodamaResult<PathBuf> {
-    let mut current_path = path.as_ref().canonicalize()?;
+    let mut current_path =
+        path.as_ref()
+            .canonicalize()
+            .map_err(|source| CodamaError::Filesystem {
+                path: path.as_ref().to_path_buf(),
+                source,
+            })?;
 
     // If the initial path is a valid Cargo.toml file, return it.
     if current_path.ends_with("Cargo.toml") && current_path.is_file() {
@@ -78,10 +94,16 @@ pub fn get_closest_manifest_path<P: AsRef<Path>>(path: P) -> CodamaResult<PathBu
     }
 
     // If no Cargo.toml file was found, return an error.
-    Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Cargo.toml not found").into())
+    Err(CodamaError::Filesystem {
+        path: path.as_ref().to_path_buf(),
+        source: std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "no Cargo.toml found in it or above it",
+        ),
+    })
 }
 
-fn get_product_path(manifest: &Manifest) -> CodamaResult<PathBuf> {
+fn get_product_path(manifest: &Manifest, manifest_path: &Path) -> CodamaResult<PathBuf> {
     let product = get_product_candidates(manifest)
         .iter()
         .filter_map(|product| product.path.as_ref())
@@ -89,7 +111,10 @@ fn get_product_path(manifest: &Manifest) -> CodamaResult<PathBuf> {
 
     match product {
         Some(path) => Ok(PathBuf::from(path)),
-        None => Err(cargo_toml::Error::Other("No crate path found in Cargo.toml").into()),
+        None => Err(CodamaError::Manifest {
+            path: manifest_path.to_path_buf(),
+            source: cargo_toml::Error::Other("no crate path found"),
+        }),
     }
 }
 

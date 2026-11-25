@@ -1,4 +1,4 @@
-use codama_errors::{CodamaResult, IteratorCombineErrors};
+use codama_errors::{CodamaError, CodamaResult, IteratorCombineErrors};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, PartialEq)]
@@ -34,7 +34,10 @@ impl FileModuleStore {
             .into_iter()
             .find(|p| p.exists())
             .ok_or_else(|| syn::Error::new_spanned(item, "could not read file"))?;
-        let content = std::fs::read_to_string(&path)?;
+        let content = std::fs::read_to_string(&path).map_err(|source| CodamaError::Filesystem {
+            path: path.clone(),
+            source,
+        })?;
         let file = syn::parse_file(&content)?;
         let modules = Self::load_all(&path, &file.items)?;
 
