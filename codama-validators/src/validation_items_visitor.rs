@@ -9,14 +9,15 @@ use codama_errors::CodamaError;
 use codama_nodes::{
     parse_interpolated_intent, FieldDiscriminatorNode, Identifier, InjectedValueNode,
     InstructionAccountLinkNode, InstructionInputValueNode, InstructionNode, InterpolatedIntentPart,
-    IsSigner, Node, NodeRef, Path, PdaSeedNode, ProgramLinkNode, ProgramNode, StructFieldTypeNode,
-    Text, ValueNode,
+    IsSigner, Node, NodeRef, PdaSeedNode, ProgramLinkNode, ProgramNode, StructFieldTypeNode, Text,
+    ValueNode,
 };
 use codama_visitors_core::{
     get_resolved_instruction_inputs, has_defined_type_finite_value, is_defined_type_cyclic,
-    is_value_node_of_type, resolve_type_path, visit, LinkableDictionary, MergeVisitor, NodePath,
-    NodeStack, ProvidedScope, RecordLinkablesVisitor, ResolveTypePathError,
-    ResolvedInstructionInput, Visitor, VisitorExt,
+    is_value_node_of_type, resolve_type_path, visit, InstructionDependency, LinkableDictionary,
+    MergeVisitor, NodePath, NodeStack, ProvidedScope, RecordLinkablesVisitor,
+    ResolveInstructionInputsError, ResolveTypePathError, ResolvedInstructionInput, Visitor,
+    VisitorExt,
 };
 use std::cell::Cell;
 
@@ -371,8 +372,7 @@ impl<'a> ValidationItemsVisitor<'a> {
         path: &NodePath<'a>,
     ) -> Vec<ValidationItem<'a>> {
         if let Some(instruction) = &link.instruction {
-            let mut instruction_path = path.clone();
-            instruction_path.push(instruction);
+            let instruction_path = path.child(instruction);
             if self.is_external_program(instruction.program.as_ref())
                 || !self.linkables.has(&instruction_path)
             {
@@ -408,31 +408,23 @@ impl<'a> ValidationItemsVisitor<'a> {
                     // library, a value provided by a parent whose dependency only holds in the parent is
                     // not reported at all; sub-instructions are on their way out, so this is left as is.
                     let is_reported_by_dependency = match &cause {
-                        CodamaError::InvalidInstructionDefaultValueDependency {
-                            dependency_kind,
-                            dependency_name,
-                            ..
-                        } => {
-                            let account = dependency_name.parse::<Identifier>();
-                            let data_path = dependency_name.parse::<Path>();
-                            let value = match (dependency_kind.as_str(), &account, &data_path) {
-                                ("accountValueNode", Ok(account), _) => {
-                                    Some(ContextualValue::Account(account))
+                        ResolveInstructionInputsError::InvalidDependency { dependency, .. } => {
+                            let value = match dependency.as_ref() {
+                                InstructionDependency::Account(account) => {
+                                    ContextualValue::Account(&account.identifier)
                                 }
-                                ("dataValueNode", _, Ok(data_path)) => {
-                                    Some(ContextualValue::Data(data_path))
+                                InstructionDependency::Data(data) => {
+                                    ContextualValue::Data(&data.path)
                                 }
-                                _ => None,
                             };
-                            value.is_some_and(|value| {
-                                !get_contextual_value_items(value, path, &self.linkables).is_empty()
-                            })
+                            !get_contextual_value_items(value, path, &self.linkables).is_empty()
                         }
                         _ => false,
                     };
                     return match is_reported_by_dependency {
                         true => vec![],
                         false => {
+                            let cause = CodamaError::from(cause);
                             vec![
                                 validation_item(LogLevel::Error, cause.to_string(), path.clone())
                                     .with_cause(cause),
@@ -607,7 +599,7 @@ impl<'a> ValidationItemsVisitor<'a> {
         value: &ValueNode,
         path: &NodePath<'a>,
     ) -> Vec<ValidationItem<'a>> {
-        let Some(mut field_path) = path.until_last::<StructFieldTypeNode>() else {
+        let Some((field_path, field)) = path.until_last_with::<StructFieldTypeNode>() else {
             return vec![];
         };
         let error = |message: String| vec![validation_item(LogLevel::Error, message, path.clone())];
@@ -621,11 +613,7 @@ impl<'a> ValidationItemsVisitor<'a> {
                 "Value labels must be concrete values, got {kind} value."
             ));
         }
-        let field: &StructFieldTypeNode = field_path
-            .last()
-            .and_then(|node| node.try_into().ok())
-            .expect("until_last ends with a struct field");
-        field_path.push(&*field.r#type);
+        let field_path = field_path.child(&*field.r#type);
         match is_value_node_of_type(value, &field_path, &self.linkables) {
             Ok(true) | Err(CodamaError::LinkedNodeNotFound { .. }) => vec![],
             Ok(false) => error(format!(

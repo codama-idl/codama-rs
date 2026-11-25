@@ -1,5 +1,5 @@
 use crate::{validation_item, LogLevel, ValidationItem};
-use codama_nodes::{Identifier, InstructionNode, NodeRef, Path};
+use codama_nodes::{AccountNode, Identifier, InstructionNode, NodeRef, Path};
 use codama_visitors_core::{
     resolve_type_path, LinkableDictionary, NodePath, ResolveTypePathError, ResolveTypePathOptions,
 };
@@ -30,13 +30,10 @@ pub(crate) fn get_contextual_value_items<'a>(
     item_path: &NodePath<'a>,
     linkables: &LinkableDictionary<'a>,
 ) -> Vec<ValidationItem<'a>> {
-    let Some(instruction_path) = item_path.until_last::<InstructionNode>() else {
+    let Some((instruction_path, instruction)) = item_path.until_last_with::<InstructionNode>()
+    else {
         return vec![];
     };
-    let instruction: &InstructionNode = instruction_path
-        .last()
-        .and_then(|node| node.try_into().ok())
-        .expect("until_last ends with an instruction");
     let error =
         |message: String| vec![validation_item(LogLevel::Error, message, item_path.clone())];
 
@@ -48,8 +45,7 @@ pub(crate) fn get_contextual_value_items<'a>(
                     instruction.identifier
                 ));
             };
-            let mut source = instruction_path.clone();
-            source.push(data);
+            let source = instruction_path.child(data);
             return get_path_items(&source, path, item_path, linkables);
         }
         ContextualValue::Account(identifier) => (identifier, None),
@@ -80,18 +76,14 @@ pub(crate) fn get_contextual_value_items<'a>(
     let Some(path) = data_path else {
         return vec![];
     };
-    let mut link_path = instruction_path.clone();
-    link_path.push(account);
-    link_path.push(account_link);
-    let Some(mut linked_account_path) = linkables.get_path(&link_path) else {
+    let link_path = instruction_path.child(account).child(account_link);
+    let Some((linked_account_path, linked_account)) =
+        linkables.get_path_of::<AccountNode>(&link_path)
+    else {
         return vec![];
     };
-    let linked_account: &codama_nodes::AccountNode = linked_account_path
-        .last()
-        .and_then(|node| node.try_into().ok())
-        .expect("an account link resolves to an account");
-    linked_account_path.push(&*linked_account.data);
-    get_path_items(&linked_account_path, path, item_path, linkables)
+    let data_path = linked_account_path.child(&*linked_account.data);
+    get_path_items(&data_path, path, item_path, linkables)
 }
 
 /// The items of a path that cannot be resolved against the type at the end of `source`.

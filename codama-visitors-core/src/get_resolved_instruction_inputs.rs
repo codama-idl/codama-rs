@@ -8,7 +8,10 @@ use codama_nodes::{
     InstructionInputValueNode, InstructionNode, IsSigner, NodeKinds, NodeRef, Path,
     PdaSeedValueValue, PdaValueProgramId, StructFieldTypeNode, ValueNode,
 };
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+};
 
 /// An account or a data field of an instruction whose default value is resolved, from
 /// [`get_resolved_instruction_inputs`].
@@ -72,6 +75,126 @@ pub enum InstructionDependency {
     Data(DataValueNode),
 }
 
+/// Why [`get_resolved_instruction_inputs`] could not resolve the inputs of an instruction. It converts
+/// into a [`CodamaError`], so `?` works in functions returning a `CodamaResult`.
+#[derive(Debug)]
+pub enum ResolveInstructionInputsError<'a> {
+    /// The default values of the instruction at `path` depend on each other in a cycle, listed as
+    /// each input of the cycle with the first one repeated at the end.
+    CyclicDependency {
+        path: NodePath<'a>,
+        cycle: Vec<InputPath<'a>>,
+    },
+    /// The default value of `dependent` depends on an account or a data field that the instruction at
+    /// `path` does not have.
+    InvalidDependency {
+        path: NodePath<'a>,
+        dependent: InputPath<'a>,
+        dependency: Box<InstructionDependency>,
+    },
+    /// The PDA seed at `path` takes the optional account `seed_value` as its value. The path is
+    /// displayed, as its tail is the resolved PDA value, which is not within the tree when resolving an
+    /// injected seed rebuilt it.
+    OptionalAccountAsPdaSeedValue {
+        path: String,
+        seed_value: AccountValueNode,
+    },
+    /// A provided value or an injected value could not be resolved.
+    Codama(CodamaError),
+}
+
+/// An input of an instruction as an error names it: its key, i.e. the identifier of an account or the
+/// data path of a field such as `config.bump`, and the path of its node.
+#[derive(Debug, Clone, PartialEq)]
+pub struct InputPath<'a> {
+    pub key: String,
+    pub path: NodePath<'a>,
+}
+
+impl fmt::Display for ResolveInstructionInputsError<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Codama(error) => error.fmt(f),
+            error => error.to_codama_error().fmt(f),
+        }
+    }
+}
+
+impl std::error::Error for ResolveInstructionInputsError<'_> {}
+
+impl From<CodamaError> for ResolveInstructionInputsError<'_> {
+    fn from(error: CodamaError) -> Self {
+        Self::Codama(error)
+    }
+}
+
+impl From<ResolveInstructionInputsError<'_>> for CodamaError {
+    fn from(error: ResolveInstructionInputsError<'_>) -> Self {
+        match error {
+            ResolveInstructionInputsError::Codama(error) => error,
+            error => error.to_codama_error(),
+        }
+    }
+}
+
+impl ResolveInstructionInputsError<'_> {
+    /// The `CodamaError` of a structured variant, with its paths displayed.
+    ///
+    /// # Panics
+    ///
+    /// Panics on the `Codama` variant, whose error is moved out instead.
+    fn to_codama_error(&self) -> CodamaError {
+        match self {
+            Self::CyclicDependency { path, cycle } => {
+                CodamaError::CyclicDependencyDetectedWhenResolvingInstructionDefaultValues {
+                    path: path.to_string(),
+                    formatted_cycle: cycle
+                        .iter()
+                        .map(|input| input.key.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" -> "),
+                    cycle: cycle.iter().map(|input| input.path.to_string()).collect(),
+                }
+            }
+            Self::InvalidDependency {
+                path,
+                dependent,
+                dependency,
+            } => CodamaError::InvalidInstructionDefaultValueDependency {
+                dependency_kind: dependency.kind().to_string(),
+                dependency_name: dependency.name(),
+                dependent: dependent.key.clone(),
+                path: path.to_string(),
+            },
+            Self::OptionalAccountAsPdaSeedValue { path, seed_value } => {
+                CodamaError::CannotUseOptionalAccountAsPdaSeedValue {
+                    seed_value_name: seed_value.identifier.to_string(),
+                    path: path.clone(),
+                }
+            }
+            Self::Codama(_) => unreachable!("the Codama variant holds its error"),
+        }
+    }
+}
+
+impl InstructionDependency {
+    /// The kind of the node the dependency refers to.
+    pub fn kind(&self) -> &'static str {
+        match self {
+            Self::Account(account) => account.kind(),
+            Self::Data(data) => data.kind(),
+        }
+    }
+
+    /// The identifier of the account or the path of the data field the dependency refers to.
+    pub fn name(&self) -> String {
+        match self {
+            Self::Account(account) => account.identifier.to_string(),
+            Self::Data(data) => data.path.to_string(),
+        }
+    }
+}
+
 /// Options of [`get_resolved_instruction_inputs`].
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct ResolveInstructionInputsOptions {
@@ -122,7 +245,7 @@ pub fn get_resolved_instruction_inputs<'a>(
     instruction_path: &NodePath<'a>,
     linkables: &LinkableDictionary<'a>,
     options: ResolveInstructionInputsOptions,
-) -> CodamaResult<Vec<ResolvedInstructionInput<'a>>> {
+) -> Result<Vec<ResolvedInstructionInput<'a>>, ResolveInstructionInputsError<'a>> {
     let Some(NodeRef::Instruction(instruction)) = instruction_path.last() else {
         return Ok(vec![]);
     };
@@ -219,11 +342,17 @@ impl<'a> Input<'a> {
     fn path(&self, instruction_path: &NodePath<'a>) -> NodePath<'a> {
         match self {
             Self::Account(account) => {
-                let mut path = instruction_path.clone();
-                path.push(*account);
+                let path = instruction_path.child(*account);
                 path
             }
             Self::Data(field) => field.path.clone(),
+        }
+    }
+
+    fn input_path(&self, instruction_path: &NodePath<'a>) -> InputPath<'a> {
+        InputPath {
+            key: self.key().to_string(),
+            path: self.path(instruction_path),
         }
     }
 }
@@ -244,7 +373,7 @@ struct Resolver<'r, 'a> {
 }
 
 impl<'a> Resolver<'_, 'a> {
-    fn resolve_input(&mut self, input: Input<'a>) -> CodamaResult<()> {
+    fn resolve_input(&mut self, input: Input<'a>) -> Result<(), ResolveInstructionInputsError<'a>> {
         let is_resolved = match &input {
             Input::Account(account) => self.resolved_accounts.contains_key(&account.identifier),
             Input::Data(field) => self.resolved_data.contains_key(field.key.as_str()),
@@ -253,21 +382,13 @@ impl<'a> Resolver<'_, 'a> {
             return Ok(());
         }
         if self.stack.iter().any(|entry| entry.is_same(&input)) {
-            let cycle: Vec<&Input<'a>> = self.stack.iter().chain([&input]).collect();
-            return Err(
-                CodamaError::CyclicDependencyDetectedWhenResolvingInstructionDefaultValues {
-                    path: self.instruction_path.to_string(),
-                    formatted_cycle: cycle
-                        .iter()
-                        .map(|entry| entry.key())
-                        .collect::<Vec<_>>()
-                        .join(" -> "),
-                    cycle: cycle
-                        .iter()
-                        .map(|entry| entry.path(self.instruction_path).to_string())
-                        .collect(),
-                },
-            );
+            let cycle = self.stack.iter().chain([&input]);
+            return Err(ResolveInstructionInputsError::CyclicDependency {
+                path: self.instruction_path.clone(),
+                cycle: cycle
+                    .map(|entry| entry.input_path(self.instruction_path))
+                    .collect(),
+            });
         }
 
         self.stack.push(input.clone());
@@ -299,7 +420,7 @@ impl<'a> Resolver<'_, 'a> {
         &mut self,
         input: &Input<'a>,
         account: &'a InstructionAccountNode,
-    ) -> CodamaResult<ResolvedInstructionAccount<'a>> {
+    ) -> Result<ResolvedInstructionAccount<'a>, ResolveInstructionInputsError<'a>> {
         let resolved_default_value = match account.default_value.as_ref() {
             Some(value) => resolve_default_value(&self.scope, value.into())?,
             None => None,
@@ -363,17 +484,18 @@ impl<'a> Resolver<'_, 'a> {
                     let mut path = match is_injected {
                         true => vec![],
                         false => {
-                            let mut path = self.instruction_path.clone();
-                            path.push(account);
+                            let path = self.instruction_path.child(account);
                             path.nodes().to_vec()
                         }
                     };
                     path.push(NodeRef::from(pda));
                     path.push(NodeRef::from(seed));
-                    return Err(CodamaError::CannotUseOptionalAccountAsPdaSeedValue {
-                        seed_value_name: seed_account.identifier.to_string(),
-                        path: NodePath::from(path).to_string(),
-                    });
+                    return Err(
+                        ResolveInstructionInputsError::OptionalAccountAsPdaSeedValue {
+                            path: NodePath::from(path).to_string(),
+                            seed_value: seed_account.clone(),
+                        },
+                    );
                 }
             }
             Some(
@@ -392,7 +514,7 @@ impl<'a> Resolver<'_, 'a> {
         &mut self,
         input: &Input<'a>,
         field: &DataInput<'a>,
-    ) -> CodamaResult<ResolvedInstructionDataField<'a>> {
+    ) -> Result<ResolvedInstructionDataField<'a>, ResolveInstructionInputsError<'a>> {
         let resolved_default_value = self.data_defaults[field.key.as_str()].clone();
         let depends_on = get_dependencies(resolved_default_value.as_ref().map(NodeRef::from));
         self.resolve_dependencies(input, &depends_on)?;
@@ -408,7 +530,7 @@ impl<'a> Resolver<'_, 'a> {
         &mut self,
         parent: &Input<'a>,
         dependencies: &[InstructionDependency],
-    ) -> CodamaResult<()> {
+    ) -> Result<(), ResolveInstructionInputsError<'a>> {
         for dependency in dependencies {
             let input = match dependency {
                 InstructionDependency::Account(account) => self
@@ -423,17 +545,10 @@ impl<'a> Resolver<'_, 'a> {
                     .map(Input::Data),
             };
             let Some(input) = input else {
-                let (dependency_kind, dependency_name) = match dependency {
-                    InstructionDependency::Account(account) => {
-                        (account.kind(), account.identifier.to_string())
-                    }
-                    InstructionDependency::Data(data) => (data.kind(), data.path.to_string()),
-                };
-                return Err(CodamaError::InvalidInstructionDefaultValueDependency {
-                    dependency_kind: dependency_kind.to_string(),
-                    dependency_name,
-                    dependent: parent.key().to_string(),
-                    path: self.instruction_path.to_string(),
+                return Err(ResolveInstructionInputsError::InvalidDependency {
+                    path: self.instruction_path.clone(),
+                    dependent: parent.input_path(self.instruction_path),
+                    dependency: Box::new(dependency.clone()),
                 });
             };
             self.resolve_input(input)?;

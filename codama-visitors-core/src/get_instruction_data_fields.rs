@@ -65,8 +65,7 @@ pub fn get_instruction_data_fields<'a>(
     };
     let instruction: &'a InstructionNode = instruction;
     if let Some(data) = instruction.data.as_ref() {
-        let mut type_path = instruction_path.clone();
-        type_path.push(data);
+        let type_path = instruction_path.child(data);
         walker.walk(data, None, instruction_path, type_path);
     }
     walker.fields
@@ -92,15 +91,12 @@ impl<'a> DataFieldsWalker<'_, 'a> {
     ) {
         match r#type {
             TypeNode::Link(link) => {
-                let mut link_path = context.clone();
-                link_path.push(link);
-                let Some(linked_path) = self.linkables.get_path(&link_path) else {
+                let link_path = context.child(link);
+                let Some((linked_path, defined_type)) =
+                    self.linkables.get_path_of::<DefinedTypeNode>(&link_path)
+                else {
                     return;
                 };
-                let defined_type: &'a DefinedTypeNode = linked_path
-                    .last()
-                    .and_then(|node| node.try_into().ok())
-                    .expect("a defined type link resolves to a defined type");
                 if self
                     .followed_types
                     .iter()
@@ -109,8 +105,7 @@ impl<'a> DataFieldsWalker<'_, 'a> {
                     return;
                 }
                 self.followed_types.push(defined_type);
-                let mut type_path = linked_path.clone();
-                type_path.push(&*defined_type.r#type);
+                let type_path = linked_path.child(&*defined_type.r#type);
                 self.walk(&defined_type.r#type, prefix, &linked_path, type_path);
                 self.followed_types.pop();
             }
@@ -120,8 +115,7 @@ impl<'a> DataFieldsWalker<'_, 'a> {
                         Some(prefix) => format!("{prefix}.{}", field.identifier),
                         None => field.identifier.to_string(),
                     };
-                    let mut field_path = type_path.clone();
-                    field_path.push(field);
+                    let field_path = type_path.child(field);
                     self.fields.push(InstructionDataField {
                         field,
                         field_path: field_path.clone(),

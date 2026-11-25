@@ -70,11 +70,25 @@ impl<'a> NodePath<'a> {
     where
         &'a T: TryFrom<NodeRef<'a>>,
     {
-        let index = self
-            .0
-            .iter()
-            .rposition(|node| <&'a T>::try_from(*node).is_ok())?;
-        Some(Self(self.0[..=index].to_vec()))
+        self.until_last_with::<T>().map(|(path, _)| path)
+    }
+
+    /// The path up to its last node of type `T`, that node included, along with that node.
+    pub fn until_last_with<T: 'a>(&self) -> Option<(NodePath<'a>, &'a T)>
+    where
+        &'a T: TryFrom<NodeRef<'a>>,
+    {
+        self.0.iter().enumerate().rev().find_map(|(index, node)| {
+            let node = <&'a T>::try_from(*node).ok()?;
+            Some((Self(self.0[..=index].to_vec()), node))
+        })
+    }
+
+    /// A copy of the path with `node` added at its end.
+    pub fn child(&self, node: impl Into<NodeRef<'a>>) -> NodePath<'a> {
+        let mut path = self.clone();
+        path.push(node);
+        path
     }
 
     /// Adds `node` at the end of the path.

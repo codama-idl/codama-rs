@@ -121,7 +121,6 @@ impl<'a> NestedCollisions<'_, 'a> {
 
 /// The path of `child` within the node at the end of `parent`.
 pub(crate) fn child_path<'a>(parent: &NodePath<'a>, child: NodeRef<'a>) -> NodePath<'a> {
-    let mut path = parent.clone();
-    path.push(child);
+    let path = parent.child(child);
     path
 }
