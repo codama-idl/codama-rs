@@ -17,7 +17,7 @@ impl FromMeta for PublicKeyValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_value, assert_value_err};
+    use crate::utils::{assert_value, assert_value_err};
 
     #[test]
     fn ok() {

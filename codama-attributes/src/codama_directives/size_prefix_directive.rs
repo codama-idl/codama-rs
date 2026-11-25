@@ -1,7 +1,7 @@
-use crate::{utils::FromMeta, Attribute, CodamaAttribute, CodamaDirective};
+use crate::{utils::parse_integer_type, Attribute, CodamaAttribute, CodamaDirective};
 use codama_errors::CodamaError;
-use codama_nodes::{IntegerTypeNode, TypeNode, TypeNodeTrait};
-use codama_syn_helpers::{extensions::*, Meta};
+use codama_nodes::IntegerTypeNode;
+use codama_syn_helpers::Meta;
 
 #[derive(Debug, PartialEq)]
 pub struct SizePrefixDirective {
@@ -11,11 +11,7 @@ pub struct SizePrefixDirective {
 impl SizePrefixDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let value = meta.assert_directive("size_prefix")?.as_value()?;
-        let node = TypeNode::from_meta(value)?;
-        let prefix = match IntegerTypeNode::try_from_type_node(node) {
-            Ok(node) => node,
-            Err(_) => return Err(value.error("prefix must be an integer(...) type")),
-        };
+        let prefix = parse_integer_type(value, "prefix")?;
         Ok(Self { prefix })
     }
 }

@@ -8,7 +8,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct ProgramDirective {
-    pub name: Identifier,
+    pub identifier: Identifier,
     pub address: String,
 }
 
@@ -27,7 +27,7 @@ impl ProgramDirective {
         })?;
 
         Ok(Self {
-            name: name.take(meta)?,
+            identifier: name.take(meta)?,
             address: address.take(meta)?,
         })
     }
@@ -42,52 +42,52 @@ impl ProgramDirective {
     pub fn update_or_wrap_program_node(&self, node: Node) -> Node {
         match node {
             Node::Root(mut root) => {
-                root.program.identifier = self.name.clone();
+                root.program.identifier = self.identifier.clone();
                 root.program.public_key = self.address.clone();
                 root.into()
             }
             Node::Program(mut program) => {
-                program.identifier = self.name.clone();
+                program.identifier = self.identifier.clone();
                 program.public_key = self.address.clone();
                 program.into()
             }
             Node::Account(account) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 accounts: vec![account],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Constant(constant) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 constants: vec![constant],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Instruction(instruction) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 instructions: vec![instruction],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Error(error) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 errors: vec![error],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Pda(pda) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 pdas: vec![pda],
                 ..ProgramNode::default()
             }
             .into(),
             Node::Event(event) => ProgramNode {
-                identifier: self.name.clone(),
+                identifier: self.identifier.clone(),
                 public_key: self.address.clone(),
                 events: vec![event],
                 ..ProgramNode::default()
@@ -131,7 +131,7 @@ mod tests {
         assert_eq!(
             directive,
             ProgramDirective {
-                name: "associatedToken".into(),
+                identifier: "associatedToken".into(),
                 address: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string(),
             }
         );

@@ -77,9 +77,9 @@ pub fn parse_pda_seed_nodes(
         .filter_map(|attribute| Some((attribute, SeedDirective::filter(attribute)?)));
     for (attribute, directive) in directives {
         match &directive.seed {
-            SeedDirectiveType::Variable { name, r#type } => {
+            SeedDirectiveType::Variable { identifier, r#type } => {
                 let type_node = r#type.try_resolved()?.clone();
-                seeds.push(VariablePdaSeedNode::new(name.clone(), type_node).into());
+                seeds.push(VariablePdaSeedNode::new(identifier.clone(), type_node).into());
             }
             SeedDirectiveType::Constant { r#type, value } => {
                 let type_node = r#type.try_resolved()?.clone();

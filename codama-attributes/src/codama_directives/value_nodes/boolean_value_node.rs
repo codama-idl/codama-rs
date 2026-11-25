@@ -12,7 +12,7 @@ impl FromMeta for BooleanValueNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assert_value;
+    use crate::utils::assert_value;
 
     #[test]
     fn ok() {

@@ -13,7 +13,7 @@ use proc_macro2::TokenStream;
 /// `declare_id!` / `package.metadata.solana.program-id` address).
 #[derive(Debug, PartialEq)]
 pub struct CodamaProgramMacro {
-    pub name: Option<Identifier>,
+    pub identifier: Option<Identifier>,
     pub address: Option<String>,
 }
 
@@ -40,7 +40,10 @@ impl CodamaProgramMacro {
             return Err(meta.error("expected at least one of `identifier` or `address`"));
         }
 
-        Ok(Self { name, address })
+        Ok(Self {
+            identifier: name,
+            address,
+        })
     }
 }
 
@@ -56,7 +59,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(Identifier::from("associatedToken")),
+                identifier: Some(Identifier::from("associatedToken")),
                 address: None,
             }
         );
@@ -71,7 +74,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: None,
+                identifier: None,
                 address: Some("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string()),
             }
         );
@@ -86,7 +89,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(Identifier::from("associatedToken")),
+                identifier: Some(Identifier::from("associatedToken")),
                 address: Some("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string()),
             }
         );

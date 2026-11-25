@@ -32,7 +32,7 @@ pub(crate) fn fixed_size_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assert_type;
+    use crate::utils::assert_type;
     use codama_nodes::{
         BooleanTypeNode, DefinedTypeLinkNode, IntegerFormat::U32, IntegerTypeNode,
         SizePrefixTransformNode, StringTypeNode,

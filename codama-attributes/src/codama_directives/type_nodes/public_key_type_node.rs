@@ -15,7 +15,7 @@ impl FromMeta for PublicKeyTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
 
     #[test]
     fn ok() {

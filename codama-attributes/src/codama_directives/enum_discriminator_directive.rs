@@ -1,17 +1,17 @@
 use crate::{
-    utils::{removed_name_key, FromMeta, SetOnce},
+    utils::{parse_integer_type, removed_name_key, FromMeta, SetOnce},
     Attribute, CodamaAttribute, CodamaDirective,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
     DisplaySkip, FieldDiscriminatorNode, Identifier, IntegerFormat::U8, IntegerTypeNode, Node,
-    StructFieldDisplayNode, StructFieldTypeNode, TypeNode, TypeNodeTrait,
+    StructFieldDisplayNode, StructFieldTypeNode, TypeNode,
 };
 use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct EnumDiscriminatorDirective {
-    pub name: Option<Identifier>,
+    pub identifier: Option<Identifier>,
     pub size: Option<IntegerTypeNode>,
 }
 
@@ -26,22 +26,16 @@ impl EnumDiscriminatorDirective {
         pl.each(|ref meta| match meta.path_str().as_str() {
             "identifier" => name.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
-            "size" => {
-                let node = TypeNode::from_meta(meta.as_value()?)?;
-                match IntegerTypeNode::try_from_type_node(node) {
-                    Ok(node) => size.set(node, meta),
-                    _ => Err(meta.error("size must be an integer(...) type")),
-                }
-            }
+            "size" => size.set(parse_integer_type(meta.as_value()?, "size")?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 
         let directive = EnumDiscriminatorDirective {
-            name: name.option(),
+            identifier: name.option(),
             size: size.option(),
         };
 
-        if directive.name.is_none() && directive.size.is_none() {
+        if directive.identifier.is_none() && directive.size.is_none() {
             return Err(
                 meta.error("enum_discriminator must specify at least one of: identifier, size")
             );
@@ -51,7 +45,7 @@ impl EnumDiscriminatorDirective {
     }
 
     fn identifier(&self) -> Identifier {
-        self.name
+        self.identifier
             .clone()
             .unwrap_or_else(|| Identifier::from("discriminator"))
     }
@@ -128,7 +122,7 @@ mod tests {
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some(Identifier::from("banana")),
+                identifier: Some(Identifier::from("banana")),
                 size: None,
             }
         );
@@ -141,7 +135,7 @@ mod tests {
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: None,
+                identifier: None,
                 size: Some(IntegerTypeNode::le(U32)),
             }
         );
@@ -155,7 +149,7 @@ mod tests {
         assert_eq!(
             directive,
             EnumDiscriminatorDirective {
-                name: Some(Identifier::from("banana")),
+                identifier: Some(Identifier::from("banana")),
                 size: Some(IntegerTypeNode::le(U16)),
             }
         );

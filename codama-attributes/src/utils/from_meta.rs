@@ -48,15 +48,14 @@ impl FromMeta for IsSigner {
     }
 }
 
+/// Parses an encoding as a bare path, either positional (`utf8`) or as a value (`encoding = utf8`),
+/// like the other keyword options of the attributes.
 impl FromMeta for BytesEncoding {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         let expr = meta.as_expr_or_value_expr()?;
-        if let Ok(value) = expr.as_string() {
-            if let Ok(encoding) = Self::try_from(value) {
-                return Ok(encoding);
-            }
-        }
-        Err(expr.error("expected one of: \"base16\", \"base58\", \"base64\", \"utf8\""))
+        let path = expr.as_path()?;
+        Self::try_from(path.to_string())
+            .map_err(|_| path.error("expected one of: base16, base58, base64, utf8"))
     }
 }
 

@@ -28,7 +28,7 @@ pub fn public_key_value_node_from_sysvar(meta: &Meta) -> syn::Result<PublicKeyVa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_value, assert_value_err};
+    use crate::utils::{assert_value, assert_value_err};
 
     #[test]
     fn ok() {

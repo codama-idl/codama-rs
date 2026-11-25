@@ -43,7 +43,7 @@ impl FromMeta for MapTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
     use codama_nodes::{
         FixedCountNode,
         IntegerFormat::{U32, U8},

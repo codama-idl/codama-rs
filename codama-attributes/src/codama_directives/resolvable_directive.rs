@@ -282,7 +282,10 @@ mod tests {
         let item = syn::parse_quote! { struct Foo; };
         let ctx = crate::AttributeContext::Item(&item);
         let directive = crate::AccountDirective::parse(&meta, &ctx).unwrap();
-        assert_eq!(directive.name, codama_nodes::Identifier::from("vault"));
+        assert_eq!(
+            directive.identifier,
+            codama_nodes::Identifier::from("vault")
+        );
         assert!(directive.is_writable);
         assert!(directive.default_value.as_ref().unwrap().is_unresolved());
     }
@@ -295,8 +298,8 @@ mod tests {
         let ctx = crate::AttributeContext::Item(&item);
         let directive = crate::SeedDirective::parse(&meta, &ctx).unwrap();
         match &directive.seed {
-            crate::SeedDirectiveType::Variable { name, r#type } => {
-                assert_eq!(name, &codama_nodes::Identifier::from("authority"));
+            crate::SeedDirectiveType::Variable { identifier, r#type } => {
+                assert_eq!(identifier, &codama_nodes::Identifier::from("authority"));
                 assert!(r#type.is_unresolved());
             }
             _ => panic!("expected Variable seed"),

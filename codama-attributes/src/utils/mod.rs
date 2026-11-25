@@ -1,5 +1,6 @@
 mod from_meta;
 mod integer;
+#[cfg(test)]
 mod macros;
 mod meta_consumer;
 mod number_type;
@@ -9,6 +10,8 @@ mod unit_display;
 
 pub use from_meta::*;
 pub(crate) use integer::*;
+#[cfg(test)]
+pub(crate) use macros::*;
 pub use meta_consumer::*;
 pub(crate) use number_type::*;
 pub use removed_syntax::*;

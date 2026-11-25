@@ -310,7 +310,7 @@ fn get_data_field_defaults<'a>(
                 node: directive.default_value.as_ref()?,
                 strategy: directive.default_value_strategy,
             };
-            Some(Ok((directive.name.clone(), default)))
+            Some(Ok((directive.identifier.clone(), default)))
         });
 
     // A named account field is not data, but a tuple account item is both an account and a data item.

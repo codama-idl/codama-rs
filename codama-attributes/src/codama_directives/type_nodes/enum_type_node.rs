@@ -1,5 +1,5 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{EnumTypeNode, EnumVariantTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
+use crate::utils::{parse_integer_type, FromMeta, SetOnce};
+use codama_nodes::{EnumTypeNode, EnumVariantTypeNode, IntegerTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for EnumTypeNode {
@@ -12,12 +12,7 @@ impl FromMeta for EnumTypeNode {
             meta.as_path_list()?
                 .each(|ref meta| match meta.path_str().as_str() {
                     "size" => {
-                        let value = meta.as_value()?;
-                        let node = TypeNode::from_meta(value)?;
-                        let size_node = match IntegerTypeNode::try_from_type_node(node) {
-                            Ok(node) => node,
-                            Err(_) => return Err(value.error("size must be an integer(...) type")),
-                        };
+                        let size_node = parse_integer_type(meta.as_value()?, "size")?;
                         size.set(size_node, meta)
                     }
                     "variant" => {
@@ -39,7 +34,7 @@ impl FromMeta for EnumTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
     use codama_nodes::{
         IntegerFormat::{U16, U8},
         TupleTypeNode,

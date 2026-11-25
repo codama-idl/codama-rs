@@ -1,5 +1,5 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{IntegerTypeNode, PrefixedCountNode, TypeNode, TypeNodeTrait};
+use crate::utils::{parse_integer_type, FromMeta, SetOnce};
+use codama_nodes::{IntegerTypeNode, PrefixedCountNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for PrefixedCountNode {
@@ -8,10 +8,10 @@ impl FromMeta for PrefixedCountNode {
         let mut prefix: SetOnce<IntegerTypeNode> = SetOnce::new("prefix");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "prefix" => prefix.set(parse_prefix(meta.as_value()?)?, meta),
+            "prefix" => prefix.set(parse_integer_type(meta.as_value()?, "prefix")?, meta),
             _ => {
                 if meta.is_path_or_list() {
-                    return prefix.set(parse_prefix(meta)?, meta);
+                    return prefix.set(parse_integer_type(meta, "prefix")?, meta);
                 }
                 Err(meta.error("unrecognized attribute"))
             }
@@ -19,10 +19,4 @@ impl FromMeta for PrefixedCountNode {
 
         Ok(PrefixedCountNode::new(prefix.take(meta)?))
     }
-}
-
-fn parse_prefix(meta: &Meta) -> syn::Result<IntegerTypeNode> {
-    let node = TypeNode::from_meta(meta)?;
-    IntegerTypeNode::try_from_type_node(node)
-        .map_err(|_| meta.error("prefix must be an integer(...) type"))
 }

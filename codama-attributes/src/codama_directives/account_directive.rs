@@ -11,7 +11,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 #[derive(Debug, PartialEq)]
 pub struct AccountDirective {
-    pub name: Identifier,
+    pub identifier: Identifier,
     pub is_writable: bool,
     pub is_signer: IsSigner,
     pub is_optional: bool,
@@ -59,7 +59,7 @@ impl AccountDirective {
                 })?,
         }
         Ok(AccountDirective {
-            name: name.take(meta)?,
+            identifier: name.take(meta)?,
             is_writable: is_writable.take(meta)?,
             is_signer: is_signer.take(meta)?,
             is_optional: is_optional.take(meta)?,
@@ -73,7 +73,7 @@ impl AccountDirective {
     /// Returns an error if any unresolved directives remain.
     pub fn to_instruction_account_node(&self) -> CodamaResult<InstructionAccountNode> {
         Ok(InstructionAccountNode {
-            identifier: self.name.clone(),
+            identifier: self.identifier.clone(),
             is_writable: self.is_writable,
             is_signer: self.is_signer,
             is_optional: if self.is_optional { Some(true) } else { None },
@@ -127,7 +127,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
+                identifier: "payer".into(),
                 is_writable: true,
                 is_signer: IsSigner::True,
                 is_optional: true,
@@ -153,7 +153,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "payer".into(),
+                identifier: "payer".into(),
                 is_writable: true,
                 is_signer: IsSigner::Either,
                 is_optional: false,
@@ -173,7 +173,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "authority".into(),
+                identifier: "authority".into(),
                 is_writable: false,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -202,7 +202,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "stake".into(),
+                identifier: "stake".into(),
                 is_writable: true,
                 is_signer: IsSigner::False,
                 is_optional: false,
@@ -222,7 +222,7 @@ mod tests {
         assert_eq!(
             directive,
             AccountDirective {
-                name: "authority".into(),
+                identifier: "authority".into(),
                 is_writable: false,
                 is_signer: IsSigner::True,
                 is_optional: false,

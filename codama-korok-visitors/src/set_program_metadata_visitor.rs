@@ -52,7 +52,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
         // defaults below, which only fill fields the override left empty.
         // E.g. `codama_program!(identifier = "myProgram");`
         if let Some(program_macro) = &self.identified_program {
-            if let Some(name) = &program_macro.name {
+            if let Some(name) = &program_macro.identifier {
                 program.identifier = name.clone();
             }
             if let Some(address) = &program_macro.address {
