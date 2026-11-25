@@ -11,8 +11,9 @@ use codama_nodes::{
 };
 use codama_visitors_core::{
     get_instruction_data_fields, get_linkables_from_node, get_resolved_instruction_inputs,
-    InstructionDependency, LinkableDictionary, NodePath, ResolveInstructionInputsOptions,
-    ResolvedInstructionAccount, ResolvedInstructionDataField, ResolvedInstructionInput,
+    InstructionDependency, LinkableDictionary, NodePath, ResolveInstructionInputsError,
+    ResolveInstructionInputsOptions, ResolvedInstructionAccount, ResolvedInstructionDataField,
+    ResolvedInstructionInput,
 };
 
 fn account(identifier: &'static str, is_signer: IsSigner) -> InstructionAccountNode {
@@ -509,8 +510,16 @@ fn falls_back_to_the_injected_value_fallback_when_no_provider_is_found() {
 fn resolve_error<'a>(
     path: &NodePath<'a>,
     linkables: &LinkableDictionary<'a>,
-) -> codama_errors::CodamaError {
+) -> ResolveInstructionInputsError<'a> {
     get_resolved_instruction_inputs(path, linkables, Default::default()).unwrap_err()
+}
+
+/// The error as the `CodamaError` it converts into, which displays its paths.
+fn resolve_codama_error<'a>(
+    path: &NodePath<'a>,
+    linkables: &LinkableDictionary<'a>,
+) -> codama_errors::CodamaError {
+    resolve_error(path, linkables).into()
 }
 
 #[test]
@@ -523,10 +532,14 @@ fn reports_invalid_dependencies_by_the_kind_and_name_of_what_they_refer_to() {
         )],
         ..instruction("myInstruction")
     };
-    let error = resolve_error(
-        &NodePath::from(vec![NodeRef::from(&node)]),
-        &LinkableDictionary::default(),
-    );
+    let path = NodePath::from(vec![NodeRef::from(&node)]);
+    let error = resolve_error(&path, &LinkableDictionary::default());
+    // The dependency is carried as is, so a caller can match on it rather than on its display.
+    let ResolveInstructionInputsError::InvalidDependency { dependency, .. } = &error else {
+        panic!("expected an invalid dependency, got {error}");
+    };
+    assert_eq!(**dependency, depends_on_account("missing"));
+    let error = codama_errors::CodamaError::from(error);
     let codama_errors::CodamaError::InvalidInstructionDefaultValueDependency {
         dependency_kind,
         dependency_name,
@@ -623,7 +636,7 @@ fn reports_cycles_between_accounts_with_the_paths_of_the_accounts() {
     let codama_errors::CodamaError::CyclicDependencyDetectedWhenResolvingInstructionDefaultValues {
         cycle,
         ..
-    } = error
+    } = codama_errors::CodamaError::from(error)
     else {
         panic!("expected a cycle");
     };
@@ -660,7 +673,7 @@ fn reports_cycles_through_data_fields_of_linked_types_with_the_paths_of_the_fiel
         vec![provide("fee", AccountValueNode::new("authority"))],
         vec![authority],
     );
-    let error = resolve_error(&instruction_path(&root), &get_linkables_from_node(&root));
+    let error = resolve_codama_error(&instruction_path(&root), &get_linkables_from_node(&root));
     let codama_errors::CodamaError::CyclicDependencyDetectedWhenResolvingInstructionDefaultValues {
         formatted_cycle,
         cycle,

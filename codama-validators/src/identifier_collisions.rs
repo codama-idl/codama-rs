@@ -43,7 +43,7 @@ where
         items.push(validation_item(
             LogLevel::Error,
             message,
-            child_path(parent, entry.into()),
+            parent.child(entry.into()),
         ));
     }
     items
@@ -85,7 +85,7 @@ struct NestedCollisions<'c, 'a> {
 impl<'a> NestedCollisions<'_, 'a> {
     fn visit(&mut self, siblings: &'a [InstructionNode], parent: &NodePath<'a>) {
         for instruction in siblings {
-            let path = child_path(parent, NodeRef::from(instruction));
+            let path = parent.child(NodeRef::from(instruction));
             let identifier = instruction.identifier.as_str();
             if !identifier.is_empty() {
                 match self.identifiers_by_camel_case.entry(camel_case(identifier)) {
@@ -117,11 +117,4 @@ impl<'a> NestedCollisions<'_, 'a> {
             self.visit(&instruction.sub_instructions, &path);
         }
     }
-}
-
-/// The path of `child` within the node at the end of `parent`.
-pub(crate) fn child_path<'a>(parent: &NodePath<'a>, child: NodeRef<'a>) -> NodePath<'a> {
-    let mut path = parent.clone();
-    path.push(child);
-    path
 }

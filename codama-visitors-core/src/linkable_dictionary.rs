@@ -123,13 +123,9 @@ impl<'a> LinkableDictionary<'a> {
         let Some(node) = path.last() else {
             return;
         };
-        let Some(program_path) = path.until_last::<ProgramNode>() else {
+        let Some((program_path, program)) = path.until_last_with::<ProgramNode>() else {
             return;
         };
-        let program: &ProgramNode = program_path
-            .last()
-            .and_then(|node| node.try_into().ok())
-            .expect("until_last ends with a program");
         let mut programs = self.programs.borrow_mut();
         let program_dictionary =
             programs.get_or_insert_with(&program.identifier, || ProgramDictionary {
@@ -151,13 +147,11 @@ impl<'a> LinkableDictionary<'a> {
                 .pdas
                 .insert(&pda.identifier, path.clone()),
             NodeRef::Instruction(_) | NodeRef::InstructionAccount(_) => {
-                let Some(instruction_path) = path.until_last::<InstructionNode>() else {
+                let Some((instruction_path, instruction)) =
+                    path.until_last_with::<InstructionNode>()
+                else {
                     return;
                 };
-                let instruction: &InstructionNode = instruction_path
-                    .last()
-                    .and_then(|node| node.try_into().ok())
-                    .expect("until_last ends with an instruction");
                 let instruction_dictionary = program_dictionary.instructions.get_or_insert_with(
                     &instruction.identifier,
                     || InstructionDictionary {
@@ -273,6 +267,25 @@ impl<'a> LinkableDictionary<'a> {
     /// The node that the link at the end of `link_path` points to, if it is recorded.
     pub fn get(&self, link_path: &NodePath<'a>) -> Option<NodeRef<'a>> {
         self.get_path(link_path)?.last()
+    }
+
+    /// The path of the node that the link at the end of `link_path` points to, along with that node as
+    /// a `T`, if it is recorded. Each kind of link records one kind of node, e.g. a
+    /// `definedTypeLinkNode` a `DefinedTypeNode`, so the conversion holds by construction.
+    ///
+    /// # Panics
+    ///
+    /// Panics when the linked node is not a `T`, which asks for the wrong kind of node.
+    pub fn get_path_of<T: 'a>(&self, link_path: &NodePath<'a>) -> Option<(NodePath<'a>, &'a T)>
+    where
+        &'a T: TryFrom<NodeRef<'a>>,
+    {
+        let path = self.get_path(link_path)?;
+        let node = path
+            .last()
+            .and_then(|node| <&'a T>::try_from(node).ok())
+            .expect("a link records the kind of node it points to");
+        Some((path, node))
     }
 
     /// Whether the node that the link at the end of `link_path` points to is recorded.

@@ -1,7 +1,4 @@
-use crate::{
-    is_defined_type_cyclic::defined_type_at_end_of, LinkableDictionary, MergeVisitor, NodeStack,
-    Visitor, VisitorExt,
-};
+use crate::{LinkableDictionary, MergeVisitor, NodeStack, Visitor, VisitorExt};
 use codama_nodes::{CountNode, DefinedTypeNode, NodeRef, TransformNode};
 use std::cell::RefCell;
 
@@ -100,10 +97,12 @@ pub fn get_has_finite_value_visitor<'s, 'a: 's>(
                 }
                 // The link itself, such as its transforms, goes through `next`.
                 NodeRef::DefinedTypeLink(_) => {
-                    let Some(linked_path) = linkables.get_path(&stack.get_path()) else {
+                    let Some((linked_path, linked_type)) =
+                        linkables.get_path_of::<DefinedTypeNode>(&stack.get_path())
+                    else {
                         return scope.next(node);
                     };
-                    if contains(&visiting, defined_type_at_end_of(&linked_path)) {
+                    if contains(&visiting, linked_type) {
                         return false;
                     }
                     stack.visit_path(linked_path, |linked| scope.visit(linked)) && scope.next(node)

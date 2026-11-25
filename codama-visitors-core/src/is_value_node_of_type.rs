@@ -31,8 +31,7 @@ pub fn is_value_node_of_type<'a>(
         return Ok(false);
     };
     let is_child_of_type = |child_value: &ValueNode, child_type: &'a TypeNode| {
-        let mut child_path = resolved.clone();
-        child_path.push(child_type);
+        let child_path = resolved.child(child_type);
         is_value_node_of_type(child_value, &child_path, linkables)
     };
     Ok(

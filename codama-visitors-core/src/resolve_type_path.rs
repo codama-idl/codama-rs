@@ -123,15 +123,10 @@ pub fn resolve_type_path<'a>(
             {
                 let link = public_key.account_link.as_ref().expect("checked above");
                 container.push(link);
-                let mut account_path = linkables
-                    .get_path(&container)
+                let (account_path, account) = linkables
+                    .get_path_of::<AccountNode>(&container)
                     .ok_or(ResolveTypePathError::LinkedNodeNotFound { path: container })?;
-                let account: &AccountNode = account_path
-                    .last()
-                    .and_then(|node| node.try_into().ok())
-                    .expect("an account link resolves to an account");
-                account_path.push(&*account.data);
-                current = account_path;
+                current = account_path.child(&*account.data);
             }
             (PathSegment::Field(identifier), NodeRef::StructType(r#struct)) => {
                 match r#struct
@@ -186,13 +181,11 @@ fn resolve_container<'a>(
                 None => return Err(cannot_resolve(current, path, segment)),
             },
             NodeRef::DefinedTypeLink(_) => {
-                let Some(mut defined_type_path) = linkables.get_path(&current) else {
+                let Some((defined_type_path, defined_type)) =
+                    linkables.get_path_of::<DefinedTypeNode>(&current)
+                else {
                     return Err(ResolveTypePathError::LinkedNodeNotFound { path: current });
                 };
-                let defined_type: &DefinedTypeNode = defined_type_path
-                    .last()
-                    .and_then(|node| node.try_into().ok())
-                    .expect("a defined type link resolves to a defined type");
                 // An alias cycle, such as `a = b` and `b = a`, never reaches a type to apply the segment to.
                 if followed_types
                     .iter()
@@ -201,8 +194,7 @@ fn resolve_container<'a>(
                     return Err(cannot_resolve(current, path, segment));
                 }
                 followed_types.push(defined_type);
-                defined_type_path.push(&*defined_type.r#type);
-                current = defined_type_path;
+                current = defined_type_path.child(&*defined_type.r#type);
             }
             _ => return Ok(current),
         }
