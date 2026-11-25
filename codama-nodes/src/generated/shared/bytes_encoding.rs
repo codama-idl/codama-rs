@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// How a string of bytes is encoded for transport.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum BytesEncoding {
     /// Hexadecimal encoding (two characters per byte).
     Base16,

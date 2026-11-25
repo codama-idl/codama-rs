@@ -10,6 +10,7 @@ use codama_nodes_derive::{node_union, NodeConversions};
 
 #[derive(NodeConversions)]
 #[node_union]
+#[non_exhaustive]
 pub enum RegisteredTypeNode {
     Array(ArrayTypeNode),
     Boolean(BooleanTypeNode),
@@ -37,6 +38,7 @@ pub enum RegisteredTypeNode {
 
 #[derive(NodeConversions)]
 #[node_union]
+#[non_exhaustive]
 pub enum TypeNode {
     Array(ArrayTypeNode),
     Boolean(BooleanTypeNode),

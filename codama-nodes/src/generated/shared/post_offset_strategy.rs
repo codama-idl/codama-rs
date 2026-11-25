@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 /// See `postOffsetTransformNode` for an illustrated walkthrough of each strategy.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum PostOffsetStrategy {
     /// Move the cursor to the absolute byte position given by the offset; a negative offset counts backwards from the end of the buffer.
     Absolute,

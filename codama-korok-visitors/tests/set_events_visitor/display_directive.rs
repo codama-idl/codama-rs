@@ -85,7 +85,7 @@ fn it_preserves_both_halves_of_a_tuple_field_display() -> CodamaResult<()> {
     assert_eq!(
         *fields[1].r#type,
         IntegerTypeNode {
-            display: Box::new(Some(NumberDisplayNode::Amount(
+            display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                 AmountNumberDisplayNode::new(
                     IntegerValueNode::new(9u64),
                     StringValueNode::new("SOL"),

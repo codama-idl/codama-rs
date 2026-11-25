@@ -183,7 +183,9 @@ describe('getRenderMap', () => {
         // restores it on disk.
         const entry = getFromRenderMap(map, 'value_nodes/value_node.rs');
         expect(entry.content).toContain('use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};');
-        expect(entry.content).toContain('#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]');
+        expect(entry.content).toContain(
+            '#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]\n#[non_exhaustive]\npub enum',
+        );
         expect(entry.content).toContain('#[node_union]');
         expect(entry.content).toContain('pub enum RegisteredValueNode {');
         // Standalone variants (alphabetical).
@@ -370,15 +372,15 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('pub value: Box<ConstantPdaSeedValue>,');
         });
 
-        it('emits the ConstantPdaSeedValue inline-union enum with stripped variant names', () => {
+        it('emits the ConstantPdaSeedValue inline-union enum with whole variant names', () => {
             const entry = getFromRenderMap(map, 'pda_seed_nodes/constant_pda_seed_value.rs');
             expect(entry.content).toContain('#[node_union]');
             expect(entry.content).toContain('pub enum ConstantPdaSeedValue {');
-            expect(entry.content).toContain('ProgramId(ProgramIdValueNode),');
-            // Sample of value-node variants (suffix `ValueNode` stripped).
-            expect(entry.content).toContain('Integer(IntegerValueNode),');
-            expect(entry.content).toContain('String(StringValueNode),');
-            expect(entry.content).toContain('Boolean(BooleanValueNode),');
+            expect(entry.content).toContain('ProgramIdValue(ProgramIdValueNode),');
+            // Sample of value-node variants, which keep their whole name.
+            expect(entry.content).toContain('IntegerValue(IntegerValueNode),');
+            expect(entry.content).toContain('StringValue(StringValueNode),');
+            expect(entry.content).toContain('BooleanValue(BooleanValueNode),');
             expect(entry.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');
         });
 
@@ -443,11 +445,11 @@ describe('getRenderMap', () => {
             );
         });
 
-        it('emits the InjectableIntegerValueNode inline-union enum with Injected/Integer variants', () => {
+        it('emits the InjectableIntegerValueNode inline-union enum with InjectedValue/IntegerValue variants', () => {
             const entry = getFromRenderMap(map, 'value_nodes/injectable_integer_value_node.rs');
             expect(entry.content).toContain('pub enum InjectableIntegerValueNode {');
-            expect(entry.content).toContain('Injected(InjectedValueNode),');
-            expect(entry.content).toContain('Integer(IntegerValueNode),');
+            expect(entry.content).toContain('InjectedValue(InjectedValueNode),');
+            expect(entry.content).toContain('IntegerValue(IntegerValueNode),');
         });
     });
 
@@ -457,11 +459,12 @@ describe('getRenderMap', () => {
             expect(entry.content).toContain('#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]');
             expect(entry.content).toContain('pub enum RegisteredContextualValueNode {');
             // Standalone variants (alphabetical, stripped ValueNode).
-            expect(entry.content).toContain('Account(AccountValueNode),');
-            expect(entry.content).toContain('AccountBump(AccountBumpValueNode),');
-            expect(entry.content).toContain('Data(DataValueNode),');
+            // The names do not end with `ContextualValue`, so they keep their `Value` suffix.
+            expect(entry.content).toContain('AccountValue(AccountValueNode),');
+            expect(entry.content).toContain('AccountBumpValue(AccountBumpValueNode),');
+            expect(entry.content).toContain('DataValue(DataValueNode),');
             // `#[registered]`-only: `pdaSeedValueNode`.
-            expect(entry.content).toContain('#[registered]\nPdaSeed(PdaSeedValueNode),');
+            expect(entry.content).toContain('#[registered]\nPdaSeedValue(PdaSeedValueNode),');
         });
 
         it('renders dataValueNode.path as `Path` and accountDataValueNode.path as `Option<Path>`', () => {

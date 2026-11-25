@@ -44,7 +44,7 @@ export function getEnumPageFragment(enumeration: EnumerationSpec): Fragment {
     const docs = formatDocs(enumeration.docs);
     const derives = fragment`#[derive(Debug, PartialEq, Eq, Clone, Copy, ${use('serde::Serialize')}, ${use('serde::Deserialize')})]`;
 
-    return fragment`${docs}${derives}\n#[serde(rename_all = "camelCase")]\npub enum ${enumName} {\n${variantLines}\n}\n`;
+    return fragment`${docs}${derives}\n#[serde(rename_all = "camelCase")]\n#[non_exhaustive]\npub enum ${enumName} {\n${variantLines}\n}\n`;
 }
 
 function formatDocs(docs: readonly string[] | undefined): string {

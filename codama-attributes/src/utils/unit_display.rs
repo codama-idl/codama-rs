@@ -6,7 +6,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 /// Any amount display gets the same error, because its decimals cannot apply.
 pub fn parse_unit_display(meta: &Meta, nodes: &str) -> syn::Result<UnitNumberDisplayNode> {
     match NumberDisplayNode::from_meta(meta) {
-        Ok(NumberDisplayNode::Unit(display)) => Ok(display),
+        Ok(NumberDisplayNode::UnitNumberDisplay(display)) => Ok(display),
         Err(error) if meta.path_str() != "amount" => Err(error),
         _ => Err(meta.error(format!("{nodes} take a unit display, use unit(...)"))),
     }

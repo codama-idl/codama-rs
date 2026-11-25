@@ -107,7 +107,7 @@ fn it_preserves_number_display_metadata() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "amount",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),

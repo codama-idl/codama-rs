@@ -14,8 +14,9 @@ describe('getEnumPageFragment', () => {
     it('renders a plain `pub enum` with the standard derive set and `rename_all = "camelCase"`', () => {
         const result = getEnumPageFragment(floatFormat);
         expect(result.content).toContain('#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]');
-        expect(result.content).toContain('#[serde(rename_all = "camelCase")]');
-        expect(result.content).toContain('pub enum FloatFormat {');
+        expect(result.content).toContain(
+            '#[serde(rename_all = "camelCase")]\n#[non_exhaustive]\npub enum FloatFormat {',
+        );
     });
 
     it('emits variants in spec declaration order, PascalCased', () => {

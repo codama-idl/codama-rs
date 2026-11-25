@@ -32,7 +32,7 @@ fn it_applies_number_displays_without_creating_field_displays() -> CodamaResult<
             StructFieldTypeNode::new(
                 "amount",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
@@ -57,7 +57,7 @@ fn it_applies_unit_displays_to_numbers() -> CodamaResult<()> {
                 value: u64
             },
             TypeNode::from(IntegerTypeNode {
-                display: Box::new(Some(NumberDisplayNode::Unit(display()))),
+                display: Box::new(Some(NumberDisplayNode::UnitNumberDisplay(display()))),
                 ..IntegerTypeNode::le(U64)
             }),
         ),
@@ -123,7 +123,7 @@ fn it_applies_address_units() -> CodamaResult<()> {
                 value: u64
             },
             IntegerTypeNode {
-                display: Box::new(Some(NumberDisplayNode::Amount(
+                display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                     AmountNumberDisplayNode::new(IntegerValueNode::new(6u64), mint()),
                 ))),
                 ..IntegerTypeNode::le(U64)
@@ -198,7 +198,7 @@ fn it_replaces_existing_number_displays() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "amount",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
@@ -231,7 +231,7 @@ fn it_applies_multiple_number_displays_in_source_order() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "amount",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
@@ -253,7 +253,7 @@ fn it_traverses_supported_number_wrappers() -> CodamaResult<()> {
         values: Vec<Option<u64>>
     };
     let mut korok = FieldKorok::parse(&ast)?;
-    let display = NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+    let display = NumberDisplayNode::AmountNumberDisplay(AmountNumberDisplayNode::new(
         IntegerValueNode::new(9u64),
         StringValueNode::new("SOL"),
     ));
@@ -321,7 +321,7 @@ fn it_traverses_nodes_with_transforms() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "value",
                 RemainderOptionTypeNode::new(IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
@@ -347,7 +347,7 @@ fn it_traverses_alternative_option_encodings() -> CodamaResult<()> {
         #[codama(display(amount(decimals = 9, unit = "SOL")))]
         value: u64
     };
-    let display = NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
+    let display = NumberDisplayNode::AmountNumberDisplay(AmountNumberDisplayNode::new(
         IntegerValueNode::new(9u64),
         StringValueNode::new("SOL"),
     ));
@@ -426,7 +426,7 @@ fn it_keeps_transforms_from_type_overrides() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "value",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),
@@ -495,10 +495,12 @@ fn it_traverses_rust_arrays_and_vectors() -> CodamaResult<()> {
         };
         assert_eq!(
             *integer.display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
-                IntegerValueNode::new(9u64),
-                StringValueNode::new("SOL"),
-            )))
+            Some(NumberDisplayNode::AmountNumberDisplay(
+                AmountNumberDisplayNode::new(
+                    IntegerValueNode::new(9u64),
+                    StringValueNode::new("SOL"),
+                )
+            ))
         );
     }
     Ok(())
@@ -601,7 +603,7 @@ fn it_does_not_update_transform_metadata() -> CodamaResult<()> {
             StructFieldTypeNode::new(
                 "value",
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Amount(
+                    display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                         AmountNumberDisplayNode::new(
                             IntegerValueNode::new(9u64),
                             StringValueNode::new("SOL"),

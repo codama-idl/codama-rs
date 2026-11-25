@@ -9,7 +9,7 @@ describe('getLiteralUnionPageFragment', () => {
             values: [true, false, 'either'],
         });
         // Non-serde derives only: bool-or-string serde is hand-written.
-        expect(result.content).toContain('#[derive(Debug, PartialEq, Eq, Clone, Copy)]');
+        expect(result.content).toContain('#[derive(Debug, PartialEq, Eq, Clone, Copy)]\n#[non_exhaustive]\npub enum');
         expect(result.content).not.toContain('Serialize');
         expect(result.content).not.toContain('Deserialize');
         expect(result.content).not.toContain('Default');

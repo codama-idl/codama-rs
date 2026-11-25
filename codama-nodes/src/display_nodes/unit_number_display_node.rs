@@ -22,7 +22,7 @@ mod tests {
         let node = UnitNumberDisplayNode::new(StringValueNode::new("lamports"));
         assert_eq!(
             *node.unit,
-            InjectableUnitValueNode::String(StringValueNode::new("lamports"))
+            InjectableUnitValueNode::StringValue(StringValueNode::new("lamports"))
         );
     }
 

@@ -12,9 +12,11 @@ const contextualValueCategory = spec.categories.find(c => c.name === 'contextual
 const pdaValuePdaUnion = contextualValueCategory.unions.find(u => u.name === 'pdaValuePda')!;
 
 describe('getUnionPageFragment', () => {
-    it('emits #[derive(NodeConversions)], #[node_union] and a PascalCase enum name', () => {
+    it('emits #[derive(NodeConversions)], #[node_union], #[non_exhaustive] and a PascalCase enum name', () => {
         const result = getUnionPageFragment(linkUnion, spec);
-        expect(result.content).toContain('#[derive(NodeConversions)]\n#[node_union]');
+        expect(result.content).toContain(
+            '#[derive(NodeConversions)]\n#[node_union]\n#[non_exhaustive]\npub enum LinkNode {',
+        );
         expect([...result.imports.keys()]).toContain('codama_nodes_derive::NodeConversions');
         expect(result.content).toContain('pub enum LinkNode {');
     });
@@ -47,12 +49,12 @@ describe('getUnionPageFragment', () => {
         expect(imports).toContain('crate::Identifier');
     });
 
-    it('strips the longest common PascalCase suffix when naming variants of an inline union', () => {
+    it('keeps the whole name of the variants of an inline union, like the flat Node enum', () => {
         const result = getUnionPageFragment(constantPdaSeedValueUnion, spec);
         expect(result.content).toContain('pub enum ConstantPdaSeedValue {');
-        expect(result.content).toContain('ProgramId(ProgramIdValueNode),');
-        expect(result.content).toContain('Integer(IntegerValueNode),');
-        expect(result.content).toContain('String(StringValueNode),');
+        expect(result.content).toContain('ProgramIdValue(ProgramIdValueNode),');
+        expect(result.content).toContain('IntegerValue(IntegerValueNode),');
+        expect(result.content).toContain('StringValue(StringValueNode),');
         // Not every variant has a stringIdentifier name -> no HasIdentifier impl.
         expect(result.content).not.toContain('impl HasIdentifier for ConstantPdaSeedValue');
     });

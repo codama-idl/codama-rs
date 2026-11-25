@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// The byte order of a numeric serialization.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum Endianness {
     /// Big-endian: the most significant byte is written first.
     Be,

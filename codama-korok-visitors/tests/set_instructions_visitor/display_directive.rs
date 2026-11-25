@@ -43,7 +43,7 @@ fn it_applies_displays_to_instruction_structs() -> CodamaResult<()> {
                         display: Some(StructFieldDisplayNode::new("Amount")),
                         r#type: Box::new(
                             IntegerTypeNode {
-                                display: Box::new(Some(NumberDisplayNode::Amount(
+                                display: Box::new(Some(NumberDisplayNode::AmountNumberDisplay(
                                     AmountNumberDisplayNode::new(
                                         IntegerValueNode::new(9u64),
                                         StringValueNode::new("SOL"),

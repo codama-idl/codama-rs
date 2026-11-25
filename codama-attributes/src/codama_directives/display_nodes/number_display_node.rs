@@ -5,11 +5,11 @@ use codama_syn_helpers::{extensions::*, Meta};
 impl FromMeta for NumberDisplayNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         match meta.path_str().as_str() {
-            "amount" => AmountNumberDisplayNode::from_meta(meta).map(Self::Amount),
+            "amount" => AmountNumberDisplayNode::from_meta(meta).map(Self::AmountNumberDisplay),
             "date_time" => removed_syntax(meta, "date_time display", "the date_time(...) type"),
             "duration" => removed_syntax(meta, "duration display", "the duration(...) type"),
             "injected" => Err(meta.error("injected display values are not supported yet")),
-            "unit" => UnitNumberDisplayNode::from_meta(meta).map(Self::Unit),
+            "unit" => UnitNumberDisplayNode::from_meta(meta).map(Self::UnitNumberDisplay),
             _ => Err(meta.error("unrecognized number display")),
         }
     }
@@ -24,13 +24,13 @@ mod tests {
         let amount: Meta = syn::parse_quote! { amount(decimals = 9, unit = "SOL") };
         assert!(matches!(
             NumberDisplayNode::from_meta(&amount).unwrap(),
-            NumberDisplayNode::Amount(_)
+            NumberDisplayNode::AmountNumberDisplay(_)
         ));
 
         let unit: Meta = syn::parse_quote! { unit("SOL") };
         assert!(matches!(
             NumberDisplayNode::from_meta(&unit).unwrap(),
-            NumberDisplayNode::Unit(_)
+            NumberDisplayNode::UnitNumberDisplay(_)
         ));
     }
 

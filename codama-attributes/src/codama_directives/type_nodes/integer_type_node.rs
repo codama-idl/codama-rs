@@ -97,7 +97,7 @@ mod tests {
                 IntegerValueNode::new(9u64),
                 StringValueNode::new("SOL"),
             );
-            Box::new(Some(NumberDisplayNode::Amount(display)))
+            Box::new(Some(NumberDisplayNode::AmountNumberDisplay(display)))
         };
         for (meta, expected) in [
             (
@@ -137,7 +137,7 @@ mod tests {
             assert_eq!(
                 IntegerTypeNode::from_meta(&meta).unwrap(),
                 IntegerTypeNode {
-                    display: Box::new(Some(NumberDisplayNode::Unit(expected))),
+                    display: Box::new(Some(NumberDisplayNode::UnitNumberDisplay(expected))),
                     ..IntegerTypeNode::le(U64)
                 }
             );
