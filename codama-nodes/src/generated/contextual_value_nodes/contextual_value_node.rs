@@ -8,6 +8,7 @@ use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};
 #[derive(RegisteredNodes)]
 #[node_union]
 #[derive(NodeConversions)]
+#[non_exhaustive]
 pub enum RegisteredContextualValueNode {
     Account(AccountValueNode),
     AccountBump(AccountBumpValueNode),

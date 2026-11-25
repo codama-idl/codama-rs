@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 /// The interpolated sentence on `instructionDisplayNode` is governed separately — a member may be referenced there regardless of its skip value.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum DisplaySkip {
     /// The member is never shown in the fallback list. Use for purely structural fields like discriminators.
     Always,

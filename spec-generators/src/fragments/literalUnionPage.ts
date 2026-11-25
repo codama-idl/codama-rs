@@ -37,5 +37,5 @@ export function getLiteralUnionPageFragment(ref: LiteralUnionTypeRef): Fragment 
         ref.values.map(v => fragment`${literalUnionVariantName(v, ref.typeName)},`),
         parts => parts.join('\n'),
     );
-    return fragment`#[derive(Debug, PartialEq, Eq, Clone, Copy)]\npub enum ${ref.typeName} {\n${variantLines}\n}\n`;
+    return fragment`#[derive(Debug, PartialEq, Eq, Clone, Copy)]\n#[non_exhaustive]\npub enum ${ref.typeName} {\n${variantLines}\n}\n`;
 }

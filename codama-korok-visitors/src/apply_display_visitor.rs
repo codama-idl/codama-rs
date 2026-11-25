@@ -190,5 +190,12 @@ fn unit_display(
                 "Cannot apply attribute `#[codama(display)]` as an amount display on a node of kind `{kind}`, use unit(...)"
             ))
             .into()),
+        display => Err(attribute
+            .ast
+            .error(format!(
+                "Cannot apply attribute `#[codama(display)]` as a `{}` display on a node of kind `{kind}`, use unit(...)",
+                display.kind()
+            ))
+            .into()),
     }
 }

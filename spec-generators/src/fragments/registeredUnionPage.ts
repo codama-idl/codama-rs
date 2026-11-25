@@ -75,7 +75,7 @@ export function getRegisteredUnionPageFragment(union: UnionSpec, spec: Spec): Fr
     // The `RegisteredNodes` derive macro expansion calls `.kind()` on
     // each variant, which requires `HasKind` to be in scope.
     return addFragmentImports(
-        fragment`#[derive(${use('codama_nodes_derive::RegisteredNodes')})]\n#[${use('codama_nodes_derive::node_union')}]\n#[derive(${use('codama_nodes_derive::NodeConversions')})]\npub enum ${enumName} {\n${body}\n}`,
+        fragment`#[derive(${use('codama_nodes_derive::RegisteredNodes')})]\n#[${use('codama_nodes_derive::node_union')}]\n#[derive(${use('codama_nodes_derive::NodeConversions')})]\n#[non_exhaustive]\npub enum ${enumName} {\n${body}\n}`,
         ['crate::HasKind'],
     );
 }

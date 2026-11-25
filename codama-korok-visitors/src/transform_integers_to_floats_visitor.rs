@@ -114,6 +114,7 @@ pub fn transform_integers_to_floats(root: &RootNode) -> CodamaResult<RootNode> {
                             link_path.push(link);
                             linkables.get_path(&link_path)
                         }
+                        _ => None,
                     };
                     let Some(pda_path) = pda_path else {
                         return Ok(Some(new.into()));

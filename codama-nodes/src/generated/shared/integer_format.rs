@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// The wire format of an integer serialization.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum IntegerFormat {
     /// Signed 8-bit integer.
     I8,

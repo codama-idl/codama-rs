@@ -79,5 +79,5 @@ function buildEnumFragment(unionName: string, variants: readonly UnionVariant[])
         variants.map(v => fragment`${v.name}(${use(`crate::${pascalCase(v.node.kind)}`)}),`),
         parts => parts.join('\n'),
     );
-    return fragment`#[derive(${use('codama_nodes_derive::NodeConversions')})]\n#[${use('codama_nodes_derive::node_union')}]\npub enum ${unionName} {\n${lines}\n}`;
+    return fragment`#[derive(${use('codama_nodes_derive::NodeConversions')})]\n#[${use('codama_nodes_derive::node_union')}]\n#[non_exhaustive]\npub enum ${unionName} {\n${lines}\n}`;
 }

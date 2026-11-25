@@ -501,7 +501,7 @@ fn get_dependencies(value: Option<NodeRef>) -> Vec<InstructionDependency> {
                     dependencies.push(account(&value.identifier))
                 }
                 Some(PdaValueProgramId::Data(value)) => dependencies.push(data(&value.path)),
-                None => {}
+                _ => {}
             }
             deduplicate_dependencies(dependencies)
         }

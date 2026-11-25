@@ -183,7 +183,9 @@ describe('getRenderMap', () => {
         // restores it on disk.
         const entry = getFromRenderMap(map, 'value_nodes/value_node.rs');
         expect(entry.content).toContain('use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};');
-        expect(entry.content).toContain('#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]');
+        expect(entry.content).toContain(
+            '#[derive(RegisteredNodes)]\n#[node_union]\n#[derive(NodeConversions)]\n#[non_exhaustive]\npub enum',
+        );
         expect(entry.content).toContain('#[node_union]');
         expect(entry.content).toContain('pub enum RegisteredValueNode {');
         // Standalone variants (alphabetical).

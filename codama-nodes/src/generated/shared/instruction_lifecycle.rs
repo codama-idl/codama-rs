@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// The lifecycle stage of an instruction.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum InstructionLifecycle {
     /// No longer included in client SDKs. Retained in the IDL for historical reference only.
     Archived,
