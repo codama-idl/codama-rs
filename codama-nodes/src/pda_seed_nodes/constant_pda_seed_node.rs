@@ -1,4 +1,4 @@
-use crate::{ConstantPdaSeedNode, ConstantPdaSeedValue, TypeNode, ValueNode};
+use crate::{ConstantPdaSeedNode, ConstantPdaSeedValue, Node, TypeNode, ValueNode};
 
 impl ConstantPdaSeedNode {
     pub fn new<T, U>(r#type: T, value: U) -> Self
@@ -14,30 +14,11 @@ impl ConstantPdaSeedNode {
     }
 }
 
-/// Bridge from the broader value-node union into a `constantPdaSeedNode`
-/// value. The spec union `constantPdaSeedValue` is `programIdValueNode |
-/// valueNode`, so every `ValueNode` cleanly maps to its same-named
-/// `ConstantPdaSeedValue` variant.
+/// The spec union `constantPdaSeedValue` is `programIdValueNode | valueNode`, so every value node is a
+/// member of it. Going through `Node` keeps this true whatever value nodes the spec adds.
 impl From<ValueNode> for ConstantPdaSeedValue {
     fn from(value: ValueNode) -> Self {
-        match value {
-            ValueNode::Array(n) => Self::Array(n),
-            ValueNode::Boolean(n) => Self::Boolean(n),
-            ValueNode::Bytes(n) => Self::Bytes(n),
-            ValueNode::Constant(n) => Self::Constant(n),
-            ValueNode::Enum(n) => Self::Enum(n),
-            ValueNode::Float(n) => Self::Float(n),
-            ValueNode::Injected(n) => Self::Injected(n),
-            ValueNode::Integer(n) => Self::Integer(n),
-            ValueNode::Map(n) => Self::Map(n),
-            ValueNode::None(n) => Self::None(n),
-            ValueNode::PublicKey(n) => Self::PublicKey(n),
-            ValueNode::Set(n) => Self::Set(n),
-            ValueNode::Some(n) => Self::Some(n),
-            ValueNode::String(n) => Self::String(n),
-            ValueNode::Struct(n) => Self::Struct(n),
-            ValueNode::Tuple(n) => Self::Tuple(n),
-        }
+        Self::try_from(Node::from(value)).expect("every value node is a member of the union")
     }
 }
 
@@ -52,7 +33,7 @@ mod tests {
         assert_eq!(*node.r#type, TypeNode::Integer(IntegerTypeNode::le(U64)));
         assert_eq!(
             *node.value,
-            ConstantPdaSeedValue::Integer(IntegerValueNode::new(42u64))
+            ConstantPdaSeedValue::IntegerValue(IntegerValueNode::new(42u64))
         );
     }
 
@@ -61,7 +42,7 @@ mod tests {
         let value: ValueNode = FloatValueNode::new(1.5).into();
         assert_eq!(
             ConstantPdaSeedValue::from(value),
-            ConstantPdaSeedValue::Float(FloatValueNode::new(1.5))
+            ConstantPdaSeedValue::FloatValue(FloatValueNode::new(1.5))
         );
     }
 

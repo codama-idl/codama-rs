@@ -10,16 +10,16 @@ use codama_nodes_derive::{node_union, NodeConversions, RegisteredNodes};
 #[derive(NodeConversions)]
 #[non_exhaustive]
 pub enum RegisteredContextualValueNode {
-    Account(AccountValueNode),
-    AccountBump(AccountBumpValueNode),
-    AccountData(AccountDataValueNode),
-    Conditional(ConditionalValueNode),
-    Data(DataValueNode),
-    Identity(IdentityValueNode),
-    Payer(PayerValueNode),
-    Pda(PdaValueNode),
-    ProgramId(ProgramIdValueNode),
+    AccountBumpValue(AccountBumpValueNode),
+    AccountDataValue(AccountDataValueNode),
+    AccountValue(AccountValueNode),
+    ConditionalValue(ConditionalValueNode),
+    DataValue(DataValueNode),
+    IdentityValue(IdentityValueNode),
+    PayerValue(PayerValueNode),
+    PdaValue(PdaValueNode),
+    ProgramIdValue(ProgramIdValueNode),
 
     #[registered]
-    PdaSeed(PdaSeedValueNode),
+    PdaSeedValue(PdaSeedValueNode),
 }

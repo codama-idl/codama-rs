@@ -25,11 +25,11 @@ mod tests {
             AmountNumberDisplayNode::new(IntegerValueNode::new(6u8), StringValueNode::new("USDC"));
         assert_eq!(
             *node.decimals,
-            InjectableIntegerValueNode::Integer(IntegerValueNode::new(6u8))
+            InjectableIntegerValueNode::IntegerValue(IntegerValueNode::new(6u8))
         );
         assert_eq!(
             *node.unit,
-            Some(InjectableUnitValueNode::String(StringValueNode::new(
+            Some(InjectableUnitValueNode::StringValue(StringValueNode::new(
                 "USDC"
             )))
         );

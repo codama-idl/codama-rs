@@ -148,10 +148,12 @@ mod tests {
         .unwrap();
         assert_eq!(
             display.number_display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode::new(
-                IntegerValueNode::new(9u64),
-                StringValueNode::new("SOL")
-            )))
+            Some(NumberDisplayNode::AmountNumberDisplay(
+                AmountNumberDisplayNode::new(
+                    IntegerValueNode::new(9u64),
+                    StringValueNode::new("SOL")
+                )
+            ))
         );
     }
 
@@ -163,11 +165,13 @@ mod tests {
         .unwrap();
         assert_eq!(
             decimals.number_display,
-            Some(NumberDisplayNode::Amount(AmountNumberDisplayNode {
-                decimals: Box::new(IntegerValueNode::new(6u64).into()),
-                unit: Box::new(None),
-                plugins: vec![],
-            }))
+            Some(NumberDisplayNode::AmountNumberDisplay(
+                AmountNumberDisplayNode {
+                    decimals: Box::new(IntegerValueNode::new(6u64).into()),
+                    unit: Box::new(None),
+                    plugins: vec![],
+                }
+            ))
         );
     }
 
@@ -180,9 +184,9 @@ mod tests {
         assert_eq!(display.label, Some("Price".to_string()));
         assert_eq!(
             display.number_display,
-            Some(NumberDisplayNode::Unit(UnitNumberDisplayNode::new(
-                StringValueNode::new("USD")
-            )))
+            Some(NumberDisplayNode::UnitNumberDisplay(
+                UnitNumberDisplayNode::new(StringValueNode::new("USD"))
+            ))
         );
     }
 

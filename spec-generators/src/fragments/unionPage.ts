@@ -2,7 +2,7 @@ import { pascalCase } from '@codama/fragments';
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/rust';
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
-import { flattenNodeUnion, getInlineUnionStripSuffix, getReferencedUnionNames, isInlineUnion } from '../unions';
+import { flattenNodeUnion, getUnionCategory, getUnionVariantName } from '../unions';
 import { getUnionHasIdentifierImplFragment } from './hasIdentifierImpl';
 import { use } from './helpers';
 
@@ -19,7 +19,7 @@ import { use } from './helpers';
  */
 export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
     const unionName = pascalCase(union.name);
-    const variants = buildVariants(union, spec);
+    const variants = getUnionVariants(union, spec);
 
     const enumFragment = buildEnumFragment(unionName, variants);
     const hasIdentifierFragment = getUnionHasIdentifierImplFragment(unionName, variants);
@@ -29,49 +29,22 @@ export function getUnionPageFragment(union: UnionSpec, spec: Spec): Fragment {
 }
 
 interface UnionVariant {
-    /** The Rust variant name (PascalCase, stripped suffix). */
+    /** The Rust variant name, see {@link getUnionVariantName}. */
     readonly name: string;
     /** The wrapped node spec (for `HasIdentifier` dispatch). */
     readonly node: NodeSpec;
 }
 
-function buildVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
-    const suffix = variantStripSuffix(union, spec);
+/**
+ * The leaves of the union with their variant names, sorted alphabetically. The main union of a
+ * category implies its category word (`LinkNode::Account`); an inline union keeps the whole name
+ * (`PdaSeedValueValue::IntegerValue`). See {@link getUnionVariantName}.
+ */
+function getUnionVariants(union: UnionSpec, spec: Spec): readonly UnionVariant[] {
+    const category = getUnionCategory(union, spec);
     return [...flattenNodeUnion(union, spec)]
-        .map(node => ({ name: variantNameForNode(node.kind, suffix), node }))
+        .map(node => ({ name: getUnionVariantName(node.kind, category), node }))
         .toSorted((a, b) => a.name.localeCompare(b.name));
-}
-
-/**
- * The PascalCase suffix to strip from each leaf node's kind when
- * deriving variant names. For category-main unions (those with a
- * `registered<X>` twin), strip the union's own `pascalCase` name
- * (e.g. `LinkNode`, `CountNode`). For inline unions, compute the
- * longest common PascalCase suffix of the members
- * ({@link getInlineUnionStripSuffix}).
- */
-function variantStripSuffix(union: UnionSpec, spec: Spec): string {
-    const allUnionNames = new Set(spec.categories.flatMap(c => c.unions).map(u => u.name));
-    if (isInlineUnion(union, allUnionNames, getReferencedUnionNames(spec))) {
-        return getInlineUnionStripSuffix(union, spec);
-    }
-    return pascalCase(union.name);
-}
-
-/**
- * Variant name = pascalCase(kind) minus the implied suffix.
- *
- *   - `accountLinkNode`      in union `linkNode`             → `Account`
- *   - `fixedCountNode`       in union `countNode`            → `Fixed`
- *   - `integerValueNode`     in inline `constantPdaSeedValue`
- *     (stripSuffix = `ValueNode`)                            → `Integer`
- *   - `programIdValueNode`   in inline `constantPdaSeedValue`
- *     (stripSuffix = `ValueNode`)                            → `ProgramId`
- */
-function variantNameForNode(nodeKind: string, suffix: string): string {
-    const pascal = pascalCase(nodeKind);
-    if (suffix === '') return pascal;
-    return pascal.endsWith(suffix) ? pascal.slice(0, pascal.length - suffix.length) : pascal;
 }
 
 function buildEnumFragment(unionName: string, variants: readonly UnionVariant[]): Fragment {

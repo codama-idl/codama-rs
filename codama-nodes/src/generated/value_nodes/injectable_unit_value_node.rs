@@ -5,7 +5,7 @@ use codama_nodes_derive::{node_union, NodeConversions};
 #[node_union]
 #[non_exhaustive]
 pub enum InjectableUnitValueNode {
-    Injected(InjectedValueNode),
-    PublicKey(PublicKeyValueNode),
-    String(StringValueNode),
+    InjectedValue(InjectedValueNode),
+    PublicKeyValue(PublicKeyValueNode),
+    StringValue(StringValueNode),
 }

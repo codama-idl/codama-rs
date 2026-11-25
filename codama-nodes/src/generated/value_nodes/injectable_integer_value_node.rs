@@ -5,6 +5,6 @@ use codama_nodes_derive::{node_union, NodeConversions};
 #[node_union]
 #[non_exhaustive]
 pub enum InjectableIntegerValueNode {
-    Injected(InjectedValueNode),
-    Integer(IntegerValueNode),
+    InjectedValue(InjectedValueNode),
+    IntegerValue(IntegerValueNode),
 }

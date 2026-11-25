@@ -1,4 +1,4 @@
-use crate::{Identifier, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
+use crate::{Identifier, Node, PdaSeedValueNode, PdaSeedValueValue, ValueNode};
 
 impl PdaSeedValueNode {
     pub fn new<T, U>(identifier: T, value: U) -> Self
@@ -14,29 +14,11 @@ impl PdaSeedValueNode {
     }
 }
 
-/// Bridge from the broader `ValueNode` union into `PdaSeedValueValue`.
-/// `PdaSeedValueValue` is `accountValueNode | dataValueNode | valueNode`,
-/// so every value-node leaf maps to its same-named `PdaSeedValueValue` variant.
+/// The spec union `pdaSeedValueValue` is `accountValueNode | dataValueNode | valueNode`, so every value
+/// node is a member of it. Going through `Node` keeps this true whatever value nodes the spec adds.
 impl From<ValueNode> for PdaSeedValueValue {
     fn from(value: ValueNode) -> Self {
-        match value {
-            ValueNode::Array(value) => Self::Array(value),
-            ValueNode::Boolean(value) => Self::Boolean(value),
-            ValueNode::Bytes(value) => Self::Bytes(value),
-            ValueNode::Constant(value) => Self::Constant(value),
-            ValueNode::Enum(value) => Self::Enum(value),
-            ValueNode::Float(value) => Self::Float(value),
-            ValueNode::Injected(value) => Self::Injected(value),
-            ValueNode::Integer(value) => Self::Integer(value),
-            ValueNode::Map(value) => Self::Map(value),
-            ValueNode::None(value) => Self::None(value),
-            ValueNode::PublicKey(value) => Self::PublicKey(value),
-            ValueNode::Set(value) => Self::Set(value),
-            ValueNode::Some(value) => Self::Some(value),
-            ValueNode::String(value) => Self::String(value),
-            ValueNode::Struct(value) => Self::Struct(value),
-            ValueNode::Tuple(value) => Self::Tuple(value),
-        }
+        Self::try_from(Node::from(value)).expect("every value node is a member of the union")
     }
 }
 
@@ -51,7 +33,7 @@ mod tests {
         assert_eq!(node.identifier, Identifier::from("answer"));
         assert_eq!(
             *node.value,
-            PdaSeedValueValue::Integer(IntegerValueNode::new(42))
+            PdaSeedValueValue::IntegerValue(IntegerValueNode::new(42))
         );
     }
 
@@ -61,7 +43,7 @@ mod tests {
         let node = PdaSeedValueNode::new("amount", DataValueNode::new(path.clone()));
         assert_eq!(
             *node.value,
-            PdaSeedValueValue::Data(DataValueNode::new(path))
+            PdaSeedValueValue::DataValue(DataValueNode::new(path))
         );
     }
 
@@ -70,7 +52,7 @@ mod tests {
         let value: ValueNode = FloatValueNode::new(1.5).into();
         assert_eq!(
             PdaSeedValueValue::from(value),
-            PdaSeedValueValue::Float(FloatValueNode::new(1.5))
+            PdaSeedValueValue::FloatValue(FloatValueNode::new(1.5))
         );
     }
 

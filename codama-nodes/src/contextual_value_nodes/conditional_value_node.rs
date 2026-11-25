@@ -16,7 +16,7 @@ mod tests {
         };
         assert_eq!(
             *node.condition,
-            ConditionalValueCondition::Data(DataValueNode::new("myField"))
+            ConditionalValueCondition::DataValue(DataValueNode::new("myField"))
         );
         assert_eq!(
             *node.value,

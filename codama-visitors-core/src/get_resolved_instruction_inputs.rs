@@ -344,7 +344,7 @@ impl<'a> Resolver<'_, 'a> {
                 resolved.resolved_is_signer = signer_or_either;
                 resolved.resolved_is_optional = false;
                 for seed in &pda.seeds {
-                    let PdaSeedValueValue::Account(seed_account) = &*seed.value else {
+                    let PdaSeedValueValue::AccountValue(seed_account) = &*seed.value else {
                         continue;
                     };
                     if !self
@@ -491,16 +491,16 @@ fn get_dependencies(value: Option<NodeRef>) -> Vec<InstructionDependency> {
                 .seeds
                 .iter()
                 .filter_map(|seed| match &*seed.value {
-                    PdaSeedValueValue::Account(value) => Some(account(&value.identifier)),
-                    PdaSeedValueValue::Data(value) => Some(data(&value.path)),
+                    PdaSeedValueValue::AccountValue(value) => Some(account(&value.identifier)),
+                    PdaSeedValueValue::DataValue(value) => Some(data(&value.path)),
                     _ => None,
                 })
                 .collect();
             match &*pda.program_id {
-                Some(PdaValueProgramId::Account(value)) => {
+                Some(PdaValueProgramId::AccountValue(value)) => {
                     dependencies.push(account(&value.identifier))
                 }
-                Some(PdaValueProgramId::Data(value)) => dependencies.push(data(&value.path)),
+                Some(PdaValueProgramId::DataValue(value)) => dependencies.push(data(&value.path)),
                 _ => {}
             }
             deduplicate_dependencies(dependencies)

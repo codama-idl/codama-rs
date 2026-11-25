@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import {
     flattenNodeUnion,
     getEmittableUnions,
-    getInlineUnionStripSuffix,
+    getUnionCategory,
+    getUnionVariantName,
     getRegisteredOnlyLeafKinds,
     isRegisteredCategoryUnion,
 } from '../src/unions';
@@ -74,17 +75,37 @@ describe('getRegisteredOnlyLeafKinds', () => {
     });
 });
 
-describe('getInlineUnionStripSuffix', () => {
-    it('returns the longest common PascalCase suffix shared by every flattened leaf', () => {
-        const constantPdaSeedValue = pdaSeedCategory.unions.find(u => u.name === 'constantPdaSeedValue')!;
-        // Leaves include `programIdValueNode` + every `valueNode` leaf
-        // (all suffixed `ValueNode`).
-        expect(getInlineUnionStripSuffix(constantPdaSeedValue, spec)).toBe('ValueNode');
+describe('getUnionVariantName', () => {
+    it('drops the trailing Node, like the flat Node enum', () => {
+        expect(getUnionVariantName('integerValueNode')).toBe('IntegerValue');
+        expect(getUnionVariantName('amountNumberDisplayNode')).toBe('AmountNumberDisplay');
     });
 
-    it('handles a small inline union (injectableIntegerValueNode: injectedValueNode | integerValueNode)', () => {
+    it('drops the category word within the main union of a category', () => {
+        expect(getUnionVariantName('accountLinkNode', 'link')).toBe('Account');
+        expect(getUnionVariantName('fixedCountNode', 'count')).toBe('Fixed');
+        expect(getUnionVariantName('integerValueNode', 'value')).toBe('Integer');
+        expect(getUnionVariantName('fixedSizeTransformNode', 'transform')).toBe('FixedSize');
+    });
+
+    it('keeps the whole name when it does not end with the category word', () => {
+        expect(getUnionVariantName('accountValueNode', 'contextualValue')).toBe('AccountValue');
+    });
+});
+
+describe('getUnionCategory', () => {
+    it('finds the category whose main union a union is', () => {
+        const linkNode = linkCategory.unions.find(u => u.name === 'linkNode')!;
+        expect(getUnionCategory(linkNode, spec)).toBe('link');
+        const valueNode = valueCategory.unions.find(u => u.name === 'valueNode')!;
+        expect(getUnionCategory(valueNode, spec)).toBe('value');
+    });
+
+    it('gives nothing for inline unions, whatever their suffix', () => {
+        const constantPdaSeedValue = pdaSeedCategory.unions.find(u => u.name === 'constantPdaSeedValue')!;
+        expect(getUnionCategory(constantPdaSeedValue, spec)).toBeUndefined();
         const injectableInteger = valueCategory.unions.find(u => u.name === 'injectableIntegerValueNode')!;
-        expect(getInlineUnionStripSuffix(injectableInteger, spec)).toBe('ValueNode');
+        expect(getUnionCategory(injectableInteger, spec)).toBeUndefined();
     });
 });
 

@@ -109,54 +109,38 @@ export function getReferencedUnionNames(spec: Spec): ReadonlySet<string> {
 }
 
 /**
- * The PascalCase suffix to strip from each leaf node's kind when
- * deriving variant names for an inline union. See
- * {@link longestCommonPascalCaseSuffix}.
+ * The Rust variant name of a leaf node within a union.
  *
- *   - `constantPdaSeedValue` (17 leaves)  → `'ValueNode'`
- *   - `transformNode`        (7 leaves)   → `'TransformNode'`
- *   - `pdaValuePda`          (2 leaves)   → `'Node'`
+ * The kind is PascalCased and its trailing `Node` dropped, like {@link getNodeVariantName} does
+ * for the flat `Node` enum, so the same node gets the same name in every union:
+ * `integerValueNode` is `IntegerValue` in `Node`, `PdaSeedValueValue` and
+ * `InstructionInputValueNode` alike. Within the main union of a category (see
+ * {@link getUnionCategory}), the category word is dropped too when the name ends with it, as it is
+ * implied: `accountLinkNode` is `Account` in `LinkNode` and `fixedCountNode` is `Fixed` in
+ * `CountNode`. A name that does not end with it is kept whole: `accountValueNode` stays
+ * `AccountValue` in `ContextualValueNode`.
+ *
+ * The name never depends on the other members of the union, so adding a member to the spec
+ * never renames the existing variants.
  */
-export function getInlineUnionStripSuffix(union: UnionSpec, spec: Spec): string {
-    return longestCommonPascalCaseSuffix([...flattenNodeUnion(union, spec)].map(n => pascalCase(n.kind)));
+export function getUnionVariantName(kind: string, category?: string): string {
+    const name = stripSuffix(pascalCase(kind), 'Node');
+    if (category === undefined) return name;
+    const stripped = stripSuffix(name, pascalCase(category));
+    return stripped === '' ? name : stripped;
 }
 
 /**
- * The PascalCase suffix to strip from each variant of a
- * `RegisteredNodes`-mode category union (e.g. `RegisteredValueNode`).
- * Computed across BOTH the standalone leaves AND the registered-only
- * leaves so the strip stays uniform across the whole enum.
- *
- *   - `valueNode` (standalone + registered)  → `'ValueNode'`
- *   - `contextualValueNode` (the leaves end in `ValueNode`, not
- *     `ContextualValueNode`)                 → `'ValueNode'`
+ * The category whose main union `union` is, i.e. the one named `<category>Node`, such as `linkNode`
+ * for the `link` category. Every other union, such as `pdaSeedValueValue` or `numberDisplayNode`, is
+ * an inline union and gets `undefined`.
  */
-export function getRegisteredUnionStripSuffix(union: UnionSpec, spec: Spec): string {
-    const standalone = [...flattenNodeUnion(union, spec)].map(n => pascalCase(n.kind));
-    const registeredOnly = getRegisteredOnlyLeafKinds(union, spec).map(k => pascalCase(k));
-    return longestCommonPascalCaseSuffix([...standalone, ...registeredOnly]);
+export function getUnionCategory(union: UnionSpec, spec: Spec): string | undefined {
+    return spec.categories.find(category => `${category.name}Node` === union.name)?.name;
 }
 
-/**
- * Longest common PascalCase suffix shared by every input string,
- * trimmed back to start at an uppercase letter so we never strip
- * mid-word. Returns `''` when the inputs share no `Word`-aligned
- * suffix or the list is empty.
- */
-export function longestCommonPascalCaseSuffix(leaves: readonly string[]): string {
-    if (leaves.length === 0) return '';
-    let suffix = '';
-    const minLen = Math.min(...leaves.map(s => s.length));
-    for (let i = 1; i <= minLen; i++) {
-        const ch = leaves[0][leaves[0].length - i];
-        if (!leaves.every(s => s[s.length - i] === ch)) break;
-        suffix = ch + suffix;
-    }
-    for (let i = 0; i < suffix.length; i++) {
-        const ch = suffix[i];
-        if (ch >= 'A' && ch <= 'Z') return suffix.slice(i);
-    }
-    return '';
+function stripSuffix(value: string, suffix: string): string {
+    return value.endsWith(suffix) ? value.slice(0, value.length - suffix.length) : value;
 }
 
 /**

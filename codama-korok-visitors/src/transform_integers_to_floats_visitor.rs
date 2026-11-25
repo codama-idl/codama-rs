@@ -95,7 +95,7 @@ pub fn transform_integers_to_floats(root: &RootNode) -> CodamaResult<RootNode> {
                     Ok(Some(new.into()))
                 }
                 (NodeRef::ConstantPdaSeed(seed), Some(Node::ConstantPdaSeed(mut new))) => {
-                    if let ConstantPdaSeedValue::Integer(integer) = new.value.as_ref() {
+                    if let ConstantPdaSeedValue::IntegerValue(integer) = new.value.as_ref() {
                         if is_float_at(path(), &seed.r#type)? {
                             *new.value = to_float(integer).into();
                         }
@@ -123,7 +123,7 @@ pub fn transform_integers_to_floats(root: &RootNode) -> CodamaResult<RootNode> {
                         unreachable!("a PDA link resolves to a PDA");
                     };
                     for seed in &mut new.seeds {
-                        let PdaSeedValueValue::Integer(integer) = seed.value.as_ref() else {
+                        let PdaSeedValueValue::IntegerValue(integer) = seed.value.as_ref() else {
                             continue;
                         };
                         let variable_seed =

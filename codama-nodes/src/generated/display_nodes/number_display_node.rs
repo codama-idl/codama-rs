@@ -5,6 +5,6 @@ use codama_nodes_derive::{node_union, NodeConversions};
 #[node_union]
 #[non_exhaustive]
 pub enum NumberDisplayNode {
-    Amount(AmountNumberDisplayNode),
-    Unit(UnitNumberDisplayNode),
+    AmountNumberDisplay(AmountNumberDisplayNode),
+    UnitNumberDisplay(UnitNumberDisplayNode),
 }
