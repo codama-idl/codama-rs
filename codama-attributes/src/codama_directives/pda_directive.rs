@@ -24,7 +24,7 @@ impl<'a> TryFrom<&'a CodamaAttribute<'a>> for &'a PdaDirective {
         match attribute.directive.as_ref() {
             CodamaDirective::Pda(ref a) => Ok(a),
             _ => Err(CodamaError::InvalidCodamaDirective {
-                expected: "seed".to_string(),
+                expected: "pda".to_string(),
                 actual: attribute.directive.name().to_string(),
             }),
         }

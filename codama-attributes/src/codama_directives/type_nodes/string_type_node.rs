@@ -12,18 +12,13 @@ impl FromMeta for StringTypeNode {
 
         meta.as_path_list()?
             .each(|ref meta| match meta.path_str().as_str() {
-                "encoding" => {
-                    let path = meta.as_value()?.as_path()?;
-                    match BytesEncoding::try_from(path.to_string()) {
-                        Ok(value) => encoding.set(value, meta),
-                        _ => Err(path.error("invalid encoding")),
-                    }
-                }
+                "encoding" => encoding.set(BytesEncoding::from_meta(meta)?, meta),
                 _ => {
+                    // Only a bare path is a positional encoding: `string(utf8)`, not `string(foo = utf8)`.
                     if let Some(value) = meta
                         .as_path()
                         .ok()
-                        .and_then(|path| BytesEncoding::try_from(path.to_string()).ok())
+                        .and_then(|_| BytesEncoding::from_meta(meta).ok())
                     {
                         return encoding.set(value, meta);
                     }
@@ -38,7 +33,7 @@ impl FromMeta for StringTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
 
     #[test]
     fn default() {
@@ -73,12 +68,16 @@ mod tests {
 
     #[test]
     fn invalid_encoding() {
-        assert_type_err!({ string(encoding = unrecognized) }, "invalid encoding");
+        assert_type_err!(
+            { string(encoding = unrecognized) },
+            "expected one of: base16, base58, base64, utf8"
+        );
     }
 
     #[test]
     fn unrecognized_attribute() {
         assert_type_err!({ string(unrecognized) }, "unrecognized attribute");
         assert_type_err!({ string(foo = 42) }, "unrecognized attribute");
+        assert_type_err!({ string(foo = utf8) }, "unrecognized attribute");
     }
 }

@@ -29,7 +29,7 @@ impl FromMeta for StructFieldTypeNode {
             .map_err(|e| meta.error(e.to_string()))?;
 
         Ok(StructFieldTypeNode {
-            identifier: consumer.name.take(meta)?,
+            identifier: consumer.identifier.take(meta)?,
             r#type: Box::new(r#type),
             default_value: Box::new(default_value),
             default_value_strategy,
@@ -43,7 +43,7 @@ impl FromMeta for StructFieldTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
     use codama_nodes::{
         DefaultValueStrategy, IntegerFormat::U32, IntegerTypeNode, IntegerValueNode,
     };

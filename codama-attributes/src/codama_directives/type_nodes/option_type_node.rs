@@ -1,5 +1,5 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{IntegerTypeNode, OptionTypeNode, TypeNode, TypeNodeTrait};
+use crate::utils::{parse_integer_type, FromMeta, SetOnce};
+use codama_nodes::{IntegerTypeNode, OptionTypeNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for OptionTypeNode {
@@ -11,13 +11,7 @@ impl FromMeta for OptionTypeNode {
 
         pl.each(|ref meta| match meta.path_str().as_str() {
             "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            "prefix" => {
-                let value = meta.as_value()?;
-                match IntegerTypeNode::try_from_type_node(TypeNode::from_meta(value)?) {
-                    Ok(node) => prefix.set(node, meta),
-                    Err(_) => Err(value.error("prefix must be an integer(...) type")),
-                }
-            }
+            "prefix" => prefix.set(parse_integer_type(meta.as_value()?, "prefix")?, meta),
             // `fixed` (bare flag) or `fixed = true/false`, like the other boolean flags.
             "fixed" => fixed.set(bool::from_meta(meta)?, meta),
             _ => {
@@ -44,7 +38,7 @@ impl FromMeta for OptionTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
     use codama_nodes::{U16, U8};
 
     #[test]

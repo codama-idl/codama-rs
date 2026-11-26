@@ -7,7 +7,7 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 pub(crate) struct StructFieldMetaConsumer {
     pub metas: Vec<Meta>,
-    pub name: SetOnce<Identifier>,
+    pub identifier: SetOnce<Identifier>,
     pub r#type: SetOnce<Resolvable<TypeNode>>,
     pub default_value: SetOnce<DefaultValueDirective>,
     pub after: SetOnce<bool>,
@@ -18,7 +18,7 @@ impl MetaConsumer for StructFieldMetaConsumer {
     fn new(metas: Vec<Meta>) -> Self {
         Self {
             metas,
-            name: SetOnce::new("identifier"),
+            identifier: SetOnce::new("identifier"),
             r#type: SetOnce::new("type"),
             default_value: SetOnce::new("default_value"),
             after: SetOnce::new("after"),
@@ -39,7 +39,7 @@ impl StructFieldMetaConsumer {
     pub fn consume_field(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "identifier" => {
-                this.name.set(Identifier::from_meta(&meta)?, meta)?;
+                this.identifier.set(Identifier::from_meta(&meta)?, meta)?;
                 Ok(None)
             }
             "name" => removed_name_key(meta),
@@ -54,7 +54,7 @@ impl StructFieldMetaConsumer {
             }
             _ => {
                 if meta.as_expr().and_then(|e| e.as_string()).is_ok() {
-                    this.name.set(Identifier::from_meta(&meta)?, meta)?;
+                    this.identifier.set(Identifier::from_meta(&meta)?, meta)?;
                     return Ok(None);
                 }
                 // A path or a list is a type keyword or a resolvable directive, so its error is the user's error.

@@ -1,7 +1,5 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{
-    HasTransforms, IntegerTypeNode, SizePrefixTransformNode, TypeNode, TypeNodeTrait,
-};
+use crate::utils::{parse_integer_type, FromMeta, SetOnce};
+use codama_nodes::{HasTransforms, IntegerTypeNode, SizePrefixTransformNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parses `size_prefix(type, prefix)` into the type with a trailing `sizePrefixTransformNode`.
@@ -12,13 +10,13 @@ pub(crate) fn size_prefix_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
 
     pl.each(|ref meta| match meta.path_str().as_str() {
         "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-        "prefix" => prefix.set(parse_prefix(meta.as_value()?)?, meta),
+        "prefix" => prefix.set(parse_integer_type(meta.as_value()?, "prefix")?, meta),
         _ => {
             // Both are type nodes, so positional args fill `type` then `prefix`.
             if meta.is_path_or_list() {
                 return match r#type.is_set() {
                     false => r#type.set(TypeNode::from_meta(meta)?, meta),
-                    true => prefix.set(parse_prefix(meta)?, meta),
+                    true => prefix.set(parse_integer_type(meta, "prefix")?, meta),
                 };
             }
             Err(meta.error("unrecognized attribute"))
@@ -29,15 +27,10 @@ pub(crate) fn size_prefix_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
     Ok(r#type.add_transform(SizePrefixTransformNode::new(prefix.take(meta)?)))
 }
 
-fn parse_prefix(meta: &Meta) -> syn::Result<IntegerTypeNode> {
-    IntegerTypeNode::try_from_type_node(TypeNode::from_meta(meta)?)
-        .map_err(|_| meta.error("prefix must be an integer(...) type"))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assert_type;
+    use crate::utils::assert_type;
     use codama_nodes::{
         BytesTypeNode, FixedSizeTransformNode,
         IntegerFormat::{U16, U32, U8},

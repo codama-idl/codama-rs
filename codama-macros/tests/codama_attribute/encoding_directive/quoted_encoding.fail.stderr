@@ -1,0 +1,5 @@
+error: encoding = "utf8" is removed in v2, use encoding = utf8
+ --> tests/codama_attribute/encoding_directive/quoted_encoding.fail.rs:3:21
+  |
+3 | #[codama(encoding = "utf8")]
+  |                     ^^^^^^

@@ -1,38 +1,34 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{BooleanTypeNode, IntegerTypeNode, TypeNode, TypeNodeTrait};
+use crate::utils::{parse_integer_type, FromMeta, SetOnce};
+use codama_nodes::{BooleanTypeNode, IntegerTypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for BooleanTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
         meta.assert_directive("boolean")?;
-        let mut size: SetOnce<TypeNode> = SetOnce::new("size");
+        let mut size: SetOnce<IntegerTypeNode> = SetOnce::new("size");
         if meta.is_path_or_empty_list() {
             return Ok(BooleanTypeNode::default());
         }
 
         meta.as_path_list()?
             .each(|ref meta| match meta.path_str().as_str() {
-                "size" => size.set(TypeNode::from_meta(meta.as_value()?)?, meta),
+                "size" => size.set(parse_integer_type(meta.as_value()?, "size")?, meta),
                 _ => {
                     if meta.is_path_or_list() {
-                        return size.set(TypeNode::from_meta(meta)?, meta);
+                        return size.set(parse_integer_type(meta, "size")?, meta);
                     }
                     Err(meta.error("unrecognized attribute"))
                 }
             })?;
 
-        let size = match IntegerTypeNode::try_from_type_node(size.take(meta)?) {
-            Ok(node) => node,
-            Err(_) => return Err(meta.error("size must be an integer(...) type")),
-        };
-        Ok(BooleanTypeNode::new(size))
+        Ok(BooleanTypeNode::new(size.take(meta)?))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assert_type, assert_type_err};
+    use crate::utils::{assert_type, assert_type_err};
     use codama_nodes::IntegerFormat::U32;
 
     #[test]

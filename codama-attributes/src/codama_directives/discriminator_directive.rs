@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn constant_discriminator_with_encoding() {
-        let meta: Meta = syn::parse_quote! { discriminator(bytes = "hello", encoding = "utf8") };
+        let meta: Meta = syn::parse_quote! { discriminator(bytes = "hello", encoding = utf8) };
         let directive = DiscriminatorDirective::parse(&meta).unwrap();
         assert_eq!(
             directive,
@@ -266,8 +266,7 @@ mod tests {
 
     #[test]
     fn constant_discriminator_with_byte_array_and_encoding() {
-        let meta: Meta =
-            syn::parse_quote! { discriminator(bytes = [1, 2, 3, 4], encoding = "utf8") };
+        let meta: Meta = syn::parse_quote! { discriminator(bytes = [1, 2, 3, 4], encoding = utf8) };
         let error = DiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),
@@ -285,7 +284,7 @@ mod tests {
 
     #[test]
     fn constant_discriminator_with_too_many_encoding() {
-        let meta: Meta = syn::parse_quote! { discriminator(bytes = "01020304", encoding = "utf8", encoding = "base64") };
+        let meta: Meta = syn::parse_quote! { discriminator(bytes = "01020304", encoding = utf8, encoding = base64) };
         let error = DiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(error.to_string(), "encoding is already set");
     }
@@ -300,8 +299,7 @@ mod tests {
 
     #[test]
     fn constant_discriminator_with_encoding_and_byte_array() {
-        let meta: Meta =
-            syn::parse_quote! { discriminator(encoding = "utf8", bytes = [1, 2, 3, 4]) };
+        let meta: Meta = syn::parse_quote! { discriminator(encoding = utf8, bytes = [1, 2, 3, 4]) };
         let error = DiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),
@@ -428,7 +426,7 @@ mod tests {
 
     #[test]
     fn discriminator_with_no_kind() {
-        let meta: Meta = syn::parse_quote! { discriminator(encoding = "utf8", offset = 42) };
+        let meta: Meta = syn::parse_quote! { discriminator(encoding = utf8, offset = 42) };
         let error = DiscriminatorDirective::parse(&meta).unwrap_err();
         assert_eq!(
             error.to_string(),

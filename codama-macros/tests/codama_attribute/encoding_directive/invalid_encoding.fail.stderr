@@ -1,4 +1,4 @@
-error: invalid encoding
+error: expected one of: base16, base58, base64, utf8
  --> tests/codama_attribute/encoding_directive/invalid_encoding.fail.rs:3:21
   |
 3 | #[codama(encoding = invalid)]

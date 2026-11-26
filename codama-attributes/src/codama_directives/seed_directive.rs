@@ -17,7 +17,7 @@ pub enum SeedDirectiveType {
     Linked(String),
     /// A variable seed with an identifier and type (which may be a plugin directive).
     Variable {
-        name: Identifier,
+        identifier: Identifier,
         r#type: Resolvable<TypeNode>,
     },
     /// A constant seed with a type and value (which may be plugin directives).
@@ -78,7 +78,7 @@ impl SeedDirective {
             }),
             false => Ok(Self {
                 seed: SeedDirectiveType::Variable {
-                    name: Identifier::from_meta(&name.take(meta)?)?,
+                    identifier: Identifier::from_meta(&name.take(meta)?)?,
                     r#type: r#type.take(meta)?,
                 },
             }),
@@ -151,7 +151,7 @@ mod tests {
             directive,
             SeedDirective {
                 seed: SeedDirectiveType::Variable {
-                    name: Identifier::from("authority"),
+                    identifier: Identifier::from("authority"),
                     r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
                 },
             }

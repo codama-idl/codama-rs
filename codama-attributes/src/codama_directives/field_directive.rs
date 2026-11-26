@@ -13,7 +13,7 @@ use codama_syn_helpers::Meta;
 #[derive(Debug, PartialEq)]
 pub struct FieldDirective {
     pub after: bool,
-    pub name: Identifier,
+    pub identifier: Identifier,
     pub r#type: Resolvable<TypeNode>,
     pub docs: Docs,
     /// A value, or a contextual value such as `payer` that only an instruction can provide.
@@ -39,7 +39,7 @@ impl FieldDirective {
 
         Ok(FieldDirective {
             after: consumer.after.option().unwrap_or(false),
-            name: consumer.name.take(meta)?,
+            identifier: consumer.identifier.take(meta)?,
             r#type: consumer.r#type.take(meta)?,
             docs: consumer.docs.option().unwrap_or_default(),
             default_value,
@@ -59,7 +59,7 @@ impl FieldDirective {
             .transpose()?
             .and_then(|node| ValueNode::try_from(node.clone()).ok());
         Ok(StructFieldTypeNode {
-            identifier: self.name.clone(),
+            identifier: self.identifier.clone(),
             r#type: Box::new(r#type),
             docs: self.docs.clone(),
             default_value_strategy: default_value.as_ref().and(self.default_value_strategy),
@@ -108,7 +108,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "age".into(),
+                identifier: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -125,7 +125,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: true,
-                name: "age".into(),
+                identifier: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: None,
@@ -142,7 +142,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "name".into(),
+                identifier: "name".into(),
                 r#type: Resolvable::Resolved(
                     StringTypeNode::utf8()
                         .add_transform(FixedSizeTransformNode::new(4))
@@ -163,7 +163,7 @@ mod tests {
             directive,
             FieldDirective {
                 after: false,
-                name: "age".into(),
+                identifier: "age".into(),
                 r#type: Resolvable::Resolved(IntegerTypeNode::le(U8).into()),
                 docs: Docs::default(),
                 default_value: Some(Resolvable::Resolved(IntegerValueNode::new(42u8).into())),
@@ -189,7 +189,7 @@ mod tests {
                 directive,
                 FieldDirective {
                     after: false,
-                    name: "owner".into(),
+                    identifier: "owner".into(),
                     r#type: Resolvable::Resolved(PublicKeyTypeNode::new().into()),
                     docs: Docs::default(),
                     default_value: Some(Resolvable::Resolved(PayerValueNode::new().into())),

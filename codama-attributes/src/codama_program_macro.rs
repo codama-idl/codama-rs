@@ -13,7 +13,7 @@ use proc_macro2::TokenStream;
 /// `declare_id!` / `package.metadata.solana.program-id` address).
 #[derive(Debug, PartialEq)]
 pub struct CodamaProgramMacro {
-    pub name: Option<Identifier>,
+    pub identifier: Option<Identifier>,
     pub address: Option<String>,
 }
 
@@ -24,23 +24,26 @@ impl CodamaProgramMacro {
         let meta: Meta = syn::parse_quote! { codama_program(#tokens) };
         let pl = meta.as_path_list()?;
 
-        let mut name = SetOnce::<Identifier>::new("identifier");
+        let mut identifier = SetOnce::<Identifier>::new("identifier");
         let mut address = SetOnce::<String>::new("address");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
+            "identifier" => identifier.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "address" => address.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 
-        let name = name.option();
+        let identifier = identifier.option();
         let address = address.option();
-        if name.is_none() && address.is_none() {
+        if identifier.is_none() && address.is_none() {
             return Err(meta.error("expected at least one of `identifier` or `address`"));
         }
 
-        Ok(Self { name, address })
+        Ok(Self {
+            identifier,
+            address,
+        })
     }
 }
 
@@ -56,7 +59,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(Identifier::from("associatedToken")),
+                identifier: Some(Identifier::from("associatedToken")),
                 address: None,
             }
         );
@@ -71,7 +74,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: None,
+                identifier: None,
                 address: Some("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string()),
             }
         );
@@ -86,7 +89,7 @@ mod tests {
         assert_eq!(
             program,
             CodamaProgramMacro {
-                name: Some(Identifier::from("associatedToken")),
+                identifier: Some(Identifier::from("associatedToken")),
                 address: Some("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".to_string()),
             }
         );

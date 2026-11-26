@@ -1,4 +1,5 @@
-#[macro_export]
+//! Assertions for the tests of the directive parsers.
+
 macro_rules! assert_type {
     ({$($attr:tt)*}, $expected:expr) => {
         {
@@ -12,7 +13,6 @@ macro_rules! assert_type {
     };
 }
 
-#[macro_export]
 macro_rules! assert_type_err {
     ({$($attr:tt)*}, $expected:expr) => {
         {
@@ -23,7 +23,6 @@ macro_rules! assert_type_err {
     };
 }
 
-#[macro_export]
 macro_rules! assert_value {
     ({$($attr:tt)*}, $expected:expr) => {
         {
@@ -34,7 +33,6 @@ macro_rules! assert_value {
     };
 }
 
-#[macro_export]
 macro_rules! assert_value_err {
     ({$($attr:tt)*}, $expected:expr) => {
         {
@@ -44,3 +42,5 @@ macro_rules! assert_value_err {
         }
     };
 }
+
+pub(crate) use {assert_type, assert_type_err, assert_value, assert_value_err};

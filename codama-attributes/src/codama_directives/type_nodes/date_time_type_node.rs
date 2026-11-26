@@ -30,7 +30,7 @@ impl FromMeta for DateTimeTypeNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assert_type;
+    use crate::utils::assert_type;
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms,
         IntegerFormat::{I64, U64},
