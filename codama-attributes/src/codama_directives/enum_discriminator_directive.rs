@@ -21,17 +21,17 @@ impl EnumDiscriminatorDirective {
             .assert_directive("enum_discriminator")?
             .as_path_list()?;
 
-        let mut name = SetOnce::<Identifier>::new("identifier");
+        let mut identifier = SetOnce::<Identifier>::new("identifier");
         let mut size: SetOnce<IntegerTypeNode> = SetOnce::<IntegerTypeNode>::new("size");
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
+            "identifier" => identifier.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "size" => size.set(parse_integer_type(meta.as_value()?, "size")?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 
         let directive = EnumDiscriminatorDirective {
-            identifier: name.option(),
+            identifier: identifier.option(),
             size: size.option(),
         };
 

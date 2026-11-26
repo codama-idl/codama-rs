@@ -14,7 +14,12 @@ impl FromMeta for StringTypeNode {
             .each(|ref meta| match meta.path_str().as_str() {
                 "encoding" => encoding.set(BytesEncoding::from_meta(meta)?, meta),
                 _ => {
-                    if let Ok(value) = BytesEncoding::from_meta(meta) {
+                    // Only a bare path is a positional encoding: `string(utf8)`, not `string(foo = utf8)`.
+                    if let Some(value) = meta
+                        .as_path()
+                        .ok()
+                        .and_then(|_| BytesEncoding::from_meta(meta).ok())
+                    {
                         return encoding.set(value, meta);
                     }
                     Err(meta.error("unrecognized attribute"))
@@ -73,5 +78,6 @@ mod tests {
     fn unrecognized_attribute() {
         assert_type_err!({ string(unrecognized) }, "unrecognized attribute");
         assert_type_err!({ string(foo = 42) }, "unrecognized attribute");
+        assert_type_err!({ string(foo = utf8) }, "unrecognized attribute");
     }
 }

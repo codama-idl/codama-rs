@@ -1,3 +1,4 @@
+use crate::utils::removed_syntax;
 use codama_nodes::{BytesEncoding, Docs, Identifier, IsSigner, OptionalAccountStrategy};
 use codama_syn_helpers::{extensions::*, Meta};
 use syn::Expr;
@@ -52,10 +53,18 @@ impl FromMeta for IsSigner {
 /// like the other keyword options of the attributes.
 impl FromMeta for BytesEncoding {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
+        const EXPECTED: &str = "expected one of: base16, base58, base64, utf8";
         let expr = meta.as_expr_or_value_expr()?;
-        let path = expr.as_path()?;
-        Self::try_from(path.to_string())
-            .map_err(|_| path.error("expected one of: base16, base58, base64, utf8"))
+        // v1 wrote the encoding as a string in some places.
+        if let Ok(value) = expr.as_string() {
+            return removed_syntax(
+                expr,
+                &format!("encoding = \"{value}\""),
+                &format!("encoding = {value}"),
+            );
+        }
+        let path = expr.as_path().map_err(|_| expr.error(EXPECTED))?;
+        Self::try_from(path.to_string()).map_err(|_| path.error(EXPECTED))
     }
 }
 

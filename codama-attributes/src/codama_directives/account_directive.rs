@@ -23,12 +23,12 @@ pub struct AccountDirective {
 impl AccountDirective {
     pub fn parse(meta: &Meta, ctx: &AttributeContext) -> syn::Result<Self> {
         meta.assert_directive("account")?;
-        let mut name = SetOnce::<Identifier>::new("identifier");
+        let mut identifier = SetOnce::<Identifier>::new("identifier");
         if let AttributeContext::Field(syn::Field {
             ident: Some(ident), ..
         }) = ctx
         {
-            name = name.initial_value(
+            identifier = identifier.initial_value(
                 Identifier::from_rust_name(&ident.to_string()).map_err(|e| ident.error(e))?,
             )
         }
@@ -44,7 +44,7 @@ impl AccountDirective {
             false => meta
                 .as_path_list()?
                 .each(|ref meta| match meta.path_str().as_str() {
-                    "identifier" => name.set(Identifier::from_meta(meta)?, meta),
+                    "identifier" => identifier.set(Identifier::from_meta(meta)?, meta),
                     "name" => removed_name_key(meta),
                     "writable" => is_writable.set(bool::from_meta(meta)?, meta),
                     "signer" => is_signer.set(IsSigner::from_meta(meta)?, meta),
@@ -59,7 +59,7 @@ impl AccountDirective {
                 })?,
         }
         Ok(AccountDirective {
-            identifier: name.take(meta)?,
+            identifier: identifier.take(meta)?,
             is_writable: is_writable.take(meta)?,
             is_signer: is_signer.take(meta)?,
             is_optional: is_optional.take(meta)?,

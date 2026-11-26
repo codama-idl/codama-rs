@@ -16,18 +16,18 @@ impl ProgramDirective {
     pub fn parse(meta: &Meta) -> syn::Result<Self> {
         let pl = meta.assert_directive("program")?.as_path_list()?;
 
-        let mut name = SetOnce::<Identifier>::new("identifier");
+        let mut identifier = SetOnce::<Identifier>::new("identifier");
         let mut address = SetOnce::<String>::new("address");
 
         pl.each(|ref meta| match meta.path_str().as_str() {
-            "identifier" => name.set(Identifier::from_meta(meta)?, meta),
+            "identifier" => identifier.set(Identifier::from_meta(meta)?, meta),
             "name" => removed_name_key(meta),
             "address" => address.set(meta.as_value()?.as_expr()?.as_string()?, meta),
             _ => Err(meta.error("unrecognized attribute")),
         })?;
 
         Ok(Self {
-            identifier: name.take(meta)?,
+            identifier: identifier.take(meta)?,
             address: address.take(meta)?,
         })
     }

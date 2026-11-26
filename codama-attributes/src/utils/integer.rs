@@ -3,8 +3,8 @@ use codama_nodes::{IntegerTypeNode, TypeNode, TypeNodeTrait};
 use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parses `meta` as an `integer(...)` type, naming the slot it fills in errors, e.g. `prefix must be an
-/// integer(...) type`. The error points at `meta`, which is the type itself when positional
-/// (`option(u8, prefix = u16)` points at `u16`) or the whole `name = value` otherwise.
+/// integer(...) type`. The error points at `meta`, so callers pass the type itself: `u16` in both
+/// `option(u8, u16)` and `option(u8, prefix = u16)`.
 pub(crate) fn parse_integer_type(meta: &Meta, name: &str) -> syn::Result<IntegerTypeNode> {
     IntegerTypeNode::try_from_type_node(TypeNode::from_meta(meta)?)
         .map_err(|_| meta.error(format!("{name} must be an integer(...) type")))
