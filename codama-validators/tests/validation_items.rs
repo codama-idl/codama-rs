@@ -1,12 +1,12 @@
 //! The validation items of `get_validation_items_visitor`, ported from the tests of `@codama/validators`.
 
 use codama_nodes::{
-    AccountLinkNode, AccountNode, AccountValueNode, DateTimeTypeNode, DefinedTypeLinkNode,
-    DefinedTypeNode, DurationTypeNode, EnumTypeNode, EnumVariantTypeNode, ErrorNode,
-    FixedPointTypeNode, Identifier, InstructionAccountNode, InstructionLifecycle, InstructionNode,
-    InstructionStatusNode, IntegerTypeNode, NodeRef, PdaLinkNode, PdaNode, PluginNode, ProgramNode,
-    PublicKeyTypeNode, RootNode, StructFieldTypeNode, StructTypeNode, Text, TextNode,
-    TupleTypeNode, VariablePdaSeedNode, I64, U64,
+    AccountDataValueNode, AccountLinkNode, AccountNode, AccountValueNode, DateTimeTypeNode,
+    DefinedTypeLinkNode, DefinedTypeNode, DurationTypeNode, EnumTypeNode, EnumVariantTypeNode,
+    ErrorNode, FixedPointTypeNode, Identifier, InstructionAccountNode, InstructionLifecycle,
+    InstructionNode, InstructionStatusNode, IntegerTypeNode, NodeRef, PdaLinkNode, PdaNode,
+    PluginNode, ProgramNode, PublicKeyTypeNode, RootNode, StructFieldTypeNode, StructTypeNode,
+    Text, TextNode, TupleTypeNode, VariablePdaSeedNode, I64, U64,
 };
 use codama_validators::{get_validation_items_visitor, LogLevel};
 use codama_visitors_core::visit;
@@ -531,6 +531,23 @@ fn reports_nodes_naming_another_by_an_empty_identifier_once() {
         [error(
             "Account value has no identifier.",
             "[instructionNode]transfer.[instructionAccountNode]owner.[accountValueNode]"
+        )]
+    );
+
+    let node = InstructionNode {
+        accounts: vec![InstructionAccountNode {
+            default_value: Box::new(Some(
+                AccountDataValueNode::new(Identifier::default()).into(),
+            )),
+            ..InstructionAccountNode::new("owner", false, false)
+        }],
+        ..instruction("transfer")
+    };
+    assert_eq!(
+        items(&node),
+        [error(
+            "Account data value has no account.",
+            "[instructionNode]transfer.[instructionAccountNode]owner.[accountDataValueNode]"
         )]
     );
 }

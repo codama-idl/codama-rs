@@ -599,11 +599,21 @@ impl<'a> ValidationItemsVisitor<'a> {
     }
 }
 
-/// The item of a node whose identifier is empty, which a node with an identifier must not have.
+/// The item of a node whose identifier is empty, which a node with an identifier must not have. An
+/// account data value names its account under `account` rather than `identifier`, so it is checked too.
 fn get_missing_identifier_item<'a>(
     node: NodeRef<'a>,
     path: &NodePath<'a>,
 ) -> Option<ValidationItem<'a>> {
+    if let NodeRef::AccountDataValue(value) = node {
+        return value.account.is_empty().then(|| {
+            validation_item(
+                LogLevel::Error,
+                "Account data value has no account.",
+                path.clone(),
+            )
+        });
+    }
     if !node.identifier()?.is_empty() {
         return None;
     }
@@ -654,6 +664,7 @@ fn names_another_node(node: NodeRef) -> bool {
     matches!(
         node,
         NodeRef::AccountBumpValue(_)
+            | NodeRef::AccountDataValue(_)
             | NodeRef::AccountLink(_)
             | NodeRef::AccountValue(_)
             | NodeRef::DefinedTypeLink(_)
