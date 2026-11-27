@@ -9,3 +9,6 @@ license = { workspace = true }
 [dependencies]
 codama-errors = { workspace = true }
 codama-nodes = { workspace = true }
+
+[lints]
+workspace = true

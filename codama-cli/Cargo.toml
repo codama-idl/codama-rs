@@ -19,3 +19,6 @@ serde_json = "1.0"
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "3.0"
+
+[lints]
+workspace = true

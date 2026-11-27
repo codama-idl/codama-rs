@@ -12,3 +12,6 @@ proc-macro2 = "1.0"
 serde_json = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }
 thiserror = "2.0"
+
+[lints]
+workspace = true

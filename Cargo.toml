@@ -35,6 +35,12 @@ codama-syn-helpers = { version = "1.0.0", path = "codama-syn-helpers" }
 codama-validators = { version = "1.0.0", path = "codama-validators" }
 codama-visitors-core = { version = "1.0.0", path = "codama-visitors-core" }
 
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(target_os, values("solana"))',
+] }
+unreachable_pub = "warn"
+
 [workspace.package]
 edition = "2021"
 license = "Apache-2.0"

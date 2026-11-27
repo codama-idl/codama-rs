@@ -1,25 +1,14 @@
-use crate::utils::{removed_name_key, FromMeta, SetOnce};
-use codama_nodes::{AccountBumpValueNode, Identifier};
-use codama_syn_helpers::{extensions::*, Meta};
+use super::account_value_node::parse_account_identifier;
+use crate::utils::FromMeta;
+use codama_nodes::AccountBumpValueNode;
+use codama_syn_helpers::Meta;
 
 impl FromMeta for AccountBumpValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("account_bump")?.as_path_list()?;
-        let mut name = SetOnce::<Identifier>::new("identifier");
-        pl.each(|ref meta| match meta {
-            Meta::PathValue(pv) => {
-                if pv.path.is_strict("name") {
-                    return removed_name_key(meta);
-                }
-                if !pv.path.is_strict("identifier") {
-                    return Err(pv.path.error("only 'identifier' attribute supported"));
-                };
-                name.set(Identifier::from_meta(meta)?, meta)
-            }
-            _ => name.set(Identifier::from_meta(meta)?, meta),
-        })?;
-
-        Ok(AccountBumpValueNode::new(name.take(meta)?))
+        Ok(AccountBumpValueNode::new(parse_account_identifier(
+            meta,
+            "account_bump",
+        )?))
     }
 }
 
@@ -44,7 +33,7 @@ mod tests {
     fn wrong_name_attribute() {
         assert_value_err!(
             { account_bump(banana = "escrow") },
-            "only 'identifier' attribute supported"
+            "unrecognized attribute"
         );
     }
 

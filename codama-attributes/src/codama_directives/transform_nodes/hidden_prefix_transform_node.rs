@@ -4,15 +4,25 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parses `hidden_prefix(type, constant(...), ...)` into the type with a trailing `hiddenPrefixTransformNode`.
 pub(crate) fn hidden_prefix_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
-    let pl = meta.assert_directive("hidden_prefix")?.as_path_list()?;
+    let (r#type, prefix) = parse_hidden_transform(meta, "hidden_prefix")?;
+    Ok(r#type.add_transform(HiddenPrefixTransformNode::new(prefix)))
+}
+
+/// Parses a `hidden_prefix(type, constant(...), ...)` or `hidden_suffix(type, constant(...), ...)`
+/// directive, named `directive`, into its type and its constants, in order.
+pub(crate) fn parse_hidden_transform(
+    meta: &Meta,
+    directive: &str,
+) -> syn::Result<(TypeNode, Vec<ConstantValueNode>)> {
+    let pl = meta.assert_directive(directive)?.as_path_list()?;
     let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
-    let mut prefix: Vec<ConstantValueNode> = Vec::new();
+    let mut constants: Vec<ConstantValueNode> = Vec::new();
 
     pl.each(|ref meta| match meta.path_str().as_str() {
         "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-        // Every `constant(...)` is appended, so the prefix keeps its order.
+        // Every `constant(...)` is appended, so the constants keep their order.
         "constant" => {
-            prefix.push(ConstantValueNode::from_meta(meta)?);
+            constants.push(ConstantValueNode::from_meta(meta)?);
             Ok(())
         }
         _ => {
@@ -23,8 +33,7 @@ pub(crate) fn hidden_prefix_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
         }
     })?;
 
-    let r#type = r#type.take(meta)?;
-    Ok(r#type.add_transform(HiddenPrefixTransformNode::new(prefix)))
+    Ok((r#type.take(meta)?, constants))
 }
 
 #[cfg(test)]

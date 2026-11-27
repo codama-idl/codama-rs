@@ -2,12 +2,10 @@ use crate::utils::SetOnce;
 use codama_nodes::PublicKeyValueNode;
 use codama_syn_helpers::{extensions::*, Meta};
 
-pub fn public_key_value_node_from_program(meta: &Meta) -> syn::Result<PublicKeyValueNode> {
-    let pv = meta.as_path_list()?;
-    let mut program = SetOnce::<String>::new("program_identifier");
-    pv.each(|ref meta| {
-        let value = meta.as_expr()?.as_string()?;
-        let public_key = match value.as_str() {
+/// Parses `program("token")` into the public key of a well-known program.
+pub(crate) fn public_key_value_node_from_program(meta: &Meta) -> syn::Result<PublicKeyValueNode> {
+    parse_well_known_public_key(meta, "program", "program_identifier", |name| {
+        let public_key = match name {
             // Common SPL Programs
             "associated-token" => "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
             "memo" => "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
@@ -26,12 +24,29 @@ pub fn public_key_value_node_from_program(meta: &Meta) -> syn::Result<PublicKeyV
             "ed25519" => "Ed25519SigVerify111111111111111111111111111",
             "secp256k1" => "KeccakSecp256k11111111111111111111111111111",
             "secp256r1" => "Secp256r1SigVerify1111111111111111111111111",
-
-            _ => return Err(meta.error("unrecognized program")),
+            _ => return None,
         };
-        program.set(public_key.to_string(), meta)
-    })?;
-    Ok(PublicKeyValueNode::new(program.take(meta)?))
+        Some(public_key)
+    })
+}
+
+/// Parses a `program("...")` or `sysvar("...")` value, whose single string `lookup` turns into a
+/// public key. `kind` names the value in errors and `slot` names its string.
+pub(crate) fn parse_well_known_public_key(
+    meta: &Meta,
+    kind: &str,
+    slot: &'static str,
+    lookup: fn(&str) -> Option<&'static str>,
+) -> syn::Result<PublicKeyValueNode> {
+    let pl = meta.as_path_list()?;
+    let mut public_key = SetOnce::<String>::new(slot);
+    pl.each(
+        |ref meta| match lookup(meta.as_expr()?.as_string()?.as_str()) {
+            Some(value) => public_key.set(value.to_string(), meta),
+            None => Err(meta.error(format!("unrecognized {kind}"))),
+        },
+    )?;
+    Ok(PublicKeyValueNode::new(public_key.take(meta)?))
 }
 
 #[cfg(test)]

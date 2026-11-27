@@ -52,7 +52,7 @@ where
                     return endian.set(value, meta);
                 }
             }
-            Err(meta.path()?.error("unrecognized attribute"))
+            Err(meta.error("unrecognized attribute"))
         }
     })?;
 

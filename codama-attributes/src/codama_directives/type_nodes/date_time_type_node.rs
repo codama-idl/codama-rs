@@ -1,28 +1,13 @@
-use crate::utils::{parse_encoding_integer, parse_ticks_per_second, FromMeta, SetOnce};
-use codama_nodes::{DateTimeTypeNode, IntegerTypeNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use crate::utils::{parse_time_type, FromMeta};
+use codama_nodes::DateTimeTypeNode;
+use codama_syn_helpers::Meta;
 
 impl FromMeta for DateTimeTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("date_time")?.as_path_list()?;
-        let mut number: SetOnce<IntegerTypeNode> = SetOnce::new("number");
-        let mut ticks_per_second: SetOnce<u32> = SetOnce::new("ticks_per_second");
-
-        pl.each(|ref meta| {
-            // Lists and paths go to the type parser first, so `number(u64)` gets its hint, not the `number =` field.
-            if meta.is_path_or_list() {
-                return number.set(parse_encoding_integer(meta)?, meta);
-            }
-            match meta.path_str().as_str() {
-                "number" => number.set(parse_encoding_integer(meta.as_value()?)?, meta),
-                "ticks_per_second" => ticks_per_second.set(parse_ticks_per_second(meta)?, meta),
-                _ => Err(meta.error("unrecognized attribute")),
-            }
-        })?;
-
+        let (number, ticks_per_second) = parse_time_type(meta, "date_time")?;
         Ok(DateTimeTypeNode {
-            ticks_per_second: ticks_per_second.option(),
-            ..DateTimeTypeNode::new(number.take(meta)?)
+            ticks_per_second,
+            ..DateTimeTypeNode::new(number)
         })
     }
 }
@@ -34,7 +19,7 @@ mod tests {
     use codama_nodes::{
         FixedSizeTransformNode, HasTransforms,
         IntegerFormat::{I64, U64},
-        PreOffsetTransformNode,
+        IntegerTypeNode, PreOffsetTransformNode,
     };
 
     #[test]

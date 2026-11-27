@@ -4,14 +4,36 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parses `pre_offset(type, offset, strategy)` into the type with a trailing `preOffsetTransformNode`.
 pub(crate) fn pre_offset_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
-    let pl = meta.assert_directive("pre_offset")?.as_path_list()?;
+    let (r#type, offset, strategy) = parse_offset_transform(meta, "pre_offset", parse_strategy)?;
+    Ok(r#type.add_transform(PreOffsetTransformNode::new(offset, strategy)))
+}
+
+fn parse_strategy(path: &syn::Path) -> Option<PreOffsetStrategy> {
+    match path.to_string().as_str() {
+        "absolute" => Some(PreOffsetStrategy::Absolute),
+        "padded" => Some(PreOffsetStrategy::Padded),
+        "relative" => Some(PreOffsetStrategy::Relative),
+        _ => None,
+    }
+}
+
+/// Parses a `pre_offset(type, offset, strategy)` or `post_offset(type, offset, strategy)` directive,
+/// named `directive`, into its type, its offset and its strategy, which `parse_strategy` reads from a
+/// path such as `relative`.
+pub(crate) fn parse_offset_transform<S>(
+    meta: &Meta,
+    directive: &str,
+    parse_strategy: fn(&syn::Path) -> Option<S>,
+) -> syn::Result<(TypeNode, i64, S)> {
+    let pl = meta.assert_directive(directive)?.as_path_list()?;
     let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
     let mut offset: SetOnce<i64> = SetOnce::new("offset");
-    let mut strategy: SetOnce<PreOffsetStrategy> = SetOnce::new("strategy");
+    let mut strategy: SetOnce<S> = SetOnce::new("strategy");
 
     pl.each(|ref meta| {
-        // Strategies are written as bare paths, so they are claimed before a
-        // bare path could be read as a positional type node.
+        // Strategies are written as bare paths, so they are claimed before a bare path could be read
+        // as a positional type node. This also keeps the `pre_offset` strategy of a `post_offset`
+        // distinct from the `pre_offset(...)` wrapper, which is a list rather than a bare path.
         if let Some(value) = meta.as_path().ok().and_then(parse_strategy) {
             return strategy.set(value, meta);
         }
@@ -37,18 +59,7 @@ pub(crate) fn pre_offset_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
         }
     })?;
 
-    let r#type = r#type.take(meta)?;
-    let transform = PreOffsetTransformNode::new(offset.take(meta)?, strategy.take(meta)?);
-    Ok(r#type.add_transform(transform))
-}
-
-fn parse_strategy(path: &syn::Path) -> Option<PreOffsetStrategy> {
-    match path.to_string().as_str() {
-        "absolute" => Some(PreOffsetStrategy::Absolute),
-        "padded" => Some(PreOffsetStrategy::Padded),
-        "relative" => Some(PreOffsetStrategy::Relative),
-        _ => None,
-    }
+    Ok((r#type.take(meta)?, offset.take(meta)?, strategy.take(meta)?))
 }
 
 #[cfg(test)]

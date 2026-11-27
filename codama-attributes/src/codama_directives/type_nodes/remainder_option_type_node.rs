@@ -4,21 +4,30 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for RemainderOptionTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("remainder_option")?.as_path_list()?;
-        let mut item: SetOnce<TypeNode> = SetOnce::new("item");
-
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            _ => {
-                if meta.is_path_or_list() {
-                    return item.set(TypeNode::from_meta(meta)?, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
-            }
-        })?;
-
-        Ok(RemainderOptionTypeNode::new(item.take(meta)?))
+        Ok(RemainderOptionTypeNode::new(parse_option_item(
+            meta,
+            "remainder_option",
+        )?))
     }
+}
+
+/// Parses a `remainder_option(item)` or `zeroable_option(item)` directive, named `directive`, into its
+/// item type.
+pub(crate) fn parse_option_item(meta: &Meta, directive: &str) -> syn::Result<TypeNode> {
+    let pl = meta.assert_directive(directive)?.as_path_list()?;
+    let mut item: SetOnce<TypeNode> = SetOnce::new("item");
+
+    pl.each(|ref meta| match meta.path_str().as_str() {
+        "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
+        _ => {
+            if meta.is_path_or_list() {
+                return item.set(TypeNode::from_meta(meta)?, meta);
+            }
+            Err(meta.error("unrecognized attribute"))
+        }
+    })?;
+
+    item.take(meta)
 }
 
 #[cfg(test)]

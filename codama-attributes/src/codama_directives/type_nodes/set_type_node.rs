@@ -1,31 +1,12 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{CountNode, SetTypeNode, TypeNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use super::array_type_node::parse_collection_type;
+use crate::utils::FromMeta;
+use codama_nodes::SetTypeNode;
+use codama_syn_helpers::Meta;
 
 impl FromMeta for SetTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("set")?.as_path_list()?;
-        let mut item: SetOnce<TypeNode> = SetOnce::new("item");
-        let mut count: SetOnce<CountNode> = SetOnce::new("count");
-
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            "count" => count.set(CountNode::from_meta(meta.as_value()?)?, meta),
-            "fixed_count" | "prefixed_count" | "remainder_count" => {
-                count.set(CountNode::from_meta(meta)?, meta)
-            }
-            _ => {
-                if meta.is_path_or_list() {
-                    return item.set(TypeNode::from_meta(meta)?, meta);
-                }
-                if meta.as_expr().is_ok() {
-                    return count.set(CountNode::from_meta(meta)?, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
-            }
-        })?;
-
-        Ok(SetTypeNode::new(item.take(meta)?, count.take(meta)?))
+        let (item, count) = parse_collection_type(meta, "set")?;
+        Ok(SetTypeNode::new(item, count))
     }
 }
 

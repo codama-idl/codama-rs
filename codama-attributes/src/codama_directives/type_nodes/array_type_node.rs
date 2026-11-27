@@ -4,31 +4,41 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for ArrayTypeNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("array")?.as_path_list()?;
-        let mut item: SetOnce<TypeNode> = SetOnce::new("item");
-        let mut count: SetOnce<CountNode> = SetOnce::new("count");
-
-        pl.each(|ref meta| match meta.path_str().as_str() {
-            "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            "count" => count.set(CountNode::from_meta(meta.as_value()?)?, meta),
-            // The count nodes have their own directives, so they are recognised
-            // by name before falling through to the item.
-            "fixed_count" | "prefixed_count" | "remainder_count" => {
-                count.set(CountNode::from_meta(meta)?, meta)
-            }
-            _ => {
-                if meta.is_path_or_list() {
-                    return item.set(TypeNode::from_meta(meta)?, meta);
-                }
-                if meta.as_expr().is_ok() {
-                    return count.set(CountNode::from_meta(meta)?, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
-            }
-        })?;
-
-        Ok(ArrayTypeNode::new(item.take(meta)?, count.take(meta)?))
+        let (item, count) = parse_collection_type(meta, "array")?;
+        Ok(ArrayTypeNode::new(item, count))
     }
+}
+
+/// Parses an `array(item, count)` or `set(item, count)` directive, named `directive`, into its item
+/// type and its count.
+pub(crate) fn parse_collection_type(
+    meta: &Meta,
+    directive: &str,
+) -> syn::Result<(TypeNode, CountNode)> {
+    let pl = meta.assert_directive(directive)?.as_path_list()?;
+    let mut item: SetOnce<TypeNode> = SetOnce::new("item");
+    let mut count: SetOnce<CountNode> = SetOnce::new("count");
+
+    pl.each(|ref meta| match meta.path_str().as_str() {
+        "item" => item.set(TypeNode::from_meta(meta.as_value()?)?, meta),
+        "count" => count.set(CountNode::from_meta(meta.as_value()?)?, meta),
+        // The count nodes have their own directives, so they are recognised
+        // by name before falling through to the item.
+        "fixed_count" | "prefixed_count" | "remainder_count" => {
+            count.set(CountNode::from_meta(meta)?, meta)
+        }
+        _ => {
+            if meta.is_path_or_list() {
+                return item.set(TypeNode::from_meta(meta)?, meta);
+            }
+            if meta.as_expr().is_ok() {
+                return count.set(CountNode::from_meta(meta)?, meta);
+            }
+            Err(meta.error("unrecognized attribute"))
+        }
+    })?;
+
+    Ok((item.take(meta)?, count.take(meta)?))
 }
 
 #[cfg(test)]

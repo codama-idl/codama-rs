@@ -4,23 +4,26 @@ use codama_syn_helpers::{extensions::*, Meta};
 
 impl FromMeta for AccountValueNode {
     fn from_meta(meta: &Meta) -> syn::Result<Self> {
-        let pl = meta.assert_directive("account")?.as_path_list()?;
-        let mut name = SetOnce::<Identifier>::new("identifier");
-        pl.each(|ref meta| match meta {
-            Meta::PathValue(pv) => {
-                if pv.path.is_strict("name") {
-                    return removed_name_key(meta);
-                }
-                if !pv.path.is_strict("identifier") {
-                    return Err(pv.path.error("only 'identifier' attribute supported"));
-                };
-                name.set(Identifier::from_meta(meta)?, meta)
-            }
-            _ => name.set(Identifier::from_meta(meta)?, meta),
-        })?;
-
-        Ok(AccountValueNode::new(name.take(meta)?))
+        Ok(AccountValueNode::new(parse_account_identifier(
+            meta, "account",
+        )?))
     }
+}
+
+/// Parses the account that a `directive("authority")` or `directive(identifier = "authority")` names,
+/// such as `account` or `account_bump`.
+pub(crate) fn parse_account_identifier(meta: &Meta, directive: &str) -> syn::Result<Identifier> {
+    let pl = meta.assert_directive(directive)?.as_path_list()?;
+    let mut identifier = SetOnce::<Identifier>::new("identifier");
+    pl.each(|ref meta| match meta {
+        Meta::PathValue(pv) if pv.path.is_strict("identifier") => {
+            identifier.set(Identifier::from_meta(meta)?, meta)
+        }
+        Meta::PathValue(pv) if pv.path.is_strict("name") => removed_name_key(meta),
+        Meta::PathValue(_) => Err(meta.error("unrecognized attribute")),
+        _ => identifier.set(Identifier::from_meta(meta)?, meta),
+    })?;
+    identifier.take(meta)
 }
 
 #[cfg(test)]
@@ -42,10 +45,7 @@ mod tests {
 
     #[test]
     fn wrong_name_attribute() {
-        assert_value_err!(
-            { account(banana = "authority") },
-            "only 'identifier' attribute supported"
-        );
+        assert_value_err!({ account(banana = "authority") }, "unrecognized attribute");
     }
 
     #[test]

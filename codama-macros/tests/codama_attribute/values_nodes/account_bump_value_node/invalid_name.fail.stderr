@@ -10,8 +10,8 @@ error: expected a string
 6 | #[codama(default_value = account_bump(banana))]
   |                                       ^^^^^^
 
-error: only 'identifier' attribute supported
+error: unrecognized attribute
  --> tests/codama_attribute/values_nodes/account_bump_value_node/invalid_name.fail.rs:9:39
   |
 9 | #[codama(default_value = account_bump(banana = "escrow"))]
-  |                                       ^^^^^^
+  |                                       ^^^^^^^^^^^^^^^^^

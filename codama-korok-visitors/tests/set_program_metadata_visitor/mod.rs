@@ -311,7 +311,7 @@ fn it_gets_program_ids_from_the_solana_address_declare_id_macro() -> CodamaResul
     Ok(())
 }
 
-pub fn get_path(relative_path: &str) -> std::path::PathBuf {
+pub(crate) fn get_path(relative_path: &str) -> std::path::PathBuf {
     let project_dir = env!("CARGO_MANIFEST_DIR");
     std::path::Path::new(project_dir)
         .join("tests")

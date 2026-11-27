@@ -1,36 +1,19 @@
-use crate::utils::{FromMeta, SetOnce};
-use codama_nodes::{ConstantValueNode, HasTransforms, HiddenSuffixTransformNode, TypeNode};
-use codama_syn_helpers::{extensions::*, Meta};
+use super::parse_hidden_transform;
+use codama_nodes::{HasTransforms, HiddenSuffixTransformNode, TypeNode};
+use codama_syn_helpers::Meta;
 
 /// Parses `hidden_suffix(type, constant(...), ...)` into the type with a trailing `hiddenSuffixTransformNode`.
 pub(crate) fn hidden_suffix_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
-    let pl = meta.assert_directive("hidden_suffix")?.as_path_list()?;
-    let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
-    let mut suffix: Vec<ConstantValueNode> = Vec::new();
-
-    pl.each(|ref meta| match meta.path_str().as_str() {
-        "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-        // Every `constant(...)` is appended, so the suffix keeps its order.
-        "constant" => {
-            suffix.push(ConstantValueNode::from_meta(meta)?);
-            Ok(())
-        }
-        _ => {
-            if meta.is_path_or_list() {
-                return r#type.set(TypeNode::from_meta(meta)?, meta);
-            }
-            Err(meta.error("unrecognized attribute"))
-        }
-    })?;
-
-    let r#type = r#type.take(meta)?;
+    let (r#type, suffix) = parse_hidden_transform(meta, "hidden_suffix")?;
     Ok(r#type.add_transform(HiddenSuffixTransformNode::new(suffix)))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codama_nodes::{IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, StringTypeNode};
+    use codama_nodes::{
+        ConstantValueNode, IntegerFormat::U8, IntegerTypeNode, IntegerValueNode, StringTypeNode,
+    };
 
     fn constant(value: u64) -> ConstantValueNode {
         ConstantValueNode::new(IntegerTypeNode::le(U8), IntegerValueNode::new(value))

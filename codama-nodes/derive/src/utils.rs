@@ -1,4 +1,4 @@
-pub fn lowercase_first_letter(s: &str) -> String {
+pub(crate) fn lowercase_first_letter(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
         None => String::new(),
