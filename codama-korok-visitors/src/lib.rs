@@ -1,3 +1,11 @@
+//! Visitors that fill and combine the nodes of a korok tree.
+//!
+//! A [`KorokVisitor`] visits every korok of a tree. Each of its methods defaults to the matching `walk_*`
+//! function, such as [`walk_struct`], which a visitor handling a korok itself calls to keep walking, like
+//! `syn::visit_mut`. The visitors of this crate set the node of each korok from its Rust code and its
+//! attributes, such as [`SetAccountsVisitor`], then combine those nodes up to the root, such as
+//! [`CombineModulesVisitor`].
+
 mod apply_display_visitor;
 mod apply_type_modifiers_visitor;
 mod apply_type_overrides_visitor;

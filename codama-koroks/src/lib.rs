@@ -1,3 +1,10 @@
+//! A tree of the items of your crates, each with the node it describes.
+//!
+//! A korok wraps an item of a crate loaded by `codama-stores`, such as a struct or an enum variant, along
+//! with its parsed attributes and the [`Node`](codama_nodes::Node) it currently resolves to, if any.
+//! [`RootKorok`] is the root of the tree: the node it ends up with is the IDL. The korok visitors of
+//! `codama-korok-visitors` fill and combine these nodes.
+
 mod const_korok;
 mod crate_korok;
 mod enum_korok;
