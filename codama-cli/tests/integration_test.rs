@@ -97,6 +97,8 @@ fn test_generate_idl_with_output_flag() {
 
     let content = fs::read_to_string(&output_file).unwrap();
     assert!(content.contains(r#""kind":"rootNode""#));
+    // The file ends with a newline, like the output on stdout.
+    assert!(content.ends_with("}\n"));
 
     fs::remove_file(&output_file).unwrap();
 }

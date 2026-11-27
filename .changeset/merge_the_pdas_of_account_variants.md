@@ -4,4 +4,4 @@ default: patch
 
 #### Report conflicting PDAs of account variants against their enum
 
-Variants of a `#[derive(CodamaAccounts)]` enum sharing an identical PDA keep it once, and variants describing a PDA of the same identifier differently now fail with the enum that declares them instead of the program.
+Variants of a `#[derive(CodamaAccounts)]` enum sharing an identical PDA now keep it once rather than adding it to the program for each variant, and variants describing a PDA of the same identifier differently fail with an error pointing at the enum that declares them.
