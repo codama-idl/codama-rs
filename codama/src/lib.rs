@@ -12,7 +12,7 @@
 //! use codama::Codama;
 //!
 //! let program: proc_macro2::TokenStream = r#"
-//!     codama_program!(identifier = "counter", address = "Counter111111111111111111111111111111111111");
+//!     codama_program!(identifier = "counter_program", address = "Counter111111111111111111111111111111111111");
 //!
 //!     #[derive(CodamaAccount)]
 //!     pub struct Counter {
@@ -23,6 +23,7 @@
 //! .unwrap();
 //!
 //! let idl = Codama::hydrate(program)?.get_idl()?;
+//! assert_eq!(idl.program.identifier.as_ref(), "counter_program");
 //! assert_eq!(idl.program.accounts[0].identifier.as_ref(), "counter");
 //! # Ok::<(), codama::CodamaError>(())
 //! ```
