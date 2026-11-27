@@ -1,4 +1,5 @@
-use crate::utils::{parse_time_type, FromMeta};
+use super::date_time_type_node::parse_time_type;
+use crate::utils::FromMeta;
 use codama_nodes::DurationTypeNode;
 use codama_syn_helpers::Meta;
 
