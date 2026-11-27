@@ -1,5 +1,6 @@
 use crate::{
-    assert_unique_field_identifiers, parse_field_display, CombineTypesVisitor, KorokVisitor,
+    assert_unique_field_identifiers, parse_field_display, walk_enum, CombineTypesVisitor,
+    KorokVisitor,
 };
 use codama_attributes::{
     DiscriminatorDirective, EnumDiscriminatorDirective, ProgramDirective, SkipDirective,
@@ -90,7 +91,7 @@ impl KorokVisitor for SetEventsVisitor {
         self.enum_discriminator = enum_discriminator;
 
         self.enum_current_discriminator = 0;
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
         self.enum_current_discriminator = 0;
 
         // Gather all events in the variants.

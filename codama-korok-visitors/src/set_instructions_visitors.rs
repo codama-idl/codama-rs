@@ -1,5 +1,6 @@
 use crate::{
-    assert_unique_field_identifiers, parse_field_display, CombineTypesVisitor, KorokVisitor,
+    assert_unique_field_identifiers, parse_field_display, walk_enum, CombineTypesVisitor,
+    KorokVisitor,
 };
 use codama_attributes::{
     AccountDirective, Attributes, CodamaAttribute, CodamaDirective, DefaultValueDirective,
@@ -132,7 +133,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.enum_discriminator = enum_discriminator;
         self.enum_current_discriminator = 0;
         self.enum_optional_account_strategy = parse_optional_account_strategy(&korok.attributes);
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
 
         // Gather all instructions in a `ProgramNode`.
         let instructions = korok

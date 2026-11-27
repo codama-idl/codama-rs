@@ -1,4 +1,7 @@
-use crate::KorokVisitor;
+use crate::{
+    walk_crate, walk_enum, walk_enum_variant, walk_field, walk_file_module, walk_module,
+    walk_struct, walk_type_alias, walk_unsupported_item, KorokVisitor,
+};
 use codama_attributes::{
     Attribute, CodamaAttribute, CodamaDirective, EncodingDirective, FixedSizeDirective,
     SizePrefixDirective,
@@ -21,13 +24,8 @@ impl ApplyTypeModifiersVisitor {
 }
 
 impl KorokVisitor for ApplyTypeModifiersVisitor {
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
-        Ok(())
-    }
-
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_crate(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
@@ -35,22 +33,22 @@ impl KorokVisitor for ApplyTypeModifiersVisitor {
         &mut self,
         korok: &mut codama_koroks::FileModuleKorok,
     ) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_file_module(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_module(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
     fn visit_struct(&mut self, korok: &mut codama_koroks::StructKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_struct(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
     fn visit_enum(&mut self, korok: &mut codama_koroks::EnumKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
@@ -58,7 +56,7 @@ impl KorokVisitor for ApplyTypeModifiersVisitor {
         &mut self,
         korok: &mut codama_koroks::UnsupportedItemKorok,
     ) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_unsupported_item(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
@@ -66,17 +64,17 @@ impl KorokVisitor for ApplyTypeModifiersVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_enum_variant(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
     fn visit_field(&mut self, korok: &mut codama_koroks::FieldKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_field(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 
     fn visit_type_alias(&mut self, korok: &mut codama_koroks::TypeAliasKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_type_alias(self, korok)?;
         apply_type_modifiers(korok.into())
     }
 }

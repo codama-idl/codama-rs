@@ -4,6 +4,30 @@ use codama_errors::CodamaResult;
 use codama_korok_visitors::KorokVisitable;
 use codama_nodes::{InstructionInputValueNode, RegisteredTypeNode};
 
+/// Extends how Codama turns Rust code into nodes. The koroks of the loaded crates go through every
+/// plugin in four phases, each phase running the matching hook of every plugin in registration order
+/// before the next phase starts:
+///
+/// 1. [`on_initialized`](Self::on_initialized): the koroks are parsed, with their attributes, and no
+///    node is set yet.
+/// 2. [`on_fields_set`](Self::on_fields_set): the default plugin sets the type node of every field
+///    from its Rust type and the `#[codama(...)]` attributes on it, such as `type`, `encoding` or
+///    `default_value`.
+/// 3. [`on_program_items_set`](Self::on_program_items_set): the default plugin turns the structs and
+///    enums deriving a Codama item into their node: accounts, instructions, defined types, PDAs,
+///    events and errors.
+/// 4. [`on_root_node_set`](Self::on_root_node_set): the default plugin fills in the program metadata,
+///    combines the nodes of every module and crate into one `RootNode`, and runs the passes that need
+///    the whole tree, such as turning integer literals at float positions into float values.
+///
+/// [`DefaultPlugin`](crate::DefaultPlugin) is registered first, so within each phase a custom plugin
+/// sees what the default plugin produced. A plugin that adds nodes in `on_root_node_set` runs after the
+/// default root passes, so it re-runs the ones it needs, such as
+/// `codama_korok_visitors::transform_integers_to_floats`. The root node is validated once every plugin
+/// has run, so a plugin may leave the tree in a state that would not validate.
+///
+/// Before the phases, the `resolve_*_directive` hooks resolve the `namespace::name(...)` directives
+/// found in the attributes, each plugin answering for the namespaces it owns.
 pub trait KorokPlugin {
     /// Try to resolve a resolvable type directive belonging to this plugin.
     /// Returns `None` if this plugin does not handle the given directive.
@@ -25,18 +49,22 @@ pub trait KorokPlugin {
         None
     }
 
+    /// Runs once the koroks are parsed, before any node is set.
     fn on_initialized(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         Ok(())
     }
 
+    /// Runs once the type nodes of the fields are set.
     fn on_fields_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         Ok(())
     }
 
+    /// Runs once the items deriving a Codama item have their node.
     fn on_program_items_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         Ok(())
     }
 
+    /// Runs once the nodes are combined into the root node, before it is validated.
     fn on_root_node_set(&self, _visitable: &mut dyn KorokVisitable) -> CodamaResult<()> {
         Ok(())
     }
@@ -167,9 +195,6 @@ mod tests {
     impl KorokVisitable for MockVisitable {
         fn accept(&mut self, _visitor: &mut dyn KorokVisitor) -> CodamaResult<()> {
             Ok(())
-        }
-        fn get_children(&mut self) -> Vec<&mut dyn KorokVisitable> {
-            Vec::new()
         }
     }
 

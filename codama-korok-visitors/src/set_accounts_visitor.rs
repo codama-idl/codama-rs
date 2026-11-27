@@ -1,6 +1,6 @@
 use crate::{
-    add_node_with_identifier, assert_unique_field_identifiers, parse_pda_node, CombineTypesVisitor,
-    KorokVisitor,
+    add_node_with_identifier, assert_unique_field_identifiers, parse_pda_node, walk_enum,
+    CombineTypesVisitor, KorokVisitor,
 };
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
@@ -96,7 +96,7 @@ impl KorokVisitor for SetAccountsVisitor {
         self.enum_name = korok.ast.ident.to_string();
         self.enum_discriminator = enum_discriminator;
         self.enum_current_discriminator = 0;
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
 
         // Gather all accounts in the variants.
         let accounts = korok

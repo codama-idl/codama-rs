@@ -1,4 +1,6 @@
-use crate::{assert_unique_field_identifiers, KorokVisitor};
+use crate::{
+    assert_unique_field_identifiers, walk_enum, walk_enum_variant, walk_struct, KorokVisitor,
+};
 use codama_attributes::{
     Attributes, CodamaAttribute, CodamaDirective, EnumDiscriminatorDirective, FieldDirective,
     ReprAttribute, TryFromFilter,
@@ -240,7 +242,7 @@ impl KorokVisitor for CombineTypesVisitor {
             return Ok(());
         }
 
-        self.visit_children(korok)?;
+        walk_struct(self, korok)?;
 
         let parent = format!("struct `{}`", korok.ast.ident);
         let type_node: TypeNode = match korok.ast.fields {
@@ -274,7 +276,7 @@ impl KorokVisitor for CombineTypesVisitor {
         }
 
         self.parent_enum = korok.ast.ident.to_string();
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
         self.parent_enum.clear();
 
         let parent = format!("enum `{}`", korok.ast.ident);
@@ -311,7 +313,7 @@ impl KorokVisitor for CombineTypesVisitor {
             return Ok(());
         }
 
-        self.visit_children(korok)?;
+        walk_enum_variant(self, korok)?;
 
         let parent = format!(
             "variant `{}` of enum `{}`",

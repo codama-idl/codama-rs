@@ -1,4 +1,4 @@
-use crate::KorokVisitor;
+use crate::{walk_crate, walk_file_module, walk_module, walk_root, KorokVisitor};
 use codama_attributes::ProgramDirective;
 use codama_errors::{CodamaError, CodamaResult};
 use codama_koroks::KorokTrait;
@@ -27,13 +27,13 @@ impl KorokVisitor for CombineModulesVisitor {
             return Ok(());
         }
 
-        self.visit_children(korok)?;
+        walk_root(self, korok)?;
         korok.node = combine_koroks(&korok.node, &korok.crates, "the loaded crates")?;
         Ok(())
     }
 
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_crate(self, korok)?;
         let location = with_path("the crate root".to_string(), &korok.store.path);
         korok.node = combine_koroks(&korok.node, &korok.items, &location)?;
 
@@ -48,7 +48,7 @@ impl KorokVisitor for CombineModulesVisitor {
         &mut self,
         korok: &mut codama_koroks::FileModuleKorok,
     ) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_file_module(self, korok)?;
         let location = with_path(format!("module `{}`", korok.ast.ident), &korok.store.path);
         korok.node = combine_koroks(&korok.node, &korok.items, &location)?;
 
@@ -63,7 +63,7 @@ impl KorokVisitor for CombineModulesVisitor {
     }
 
     fn visit_module(&mut self, korok: &mut codama_koroks::ModuleKorok) -> CodamaResult<()> {
-        self.visit_children(korok)?;
+        walk_module(self, korok)?;
         let location = format!("module `{}`", korok.ast.ident);
         korok.node = combine_koroks(&korok.node, &korok.items, &location)?;
 
