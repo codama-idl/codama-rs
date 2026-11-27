@@ -6,11 +6,11 @@ Thanks for your interest in contributing to Codama's Rust implementation.
 
 You'll need the Rust toolchain pinned in `rust-toolchain.toml`, plus Node.js
 and pnpm for the JS-based code generator in `spec-generators/`. CI treats
-warnings as errors, so run the Rust checks with `-Dwarnings` to match it:
+warnings as errors, so deny warnings in the Rust checks to match it:
 
 ```sh
 cargo fmt --all -- --check
-RUSTFLAGS=-Dwarnings cargo clippy --all-targets --all-features
+cargo clippy --all-targets --all-features -- -D warnings
 RUSTDOCFLAGS=-Dwarnings cargo doc --workspace --no-deps
 cargo test --all-features
 cd spec-generators && pnpm install --frozen-lockfile && pnpm lint && pnpm test

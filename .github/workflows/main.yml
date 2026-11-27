@@ -43,14 +43,21 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v7
 
+      # `RUSTUP_TOOLCHAIN` overrides `rust-toolchain.toml` for the rest of the job, so the cache keys
+      # on the MSRV and no other toolchain is installed.
+      - name: Read the MSRV
+        run: echo "RUSTUP_TOOLCHAIN=$(grep -m1 '^rust-version = ' Cargo.toml | cut -d '"' -f 2)" >> "$GITHUB_ENV"
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUSTUP_TOOLCHAIN }}
+
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Check the crates with the `rust-version` of the workspace
-        run: |
-          msrv=$(grep -m1 '^rust-version = ' Cargo.toml | cut -d '"' -f 2)
-          rustup toolchain install "$msrv" --profile minimal
-          cargo +"$msrv" check --workspace --all-features
+      - name: Check the crates with the MSRV
+        run: cargo check --workspace --all-features
 
   test:
     name: Test Crates

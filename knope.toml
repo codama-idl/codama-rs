@@ -92,8 +92,10 @@ name = "prepare-release"
 type = "PrepareRelease"
 prerelease_label = "rc"
 
-# Knope writes the versions the crates depend on each other at as caret requirements, which let a
-# crate resolve to a later release candidate of its siblings. Pin them to the exact version instead.
+# Knope writes the versions the crates depend on each other at as caret requirements. The crates
+# always release together, so pin them to each other's exact version instead, for release
+# candidates and stable releases alike: a caret would let a crate resolve to a sibling from another
+# release, such as a later release candidate.
 [[workflows.steps]]
 type = "Command"
 command = "sed -i -E 's/^(codama[a-z-]* = \\{ version = \")([0-9])/\\1=\\2/' Cargo.toml"
