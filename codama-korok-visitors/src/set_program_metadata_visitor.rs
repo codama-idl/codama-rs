@@ -5,7 +5,7 @@ use codama_koroks::{CrateKorok, UnsupportedItemKorok};
 use codama_nodes::{Identifier, Node, ProgramNode};
 use codama_syn_helpers::extensions::*;
 
-use crate::KorokVisitor;
+use crate::{walk_crate, KorokVisitor};
 
 /// Fill program metadata from the `codama_program!` macro, the Cargo.toml
 /// manifest and the `solana_program::declare_id!` macro (in that precedence).
@@ -27,7 +27,7 @@ impl KorokVisitor for SetProgramMetadataVisitor {
     fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
         self.identified_public_key = None;
         self.identified_program = None;
-        self.visit_children(korok)?;
+        walk_crate(self, korok)?;
 
         // Get a mutable reference to the program to update its metadata.
         let program = match &mut korok.node {

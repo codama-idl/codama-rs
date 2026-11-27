@@ -3,7 +3,10 @@ use codama_attributes::{
     Attribute, CodamaDirective, Resolvable, SeedDirectiveType, TypeDirectiveNode,
 };
 use codama_errors::CodamaResult;
-use codama_korok_visitors::KorokVisitor;
+use codama_korok_visitors::{
+    walk_crate, walk_enum, walk_enum_variant, walk_file_module, walk_impl, walk_module, walk_root,
+    walk_struct, KorokVisitor,
+};
 use codama_koroks::*;
 use codama_nodes::{InstructionInputValueNode, ValueNode};
 
@@ -112,37 +115,37 @@ impl<'a> ResolveDirectivesVisitor<'a> {
 
 impl KorokVisitor for ResolveDirectivesVisitor<'_> {
     fn visit_root(&mut self, korok: &mut RootKorok) -> CodamaResult<()> {
-        self.visit_children(korok)
+        walk_root(self, korok)
     }
 
     fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_crate(self, korok)
     }
 
     fn visit_file_module(&mut self, korok: &mut FileModuleKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_file_module(self, korok)
     }
 
     fn visit_module(&mut self, korok: &mut ModuleKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_module(self, korok)
     }
 
     fn visit_struct(&mut self, korok: &mut StructKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_struct(self, korok)
     }
 
     fn visit_enum(&mut self, korok: &mut EnumKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_enum(self, korok)
     }
 
     fn visit_enum_variant(&mut self, korok: &mut EnumVariantKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_enum_variant(self, korok)
     }
 
     fn visit_field(&mut self, korok: &mut FieldKorok) -> CodamaResult<()> {
@@ -155,7 +158,7 @@ impl KorokVisitor for ResolveDirectivesVisitor<'_> {
 
     fn visit_impl(&mut self, korok: &mut ImplKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
-        self.visit_children(korok)
+        walk_impl(self, korok)
     }
 
     fn visit_const(&mut self, korok: &mut ConstKorok) -> CodamaResult<()> {

@@ -1,4 +1,4 @@
-use crate::KorokVisitor;
+use crate::{walk_korok_mut, KorokVisitor};
 use codama_errors::CodamaResult;
 use codama_koroks::KorokTrait;
 
@@ -41,7 +41,7 @@ impl DebugVisitor {
         self.current_result.push_str(&format!(": {json}\n"));
 
         self.current_indent += 1;
-        self.visit_children(&mut korok)?;
+        walk_korok_mut(self, &mut korok)?;
         self.current_indent -= 1;
         Ok(())
     }
@@ -126,6 +126,10 @@ impl KorokVisitor for DebugVisitor {
         korok: &mut codama_koroks::UnsupportedItemKorok,
     ) -> CodamaResult<()> {
         self.write("UnsupportedItem", None, korok.into())
+    }
+
+    fn visit_impl(&mut self, korok: &mut codama_koroks::ImplKorok) -> CodamaResult<()> {
+        self.write("Impl", None, korok.into())
     }
 
     fn visit_impl_item(&mut self, korok: &mut codama_koroks::ImplItemKorok) -> CodamaResult<()> {

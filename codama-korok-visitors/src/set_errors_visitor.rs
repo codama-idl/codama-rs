@@ -1,4 +1,4 @@
-use crate::{CombineTypesVisitor, KorokVisitor};
+use crate::{walk_enum, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     Attribute, Attributes, ErrorDirective, ProgramDirective, SkipDirective, TryFromFilter,
     UnsupportedAttribute,
@@ -44,7 +44,7 @@ impl KorokVisitor for SetErrorsVisitor {
 
         // Transform each variant into an `ErrorNode`.
         self.enum_current_discriminator = 0;
-        self.visit_children(korok)?;
+        walk_enum(self, korok)?;
         self.enum_current_discriminator = 0;
 
         // Gather all errors in a `ProgramNode`.

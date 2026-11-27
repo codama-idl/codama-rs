@@ -1,5 +1,5 @@
 use codama_errors::CodamaResult;
-use codama_korok_visitors::{FilterItemsVisitor, KorokVisitable, KorokVisitor, UniformVisitor};
+use codama_korok_visitors::{walk_korok_mut, FilterItemsVisitor, KorokVisitable, UniformVisitor};
 use codama_koroks::{ItemKorok, KorokTrait};
 use codama_nodes::PublicKeyTypeNode;
 
@@ -23,7 +23,7 @@ fn it_only_starts_the_child_visitor_on_filtered_items() -> CodamaResult<()> {
             _ => false,
         },
         UniformVisitor::new(|mut k, visitor| {
-            visitor.visit_children(&mut k)?;
+            walk_korok_mut(visitor, &mut k)?;
             k.set_node(Some(PublicKeyTypeNode::new().into()));
             Ok(())
         }),

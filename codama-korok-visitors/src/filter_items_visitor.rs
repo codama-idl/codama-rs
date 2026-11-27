@@ -1,4 +1,4 @@
-use crate::KorokVisitor;
+use crate::{walk_item, KorokVisitor};
 use codama_errors::CodamaResult;
 use codama_koroks::ItemKorok;
 
@@ -30,7 +30,7 @@ where
         if (self.filter)(korok) {
             self.visitor.visit_item(korok)
         } else {
-            self.visit_children(korok)
+            walk_item(self, korok)
         }
     }
 }
