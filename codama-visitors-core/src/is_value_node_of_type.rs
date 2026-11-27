@@ -9,9 +9,9 @@ use codama_nodes::{NodeRef, TypeNode, ValueNode};
 /// Links to defined types are followed, which fails with `LinkedNodeNotFound` when a link points to no
 /// recorded node. Ranges are not checked, so `256` is a value of a `u8`. Injected and constant values
 /// are not concrete, so they are never values of a type here. Number types accept integer values and
-/// float types also accept float values, a struct value must provide every field without a default value, and an enum value
-/// must name a variant of the enum and carry its data, if any. The enum that an enum value links to is
-/// not compared to the type, as values are matched by their structure only.
+/// float types also accept float values, a struct value must provide every field without a default
+/// value, and an enum value must name a variant of the enum and carry its data, if any. The enum that
+/// an enum value links to is not compared to the type, as values are matched by their structure only.
 ///
 /// ```
 /// use codama_nodes::{IntegerTypeNode, NodeRef, NoneValueNode, OptionTypeNode, U64};
