@@ -1,4 +1,5 @@
-use codama_nodes::{HasKind, NodeRef};
+use codama_errors::{CodamaError, CodamaResult};
+use codama_nodes::{HasKind, NodeKinds, NodeRef};
 use std::fmt;
 
 /// The nodes from the start of a visit down to a node, that node included.
@@ -99,6 +100,20 @@ impl<'a> NodePath<'a> {
     /// Removes the last node of the path and returns it.
     pub fn pop(&mut self) -> Option<NodeRef<'a>> {
         self.0.pop()
+    }
+
+    /// The last node of the path as a `T`, for functions that take the path of a `T`. Fails with
+    /// `UnexpectedNodeKind` when the path ends with another node or is empty.
+    pub(crate) fn expect_last<T: NodeKinds + 'a>(&self) -> CodamaResult<&'a T>
+    where
+        &'a T: TryFrom<NodeRef<'a>>,
+    {
+        self.last()
+            .and_then(|node| node.try_into().ok())
+            .ok_or_else(|| CodamaError::UnexpectedNodeKind {
+                expected_kinds: T::KINDS.join(", "),
+                path: self.to_string(),
+            })
     }
 }
 

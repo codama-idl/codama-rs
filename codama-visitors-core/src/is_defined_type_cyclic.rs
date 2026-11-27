@@ -1,6 +1,6 @@
 use crate::{get_defined_type_links_visitor, visit, LinkableDictionary, NodePath, NodeStack};
 use codama_errors::{CodamaError, CodamaResult};
-use codama_nodes::{DefinedTypeNode, NodeKinds, NodeRef, ProgramNode};
+use codama_nodes::{DefinedTypeNode, NodeRef, ProgramNode};
 
 /// Whether the defined type at the end of `path` links back to itself, directly or through other
 /// defined types, following the recorded links (see
@@ -69,13 +69,7 @@ pub(crate) fn get_defined_type_in_program<'a>(
             path: path.to_string(),
         });
     }
-    match path.last() {
-        Some(NodeRef::DefinedType(defined_type)) => Ok(defined_type),
-        _ => Err(CodamaError::UnexpectedNodeKind {
-            expected_kinds: DefinedTypeNode::KINDS.join(", "),
-            path: path.to_string(),
-        }),
-    }
+    path.expect_last::<DefinedTypeNode>()
 }
 
 /// The defined type at the end of a path that a defined type link resolves to, as listed by

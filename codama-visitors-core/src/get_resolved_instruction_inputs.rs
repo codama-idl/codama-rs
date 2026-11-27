@@ -217,7 +217,8 @@ pub struct ResolveInstructionInputsOptions {
 ///
 /// Fails when the default values depend on each other in a cycle, when a default value depends on an
 /// account or a data field that the instruction does not have, when a PDA default value takes an
-/// optional account as a seed, and when a provided value is not an instruction input value.
+/// optional account as a seed, when a provided value is not an instruction input value, and when the
+/// path does not end with an instruction.
 ///
 /// ```
 /// use codama_nodes::{AccountValueNode, InstructionAccountNode, InstructionNode, NodeRef};
@@ -248,11 +249,9 @@ pub fn get_resolved_instruction_inputs<'a>(
     linkables: &LinkableDictionary<'a>,
     options: ResolveInstructionInputsOptions,
 ) -> Result<Vec<ResolvedInstructionInput<'a>>, ResolveInstructionInputsError<'a>> {
-    let Some(NodeRef::Instruction(instruction)) = instruction_path.last() else {
-        return Ok(vec![]);
-    };
+    let instruction = instruction_path.expect_last::<InstructionNode>()?;
     let scope = get_provided_scope_from_path(instruction_path);
-    let data_fields: Vec<DataInput<'a>> = get_instruction_data_fields(instruction_path, linkables)
+    let data_fields: Vec<DataInput<'a>> = get_instruction_data_fields(instruction_path, linkables)?
         .into_iter()
         .map(|field| DataInput {
             node: field.field,

@@ -77,6 +77,16 @@ pub fn validation_item<'a>(
     }
 }
 
+/// Creates an error [`ValidationItem`] about the last node of `path` that reports `cause`, with the
+/// message of `cause`.
+pub(crate) fn validation_error_item<'a>(
+    cause: impl Into<CodamaError>,
+    path: NodePath<'a>,
+) -> ValidationItem<'a> {
+    let cause = cause.into();
+    validation_item(LogLevel::Error, cause.to_string(), path).with_cause(cause)
+}
+
 impl ValidationItem<'_> {
     /// Keeps `cause` as the error this diagnostic corresponds to.
     pub fn with_cause(self, cause: CodamaError) -> Self {

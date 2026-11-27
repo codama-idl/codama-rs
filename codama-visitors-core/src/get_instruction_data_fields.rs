@@ -1,7 +1,6 @@
 use crate::{LinkableDictionary, NodePath};
-use codama_nodes::{
-    DefinedTypeNode, InstructionNode, NodeRef, Path, StructFieldTypeNode, TypeNode,
-};
+use codama_errors::CodamaResult;
+use codama_nodes::{DefinedTypeNode, InstructionNode, Path, StructFieldTypeNode, TypeNode};
 
 /// A struct field within the data of an instruction, with its full path.
 #[derive(Debug, Clone, PartialEq)]
@@ -24,7 +23,8 @@ pub struct InstructionDataField<'a> {
 /// fields whose type is, or links to, a struct. Each defined type is followed at most once per branch,
 /// which guards against cycles while still expanding sibling fields that link to the same type. The
 /// path must contain the program of the instruction for linked data to be followed: otherwise, a
-/// linked type contributes no fields.
+/// linked type contributes no fields. Fails with `UnexpectedNodeKind` when the path does not end with
+/// an instruction.
 ///
 /// ```
 /// use codama_nodes::{
@@ -47,28 +47,25 @@ pub struct InstructionDataField<'a> {
 ///     ..InstructionNode::default()
 /// };
 /// let path = NodePath::from(vec![NodeRef::from(&instruction)]);
-/// let fields = get_instruction_data_fields(&path, &LinkableDictionary::default());
+/// let fields = get_instruction_data_fields(&path, &LinkableDictionary::default()).unwrap();
 /// let paths: Vec<_> = fields.iter().map(|field| field.path.to_string()).collect();
 /// assert_eq!(paths, ["amount", "config", "config.fee"]);
 /// ```
 pub fn get_instruction_data_fields<'a>(
     instruction_path: &NodePath<'a>,
     linkables: &LinkableDictionary<'a>,
-) -> Vec<InstructionDataField<'a>> {
+) -> CodamaResult<Vec<InstructionDataField<'a>>> {
+    let instruction = instruction_path.expect_last::<InstructionNode>()?;
     let mut walker = DataFieldsWalker {
         linkables,
         fields: vec![],
         followed_types: vec![],
     };
-    let Some(NodeRef::Instruction(instruction)) = instruction_path.last() else {
-        return vec![];
-    };
-    let instruction: &'a InstructionNode = instruction;
     if let Some(data) = instruction.data.as_ref() {
         let type_path = instruction_path.child(data);
         walker.walk(data, None, instruction_path, type_path);
     }
-    walker.fields
+    Ok(walker.fields)
 }
 
 struct DataFieldsWalker<'l, 'a> {
