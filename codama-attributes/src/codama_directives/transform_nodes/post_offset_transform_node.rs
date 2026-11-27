@@ -1,46 +1,11 @@
-use crate::utils::{FromMeta, SetOnce};
+use super::parse_offset_transform;
 use codama_nodes::{HasTransforms, PostOffsetStrategy, PostOffsetTransformNode, TypeNode};
 use codama_syn_helpers::{extensions::*, Meta};
 
 /// Parses `post_offset(type, offset, strategy)` into the type with a trailing `postOffsetTransformNode`.
 pub(crate) fn post_offset_from_meta(meta: &Meta) -> syn::Result<TypeNode> {
-    let pl = meta.assert_directive("post_offset")?.as_path_list()?;
-    let mut r#type: SetOnce<TypeNode> = SetOnce::new("type");
-    let mut offset: SetOnce<i64> = SetOnce::new("offset");
-    let mut strategy: SetOnce<PostOffsetStrategy> = SetOnce::new("strategy");
-
-    pl.each(|ref meta| {
-        // Strategies are written as bare paths. This also keeps the
-        // `pre_offset` strategy distinct from the `pre_offset(...)` wrapper,
-        // which is a list rather than a bare path.
-        if let Some(value) = meta.as_path().ok().and_then(parse_strategy) {
-            return strategy.set(value, meta);
-        }
-        match meta.path_str().as_str() {
-            "type" => r#type.set(TypeNode::from_meta(meta.as_value()?)?, meta),
-            "offset" => offset.set(meta.as_value()?.as_expr()?.as_signed_integer()?, meta),
-            "strategy" => {
-                let path = meta.as_value()?.as_expr()?.as_path()?;
-                match parse_strategy(path) {
-                    Some(value) => strategy.set(value, meta),
-                    None => Err(path.error("invalid strategy")),
-                }
-            }
-            _ => {
-                if meta.is_path_or_list() {
-                    return r#type.set(TypeNode::from_meta(meta)?, meta);
-                }
-                if let Ok(expr) = meta.as_expr() {
-                    return offset.set(expr.as_signed_integer()?, meta);
-                }
-                Err(meta.error("unrecognized attribute"))
-            }
-        }
-    })?;
-
-    let r#type = r#type.take(meta)?;
-    let transform = PostOffsetTransformNode::new(offset.take(meta)?, strategy.take(meta)?);
-    Ok(r#type.add_transform(transform))
+    let (r#type, offset, strategy) = parse_offset_transform(meta, "post_offset", parse_strategy)?;
+    Ok(r#type.add_transform(PostOffsetTransformNode::new(offset, strategy)))
 }
 
 fn parse_strategy(path: &syn::Path) -> Option<PostOffsetStrategy> {

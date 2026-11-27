@@ -36,7 +36,7 @@ impl MetaConsumer for StructFieldMetaConsumer {
 }
 
 impl StructFieldMetaConsumer {
-    pub fn consume_field(self) -> syn::Result<Self> {
+    pub(crate) fn consume_field(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "identifier" => {
                 this.identifier.set(Identifier::from_meta(&meta)?, meta)?;
@@ -68,7 +68,7 @@ impl StructFieldMetaConsumer {
         })
     }
 
-    pub fn consume_default_value(
+    pub(crate) fn consume_default_value(
         self,
         parse: fn(&Meta) -> syn::Result<DefaultValueDirective>,
     ) -> syn::Result<Self> {
@@ -81,7 +81,7 @@ impl StructFieldMetaConsumer {
         })
     }
 
-    pub fn consume_after(self) -> syn::Result<Self> {
+    pub(crate) fn consume_after(self) -> syn::Result<Self> {
         self.consume_metas(|this, meta| match meta.path_str().as_str() {
             "after" => {
                 this.after.set(bool::from_meta(&meta)?, meta)?;
@@ -91,13 +91,13 @@ impl StructFieldMetaConsumer {
         })
     }
 
-    pub fn default_value_strategy(&self) -> Option<DefaultValueStrategy> {
+    pub(crate) fn default_value_strategy(&self) -> Option<DefaultValueStrategy> {
         self.default_value
             .option_ref()
             .and_then(|directive| directive.default_value_strategy)
     }
 
-    pub fn default_value_node(&self) -> Option<Resolvable<ValueNode>> {
+    pub(crate) fn default_value_node(&self) -> Option<Resolvable<ValueNode>> {
         self.default_value
             .option_ref()
             .and_then(|directive| match &directive.node {

@@ -7,7 +7,7 @@ use codama_stores::CrateStore;
 use quote::{format_ident, quote};
 use std::default;
 
-pub struct CombineModulesInput {
+pub(crate) struct CombineModulesInput {
     pub name: String,
     pub initial_node: Option<Node>,
     pub nodes: Vec<Option<Node>>,
@@ -24,26 +24,26 @@ impl default::Default for CombineModulesInput {
 }
 
 impl CombineModulesInput {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
-    pub fn set_initial_node<T: Into<Node>>(mut self, node: T) -> Self {
+    pub(crate) fn set_initial_node<T: Into<Node>>(mut self, node: T) -> Self {
         self.initial_node = Some(node.into());
         self
     }
 
-    pub fn add_node<T: Into<Node>>(mut self, node: T) -> Self {
+    pub(crate) fn add_node<T: Into<Node>>(mut self, node: T) -> Self {
         self.nodes.push(Some(node.into()));
         self
     }
 }
 
-pub fn combine_modules(input: CombineModulesInput) -> Option<Node> {
+pub(crate) fn combine_modules(input: CombineModulesInput) -> Option<Node> {
     try_combine_modules(input).unwrap()
 }
 
-pub fn try_combine_modules(input: CombineModulesInput) -> CodamaResult<Option<Node>> {
+pub(crate) fn try_combine_modules(input: CombineModulesInput) -> CodamaResult<Option<Node>> {
     let name = format_ident!("{}", input.name);
     let crate_store = CrateStore::hydrate(quote! {
         mod #name {
@@ -86,13 +86,13 @@ pub fn try_combine_modules(input: CombineModulesInput) -> CodamaResult<Option<No
     Ok(module_korok.node)
 }
 
-pub fn get_type(name: &str) -> DefinedTypeNode {
+pub(crate) fn get_type(name: &str) -> DefinedTypeNode {
     DefinedTypeNode::new(
         name.parse::<Identifier>().unwrap(),
         PublicKeyTypeNode::new(),
     )
 }
 
-pub fn get_plugin(namespace: &str) -> PluginNode {
+pub(crate) fn get_plugin(namespace: &str) -> PluginNode {
     PluginNode::new(namespace.parse::<Namespace>().unwrap())
 }

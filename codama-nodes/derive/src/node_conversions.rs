@@ -5,7 +5,9 @@ use quote::quote;
 
 /// Converts a node union to and from the flat `crate::Node`, and borrows it as a `crate::NodeRef`.
 /// Each variant wraps a node struct, possibly boxed, which converts through its own generated impls.
-pub fn expand_derive_node_conversions(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_derive_node_conversions(
+    input: &syn::DeriveInput,
+) -> CodamaResult<TokenStream> {
     let data = input.as_enum()?;
     let item_name = &input.ident;
     let item_name_str = item_name.to_string();

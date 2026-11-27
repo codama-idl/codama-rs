@@ -42,7 +42,7 @@ pub(crate) struct EnumItemContext {
 }
 
 impl EnumItemContext {
-    pub fn new(identifier: String, discriminator: EnumDiscriminatorDirective) -> Self {
+    pub(crate) fn new(identifier: String, discriminator: EnumDiscriminatorDirective) -> Self {
         Self {
             identifier,
             discriminator,
@@ -54,7 +54,7 @@ impl EnumItemContext {
     /// the previous variant.
     /// The variant following `u32::MAX` has no discriminator to take, which is an error, but a last
     /// variant at `u32::MAX` is fine.
-    pub fn next_discriminator(&mut self, variant: &EnumVariantKorok) -> CodamaResult<u32> {
+    pub(crate) fn next_discriminator(&mut self, variant: &EnumVariantKorok) -> CodamaResult<u32> {
         let discriminator = match (&variant.ast.discriminant, self.previous_discriminator) {
             (Some((_, expr)), _) => expr.as_unsigned_integer()?,
             (None, None) => 0,
@@ -70,7 +70,7 @@ impl EnumItemContext {
     }
 
     /// The field holding the discriminator of a variant, with the given value, to prepend to its data.
-    pub fn discriminator_field(&self, discriminator: u32) -> StructFieldTypeNode {
+    pub(crate) fn discriminator_field(&self, discriminator: u32) -> StructFieldTypeNode {
         StructFieldTypeNode {
             default_value_strategy: Some(DefaultValueStrategy::Omitted),
             default_value: Box::new(Some(IntegerValueNode::new(discriminator).into())),
@@ -79,7 +79,7 @@ impl EnumItemContext {
     }
 
     /// The discriminator node of the items, which reads the discriminator field.
-    pub fn discriminator_node(&self) -> FieldDiscriminatorNode {
+    pub(crate) fn discriminator_node(&self) -> FieldDiscriminatorNode {
         FieldDiscriminatorNode::from(&self.discriminator)
     }
 }

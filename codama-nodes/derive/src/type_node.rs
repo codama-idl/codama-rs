@@ -3,7 +3,7 @@ use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_attribute_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_attribute_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_struct()?;
 
     Ok(quote! {
@@ -13,7 +13,7 @@ pub fn expand_attribute_type_node(input: &syn::DeriveInput) -> CodamaResult<Toke
     })
 }
 
-pub fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_derive_type_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_struct()?;
     let item_name = &input.ident;
     let (pre_generics, post_generics) = &input.generics.block_wrappers();

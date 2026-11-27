@@ -3,7 +3,9 @@ use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_derive_registered_nodes(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_derive_registered_nodes(
+    input: &syn::DeriveInput,
+) -> CodamaResult<TokenStream> {
     let syn::DataEnum { variants, .. } = input.as_enum()?;
     let registered_enum_name = &input.ident;
 

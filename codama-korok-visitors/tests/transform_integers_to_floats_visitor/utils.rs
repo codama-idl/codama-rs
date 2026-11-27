@@ -8,7 +8,7 @@ use codama_nodes::{
 };
 use codama_stores::RootStore;
 
-pub fn transform_integers_to_floats(root: RootNode) -> RootNode {
+pub(crate) fn transform_integers_to_floats(root: RootNode) -> RootNode {
     let store = RootStore { crates: vec![] };
     let mut korok = RootKorok {
         crates: vec![],
@@ -24,69 +24,72 @@ pub fn transform_integers_to_floats(root: RootNode) -> RootNode {
     root
 }
 
-pub fn integer() -> ValueNode {
+pub(crate) fn integer() -> ValueNode {
     IntegerValueNode::new(1u64).into()
 }
 
-pub fn float() -> ValueNode {
+pub(crate) fn float() -> ValueNode {
     FloatValueNode::new(1.0).into()
 }
 
-pub fn field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> StructFieldTypeNode {
+pub(crate) fn field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> StructFieldTypeNode {
     StructFieldTypeNode {
         default_value: Box::new(Some(value)),
         ..StructFieldTypeNode::new("value", r#type)
     }
 }
 
-pub fn account_with_field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> AccountNode {
+pub(crate) fn account_with_field<T: Into<TypeNode>>(r#type: T, value: ValueNode) -> AccountNode {
     AccountNode::new("config", StructTypeNode::new(vec![field(r#type, value)]))
 }
 
-pub fn account_with_type<T: Into<TypeNode>>(r#type: T) -> AccountNode {
+pub(crate) fn account_with_type<T: Into<TypeNode>>(r#type: T) -> AccountNode {
     AccountNode::new(
         "config",
         StructTypeNode::new(vec![StructFieldTypeNode::new("value", r#type)]),
     )
 }
 
-pub fn root_with_account(program: ProgramNode, account: AccountNode) -> RootNode {
+pub(crate) fn root_with_account(program: ProgramNode, account: AccountNode) -> RootNode {
     RootNode::new(program.add_account(account))
 }
 
-pub fn root_with_programs(main: ProgramNode, other: ProgramNode) -> RootNode {
+pub(crate) fn root_with_programs(main: ProgramNode, other: ProgramNode) -> RootNode {
     RootNode::new(main).add_program(other)
 }
 
-pub fn program_with_float_defined_type(identifier: &str) -> ProgramNode {
+pub(crate) fn program_with_float_defined_type(identifier: &str) -> ProgramNode {
     ProgramNode::default().add_defined_type(DefinedTypeNode::new(
         identifier.parse::<Identifier>().unwrap(),
         FloatTypeNode::le(F64),
     ))
 }
 
-pub fn constant_with_defined_type_link(identifier: &str, value: ValueNode) -> ConstantValueNode {
+pub(crate) fn constant_with_defined_type_link(
+    identifier: &str,
+    value: ValueNode,
+) -> ConstantValueNode {
     ConstantValueNode::new(
         DefinedTypeLinkNode::new(identifier.parse::<Identifier>().unwrap()),
         value,
     )
 }
 
-pub fn type_link_with_program(identifier: &str, program: &str) -> DefinedTypeLinkNode {
+pub(crate) fn type_link_with_program(identifier: &str, program: &str) -> DefinedTypeLinkNode {
     DefinedTypeLinkNode::new_from_program(
         identifier.parse::<Identifier>().unwrap(),
         ProgramLinkNode::new(program.parse::<Identifier>().unwrap()),
     )
 }
 
-pub fn pda_link_with_program(identifier: &str, program: &str) -> PdaLinkNode {
+pub(crate) fn pda_link_with_program(identifier: &str, program: &str) -> PdaLinkNode {
     PdaLinkNode::new_from_program(
         identifier.parse::<Identifier>().unwrap(),
         ProgramLinkNode::new(program.parse::<Identifier>().unwrap()),
     )
 }
 
-pub fn instruction_with_account_default(value: PdaValueNode) -> InstructionNode {
+pub(crate) fn instruction_with_account_default(value: PdaValueNode) -> InstructionNode {
     InstructionNode {
         identifier: "update".into(),
         accounts: vec![InstructionAccountNode {

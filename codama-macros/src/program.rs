@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
-pub fn codama_program(input: TokenStream) -> TokenStream {
+pub(crate) fn codama_program(input: TokenStream) -> TokenStream {
     codama_program_impl(input.into())
         .unwrap_or_else(CodamaError::into_compile_error)
         .into()

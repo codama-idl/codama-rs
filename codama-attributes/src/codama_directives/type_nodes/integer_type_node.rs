@@ -186,10 +186,10 @@ mod tests {
             ),
             (
                 syn::parse_quote! { integer(u64, "slots") },
-                "expected a path",
+                "unrecognized attribute",
             ),
             (syn::parse_quote! { integer(f64) }, "unrecognized attribute"),
-            (syn::parse_quote! { integer(42) }, "expected a path"),
+            (syn::parse_quote! { integer(42) }, "unrecognized attribute"),
         ] {
             let error = IntegerTypeNode::from_meta(&meta).unwrap_err();
             assert_eq!(error.to_string(), expected);

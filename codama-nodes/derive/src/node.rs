@@ -4,7 +4,7 @@ use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_attribute_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_attribute_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_struct()?;
     let item_name = &input.ident;
     let kind = lowercase_first_letter(&item_name.to_string());
@@ -17,7 +17,7 @@ pub fn expand_attribute_node(input: &syn::DeriveInput) -> CodamaResult<TokenStre
     })
 }
 
-pub fn expand_derive_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_derive_node(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_struct()?;
     let item_name = &input.ident;
     let (pre_generics, post_generics) = &input.generics.block_wrappers();

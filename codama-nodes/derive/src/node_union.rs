@@ -4,7 +4,7 @@ use codama_syn_helpers::extensions::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     input.as_enum()?;
 
     Ok(quote! {
@@ -13,7 +13,7 @@ pub fn expand_attribute_node_union(input: &syn::DeriveInput) -> CodamaResult<Tok
     })
 }
 
-pub fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
+pub(crate) fn expand_derive_node_union(input: &syn::DeriveInput) -> CodamaResult<TokenStream> {
     let data = input.as_enum()?;
     let variants = &data.variants;
     let item_name = &input.ident;

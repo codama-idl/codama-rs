@@ -20,11 +20,6 @@ pub(crate) fn parse_encoding_integer(meta: &Meta) -> syn::Result<IntegerTypeNode
     Ok(integer)
 }
 
-/// Parses the `ticks_per_second` value of a `date_time` or `duration` type, which the spec requires to be non-zero.
-pub(crate) fn parse_ticks_per_second(meta: &Meta) -> syn::Result<u32> {
-    parse_non_zero_u32(meta, "ticks_per_second")
-}
-
 /// Parses the value of `meta`, named `name` in errors, as a `u32` that the spec requires to be non-zero.
 pub(crate) fn parse_non_zero_u32(meta: &Meta, name: &str) -> syn::Result<u32> {
     let value = meta.as_value()?;
