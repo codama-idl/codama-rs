@@ -5,13 +5,13 @@ Command-line interface for generating [Codama](https://github.com/codama-idl/cod
 ## Installation
 
 ```bash
-cargo install --path codama-cli
+cargo install codama-cli
 ```
 
-Or build from source:
+Or build it from a clone of this repository:
 
 ```bash
-cargo build --release -p codama-cli
+cargo install --path codama-cli
 ```
 
 ## Usage
@@ -93,9 +93,11 @@ Output:
 {
   "kind": "rootNode",
   "standard": "codama",
+  "version": "2.0.0",
   "program": {
     "kind": "programNode",
-    "name": "myProgram",
+    "identifier": "my_program",
+    "publicKey": "...",
     ...
   }
 }
@@ -105,13 +107,14 @@ Output:
 
 ```bash
 codama-rs generate-idl ./my-program -o idl.json
-# IDL written to: idl.json
+# ✓ IDL written to: idl.json
 ```
 
 ## Requirements
 
 - Rust toolchain
 - A Rust project with a valid `Cargo.toml` and library or binary target
+- The address of the program, for example with `[package.metadata.solana] program-id = "..."` in its `Cargo.toml`
 
 ## License
 

@@ -4,19 +4,26 @@ Thanks for your interest in contributing to Codama's Rust implementation.
 
 ## Getting set up
 
-You'll need a recent Rust toolchain (CI pins the exact version via
-`RUST_TOOLCHAIN` in `.github/workflows/main.yml`) plus Node.js and pnpm for
-the JS-based code generator. To match CI:
+You'll need the Rust toolchain pinned in `rust-toolchain.toml`, plus Node.js
+and pnpm for the JS-based code generator in `spec-generators/`. CI treats
+warnings as errors, so run the Rust checks with `-Dwarnings` to match it:
 
 ```sh
 cargo fmt --all -- --check
-cargo clippy --all-targets --all-features
+RUSTFLAGS=-Dwarnings cargo clippy --all-targets --all-features
+RUSTDOCFLAGS=-Dwarnings cargo doc --workspace --no-deps
 cargo test --all-features
-pnpm install --frozen-lockfile && pnpm lint && pnpm test
+cd spec-generators && pnpm install --frozen-lockfile && pnpm lint && pnpm test
 ```
 
-CI also verifies that generated code is up to date, so regenerate and commit
-any generator-driven output alongside your changes.
+CI also checks that the workspace builds with its minimum supported Rust
+version, the `rust-version` of `Cargo.toml`, and that generated code is up to
+date, so regenerate and commit any generator-driven output alongside your
+changes.
+
+Compile-error tests compare against `.stderr` snapshots. When an error message
+changes on purpose, run `TRYBUILD=overwrite cargo test` and review the updated
+snapshots before committing them.
 
 ## Documenting changes
 

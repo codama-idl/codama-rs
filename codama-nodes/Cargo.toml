@@ -5,6 +5,10 @@ version = "1.0.0"
 repository = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
+rust-version = { workspace = true }
+homepage = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [features]
 # Works like `cfg(test)` across crates: https://github.com/rust-lang/cargo/issues/8379

@@ -20,11 +20,11 @@ enum Commands {
         #[arg(default_value = ".")]
         path: PathBuf,
 
-        /// Output file path
+        /// Output file path (defaults to stdout)
         #[arg(short, long)]
         output: Option<PathBuf>,
 
-        /// Prettyprint the JSON output
+        /// Pretty-print the JSON output
         #[arg(short, long)]
         pretty: bool,
     },
@@ -59,7 +59,7 @@ fn run(cli: Cli) -> CodamaResult<()> {
 
             match output {
                 Some(output_path) => {
-                    std::fs::write(&output_path, &json).map_err(|source| {
+                    std::fs::write(&output_path, format!("{json}\n")).map_err(|source| {
                         CodamaError::Filesystem {
                             path: output_path.clone(),
                             source,
