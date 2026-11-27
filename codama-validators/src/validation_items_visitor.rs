@@ -3,11 +3,11 @@ use crate::{
     identifier_collisions::{
         get_identifier_collision_items, get_nested_instruction_collision_items,
     },
-    validation_item, LogLevel, ValidationItem,
+    validation_error_item, validation_item, LogLevel, ValidationItem,
 };
 use codama_errors::CodamaError;
 use codama_nodes::{
-    parse_interpolated_intent, FieldDiscriminatorNode, Identifier, InjectedValueNode,
+    parse_interpolated_intent, FieldDiscriminatorNode, HasKind, Identifier, InjectedValueNode,
     InstructionAccountLinkNode, InstructionInputValueNode, InstructionNode, InterpolatedIntentPart,
     IsSigner, Node, NodeRef, PdaSeedNode, ProgramLinkNode, ProgramNode, StructFieldTypeNode, Text,
     ValueNode,
@@ -118,230 +118,173 @@ impl<'a> ValidationItemsVisitor<'a> {
     /// The items of `node` itself, whose path is the current path of the stack.
     fn get_node_items(&self, node: NodeRef<'a>) -> Vec<ValidationItem<'a>> {
         let path = self.stack.get_path();
-        let item = |level, message: String| validation_item(level, message, path.clone());
-        let error = |message: &str| vec![item(LogLevel::Error, message.to_string())];
+        let Some(item) = get_missing_identifier_item(node, &path) else {
+            return self.get_node_kind_items(node, &path);
+        };
+        // A node naming another by an empty identifier names nothing, so its other checks would only
+        // repeat this item, such as a link "pointing to a missing PDA named """.
+        if names_another_node(node) {
+            return vec![item];
+        }
+        let mut items = vec![item];
+        items.extend(self.get_node_kind_items(node, &path));
+        items
+    }
+
+    /// The items of `node` that are specific to its kind, sorted by kind.
+    fn get_node_kind_items(
+        &self,
+        node: NodeRef<'a>,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let item = |level, message: &str| vec![validation_item(level, message, path.clone())];
         match node {
-            NodeRef::Account(account) if account.identifier.is_empty() => {
-                error("Account has no identifier.")
-            }
             NodeRef::AccountBumpValue(value) => get_contextual_value_items(
                 ContextualValue::Account(&value.identifier),
-                &path,
+                path,
                 &self.linkables,
             ),
             NodeRef::AccountDataValue(value) => get_contextual_value_items(
                 ContextualValue::AccountData(&value.account, value.path.as_ref()),
-                &path,
+                path,
                 &self.linkables,
             ),
-            NodeRef::AccountValue(value) => get_contextual_value_items(
-                ContextualValue::Account(&value.identifier),
-                &path,
-                &self.linkables,
-            ),
-            NodeRef::DataValue(value) => get_contextual_value_items(
-                ContextualValue::Data(&value.path),
-                &path,
-                &self.linkables,
-            ),
-            NodeRef::FieldDiscriminator(discriminator) => {
-                self.get_field_discriminator_items(discriminator, &path)
-            }
-            NodeRef::InstructionDisplay(display) => match &display.interpolated_intent {
-                Some(intent) => self.get_interpolated_intent_items(intent, &path),
-                None => vec![],
-            },
-            NodeRef::ValueLabelDisplay(label) => self.get_value_label_items(&label.value, &path),
             NodeRef::AccountLink(link) => self.get_missing_link_items(
                 "account",
                 &link.identifier,
                 link.program.as_ref(),
-                &path,
+                path,
             ),
-            NodeRef::DateTimeType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
-            NodeRef::DurationType(node) => self.get_ticks_per_second_items(node.ticks_per_second),
-            NodeRef::DefinedType(defined_type) => {
-                let mut items = vec![];
-                if defined_type.identifier.is_empty() {
-                    items.push(item(
-                        LogLevel::Error,
-                        "Defined type has no identifier.".to_string(),
-                    ));
-                }
-                items.extend(self.get_finite_value_items(&path));
-                items
+            NodeRef::AccountValue(value) => get_contextual_value_items(
+                ContextualValue::Account(&value.identifier),
+                path,
+                &self.linkables,
+            ),
+            NodeRef::DataValue(value) => get_contextual_value_items(
+                ContextualValue::Data(&value.path),
+                path,
+                &self.linkables,
+            ),
+            NodeRef::DateTimeType(node) => {
+                self.get_ticks_per_second_items(node.ticks_per_second, path)
             }
-            NodeRef::DefinedTypeLink(link) if link.identifier.is_empty() => {
-                error("Pointing to a defined type with no identifier.")
-            }
+            NodeRef::DefinedType(_) => self.get_finite_value_items(path),
             NodeRef::DefinedTypeLink(link) => self.get_missing_link_items(
                 "defined type",
                 &link.identifier,
                 link.program.as_ref(),
-                &path,
+                path,
             ),
-            NodeRef::PdaLink(link) => {
-                self.get_missing_link_items("PDA", &link.identifier, link.program.as_ref(), &path)
-            }
-            NodeRef::InstructionLink(link) => self.get_missing_link_items(
-                "instruction",
-                &link.identifier,
-                link.program.as_ref(),
-                &path,
-            ),
-            NodeRef::InstructionAccountLink(link) => {
-                self.get_missing_instruction_account_link_items(link, &path)
+            NodeRef::DurationType(node) => {
+                self.get_ticks_per_second_items(node.ticks_per_second, path)
             }
             NodeRef::EnumType(r#enum) => {
                 let mut items = vec![];
                 if r#enum.variants.is_empty() {
-                    items.push(item(LogLevel::Warn, "Enum has no variants.".to_string()));
+                    items.extend(item(LogLevel::Warn, "Enum has no variants."));
                 }
                 items.extend(get_identifier_collision_items(
                     &r#enum.variants,
                     "Enum variant",
                     "",
-                    &path,
+                    path,
                 ));
                 items
             }
-            NodeRef::EnumVariantType(variant) if variant.identifier.is_empty() => {
-                error("Enum variant has no identifier.")
-            }
-            NodeRef::Error(node) => {
-                let mut items = vec![];
-                if node.identifier.is_empty() {
-                    items.push(item(
-                        LogLevel::Error,
-                        "Error has no identifier.".to_string(),
-                    ));
+            NodeRef::Error(node) => match &node.message {
+                Text::String(message) if message.is_empty() => {
+                    item(LogLevel::Warn, "Error has no message.")
                 }
-                if matches!(&node.message, Text::String(message) if message.is_empty()) {
-                    items.push(item(LogLevel::Warn, "Error has no message.".to_string()));
-                }
-                items
+                _ => vec![],
+            },
+            NodeRef::FieldDiscriminator(discriminator) => {
+                self.get_field_discriminator_items(discriminator, path)
             }
-            NodeRef::FixedPointType(node) if node.scale == 0 => vec![item(
+            NodeRef::FixedPointType(node) if node.scale == 0 => item(
                 LogLevel::Error,
-                format!(
+                &format!(
                     "Fixed-point scale must be a positive integer, got {}.",
                     node.scale
                 ),
-            )],
-            NodeRef::Instruction(instruction) => {
-                let mut items = vec![];
-                if instruction.identifier.is_empty() {
-                    items.push(item(
-                        LogLevel::Error,
-                        "Instruction has no identifier.".to_string(),
-                    ));
-                }
-                for account in &instruction.accounts {
-                    if account.identifier.is_empty() {
-                        items.push(validation_item(
-                            LogLevel::Error,
-                            "Instruction account has no identifier.",
-                            path.child(account),
-                        ));
-                    }
-                }
-                let context = format!(" in instruction \"{}\"", instruction.identifier);
-                items.extend(get_identifier_collision_items(
-                    &instruction.accounts,
-                    "Instruction account",
-                    &context,
-                    &path,
-                ));
-                items.extend(get_identifier_collision_items(
-                    &instruction.remaining_accounts,
-                    "Instruction remaining accounts",
-                    &context,
-                    &path,
-                ));
-                items.extend(get_identifier_collision_items(
-                    &instruction.provides,
-                    "Provided value",
-                    &context,
-                    &path,
-                ));
-                items.extend(get_identifier_collision_items(
-                    &instruction.sub_instructions,
-                    "Sub-instruction",
-                    &context,
-                    &path,
-                ));
-                items.extend(self.get_instruction_input_items(instruction, &path));
-                items
+            ),
+            NodeRef::InjectedValue(injected) => self.get_injected_value_items(injected, path),
+            NodeRef::Instruction(instruction) => self.get_instruction_items(instruction, path),
+            NodeRef::InstructionAccountLink(link) => {
+                self.get_missing_instruction_account_link_items(link, path)
             }
-            NodeRef::InjectedValue(injected) => self.get_injected_value_items(injected, &path),
+            NodeRef::InstructionDisplay(display) => match &display.interpolated_intent {
+                Some(intent) => self.get_interpolated_intent_items(intent, path),
+                None => vec![],
+            },
+            NodeRef::InstructionLink(link) => self.get_missing_link_items(
+                "instruction",
+                &link.identifier,
+                link.program.as_ref(),
+                path,
+            ),
             NodeRef::Pda(pda) => {
                 let seeds = pda.seeds.iter().filter_map(|seed| match seed {
                     PdaSeedNode::Variable(seed) => Some(seed),
                     _ => None,
                 });
                 let context = format!(" in PDA \"{}\"", pda.identifier);
-                get_identifier_collision_items(seeds, "PDA seed", &context, &path)
+                get_identifier_collision_items(seeds, "PDA seed", &context, path)
             }
-            NodeRef::Program(program) => {
-                let mut items = vec![];
-                if program.identifier.is_empty() {
-                    items.push(item(
-                        LogLevel::Error,
-                        "Program has no identifier.".to_string(),
-                    ));
-                }
-                if program.public_key.is_empty() {
-                    items.push(item(
-                        LogLevel::Error,
-                        "Program has no public key.".to_string(),
-                    ));
-                }
-                if program.version.is_empty() {
-                    items.push(item(LogLevel::Warn, "Program has no version.".to_string()));
-                }
-                let context = format!(" in program \"{}\"", program.identifier);
-                let collisions = [
-                    get_identifier_collision_items(&program.accounts, "Account", &context, &path),
-                    get_identifier_collision_items(
-                        &program.instructions,
-                        "Instruction",
-                        &context,
-                        &path,
-                    ),
-                    get_identifier_collision_items(
-                        &program.defined_types,
-                        "Defined type",
-                        &context,
-                        &path,
-                    ),
-                    get_identifier_collision_items(&program.pdas, "PDA", &context, &path),
-                    get_identifier_collision_items(&program.events, "Event", &context, &path),
-                    get_identifier_collision_items(&program.errors, "Error", &context, &path),
-                    get_identifier_collision_items(&program.constants, "Constant", &context, &path),
-                    get_nested_instruction_collision_items(program, &path),
-                ];
-                items.extend(collisions.into_iter().flatten());
-                items
+            NodeRef::PdaLink(link) => {
+                self.get_missing_link_items("PDA", &link.identifier, link.program.as_ref(), path)
             }
+            NodeRef::Program(program) => get_program_items(program, path),
             NodeRef::Root(root) => {
                 let programs = std::iter::once(&root.program).chain(&root.additional_programs);
-                get_identifier_collision_items(programs, "Program", "", &path)
-            }
-            NodeRef::StructFieldType(field) if field.identifier.is_empty() => {
-                error("Struct field has no identifier.")
+                get_identifier_collision_items(programs, "Program", "", path)
             }
             NodeRef::StructType(r#struct) => {
-                get_identifier_collision_items(&r#struct.fields, "Struct field", "", &path)
+                get_identifier_collision_items(&r#struct.fields, "Struct field", "", path)
             }
-            NodeRef::Text(text) if text.plugins.is_empty() => vec![item(
+            NodeRef::Text(text) if text.plugins.is_empty() => item(
                 LogLevel::Info,
-                "Text node has no plugins; use a plain string instead.".to_string(),
-            )],
+                "Text node has no plugins; use a plain string instead.",
+            ),
             NodeRef::TupleType(tuple) if tuple.items.is_empty() => {
-                vec![item(LogLevel::Warn, "Tuple has no items.".to_string())]
+                item(LogLevel::Warn, "Tuple has no items.")
             }
+            NodeRef::ValueLabelDisplay(label) => self.get_value_label_items(&label.value, path),
             _ => vec![],
         }
+    }
+
+    /// The items of an instruction: collisions between the identifiers of its collections, and the
+    /// items of the default values of its inputs.
+    fn get_instruction_items(
+        &self,
+        instruction: &'a InstructionNode,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
+        let context = format!(" in instruction \"{}\"", instruction.identifier);
+        let collisions = [
+            get_identifier_collision_items(
+                &instruction.accounts,
+                "Instruction account",
+                &context,
+                path,
+            ),
+            get_identifier_collision_items(
+                &instruction.remaining_accounts,
+                "Instruction remaining accounts",
+                &context,
+                path,
+            ),
+            get_identifier_collision_items(&instruction.provides, "Provided value", &context, path),
+            get_identifier_collision_items(
+                &instruction.sub_instructions,
+                "Sub-instruction",
+                &context,
+                path,
+            ),
+        ];
+        let mut items: Vec<_> = collisions.into_iter().flatten().collect();
+        items.extend(self.get_instruction_input_items(instruction, path));
+        items
     }
 
     /// The items of a link that points to no node, such as a PDA link with a typo.
@@ -423,13 +366,7 @@ impl<'a> ValidationItemsVisitor<'a> {
                     };
                     return match is_reported_by_dependency {
                         true => vec![],
-                        false => {
-                            let cause = CodamaError::from(cause);
-                            vec![
-                                validation_item(LogLevel::Error, cause.to_string(), path.clone())
-                                    .with_cause(cause),
-                            ]
-                        }
+                        false => vec![validation_error_item(cause, path.clone())],
                     };
                 }
             };
@@ -492,9 +429,7 @@ impl<'a> ValidationItemsVisitor<'a> {
                 ),
                 path.clone(),
             )],
-            Err(cause) => vec![
-                validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause),
-            ],
+            Err(cause) => vec![validation_error_item(cause, path.clone())],
         }
     }
 
@@ -568,12 +503,7 @@ impl<'a> ValidationItemsVisitor<'a> {
     ) -> Vec<ValidationItem<'a>> {
         let parts = match parse_interpolated_intent(intent.content()) {
             Ok(parts) => parts,
-            Err(cause) => {
-                return vec![
-                    validation_item(LogLevel::Error, cause.to_string(), path.clone())
-                        .with_cause(cause),
-                ]
-            }
+            Err(cause) => return vec![validation_error_item(cause, path.clone())],
         };
         parts
             .iter()
@@ -620,9 +550,7 @@ impl<'a> ValidationItemsVisitor<'a> {
                 "Value label does not match the type of field \"{}\".",
                 field.identifier
             )),
-            Err(cause) => vec![
-                validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause),
-            ],
+            Err(cause) => vec![validation_error_item(cause, path.clone())],
         }
     }
 
@@ -649,23 +577,137 @@ impl<'a> ValidationItemsVisitor<'a> {
         let cause = CodamaError::DefinedTypeHasNoFiniteValue {
             path: path.to_string(),
         };
-        vec![validation_item(LogLevel::Error, cause.to_string(), path.clone()).with_cause(cause)]
+        vec![validation_error_item(cause, path.clone())]
     }
 
     /// The items of a date-time or a duration whose `ticks_per_second` is not a positive integer.
-    fn get_ticks_per_second_items(&self, ticks_per_second: Option<u32>) -> Vec<ValidationItem<'a>> {
+    fn get_ticks_per_second_items(
+        &self,
+        ticks_per_second: Option<u32>,
+        path: &NodePath<'a>,
+    ) -> Vec<ValidationItem<'a>> {
         let Some(0) = ticks_per_second else {
             return vec![];
         };
-        let path = self.stack.get_path();
         // Keep the error as the cause, like the JavaScript library, where creating the codec of the
         // type raises it.
         let cause = CodamaError::InvalidTicksPerSecond {
             path: path.to_string(),
             ticks_per_second: 0,
         };
-        vec![validation_item(LogLevel::Error, cause.to_string(), path).with_cause(cause)]
+        vec![validation_error_item(cause, path.clone())]
     }
+}
+
+/// The item of a node whose identifier is empty, which a node with an identifier must not have. An
+/// account data value names its account under `account` rather than `identifier`, so it is checked too.
+fn get_missing_identifier_item<'a>(
+    node: NodeRef<'a>,
+    path: &NodePath<'a>,
+) -> Option<ValidationItem<'a>> {
+    if let NodeRef::AccountDataValue(value) = node {
+        return value.account.is_empty().then(|| {
+            validation_item(
+                LogLevel::Error,
+                "Account data value has no account.",
+                path.clone(),
+            )
+        });
+    }
+    if !node.identifier()?.is_empty() {
+        return None;
+    }
+    let message = match node {
+        NodeRef::Account(_) => "Account has no identifier.",
+        NodeRef::AccountBumpValue(_) => "Account bump value has no identifier.",
+        NodeRef::AccountLink(_) => "Pointing to an account with no identifier.",
+        NodeRef::AccountValue(_) => "Account value has no identifier.",
+        NodeRef::Constant(_) => "Constant has no identifier.",
+        NodeRef::DefinedType(_) => "Defined type has no identifier.",
+        NodeRef::DefinedTypeLink(_) => "Pointing to a defined type with no identifier.",
+        NodeRef::EnumVariantType(_) => "Enum variant has no identifier.",
+        NodeRef::Error(_) => "Error has no identifier.",
+        NodeRef::Event(_) => "Event has no identifier.",
+        NodeRef::Instruction(_) => "Instruction has no identifier.",
+        NodeRef::InstructionAccount(_) => "Instruction account has no identifier.",
+        NodeRef::InstructionAccountLink(_) => {
+            "Pointing to an instruction account with no identifier."
+        }
+        NodeRef::InstructionLink(_) => "Pointing to an instruction with no identifier.",
+        NodeRef::InstructionRemainingAccounts(_) => {
+            "Instruction remaining accounts have no identifier."
+        }
+        NodeRef::Pda(_) => "PDA has no identifier.",
+        NodeRef::PdaLink(_) => "Pointing to a PDA with no identifier.",
+        NodeRef::PdaSeedValue(_) => "PDA seed value has no identifier.",
+        NodeRef::Program(_) => "Program has no identifier.",
+        NodeRef::ProgramLink(_) => "Pointing to a program with no identifier.",
+        NodeRef::Provided(_) => "Provided value has no identifier.",
+        NodeRef::PublicKeyValue(_) => "Public key value has an empty identifier.",
+        NodeRef::StructFieldType(_) => "Struct field has no identifier.",
+        NodeRef::StructFieldValue(_) => "Struct field value has no identifier.",
+        NodeRef::VariablePdaSeed(_) => "PDA seed has no identifier.",
+        node => {
+            return Some(validation_item(
+                LogLevel::Error,
+                format!("Node of kind [{}] has no identifier.", node.kind()),
+                path.clone(),
+            ))
+        }
+    };
+    Some(validation_item(LogLevel::Error, message, path.clone()))
+}
+
+/// Whether `node` names another node by its identifier, such as a link or an account value, rather than
+/// defining one.
+fn names_another_node(node: NodeRef) -> bool {
+    matches!(
+        node,
+        NodeRef::AccountBumpValue(_)
+            | NodeRef::AccountDataValue(_)
+            | NodeRef::AccountLink(_)
+            | NodeRef::AccountValue(_)
+            | NodeRef::DefinedTypeLink(_)
+            | NodeRef::InstructionAccountLink(_)
+            | NodeRef::InstructionLink(_)
+            | NodeRef::PdaLink(_)
+            | NodeRef::PdaSeedValue(_)
+            | NodeRef::ProgramLink(_)
+            | NodeRef::StructFieldValue(_)
+    )
+}
+
+/// The items of a program: a missing public key or version, and collisions between the identifiers
+/// of its collections.
+fn get_program_items<'a>(program: &'a ProgramNode, path: &NodePath<'a>) -> Vec<ValidationItem<'a>> {
+    let mut items = vec![];
+    if program.public_key.is_empty() {
+        items.push(validation_item(
+            LogLevel::Error,
+            "Program has no public key.",
+            path.clone(),
+        ));
+    }
+    if program.version.is_empty() {
+        items.push(validation_item(
+            LogLevel::Warn,
+            "Program has no version.",
+            path.clone(),
+        ));
+    }
+    let context = format!(" in program \"{}\"", program.identifier);
+    let collisions = [
+        get_identifier_collision_items(&program.accounts, "Account", &context, path),
+        get_identifier_collision_items(&program.instructions, "Instruction", &context, path),
+        get_identifier_collision_items(&program.defined_types, "Defined type", &context, path),
+        get_identifier_collision_items(&program.pdas, "PDA", &context, path),
+        get_identifier_collision_items(&program.events, "Event", &context, path),
+        get_identifier_collision_items(&program.errors, "Error", &context, path),
+        get_identifier_collision_items(&program.constants, "Constant", &context, path),
+        get_nested_instruction_collision_items(program, path),
+    ];
+    items.extend(collisions.into_iter().flatten());
+    items
 }
 
 /// Marks the next visit as a first visit when dropped, even when the current visit panics.

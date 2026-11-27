@@ -1,4 +1,4 @@
-use crate::{validation_item, LogLevel, ValidationItem};
+use crate::{validation_error_item, validation_item, LogLevel, ValidationItem};
 use codama_nodes::{AccountNode, Identifier, InstructionNode, NodeRef, Path};
 use codama_visitors_core::{
     resolve_type_path, LinkableDictionary, NodePath, ResolveTypePathError, ResolveTypePathOptions,
@@ -98,13 +98,7 @@ fn get_path_items<'a>(
     };
     match resolve_type_path(source, path, linkables, options) {
         Ok(_) | Err(ResolveTypePathError::LinkedNodeNotFound { .. }) => vec![],
-        Err(error) => {
-            let cause = codama_errors::CodamaError::from(error);
-            vec![
-                validation_item(LogLevel::Error, cause.to_string(), item_path.clone())
-                    .with_cause(cause),
-            ]
-        }
+        Err(cause) => vec![validation_error_item(cause, item_path.clone())],
     }
 }
 

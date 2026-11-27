@@ -332,6 +332,19 @@ fn fails_when_a_provided_value_is_not_an_instruction_input_value() {
 }
 
 #[test]
+fn fails_when_the_path_does_not_end_with_an_instruction() {
+    let program = ProgramNode::new("myProgram", "1111");
+    let path = NodePath::from(vec![NodeRef::from(&program)]);
+    let error =
+        get_resolved_instruction_inputs(&path, &LinkableDictionary::default(), Default::default())
+            .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Expected node of kind [instructionNode], got [programNode]myProgram."
+    );
+}
+
+#[test]
 fn resolves_injections_nested_within_a_default_value() {
     let injected = PdaValueNode::new(
         PdaLinkNode::new("counter"),
@@ -764,6 +777,7 @@ fn keeps_the_account_in_the_path_of_an_optional_seed_when_another_seed_is_inject
 
 fn data_paths<'a>(path: &NodePath<'a>, linkables: &LinkableDictionary<'a>) -> Vec<String> {
     get_instruction_data_fields(path, linkables)
+        .unwrap()
         .iter()
         .map(|field| field.path.to_string())
         .collect()
@@ -789,6 +803,17 @@ fn with_data(data: impl Into<TypeNode>) -> InstructionNode {
         data: Box::new(Some(data.into())),
         ..instruction("myInstruction")
     }
+}
+
+#[test]
+fn fails_to_list_data_fields_when_the_path_does_not_end_with_an_instruction() {
+    let program = ProgramNode::new("myProgram", "1111");
+    let path = NodePath::from(vec![NodeRef::from(&program)]);
+    let error = get_instruction_data_fields(&path, &LinkableDictionary::default()).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Expected node of kind [instructionNode], got [programNode]myProgram."
+    );
 }
 
 #[test]
@@ -893,6 +918,7 @@ fn returns_the_node_path_of_each_data_field_through_linked_defined_types() {
     let linkables = get_linkables_from_node(&root);
     let field_paths: Vec<String> =
         get_instruction_data_fields(&instruction_path(&root), &linkables)
+            .unwrap()
             .iter()
             .map(|field| field.field_path.to_string())
             .collect();
