@@ -37,7 +37,8 @@ impl fmt::Display for ItemKind {
 pub(crate) struct EnumItemContext {
     pub identifier: String,
     pub discriminator: EnumDiscriminatorDirective,
-    next_discriminator: u32,
+    /// The discriminator of the previous variant, if any.
+    previous_discriminator: Option<u32>,
 }
 
 impl EnumItemContext {
@@ -45,23 +46,26 @@ impl EnumItemContext {
         Self {
             identifier,
             discriminator,
-            next_discriminator: 0,
+            previous_discriminator: None,
         }
     }
 
     /// The discriminator of `variant`, which Rust gives it: the one written, or else one more than
     /// the previous variant.
+    /// The variant following `u32::MAX` has no discriminator to take, which is an error, but a last
+    /// variant at `u32::MAX` is fine.
     pub fn next_discriminator(&mut self, variant: &EnumVariantKorok) -> CodamaResult<u32> {
-        let discriminator = match &variant.ast.discriminant {
-            Some((_, expr)) => expr.as_unsigned_integer()?,
-            None => self.next_discriminator,
+        let discriminator = match (&variant.ast.discriminant, self.previous_discriminator) {
+            (Some((_, expr)), _) => expr.as_unsigned_integer()?,
+            (None, None) => 0,
+            (None, Some(previous)) => previous.checked_add(1).ok_or_else(|| {
+                variant.ast.error(format!(
+                    "the discriminator of `{}` overflows a u32",
+                    variant.ast.ident
+                ))
+            })?,
         };
-        self.next_discriminator = discriminator.checked_add(1).ok_or_else(|| {
-            variant.ast.error(format!(
-                "the discriminator of the variant following `{}` overflows a u32",
-                variant.ast.ident
-            ))
-        })?;
+        self.previous_discriminator = Some(discriminator);
         Ok(discriminator)
     }
 

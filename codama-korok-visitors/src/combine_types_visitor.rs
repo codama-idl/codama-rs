@@ -369,18 +369,23 @@ fn resolve_discriminators(
     variants: Vec<EnumVariantTypeNode>,
     korok: &codama_koroks::EnumKorok,
 ) -> CodamaResult<Vec<EnumVariantTypeNode>> {
-    let mut next = 0u32;
+    // Only a variant following `u32::MAX` without its own discriminator overflows.
+    let mut previous: Option<u32> = None;
     variants
         .into_iter()
         .enumerate()
         .map(|(index, mut variant)| {
-            let discriminator = variant.discriminator.unwrap_or(next);
-            next = discriminator.checked_add(1).ok_or_else(|| {
-                korok.ast.error(format!(
-                    "the discriminator of the variant following `{}` overflows a u32",
-                    variant.identifier
-                ))
-            })?;
+            let discriminator = match (variant.discriminator, previous) {
+                (Some(discriminator), _) => discriminator,
+                (None, None) => 0,
+                (None, Some(previous)) => previous.checked_add(1).ok_or_else(|| {
+                    korok.ast.error(format!(
+                        "the discriminator of `{}` overflows a u32",
+                        variant.identifier
+                    ))
+                })?,
+            };
+            previous = Some(discriminator);
             variant.discriminator = (discriminator as usize != index).then_some(discriminator);
             Ok(variant)
         })

@@ -269,3 +269,23 @@ fn it_rejects_discriminants_that_are_not_unsigned_integer_literals() {
         );
     }
 }
+
+#[test]
+fn it_accepts_a_last_variant_at_the_largest_discriminator() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        enum Status { Active = 4294967295 }
+    };
+    assert_eq!(discriminators(item)?, [Some(u32::MAX)]);
+    Ok(())
+}
+
+#[test]
+fn it_rejects_a_variant_following_the_largest_discriminator() {
+    let item: syn::Item = syn::parse_quote! {
+        enum Status { Active = 4294967295, Frozen }
+    };
+    assert_eq!(
+        discriminators(item).unwrap_err().to_string(),
+        "the discriminator of `frozen` overflows a u32"
+    );
+}

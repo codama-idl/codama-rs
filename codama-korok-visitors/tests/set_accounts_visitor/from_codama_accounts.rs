@@ -823,3 +823,29 @@ fn from_enum_with_tuple_variants() -> CodamaResult<()> {
     assert_eq!(fields, ["discriminator", "arg0", "supply"]);
     Ok(())
 }
+
+#[test]
+fn from_enum_with_a_last_variant_at_the_largest_discriminator() -> CodamaResult<()> {
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        #[codama(enum_discriminator(size = integer(u32)))]
+        enum MyProgramAccounts {
+            Mint = 4294967295,
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected a program node");
+    };
+    let TypeNode::Struct(data) = &*program.accounts[0].data else {
+        panic!("Expected struct data");
+    };
+    assert_eq!(
+        *data.fields[0].default_value,
+        Some(IntegerValueNode::new(u32::MAX).into())
+    );
+    Ok(())
+}
