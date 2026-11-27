@@ -57,7 +57,7 @@ fn is_can_make_decisions_based_on_the_korok_type() -> CodamaResult<()> {
 
 #[test]
 fn it_visits_impl_blocks() -> CodamaResult<()> {
-    // Impl blocks were missing from `KorokMut`, so uniform visitors skipped them and their items.
+    // Impl blocks were missing from `KorokMut`, so the callback never ran on the block itself.
     let item: syn::Item = syn::parse_quote! {
         impl Foo {
             const MAX: u8 = 42;

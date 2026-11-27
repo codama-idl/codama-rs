@@ -1,5 +1,5 @@
 use crate::{
-    walk_crate, walk_enum, walk_enum_variant, walk_field, walk_file_module, walk_module, walk_root,
+    walk_crate, walk_enum, walk_enum_variant, walk_field, walk_file_module, walk_module,
     walk_struct, walk_unsupported_item, KorokVisitor,
 };
 use codama_attributes::{Attributes, DefaultValueDirective, TryFromFilter};
@@ -17,11 +17,6 @@ impl SetDefaultValuesVisitor {
 }
 
 impl KorokVisitor for SetDefaultValuesVisitor {
-    fn visit_root(&mut self, korok: &mut codama_koroks::RootKorok) -> CodamaResult<()> {
-        walk_root(self, korok)?;
-        Ok(())
-    }
-
     fn visit_crate(&mut self, korok: &mut codama_koroks::CrateKorok) -> CodamaResult<()> {
         walk_crate(self, korok)?;
         set_default_values(korok.into())

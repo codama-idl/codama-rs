@@ -4,7 +4,7 @@ use codama_attributes::{
 };
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{
-    walk_crate, walk_enum, walk_enum_variant, walk_file_module, walk_impl, walk_module, walk_root,
+    walk_crate, walk_enum, walk_enum_variant, walk_file_module, walk_impl, walk_module,
     walk_struct, KorokVisitor,
 };
 use codama_koroks::*;
@@ -114,10 +114,6 @@ impl<'a> ResolveDirectivesVisitor<'a> {
 }
 
 impl KorokVisitor for ResolveDirectivesVisitor<'_> {
-    fn visit_root(&mut self, korok: &mut RootKorok) -> CodamaResult<()> {
-        walk_root(self, korok)
-    }
-
     fn visit_crate(&mut self, korok: &mut CrateKorok) -> CodamaResult<()> {
         self.resolve_attributes(&mut korok.attributes)?;
         walk_crate(self, korok)

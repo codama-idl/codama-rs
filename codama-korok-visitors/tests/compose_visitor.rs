@@ -52,10 +52,12 @@ fn it_forwards_every_kind_of_korok_to_its_visitors() -> CodamaResult<()> {
         }
     }
 
-    korok.accept(&mut ComposeVisitor::new().with(MarkConstsVisitor))?;
-    let ItemKorok::Impl(r#impl) = &korok else {
+    // Entering through the impl block exercises the composition's own `visit_impl`, which did not
+    // exist: through the item, each visitor would walk down to the constant on its own.
+    let ItemKorok::Impl(r#impl) = &mut korok else {
         panic!("Expected an impl korok");
     };
+    r#impl.accept(&mut ComposeVisitor::new().with(MarkConstsVisitor))?;
     assert_eq!(
         r#impl.items[0].node(),
         &Some(PublicKeyTypeNode::new().into())
