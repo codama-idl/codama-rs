@@ -1,19 +1,76 @@
-# Codama Rust Libraries
+# Codama for Rust
 
-This project is still a work in progress but here's a super rough overview of what each crate does:
+Codama for Rust describes your Solana programs with Rust attributes and generates a [Codama](https://github.com/codama-idl/codama) IDL from their source code. The IDL then renders clients, documentation and more through the Codama ecosystem.
 
-- `codama-errors`: Defines the Result/Error items for all crates.
-- `codama-nodes`: Implements the Codama IDL in Rust.
-- `codama-validators`: Validates Codama nodes, like `@codama/validators` in the JavaScript library. `Codama::get_idl` runs it and fails on any error-level item, such as a program without a public key.
-- `codama-visitors-core`: Visits and transforms Codama nodes, like `@codama/visitors-core` in the JavaScript library. A `Visitor` returns a value for each node, and adapters such as `extend` or `record_node_stack` wrap it into new visitors.
-- `codama-syn-helpers`: Helpers that boost `syn` items by using traits.
-- `codama-stores`: A small tree structure that parses crates and files inside crates (recursively) and "owns" the `syn::File` for each traversed file.
-- `codama-koroks`: A higher-level tree structure that represents things in your Rust code (modules, structs, enums, variants, types, etc.) You can think of it like a specialized `syn` tree. We call a "thing in your Rust code", a `Korok` (Japanese tree spirits). Each korok keeps track of a `Option<Node>` which is the currently resolved node for this piece of Rust code. Note that the korok tree uses `syn` references from stores mentioned above. So first you get a store that owns all the `syn` files, then you get a Korok tree that's essentially a parsed "view" of your stores.
-- `codama-korok-visitors`: Each Korok can be visited by Korok visitors. This allows you to traverse the entire Rust code and adjust the `Option<Node>` as you wish. There is a `RootKorok` that is the entry point of the tree. Whichever node is associated with this `RootKorok` will become the `RootNode` of the Codama IDL. Therefore, you have visitors like `CombineTypesVisitor` and `CombineModulesVisitor` that go up the tree and combine nodes together until we reach the `RootKorok`.
-- `codama-plugin-core`: A plugin is trait (`KorokPlugin`) that defines a `run` function that accepts a mutable Korok and a `next` function to run the next plugin on the list. This means any visitor you call on the Korok before the `next` function will be executed before the other plugins, anything after the `next` function will override the other plugins (kinda like a middleware pipeline). There is a DefaultPlugin that calls a default visitor. This visitor does things like, setting base types, link nodes, program metadata, applying Codama macros and combining everything up the tree so the `RootNode` is set on the `RootKorok`. This is the first plugin on the list so you can run anything before or after it based on where you call the `next` function on your plugin. Note that most visitors in the default plugins won't override any existing `Option<Node>` in a Korok, so it's mostly there to fill as many gaps as possible. Also note that all visitors are composable so you can always re-use a visitor used in the default plugin for your own plugin — e.g. the `MapVisitor` to pass a function that applies on all koroks.
-- `codama-attributes`: Parses Codama-specific attributes into structured items so they can then be used by visitors and `codama-macros`.
-- `codama-macros`: A super small procedural macro crate that registers the Codama-specific attributes mentioned above.
-- `codama`: The final library that re-exports most of the ones above and provide a super high level API for parsing IDL from paths to your Rust code.
-- `codama-cli`: A command-line interface for generating Codama IDL from Rust projects without writing custom scripts.
+```rust
+use codama::{codama, CodamaAccount, CodamaInstruction};
 
-Check out this [example project](https://github.com/lorisleiva/codama-demo-2025-08/tree/main/3-from-macros) to see how to use Codama macros in your Rust code using a `build.rs` script.
+#[derive(CodamaAccount)]
+#[codama(seed(type = string(utf8), value = "vault"))]
+#[codama(seed(identifier = "authority", type = public_key))]
+pub struct Vault {
+    #[codama(type = public_key)]
+    pub authority: [u8; 32],
+    #[codama(type = fixed_point(integer(u64), scale = 6, unit = "USDC"))]
+    pub balance: u64,
+}
+
+#[derive(CodamaInstruction)]
+#[codama(account(identifier = "vault", writable))]
+#[codama(account(identifier = "authority", signer))]
+pub struct Deposit {
+    pub amount: u64,
+}
+```
+
+The attributes compile to nothing, including on Solana, so they add no weight to your program.
+
+## Generating the IDL
+
+Install the CLI and point it at your program's crate:
+
+```sh
+cargo install codama-cli
+codama-rs generate-idl ./programs/my-program --pretty -o idl.json
+```
+
+Or generate it from Rust, for example in a script or a `build.rs`:
+
+```rust
+let idl = codama::Codama::load("programs/my-program")?.get_json_idl()?;
+```
+
+Your program needs an address, either from `declare_id!` or from its manifest:
+
+```toml
+[package.metadata.solana]
+program-id = "MyProgram1111111111111111111111111111111111"
+```
+
+## Crates
+
+Programs only need `codama`. The other crates are for plugins and tools building on Codama, which should depend on the crates they use directly.
+
+| Crate                   | Purpose                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `codama`                | The entry point: the attribute macros and, outside Solana, the `Codama` API that builds IDLs |
+| `codama-cli`            | The `codama-rs` command-line interface                                                      |
+| `codama-macros`         | The `#[codama(...)]` attribute and the `Codama*` derives                                    |
+| `codama-attributes`     | Parses Codama attributes into directives                                                    |
+| `codama-nodes`          | The nodes of the Codama IDL                                                                 |
+| `codama-visitors-core`  | Visits, transforms and resolves nodes, like `@codama/visitors-core`                         |
+| `codama-validators`     | Validates nodes, like `@codama/validators`                                                  |
+| `codama-stores`         | Loads crates and their files                                                                |
+| `codama-koroks`         | A tree of the items of your crates, each with the node it describes                         |
+| `codama-korok-visitors` | Visitors that fill and combine the nodes of a korok tree                                    |
+| `codama-plugin-core`    | The `KorokPlugin` trait and the default plugin                                              |
+| `codama-errors`         | The error and result types shared by every crate                                            |
+| `codama-syn-helpers`    | Extensions of `syn` used to parse attributes                                                |
+
+## Upgrading from 1.x
+
+Version 2.0 follows the Codama spec v2. The [migration guide](https://github.com/codama-idl/codama-rs/blob/main/MIGRATION.md) covers the attribute renames and the API changes, and the compiler points to every removed spelling.
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/codama-idl/codama-rs/blob/main/CONTRIBUTING.md).

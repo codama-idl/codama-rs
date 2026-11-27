@@ -1,3 +1,18 @@
+//! The nodes of the [Codama IDL](https://github.com/codama-idl/spec).
+//!
+//! Each kind of node of the spec is a struct, such as [`ProgramNode`] or [`StructTypeNode`], and unions
+//! group the nodes that can take the same place, such as [`TypeNode`] or [`ValueNode`]. [`Node`] holds a
+//! node of any kind and [`NodeRef`] borrows one, so a tree can be walked without cloning it. Nodes
+//! serialise to and from the JSON of the spec.
+//!
+//! ```
+//! use codama_nodes::{NodeTrait, ProgramNode, RootNode};
+//!
+//! let root = RootNode::new(ProgramNode::new("counter", "Counter111111111111111111111111111111111111"));
+//! assert!(root.to_json()?.starts_with(r#"{"kind":"rootNode""#));
+//! # Ok::<(), codama_errors::CodamaError>(())
+//! ```
+
 #![warn(missing_copy_implementations)]
 
 mod account_node;

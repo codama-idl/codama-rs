@@ -1,3 +1,10 @@
+//! Parse Codama attributes into directives.
+//!
+//! [`Attributes`] gathers the attributes of a Rust item, and each `#[codama(...)]` attribute parses into a
+//! [`CodamaDirective`], such as a [`TypeDirective`] or an [`AccountDirective`], which the korok visitors
+//! turn into nodes. A directive that a plugin resolves itself, such as `type = my_plugin::custom`, parses
+//! into a [`ResolvableDirective`].
+
 mod utils;
 
 mod attribute;

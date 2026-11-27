@@ -1,3 +1,8 @@
+//! The `#[codama(...)]` attribute and the `Codama*` derives.
+//!
+//! These macros expand to nothing: they register the attributes that Codama reads from the source code
+//! of a program, and report invalid attributes as compile errors. Use them through the `codama` crate.
+
 use proc_macro::TokenStream;
 #[cfg(not(target_os = "solana"))]
 mod attributes;

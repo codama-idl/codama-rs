@@ -1,3 +1,6 @@
+//! The derive macros that implement the shared traits of the Codama nodes. They are internal to
+//! `codama-nodes`, which re-exports what other crates need.
+
 use codama_errors::CodamaError;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
