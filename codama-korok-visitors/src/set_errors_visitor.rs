@@ -1,4 +1,4 @@
-use crate::{walk_enum, CombineTypesVisitor, KorokVisitor};
+use crate::{enum_items::EnumItemContext, walk_enum, CombineTypesVisitor, KorokVisitor};
 use codama_attributes::{
     Attribute, Attributes, ErrorDirective, ProgramDirective, SkipDirective, TryFromFilter,
     UnsupportedAttribute,
@@ -9,14 +9,15 @@ use codama_syn_helpers::extensions::*;
 
 pub struct SetErrorsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_current_discriminator: u32,
+    /// The enum being visited, if any. Error codes follow the variant discriminators.
+    r#enum: EnumItemContext,
 }
 
 impl Default for SetErrorsVisitor {
     fn default() -> Self {
         Self {
             combine_types: CombineTypesVisitor::strict(),
-            enum_current_discriminator: 0,
+            r#enum: EnumItemContext::default(),
         }
     }
 }
@@ -43,9 +44,8 @@ impl KorokVisitor for SetErrorsVisitor {
         self.combine_types.visit_enum(korok)?;
 
         // Transform each variant into an `ErrorNode`.
-        self.enum_current_discriminator = 0;
+        self.r#enum = EnumItemContext::new(korok.ast.ident.to_string(), Default::default());
         walk_enum(self, korok)?;
-        self.enum_current_discriminator = 0;
 
         // Gather all errors in a `ProgramNode`.
         let errors = korok
@@ -71,12 +71,7 @@ impl KorokVisitor for SetErrorsVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
-        // Update current discriminator.
-        let current_discriminator = match &korok.ast.discriminant {
-            Some((_, expr)) => expr.as_unsigned_integer()?,
-            _ => self.enum_current_discriminator,
-        };
-        self.enum_current_discriminator = current_discriminator + 1;
+        let current_discriminator = self.r#enum.next_discriminator(korok)?;
 
         // Skip variants with #[codama(skip)] directive.
         if korok.attributes.has(SkipDirective::filter) {

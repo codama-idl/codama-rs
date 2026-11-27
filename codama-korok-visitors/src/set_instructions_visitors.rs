@@ -1,6 +1,8 @@
 use crate::{
-    assert_unique_field_identifiers, parse_field_display, walk_enum, CombineTypesVisitor,
-    KorokVisitor,
+    enum_items::{
+        data_field_identifier, parse_struct_data, parse_variant_data, EnumItemContext, ItemKind,
+    },
+    walk_enum, CombineTypesVisitor, KorokVisitor,
 };
 use codama_attributes::{
     AccountDirective, Attributes, CodamaAttribute, CodamaDirective, DefaultValueDirective,
@@ -11,30 +13,29 @@ use codama_attributes::{
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
 use codama_nodes::{
-    DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode, Identifier,
-    InjectedValueNode, InstructionAccountNode, InstructionDisplayNode, InstructionInputValueNode,
-    InstructionNode, IntegerValueNode, Node, OptionalAccountStrategy, ProgramNode, ProvidedNode,
-    StructFieldTypeNode, StructTypeNode, TypeNode, ValueNode,
+    DefaultValueStrategy, Identifier, InjectedValueNode, InstructionAccountNode,
+    InstructionDisplayNode, InstructionInputValueNode, InstructionNode, Node,
+    OptionalAccountStrategy, ProgramNode, ProvidedNode, StructFieldTypeNode, StructTypeNode,
+    TypeNode, ValueNode,
 };
-use codama_syn_helpers::extensions::{ExprExtension, ToTokensExtension};
+use codama_syn_helpers::extensions::ToTokensExtension;
 use std::collections::HashMap;
 
 pub struct SetInstructionsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_name: String,
-    enum_discriminator: EnumDiscriminatorDirective,
-    enum_current_discriminator: usize,
+    /// The enum being visited, if any.
+    r#enum: EnumItemContext,
     enum_optional_account_strategy: Option<OptionalAccountStrategy>,
 }
 
 impl Default for SetInstructionsVisitor {
     fn default() -> Self {
         Self {
-            combine_types: CombineTypesVisitor {
+            combine_types: CombineTypesVisitor::strict()
                 // An instruction provides the contextual default values of its data fields.
-                allow_contextual_default_values: true,
+                .allowing_contextual_default_values()
                 // Skip fields with the `account` codama directive, but reject a default value on them.
-                get_named_field: |korok, parent| {
+                .with_named_field(|korok, parent| {
                     if !korok.attributes.has(AccountDirective::filter) {
                         return CombineTypesVisitor::get_strict_named_field(korok, parent);
                     }
@@ -52,12 +53,8 @@ impl Default for SetInstructionsVisitor {
                     let message = "A default value has no effect on an account field, \
                         use `account(..., default_value = ...)`";
                     Some(Err(default_value.ast.error(message).into()))
-                },
-                ..CombineTypesVisitor::strict()
-            },
-            enum_name: "".to_string(),
-            enum_discriminator: EnumDiscriminatorDirective::default(),
-            enum_current_discriminator: 0,
+                }),
+            r#enum: EnumItemContext::default(),
             enum_optional_account_strategy: None,
         }
     }
@@ -85,7 +82,7 @@ impl KorokVisitor for SetInstructionsVisitor {
         self.combine_types.visit_struct(korok)?;
 
         // Transform the defined type into an instruction node.
-        let (name, data) = parse_struct(korok)?;
+        let (name, data) = parse_struct_data(korok, ItemKind::Instruction)?;
         let (data, provides) = parse_data(&korok.attributes, &korok.fields, data, None)?;
         let instruction = InstructionNode {
             identifier: name,
@@ -129,9 +126,7 @@ impl KorokVisitor for SetInstructionsVisitor {
             .unwrap_or_else(|| EnumDiscriminatorDirective::from(&korok.node));
 
         // Transform each variant into an `InstructionNode`.
-        self.enum_name = korok.ast.ident.to_string();
-        self.enum_discriminator = enum_discriminator;
-        self.enum_current_discriminator = 0;
+        self.r#enum = EnumItemContext::new(korok.ast.ident.to_string(), enum_discriminator);
         self.enum_optional_account_strategy = parse_optional_account_strategy(&korok.attributes);
         walk_enum(self, korok)?;
 
@@ -159,34 +154,18 @@ impl KorokVisitor for SetInstructionsVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
-        // Update current discriminator.
-        let current_discriminator = match &korok.ast.discriminant {
-            Some((_, expr)) => expr.as_unsigned_integer()?,
-            _ => self.enum_current_discriminator,
-        };
-        self.enum_current_discriminator = current_discriminator + 1;
+        let current_discriminator = self.r#enum.next_discriminator(korok)?;
 
         // Skip variants with #[codama(skip)] directive.
         if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 
-        let (name, data) = parse_enum_variant(korok, &self.enum_name)?;
-        let discriminator = StructFieldTypeNode {
-            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            default_value: Box::new(Some(
-                IntegerValueNode::new(current_discriminator as u64).into(),
-            )),
-            ..StructFieldTypeNode::from(&self.enum_discriminator)
-        };
+        let (name, data) = parse_variant_data(korok, &self.r#enum, ItemKind::Instruction)?;
+        let discriminator = self.r#enum.discriminator_field(current_discriminator);
 
-        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
-        let fields = std::iter::once(&discriminator).chain(&data.fields);
-        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
-
-        let discriminator_node = FieldDiscriminatorNode::from(&self.enum_discriminator);
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
-        discriminators.insert(0, discriminator_node.into());
+        discriminators.insert(0, self.r#enum.discriminator_node().into());
         let (data, provides) =
             parse_data(&korok.attributes, &korok.fields, data, Some(discriminator))?;
 
@@ -333,20 +312,6 @@ fn get_data_field_defaults<'a>(
     from_directives.chain(from_fields).collect()
 }
 
-/// The identifier of the data field that the Rust field at `index` gives.
-/// A named field takes the identifier of its node, which `type = field("x", ...)` can rename.
-/// An unnamed tuple item without `identifier = "..."` gets a synthetic identifier such as `arg0`.
-fn data_field_identifier(fields: &[FieldKorok], index: usize) -> CodamaResult<Identifier> {
-    let field = fields.get(index);
-    match field.and_then(|field| field.node.as_ref()) {
-        Some(Node::StructFieldType(node)) => Ok(node.identifier.clone()),
-        _ => match field.map(|field| field.name()).transpose()? {
-            Some(Some(name)) => Ok(name),
-            _ => Identifier::from_rust_name(&format!("arg{}", index)),
-        },
-    }
-}
-
 /// Sets the default value of an instruction field.
 /// A contextual value such as `payer` is not a data value, so the field injects it from the `provides` list.
 fn set_default_value(
@@ -367,64 +332,4 @@ fn set_default_value(
         default_value_strategy: default.strategy,
         ..field
     })
-}
-
-fn parse_struct(korok: &codama_koroks::StructKorok) -> CodamaResult<(Identifier, StructTypeNode)> {
-    // Ensure we have a `DefinedTypeNode` to work with.
-    if let Some(Node::DefinedType(node)) = &korok.node {
-        // Ensure the data type is a struct.
-        if let TypeNode::Struct(data) = (*node.r#type).clone() {
-            return Ok((node.identifier.clone(), data));
-        };
-    };
-
-    // Handle error.
-    let message = format!(
-        "The \"{}\" struct could not be used as an Instruction because its type is not a `StructTypeNode`.",
-        korok.ast.ident,
-    );
-    Err(korok.ast.error(message).into())
-}
-
-fn parse_enum_variant(
-    korok: &codama_koroks::EnumVariantKorok,
-    enum_name: &str,
-) -> CodamaResult<(Identifier, StructTypeNode)> {
-    // Ensure we have a `Node`.
-    if let Some(node) = &korok.node {
-        // Ensure we have a `EnumVariantTypeNode`.
-        if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
-            match *node.data {
-                Some(TypeNode::Struct(data)) => return Ok((node.identifier, data)),
-                // Or an empty variant.
-                None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
-                // Or a tuple variant — convert items to struct fields.
-                Some(TypeNode::Tuple(tuple)) => {
-                    let fields = tuple
-                        .items
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, item)| {
-                            let name = data_field_identifier(&korok.fields, i)?;
-                            let display = korok.fields.get(i).and_then(parse_field_display);
-                            Ok(StructFieldTypeNode {
-                                display,
-                                ..StructFieldTypeNode::new(name, item)
-                            })
-                        })
-                        .collect::<CodamaResult<Vec<_>>>()?;
-                    return Ok((node.identifier, StructTypeNode::new(fields)));
-                }
-                _ => {}
-            }
-        };
-    };
-
-    // Handle error.
-    let message = format!(
-        "The \"{}\" variant of the \"{enum_name}\" enum could not be parsed as an instruction. \
-        Ensure all variant fields resolve to valid type nodes.",
-        korok.ast.ident
-    );
-    Err(korok.ast.error(message).into())
 }

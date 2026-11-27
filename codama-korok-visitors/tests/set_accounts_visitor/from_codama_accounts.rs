@@ -7,7 +7,7 @@ use codama_nodes::{
     IntegerFormat::{U32, U64, U8},
     IntegerTypeNode, IntegerValueNode, Node, OptionTypeNode, PdaLinkNode, PdaNode, ProgramNode,
     PublicKeyTypeNode, SizeDiscriminatorNode, StringTypeNode, StringValueNode,
-    StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, VariablePdaSeedNode,
+    StructFieldDisplayNode, StructFieldTypeNode, StructTypeNode, TypeNode, VariablePdaSeedNode,
 };
 
 #[test]
@@ -794,4 +794,32 @@ fn variants_with_different_pdas_of_the_same_identifier_fail() {
         error.to_string(),
         "Two different `pdaNode` share the identifier `vault` in enum `MyProgramAccounts`"
     );
+}
+
+#[test]
+fn from_enum_with_tuple_variants() -> CodamaResult<()> {
+    // Spec v2 lets account data be any type, so a tuple variant becomes a struct of `arg0`, `arg1`...
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaAccounts)]
+        enum MyProgramAccounts {
+            Mint(Pubkey, #[codama(identifier = "supply")] u64),
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetAccountsVisitor::new())?;
+
+    let Some(Node::Program(program)) = korok.node else {
+        panic!("Expected a program node");
+    };
+    let fields: Vec<_> = match &*program.accounts[0].data {
+        TypeNode::Struct(data) => data
+            .fields
+            .iter()
+            .map(|field| field.identifier.to_string())
+            .collect(),
+        data => panic!("Expected struct data, got {data:?}"),
+    };
+    assert_eq!(fields, ["discriminator", "arg0", "supply"]);
+    Ok(())
 }
