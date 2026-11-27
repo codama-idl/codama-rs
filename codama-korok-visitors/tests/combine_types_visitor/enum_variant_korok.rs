@@ -1,6 +1,6 @@
 use codama_errors::CodamaResult;
 use codama_korok_visitors::{CombineTypesVisitor, KorokVisitable};
-use codama_koroks::EnumVariantKorok;
+use codama_koroks::{EnumKorok, EnumVariantKorok};
 use codama_nodes::{
     BooleanTypeNode, DefaultValueStrategy, EnumVariantTypeNode, IntegerFormat::U8, IntegerTypeNode,
     IntegerValueNode, StringTypeNode, StructFieldTypeNode, StructTypeNode, TupleTypeNode, I32, U64,
@@ -100,16 +100,14 @@ fn it_does_not_override_existing_nodes_by_default() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_struct_variant_fields_are_missing() -> CodamaResult<()> {
-    let ast: syn::Variant = syn::parse_quote! { Foo { bar: u64 } };
-    let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node = None;
+    // Visited through its enum, which names it in the error.
+    let item: syn::Item = syn::parse_quote! { enum MyEnum { Foo { bar: u64 } } };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.variants[0].fields[0].node = None;
 
-    assert_eq!(korok.node, None);
-    let mut visitor = CombineTypesVisitor {
-        parent_enum: "MyEnum".into(),
-        ..CombineTypesVisitor::strict()
-    };
-    let error = korok.accept(&mut visitor).unwrap_err();
+    let error = korok
+        .accept(&mut CombineTypesVisitor::strict())
+        .unwrap_err();
     assert_eq!(
         error.to_string(),
         "Field `bar` in variant `Foo` of enum `MyEnum` does not resolve to a `structFieldTypeNode`"
@@ -119,16 +117,13 @@ fn it_fails_if_struct_variant_fields_are_missing() -> CodamaResult<()> {
 
 #[test]
 fn it_fails_if_tuple_variant_fields_are_missing() -> CodamaResult<()> {
-    let ast: syn::Variant = syn::parse_quote! { Foo (u64) };
-    let mut korok = EnumVariantKorok::parse(&ast)?;
-    korok.fields[0].node = None;
+    let item: syn::Item = syn::parse_quote! { enum MyEnum { Foo(u64) } };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.variants[0].fields[0].node = None;
 
-    assert_eq!(korok.node, None);
-    let mut visitor = CombineTypesVisitor {
-        parent_enum: "MyEnum".into(),
-        ..CombineTypesVisitor::strict()
-    };
-    let error = korok.accept(&mut visitor).unwrap_err();
+    let error = korok
+        .accept(&mut CombineTypesVisitor::strict())
+        .unwrap_err();
     assert_eq!(
         error.to_string(),
         "Field `0` in variant `Foo` of enum `MyEnum` does not resolve to a `TypeNode`"

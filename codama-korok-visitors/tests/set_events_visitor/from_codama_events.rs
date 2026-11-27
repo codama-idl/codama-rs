@@ -585,3 +585,29 @@ fn from_enum_with_mixed_variants() -> CodamaResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn from_enum_with_tuple_variant_defaults() -> CodamaResult<()> {
+    // A default value on a tuple item reaches the field it becomes, like on a named field.
+    let item: syn::Item = syn::parse_quote! {
+        #[derive(CodamaEvents)]
+        enum MyProgramEvents {
+            Ping(#[codama(default_value = 42)] u64),
+        }
+    };
+    let mut korok = EnumKorok::parse(&item)?;
+    korok.accept(&mut IdentifyFieldTypesVisitor::new())?;
+    korok.accept(&mut SetEventsVisitor::new())?;
+
+    let Some(codama_nodes::Node::Program(program)) = korok.node else {
+        panic!("Expected a program node");
+    };
+    let codama_nodes::TypeNode::Struct(data) = &*program.events[0].data else {
+        panic!("Expected struct data");
+    };
+    assert_eq!(
+        *data.fields[1].default_value,
+        Some(IntegerValueNode::new(42u64).into())
+    );
+    Ok(())
+}

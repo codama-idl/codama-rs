@@ -8,6 +8,7 @@ license = { workspace = true }
 
 [dev-dependencies]
 codama-nodes = { path = "../codama-nodes", features = ["dev-context-only-utils"] }
+codama-validators = { workspace = true }
 proc-macro2 = "1.0"
 quote = "1.0"
 codama-stores = { workspace = true }

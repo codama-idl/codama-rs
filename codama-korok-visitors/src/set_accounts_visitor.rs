@@ -1,6 +1,7 @@
 use crate::{
-    add_node_with_identifier, assert_unique_field_identifiers, parse_pda_node, walk_enum,
-    CombineTypesVisitor, KorokVisitor,
+    add_node_with_identifier,
+    enum_items::{parse_struct_data, parse_variant_data, EnumItemContext, ItemKind},
+    parse_pda_node, walk_enum, CombineTypesVisitor, KorokVisitor,
 };
 use codama_attributes::{
     Attributes, DiscriminatorDirective, EnumDiscriminatorDirective, PdaDirective, ProgramDirective,
@@ -8,27 +9,19 @@ use codama_attributes::{
 };
 use codama_errors::CodamaResult;
 use codama_koroks::FieldKorok;
-use codama_nodes::{
-    AccountNode, DefaultValueStrategy, EnumVariantTypeNode, FieldDiscriminatorNode, Identifier,
-    IntegerValueNode, Node, PdaLinkNode, ProgramNode, StructFieldTypeNode, StructTypeNode,
-    TypeNode,
-};
-use codama_syn_helpers::extensions::*;
+use codama_nodes::{AccountNode, Node, PdaLinkNode, ProgramNode};
 
 pub struct SetAccountsVisitor {
     combine_types: CombineTypesVisitor,
-    enum_name: String,
-    enum_discriminator: EnumDiscriminatorDirective,
-    enum_current_discriminator: usize,
+    /// The enum being visited, if any.
+    r#enum: EnumItemContext,
 }
 
 impl Default for SetAccountsVisitor {
     fn default() -> Self {
         Self {
             combine_types: CombineTypesVisitor::strict(),
-            enum_name: "".to_string(),
-            enum_discriminator: EnumDiscriminatorDirective::default(),
-            enum_current_discriminator: 0,
+            r#enum: EnumItemContext::default(),
         }
     }
 }
@@ -55,7 +48,7 @@ impl KorokVisitor for SetAccountsVisitor {
         self.combine_types.visit_struct(korok)?;
 
         // Transform the defined type into an account node.
-        let (name, data) = parse_struct(korok)?;
+        let (name, data) = parse_struct_data(korok, ItemKind::Account)?;
         let account = AccountNode {
             discriminators: DiscriminatorDirective::nodes(&korok.attributes),
             pda: parse_pda_link_node(&korok.attributes),
@@ -93,9 +86,7 @@ impl KorokVisitor for SetAccountsVisitor {
             .unwrap_or_else(|| EnumDiscriminatorDirective::from(&korok.node));
 
         // Transform each variant into an `AccountNode`.
-        self.enum_name = korok.ast.ident.to_string();
-        self.enum_discriminator = enum_discriminator;
-        self.enum_current_discriminator = 0;
+        self.r#enum = EnumItemContext::new(korok.ast.ident.to_string(), enum_discriminator);
         walk_enum(self, korok)?;
 
         // Gather all accounts in the variants.
@@ -139,35 +130,20 @@ impl KorokVisitor for SetAccountsVisitor {
         &mut self,
         korok: &mut codama_koroks::EnumVariantKorok,
     ) -> CodamaResult<()> {
-        // Update current discriminator.
-        let current_discriminator = match &korok.ast.discriminant {
-            Some((_, expr)) => expr.as_unsigned_integer()?,
-            _ => self.enum_current_discriminator,
-        };
-        self.enum_current_discriminator = current_discriminator + 1;
+        let current_discriminator = self.r#enum.next_discriminator(korok)?;
 
         // Skip variants with #[codama(skip)] directive.
         if korok.attributes.has(SkipDirective::filter) {
             return Ok(());
         };
 
-        let discriminator = StructFieldTypeNode {
-            default_value_strategy: Some(DefaultValueStrategy::Omitted),
-            default_value: Box::new(Some(
-                IntegerValueNode::new(current_discriminator as u64).into(),
-            )),
-            ..StructFieldTypeNode::from(&self.enum_discriminator)
-        };
-        let discriminator_node = FieldDiscriminatorNode::from(&self.enum_discriminator);
-        let (name, mut data) = parse_enum_variant(korok, &self.enum_name)?;
+        let discriminator = self.r#enum.discriminator_field(current_discriminator);
+        let (name, mut data) = parse_variant_data(korok, &self.r#enum, ItemKind::Account)?;
 
-        let parent = format!("variant `{}` of enum `{}`", korok.ast.ident, self.enum_name);
-        let fields = std::iter::once(&discriminator).chain(&data.fields);
-        assert_unique_field_identifiers(fields, &parent, korok.ast)?;
         data.fields.insert(0, discriminator);
 
         let mut discriminators = DiscriminatorDirective::nodes(&korok.attributes);
-        discriminators.insert(0, discriminator_node.into());
+        discriminators.insert(0, self.r#enum.discriminator_node().into());
 
         let account = AccountNode {
             discriminators,
@@ -182,48 +158,6 @@ impl KorokVisitor for SetAccountsVisitor {
         )?);
         Ok(())
     }
-}
-
-fn parse_struct(korok: &codama_koroks::StructKorok) -> CodamaResult<(Identifier, StructTypeNode)> {
-    // Ensure we have a `DefinedTypeNode` to work with.
-    if let Some(Node::DefinedType(node)) = &korok.node {
-        // Ensure the data type is a struct.
-        if let TypeNode::Struct(data) = (*node.r#type).clone() {
-            return Ok((node.identifier.clone(), data));
-        };
-    };
-
-    // Handle error.
-    let message = format!(
-        "The \"{}\" struct could not be used as an Account because its type is not a `StructTypeNode`.",
-        korok.ast.ident,
-    );
-    Err(korok.ast.error(message).into())
-}
-
-fn parse_enum_variant(
-    korok: &codama_koroks::EnumVariantKorok,
-    enum_name: &str,
-) -> CodamaResult<(Identifier, StructTypeNode)> {
-    // Ensure we have a `Node`.
-    if let Some(node) = &korok.node {
-        // Ensure we have a `EnumVariantTypeNode`.
-        if let Ok(node) = EnumVariantTypeNode::try_from(node.clone()) {
-            match *node.data {
-                Some(TypeNode::Struct(data)) => return Ok((node.identifier, data)),
-                // Or an empty variant.
-                None => return Ok((node.identifier, StructTypeNode::new(vec![]))),
-                _ => {}
-            }
-        };
-    };
-
-    // Handle error.
-    let message = format!(
-        "The \"{}\" variant of the \"{enum_name}\" enum could not be used as an Account because we cannot get a `StructTypeNode` for it. This is likely because it is not using named fields.",
-        korok.ast.ident
-    );
-    Err(korok.ast.error(message).into())
 }
 
 fn parse_pda_link_node(attributes: &Attributes) -> Option<PdaLinkNode> {
